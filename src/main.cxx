@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 //loguru
-#define LOGURU_IMPLEMENTATION 1
+// #define LOGURU_IMPLEMENTATION 1
 #define LOGURU_NO_DATE_TIME 1
 #define LOGURU_NO_UPTIME 1
 #define LOGURU_REPLACE_GLOG 1
@@ -26,13 +26,13 @@
 
 
 //configuru
-#define CONFIGURU_IMPLEMENTATION 1
+// #define CONFIGURU_IMPLEMENTATION 1
 #define CONFIGURU_WITH_EIGEN 1
 #define CONFIGURU_IMPLICIT_CONVERSIONS 1
 #include <configuru.hpp>
 using namespace configuru;
 
-#define PROFILER_IMPLEMENTATION 1
+// #define PROFILER_IMPLEMENTATION 1
 #define ENABLE_GL_PROFILING 1
 #include "Profiler.h"
 

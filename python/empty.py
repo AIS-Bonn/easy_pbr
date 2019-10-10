@@ -8,7 +8,7 @@ import sys
 # sys.path.append('/media/rosu/Data/phd/c_ws/devel/lib/') #contains the modules of pycom
 sys.path.append('/media/rosu/Data/phd/c_ws/src/easy_pbr/build') #contains the modules of pycom
 # from DataLoaderTest import * 
-from Py  import EasyPBR
+from EasyPBR  import *
 # from DataLoaderTest.P import *
 import numpy as np
 import time
