@@ -1,4 +1,4 @@
-#include "easy_pbr/viewer/Mesh.h"
+#include "easy_pbr/Mesh.h"
 
 //c++
 #include <iostream>
@@ -22,10 +22,11 @@
 #include <igl/facet_components.h>
 #include <igl/vertex_triangle_adjacency.h>
 #include <igl/remove_duplicate_vertices.h>
+#include <igl/connect_boundary_to_infinity.h>
 
 //for reading pcd files
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
+// #include <pcl/io/pcd_io.h>
+// #include <pcl/point_types.h>
 
 using namespace er::utils;
 
@@ -262,18 +263,13 @@ void Mesh::load_from_file(const std::string file_path){
         Eigen::MatrixXi FTC;
         Eigen::MatrixXi FN;
         igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
-    }else if (file_ext == "pcd") {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
-        V.resize(cloud->points.size(), 3);
-        for (size_t i = 0; i < cloud->points.size (); ++i){
-            V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
-        }
-        // igl::readOBJ(file_path, mesh.V, mesh.F);
-        // Eigen::MatrixXd CN; //corner normals
-        // Eigen::MatrixXi FTC;
-        // Eigen::MatrixXi FN;
-        // igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
+    // }else if (file_ext == "pcd") {
+    //     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    //     pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
+    //     V.resize(cloud->points.size(), 3);
+    //     for (size_t i = 0; i < cloud->points.size (); ++i){
+    //         V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+    //     }
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path;
     }
@@ -551,7 +547,7 @@ void Mesh::decimate(const int nr_target_faces){
     while(!is_edge_manifold){
         std::vector<bool> is_face_non_manifold;
         std::vector<bool> is_vertex_non_manifold;
-        MeshCore mesh_connected_to_infinity;
+        Mesh mesh_connected_to_infinity;
         igl::connect_boundary_to_infinity(V, F, mesh_connected_to_infinity.V, mesh_connected_to_infinity.F);
         is_edge_manifold=compute_non_manifold_edges(is_face_non_manifold, is_vertex_non_manifold,  mesh_connected_to_infinity.F);
         std::vector<bool> is_vertex_non_manifold_original_mesh(V.rows());
@@ -1108,12 +1104,12 @@ void Mesh::as_uv_mesh_paralel_to_axis(const int axis, const float size_modifier)
 }
 
 
-Mesh Mesh::interpolate(const MeshCore& target_mesh, const float factor){
+Mesh Mesh::interpolate(const Mesh& target_mesh, const float factor){
     if(V.rows()!=target_mesh.V.rows()){
         LOG(FATAL) << "Cannot interpolate between meshes with different nr of vertices. This has: " << V.rows() << " target_mesh has: " << target_mesh.V.rows();
     }
 
-    MeshCore new_mesh;
+    Mesh new_mesh;
     new_mesh.add(*this);
 
     for (size_t i = 0; i < V.rows(); i++) {

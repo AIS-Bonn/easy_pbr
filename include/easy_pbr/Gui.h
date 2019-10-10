@@ -13,7 +13,7 @@
 //imgui
 #include <imgui.h>
 #include "imgui_impl_glfw.h"
-#include "IconsFontAwesome.h"
+#include "imgui_ext/IconsFontAwesome.h"
 #include "ImGuizmo.h"
 
 //opencv
@@ -23,7 +23,7 @@
 #include "Texture2D.h"
 
 //my sutff 
-#include "surfel_renderer/data_loader/RosBagPlayer.h"
+// #include "surfel_renderer/data_loader/RosBagPlayer.h"
 
 
 

@@ -12,6 +12,7 @@
 // #include "easy_pbr/data_loader/DataLoaderPNG.h"
 // #include "easy_pbr/data_loader/RosBagPlayer.h"
 #include "easy_pbr/Viewer.h"
+#include "easy_pbr/MeshGL.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/SpotLight.h"
@@ -22,8 +23,8 @@
 
 //imgui
 #include "imgui_impl_glfw.h"
-#include "curve.hpp"
-#include "ImGuiUtils.h"
+#include "imgui_ext/curve.hpp"
+#include "imgui_ext/ImGuiUtils.h"
 
 //ros
 // #include <ros/ros.h>
@@ -683,64 +684,64 @@ void Gui::update() {
         ImGui::End();
     } 
 
-    if (m_player){
-        ImGuiWindowFlags player_window_flags = 0;
-        player_window_flags |=  ImGuiWindowFlags_NoTitleBar;
-        ImVec2 size(135*m_hidpi_scaling,56*m_hidpi_scaling);
-        ImGui::SetNextWindowSize(size);
-        ImGui::SetNextWindowPos(ImVec2(canvas_size.x -size.x , canvas_size.y -size.y ));
-        ImGui::Begin("Player", nullptr, player_window_flags);
-        ImGui::PushItemWidth(135*m_hidpi_scaling);
+    // if (m_player){
+    //     ImGuiWindowFlags player_window_flags = 0;
+    //     player_window_flags |=  ImGuiWindowFlags_NoTitleBar;
+    //     ImVec2 size(135*m_hidpi_scaling,56*m_hidpi_scaling);
+    //     ImGui::SetNextWindowSize(size);
+    //     ImGui::SetNextWindowPos(ImVec2(canvas_size.x -size.x , canvas_size.y -size.y ));
+    //     ImGui::Begin("Player", nullptr, player_window_flags);
+    //     ImGui::PushItemWidth(135*m_hidpi_scaling);
 
 
-        ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
-        const char* icon_play = m_player->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE;
-        //play/pause button
-        if(ImGui::Button(icon_play,button_size)){
-            //if it's paused, then start it
-            if (m_player->is_paused()){
-                m_player->play();
-                // m_core->m_player->m_player_should_continue_after_step =true;
-                // m_core->m_player->m_player_should_do_one_step=true;
-            }else{
-                m_player->pause();
-                // m_core->m_player->m_player_should_continue_after_step =false;
-                // m_core->m_player->m_player_should_do_one_step=false;
-            }
-        }
-        ImGui::SameLine();
-        if(ImGui::Button(ICON_FA_STEP_FORWARD,button_size)){
-            // m_core->m_player_should_do_one_step=true;
-        }
-        // ImGui::SameLine();
-        // const char* icon_should_continue = m_core->m_player->m_player_should_continue_after_step? ICON_FA_STOP : ICON_FA_FAST_FORWARD;
-        // if(ImGui::Button(icon_should_continue,button_size)){
-        //     // //if it's paused, then start it
-        //     // if (m_core->m_player->is_paused()){
-        //     //     m_core->m_player->play();
-        //     //     m_core->m_player->m_player_should_continue_after_step =true;
-        //     //     m_core->m_player->m_player_should_do_one_step=true;
-        //     // }else{
-        //     //     m_core->m_player->pause();
-        //     //     m_core->m_player->m_player_should_continue_after_step =false;
-        //     //     m_core->m_player->m_player_should_do_one_step=false;
-        //     // }
-        //
-        // }
-        ImGui::SameLine();
-        if(ImGui::Button(ICON_FA_UNDO,button_size)){
-            m_player->reset();
-        }
+    //     ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
+    //     const char* icon_play = m_player->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE;
+    //     //play/pause button
+    //     if(ImGui::Button(icon_play,button_size)){
+    //         //if it's paused, then start it
+    //         if (m_player->is_paused()){
+    //             m_player->play();
+    //             // m_core->m_player->m_player_should_continue_after_step =true;
+    //             // m_core->m_player->m_player_should_do_one_step=true;
+    //         }else{
+    //             m_player->pause();
+    //             // m_core->m_player->m_player_should_continue_after_step =false;
+    //             // m_core->m_player->m_player_should_do_one_step=false;
+    //         }
+    //     }
+    //     ImGui::SameLine();
+    //     if(ImGui::Button(ICON_FA_STEP_FORWARD,button_size)){
+    //         // m_core->m_player_should_do_one_step=true;
+    //     }
+    //     // ImGui::SameLine();
+    //     // const char* icon_should_continue = m_core->m_player->m_player_should_continue_after_step? ICON_FA_STOP : ICON_FA_FAST_FORWARD;
+    //     // if(ImGui::Button(icon_should_continue,button_size)){
+    //     //     // //if it's paused, then start it
+    //     //     // if (m_core->m_player->is_paused()){
+    //     //     //     m_core->m_player->play();
+    //     //     //     m_core->m_player->m_player_should_continue_after_step =true;
+    //     //     //     m_core->m_player->m_player_should_do_one_step=true;
+    //     //     // }else{
+    //     //     //     m_core->m_player->pause();
+    //     //     //     m_core->m_player->m_player_should_continue_after_step =false;
+    //     //     //     m_core->m_player->m_player_should_do_one_step=false;
+    //     //     // }
+    //     //
+    //     // }
+    //     ImGui::SameLine();
+    //     if(ImGui::Button(ICON_FA_UNDO,button_size)){
+    //         m_player->reset();
+    //     }
 
-        ImGui::End();
-    }
+    //     ImGui::End();
+    // }
 
 
 
 
     // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
     if (m_show_demo_window) {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
         ImGui::ShowDemoWindow(&m_show_demo_window);
     }
 
@@ -809,8 +810,8 @@ void Gui::show_gl_texture(const int tex_id, const std::string window_name, const
 //similar to libigl draw_text https://github.com/libigl/libigl/blob/master/include/igl/opengl/glfw/imgui/ImGuiMenu.cpp
 void Gui::draw_overlays(){
 
-    ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiSetCond_Always);
-    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiSetCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_Always);
     bool visible = true;
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
@@ -825,7 +826,7 @@ void Gui::draw_overlays(){
         | ImGuiWindowFlags_NoInputs);
 
     for (int i = 0; i < (int)m_view->m_meshes_gl.size(); i++) {
-        MeshCoreSharedPtr mesh= m_view->m_meshes_gl[i]->m_core;
+        MeshSharedPtr mesh= m_view->m_meshes_gl[i]->m_core;
         //draw vert ids
         if(mesh->m_vis.m_is_visible && mesh->m_vis.m_show_vert_ids){
             for (int i = 0; i < mesh->V.rows(); ++i){
@@ -881,7 +882,7 @@ void Gui::draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f mod
     &text[0], &text[0] + text.size());
 }
 
-void Gui::edit_transform(const MeshCoreSharedPtr& mesh){
+void Gui::edit_transform(const MeshSharedPtr& mesh){
 
 
     Eigen::Matrix4f widget_placement;
@@ -931,29 +932,29 @@ float Gui::hidpi_scaling(){
 }
 
 
-void Gui::register_module(const std::shared_ptr<RosBagPlayer> player){
-    m_player=player;
-}
+// void Gui::register_module(const std::shared_ptr<RosBagPlayer> player){
+//     m_player=player;
+// }
 
-void Gui::register_module(const std::shared_ptr<Texturer> texturer){
-    m_texturer=texturer;
-}
+// void Gui::register_module(const std::shared_ptr<Texturer> texturer){
+//     m_texturer=texturer;
+// }
 
-void Gui::register_module(const std::shared_ptr<FireDetector> fire_detector){
-    m_fire_detector=fire_detector;
-}
+// void Gui::register_module(const std::shared_ptr<FireDetector> fire_detector){
+//     m_fire_detector=fire_detector;
+// }
 
-void Gui::register_module(const std::shared_ptr<Mesher> mesher){
-    m_mesher=mesher;
-}
+// void Gui::register_module(const std::shared_ptr<Mesher> mesher){
+//     m_mesher=mesher;
+// }
 
-void Gui::register_module(const std::shared_ptr<LatticeCPU_test> latticeCPU_test){
-    m_latticeCPU_test=latticeCPU_test;
-}
+// void Gui::register_module(const std::shared_ptr<LatticeCPU_test> latticeCPU_test){
+//     m_latticeCPU_test=latticeCPU_test;
+// }
 
-void Gui::register_module(const std::shared_ptr<BallDetector> ball_detector){
-    m_ball_detector=ball_detector;
-}
+// void Gui::register_module(const std::shared_ptr<BallDetector> ball_detector){
+//     m_ball_detector=ball_detector;
+// }
 
 
 
@@ -1001,9 +1002,9 @@ void Gui::init_style() {
     style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
     style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.56f, 0.56f, 0.58f, 0.35f);
     style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Column] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ColumnHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_ColumnActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    // style->Colors[ImGuiCol_Column] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    // style->Colors[ImGuiCol_ColumnHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    // style->Colors[ImGuiCol_ColumnActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
     style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
     style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);

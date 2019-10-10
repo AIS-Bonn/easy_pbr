@@ -61,6 +61,7 @@ private:
     moodycamel::ConcurrentQueue<MatWithFilePath> m_cv_mats_queue;
 
     std::vector<std::thread> m_writer_threads; 
+    bool m_threads_are_running;
     // std::vector<cv::Mat> m_cv_mats_buffer;
     // int m_idx_last_mat_added;
     // int m_idx_mat_to_write;

@@ -24,7 +24,7 @@ class MeshGL;
 template <class ...Args>
 std::unique_ptr<MeshGL> MeshGLCreate(Args&& ...args);
 
-class Mesh {
+class MeshGL {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ~MeshGL()=default;

@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-#include <ros/ros.h>
+// #include <ros/ros.h>
 
 
 Recorder::Recorder():
@@ -39,6 +39,7 @@ Recorder::Recorder():
     m_idx_pbo_read=1; //just one in front of the writing one so it will take one full loop of all pbos for it to catch up
 
     m_writer_threads.resize(4);
+    m_threads_are_running=true;
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i]=std::thread( &Recorder::write_to_file_threaded, this);
     }
@@ -54,6 +55,7 @@ Recorder::Recorder(Viewer* view):
 }
 
 Recorder::~Recorder(){
+    m_threads_are_running=false;
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i].join();
     }
@@ -221,7 +223,8 @@ void Recorder::write_to_file_threaded(){
 
     std::cout << "Thread for writing to file" << std::endl;
 
-    while(ros::ok()){
+    // while(ros::ok()){
+    while(m_threads_are_running){
         // if(m_need_to_write){
         //     m_need_to_write=false;
         // }else{

@@ -8,12 +8,12 @@
 #include <Eigen/Geometry>
 
 #include "easy_pbr/Camera.h"
-#include "easy_pbr/Mesh.h"
 
 #define CONFIGURU_WITH_EIGEN 1
 #define CONFIGURU_IMPLICIT_CONVERSIONS 1
 #include <configuru.hpp>
 
+class MeshGL;
 
 class SpotLight : public std::enable_shared_from_this<SpotLight>, public Camera
 {
@@ -22,8 +22,8 @@ public:
     SpotLight(const configuru::Config& config);
 
     // void render_to_shadow_map(const MeshCore& mesh);
-    void render_mesh_to_shadow_map(MeshGLSharedPtr& mesh);
-    void render_points_to_shadow_map(MeshGLSharedPtr& mesh);
+    void render_mesh_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
+    void render_points_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
     void clear_shadow_map();
     void set_shadow_map_resolution(const int shadow_map_resolution);
     int shadow_map_resolution();

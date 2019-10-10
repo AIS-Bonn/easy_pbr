@@ -4,6 +4,7 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
+#include "easy_pbr/MeshGL.h"
 
 
 SpotLight::SpotLight(const configuru::Config& config)
@@ -40,7 +41,7 @@ void SpotLight::init_opengl(){
 }
 
 // void PointLight::render_to_shadow_map(const MeshCore& mesh){
-void SpotLight::render_mesh_to_shadow_map(MeshSharedPtr& mesh){
+void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
 
     //add a depth texture to the framebuffer of the shadow map
     if(!m_shadow_map_fbo.is_initialized() || m_shadow_map_fbo.width()!=m_shadow_map_resolution || m_shadow_map_fbo.height()!=m_shadow_map_resolution ){
@@ -80,7 +81,7 @@ void SpotLight::render_mesh_to_shadow_map(MeshSharedPtr& mesh){
 
 }
 
-void SpotLight::render_points_to_shadow_map(MeshSharedPtr& mesh){
+void SpotLight::render_points_to_shadow_map(MeshGLSharedPtr& mesh){
 
     //add a depth texture to the framebuffer of the shadow map
     if(!m_shadow_map_fbo.is_initialized() || m_shadow_map_fbo.width()!=m_shadow_map_resolution || m_shadow_map_fbo.height()!=m_shadow_map_resolution ){

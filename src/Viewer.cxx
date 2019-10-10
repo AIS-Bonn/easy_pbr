@@ -19,7 +19,7 @@
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
-#include "/MiscUtils.h"
+#include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
 
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
@@ -433,7 +433,7 @@ void Viewer::draw(const GLuint fbo_id){
 
             //loop through all the meshes
             for(size_t i=0; i<m_meshes_gl.size(); i++){
-                MeshSharedPtr mesh=m_meshes_gl[i];
+                MeshGLSharedPtr mesh=m_meshes_gl[i];
                 if(mesh->m_core->m_vis.m_is_visible){
 
                     if(mesh->m_core->m_vis.m_show_mesh){
@@ -468,7 +468,7 @@ void Viewer::draw(const GLuint fbo_id){
     TIME_START("geom_pass");
     //render every mesh into the gbuffer
     for(size_t i=0; i<m_meshes_gl.size(); i++){
-        MeshSharedPtr mesh=m_meshes_gl[i];
+        MeshGLSharedPtr mesh=m_meshes_gl[i];
         if(mesh->m_core->m_vis.m_is_visible){
             if(mesh->m_core->m_vis.m_show_mesh){
                 render_mesh_to_gbuffer(mesh);
@@ -512,7 +512,7 @@ void Viewer::draw(const GLuint fbo_id){
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 
     for(size_t i=0; i<m_meshes_gl.size(); i++){
-        MeshSharedPtr mesh=m_meshes_gl[i];
+        MeshGLSharedPtr mesh=m_meshes_gl[i];
         if(mesh->m_core->m_vis.m_is_visible){
             // if(mesh->m_core->m_vis.m_show_points){
             //     render_points(mesh);
@@ -564,7 +564,7 @@ void Viewer::update_meshes_gl(){
                 m_meshes_gl[idx_found]->upload_to_gpu();
                 m_meshes_gl[idx_found]->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
             }else{
-                MeshSharedPtr mesh_gpu=MeshCreate();
+                MeshGLSharedPtr mesh_gpu=MeshGLCreate();
                 mesh_gpu->assign_core(mesh_core); //GPU implementation points to the cpu data
                 mesh_core->assign_mesh_gpu(mesh_gpu); // cpu data points to the gpu implementation
                 mesh_gpu->upload_to_gpu();
@@ -580,7 +580,7 @@ void Viewer::update_meshes_gl(){
 
     //check if any of the mesh in the scene got deleted, in which case we should also delete the corresponding mesh_gl
     //need to do it after updating first the meshes_gl with the new meshes in the scene a some of them may have been added newly just now
-    std::vector< std::shared_ptr<Mesh> > meshes_gl_filtered;
+    std::vector< std::shared_ptr<MeshGL> > meshes_gl_filtered;
     for(int i=0; i<m_scene->get_nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
 
@@ -612,7 +612,7 @@ void Viewer::clear_framebuffers(){
 }
 
 
-void Viewer::render_points(const MeshSharedPtr mesh){
+void Viewer::render_points(const MeshGLSharedPtr mesh){
 
     //sanity checks 
     if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
@@ -658,7 +658,7 @@ void Viewer::render_points(const MeshSharedPtr mesh){
 
 }
 
-void Viewer::render_points_to_gbuffer(const MeshSharedPtr mesh){
+void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //sanity checks 
     if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
@@ -744,7 +744,7 @@ void Viewer::render_points_to_gbuffer(const MeshSharedPtr mesh){
 
 }
 
-void Viewer::render_lines(const MeshSharedPtr mesh){
+void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
     // Set attributes that the vao will pulll from buffers
     if(mesh->m_core->V.size()){
@@ -771,7 +771,7 @@ void Viewer::render_lines(const MeshSharedPtr mesh){
     
 }
 
-void Viewer::render_wireframe(const MeshSharedPtr mesh){
+void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
 
      // Set attributes that the vao will pulll from buffers
     if(mesh->m_core->V.size()){
@@ -808,7 +808,7 @@ void Viewer::render_wireframe(const MeshSharedPtr mesh){
     
 }
 
-void Viewer::render_mesh_to_gbuffer(const MeshSharedPtr mesh){
+void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //sanity checks 
     if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
@@ -892,7 +892,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshSharedPtr mesh){
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
 
 }
-void Viewer::render_surfels_to_gbuffer(const MeshSharedPtr mesh){
+void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //we disable surfel rendering for the moment because I changed the gbuffer diffuse texture from Half float to RGBA8 because it's a lot faster. This however means that the color accumulation cannot happen anymore in that render target. Also I didn't modify the surfel shader to output the encoded normals as per the CryEngine3 pipeline. Due to all these reasons I will disable for now the surfel rendering
     // LOG(FATAL) << "Surfel rendering disabled because we disabled the accumulation of color into the render target. this makes the rest of the program way faster. Also we would need to modify the surfel fragment shader to output encoded normals";
@@ -1453,7 +1453,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 }
 
 
-Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshSharedPtr& mesh){
+Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
     Eigen::Matrix4f M,V,P, MVP;
 
     // M.setIdentity();

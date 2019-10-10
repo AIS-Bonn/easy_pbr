@@ -18,7 +18,7 @@
 // #include "surfel_renderer/Camera.h"
 
 //dir watcher
-#include "dir_watcher.hpp"
+#include "dir_watcher/dir_watcher.hpp"
 
 
 class Scene;

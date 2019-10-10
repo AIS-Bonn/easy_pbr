@@ -193,7 +193,7 @@ public:
 private:
 
     template<class... Args>
-    friend  std::shared_ptr<MeshCore> MeshCreate(Args&&... args){
+    friend  std::shared_ptr<Mesh> MeshCreate(Args&&... args){
         return std::shared_ptr<Mesh>(new Mesh(std::forward<Args>(args)...));
     }
 
