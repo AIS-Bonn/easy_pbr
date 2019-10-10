@@ -67,7 +67,7 @@ private:
     
     //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
     template<class... Args>
-    friend  std::unique_ptr<Mesh> MeshGLCreate(Args&&... args){
+    friend  std::unique_ptr<MeshGL> MeshGLCreate(Args&&... args){
         return std::unique_ptr<MeshGL>(new MeshGL(std::forward<Args>(args)...));
     }
 

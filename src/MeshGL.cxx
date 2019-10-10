@@ -1,4 +1,4 @@
-#include "easy_pbr/viewer/MeshGL.h"
+#include "easy_pbr/MeshGL.h"
 
 //c++
 #include <iostream>
@@ -24,7 +24,7 @@ MeshGL::MeshGL():
     m_thermal_tex(new gl::Texture2D("thermal_tex")),
     m_thermal_colored_tex(new gl::Texture2D("thermal_colored_tex")),
     m_cur_tex_ptr(m_rgb_tex),
-    m_core(new MeshCore)
+    m_core(new Mesh)
     {   
 
     //Set the parameters for the buffers
@@ -44,7 +44,7 @@ MeshGL::MeshGL():
 
 }
 
-void MeshGL::assign_mesh(std::shared_ptr<Mesh> mesh_core){
+void MeshGL::assign_core(std::shared_ptr<Mesh> mesh_core){
     if(m_first_core_assignment || mesh_core->m_force_vis_update ){
         //asign the whole core together with all the options like m_show_points and so on
         m_core=mesh_core;

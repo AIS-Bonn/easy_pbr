@@ -69,8 +69,8 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
         // MeshSharedPtr mesh_grid=Mesh::create();
-        // MeshCoreSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
-        MeshCoreSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
+        // MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
+        MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
         m_meshes.push_back(mesh_grid);
       
     }
@@ -154,7 +154,7 @@ bool Scene::does_mesh_with_name_exist(const std::string name){
 void Scene::remove_meshes_starting_with_name(const std::string name_prefix){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
 
-    std::vector< std::shared_ptr<MeshCore> > meshes_filtered;
+    std::vector< std::shared_ptr<Mesh> > meshes_filtered;
 
     for(int i=0; i<m_meshes.size(); i++){
         VLOG(1) << "checking mesh with name " << m_meshes[i]->name;

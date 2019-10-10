@@ -1588,3 +1588,26 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
     }
 }
 
+
+// PYBIND11_MODULE(EasyPBR, m) {
+//     //hacky rosinit because I cannot call rosinit from python3 because it requires installing python3-catkin-pkg and python3-rospkg which for some reason deinstalls all of melodic
+//     // m.def("rosinit", []( std::string name ) {
+//     //     std::vector<std::pair<std::string, std::string> > dummy_remappings;
+//     //     ros::init(dummy_remappings, name);
+//     //  } );
+
+//     pybind11::class_<Viewer> (m, "Viewer") 
+//     .def(pybind11::init<const std::string>())
+//     .def("update", &Viewer::update, pybind11::arg("fbo_id") = 0)
+//     .def_readwrite("m_gui", &Viewer::m_gui)
+//     .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting)
+//     .def_readwrite("m_enable_ssao", &Viewer::m_enable_ssao)
+//     .def_readwrite("m_shading_factor", &Viewer::m_shading_factor)
+//     .def_readwrite("m_light_factor", &Viewer::m_light_factor)
+//     .def_readwrite("m_camera", &Viewer::m_camera)
+//     .def_readwrite("m_recorder", &Viewer::m_recorder)
+//     .def_readwrite("m_viewport_size", &Viewer::m_viewport_size)
+//     ;
+
+// }
+

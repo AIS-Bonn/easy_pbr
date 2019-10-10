@@ -80,8 +80,7 @@ Gui::Gui( const std::string config_file,
     float font_size=13;
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    std::string proggy_font_path=std::string(CMAKE_SOURCE_DIR)+"/deps/imgui/misc/fonts/ProggyClean.ttf";
-    io.Fonts->AddFontFromFileTTF(proggy_font_path.c_str(), font_size * m_hidpi_scaling);
+    io.Fonts->AddFontFromFileTTF(PROGGY_DIR, font_size * m_hidpi_scaling);
     ImFontConfig config;
     config.MergeMode = true;
     const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };

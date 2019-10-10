@@ -20,6 +20,11 @@
 //dir watcher
 #include "dir_watcher/dir_watcher.hpp"
 
+// pybind
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+
 
 class Scene;
 class MeshGL;
