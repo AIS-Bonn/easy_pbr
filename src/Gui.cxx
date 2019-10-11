@@ -161,8 +161,8 @@ void Gui::update() {
 
                 ImGui::PopStyleColor(2);
             }
+            ImGui::ListBoxFooter();
         }
-        ImGui::ListBoxFooter();
 
 
         if(!m_view->m_scene->is_empty() ){ //if the scene is empty there will be no mesh to select
@@ -330,8 +330,8 @@ void Gui::update() {
                 }
                 ImGui::PopStyleColor(1);
             }
+            ImGui::ListBoxFooter();
         }
-        ImGui::ListBoxFooter();
 
 
         ImGui::SliderFloat("FOV", &m_view->m_camera->m_fov, 30.0, 120.0);
