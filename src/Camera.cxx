@@ -11,9 +11,10 @@
 #include <cmath>
 #include <iostream>
 
-#include "MiscUtils.h"
+// #include "MiscUtils.h"
+#include "string_utils.h"
 
-using namespace er::utils;
+using namespace easy_pbr::utils;
 
 
 Camera::Camera():

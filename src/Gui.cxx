@@ -7,7 +7,7 @@
 
 //My stuff
 #include "Profiler.h"
-#include "MiscUtils.h"
+// #include "MiscUtils.h"
 // #include "easy_pbr/core/Core.h"
 // #include "easy_pbr/data_loader/DataLoaderPNG.h"
 // #include "easy_pbr/data_loader/RosBagPlayer.h"
@@ -17,6 +17,7 @@
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
+#include "string_utils.h"
 // #ifdef WITH_TORCH
 //     #include "easy_pbr/cnn/CNN.h"
 // #endif
@@ -30,7 +31,7 @@
 // #include <ros/ros.h>
 // #include "easy_pbr/utils/RosTools.h"
 
-using namespace er::utils;
+using namespace easy_pbr::utils;
 
 //loguru
 //#include <loguru.hpp>

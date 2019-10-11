@@ -14,7 +14,7 @@
 
 #include "Shader.h"
 #include "GBuffer.h"
-#include "ColormapMngr.h"
+#include "ColorMngr.h"
 // #include "surfel_renderer/Camera.h"
 
 //dir watcher
@@ -105,7 +105,7 @@ public:
     void glfw_resize(GLFWwindow* window, int width, int height);
     void glfw_drop(GLFWwindow* window, int count, const char** paths);
 
-    ColormapMngr m_colormapmngr;
+    ColorMngr m_colormngr;
 
     gl::Shader m_draw_points_shader;
     gl::Shader m_draw_points_gbuffer_shader; //draw the points into the gbuffer instead of using forward rendering

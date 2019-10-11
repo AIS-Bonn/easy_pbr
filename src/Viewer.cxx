@@ -5,7 +5,7 @@
 #define LOGURU_IMPLEMENTATION 1
 #define LOGURU_NO_DATE_TIME 1
 #define LOGURU_NO_UPTIME 1
-#define LOGURU_REPLACE_GLOG 
+#define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
 #include <glad/glad.h>
@@ -19,8 +19,9 @@
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
-#include "MiscUtils.h"
+// #include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
+#include "RandGenerator.h"
 
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define PROFILER_IMPLEMENTATION 1
@@ -35,7 +36,7 @@
 #include <configuru.hpp>
 using namespace configuru;
 
-using namespace er::utils;
+// using namespace easy_pbr::utils;
 
 //ros
 // #include "easy_pbr/utils/RosTools.h"
@@ -706,7 +707,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_points_gbuffer_shader.uniform_4x4(MVP, "MVP");
     m_draw_points_gbuffer_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     m_draw_points_gbuffer_shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
-    m_draw_points_gbuffer_shader.uniform_array_v3_float(m_colormapmngr.viridis_colormap(), "color_scheme_height"); //for height color type
+    m_draw_points_gbuffer_shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
     m_draw_points_gbuffer_shader.uniform_float(mesh->m_core->min_y(), "min_y");
     m_draw_points_gbuffer_shader.uniform_float(mesh->m_core->max_y(), "max_y");
     if(mesh->m_core->m_label_mngr){

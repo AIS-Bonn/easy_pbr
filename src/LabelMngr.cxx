@@ -7,7 +7,7 @@
 using namespace configuru;
 
 //my stuff
-#include "MiscUtils.h"
+#include "string_utils.h"
 
 //c++
 #include <iostream>
@@ -17,7 +17,7 @@ using namespace configuru;
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
-using namespace er::utils;
+using namespace easy_pbr::utils;
 
 LabelMngr::LabelMngr(const configuru::Config& config):
     m_nr_classes(-1){

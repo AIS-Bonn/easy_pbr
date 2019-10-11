@@ -239,7 +239,8 @@ add_executable(run ${CMAKE_SOURCE_DIR}/src/main.cxx  )
 
 
 ###   LIBS   ###############################################
-set(LIBS ${LIBS} utils Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core igl::triangle igl::embree )
+set(LIBS -lpthread -ldl) #because loguru needs them
+set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core igl::triangle igl::embree )
 
 
 target_link_libraries(easy_pbr ${LIBS} )

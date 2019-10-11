@@ -5,7 +5,7 @@
 #include <algorithm>
 
 //my stuff
-#include "MiscUtils.h"
+// #include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
 
 //libigl 
@@ -28,7 +28,12 @@
 // #include <pcl/io/pcd_io.h>
 // #include <pcl/point_types.h>
 
-using namespace er::utils;
+#include "RandGenerator.h"
+#include "ColorMngr.h"
+#include "numerical_utils.h"
+#include "eigen_utils.h"
+#include "string_utils.h"
+using namespace easy_pbr::utils;
 
 Mesh::Mesh():
         m_is_dirty(true),
