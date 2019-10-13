@@ -7,8 +7,8 @@ layout(location=2) in vec3 view_ray_in;
 //out
 layout(location = 0) out vec4 out_color;
 
-uniform sampler2D normal_cam_coords_tex;
-uniform sampler2D position_cam_coords_tex;
+uniform sampler2D normal_tex;
+// uniform sampler2D position_cam_coords_tex;
 uniform sampler2D diffuse_tex;
 uniform sampler2D metalness_and_roughness_tex;
 uniform sampler2D log_depth_tex;
@@ -19,6 +19,7 @@ uniform sampler2D background_tex;
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
 uniform mat4 V; //from projecting a light position from world into the main camera 
+uniform vec3 eye_pos;
 uniform int color_type;
 uniform vec3 solid_color;
 uniform vec3 ambient_color;
@@ -54,7 +55,7 @@ uniform SpotLight spot_lights[8];
 uniform int nr_active_spot_lights;
 
 
-
+const float PI = 3.14159265359;
 
 
 
@@ -218,13 +219,271 @@ vec3 apply_spot_light(SpotLight light, vec3 diffuse_color, vec3 pos_cam_coords, 
     return diffuse_lit;
 }
 
+//DFG equations from https://learnopengl.com/PBR/Lighting
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}  
 
 
 
 void main(){
 
-    vec4 pos_cam_coords;
+    // vec4 pos_cam_coords;
 
+    // float depth=texture(depth_tex, uv_in).x;
+    // if(depth==1.0){
+    //     //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
+    //     if (use_background_img){
+    //         out_color=texture(background_tex, uv_in);
+    //         return;
+    //     }else{
+    //         discard;
+    //     }
+    // }
+   
+
+    // pos_cam_coords.xyz= position_cam_coords_from_depth(depth); 
+
+    // //show
+    // // out_color=vec4(pos_cam_coords.xy, 0.0, 1.0);
+    // // out_color=vec4(pos_cam_coords.xyz, 1.0);
+    // // out_color=vec4(view_ray_in, 1.0);
+    // // out_color=vec4(normalize(view_ray_in).xy, 0.0, 1.0);
+    // // out_color=vec4(vec3(linearDepth), 1.0);
+    // // out_color=vec4(vec3(depth), 1.0);
+    // // out_color=vec4(vec3(linear_depth(depth))*0.01, 1.0);
+    // // out_color=vec4(vec3(1.0, 0.0, 0.0), 1.0);
+    // // return;
+
+
+
+    // vec4 diffuse_color=texture(diffuse_tex, uv_in);
+    // vec2 normal_gbuf=texture(normal_cam_coords_tex, uv_in).xy; //recover normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+    // vec4 normal_cam_coords = vec4( decode_normal(normal_gbuf), 1.0);
+    
+    
+
+    // float alpha=diffuse_color.w; //an alpha between 0 and 1 will leave the color unchanged, but if it's above 1 it means we have to normalize because we have contributions from more than one pixel, for example when splatting the alpha is interpreted as a confidence
+
+    // vec3 shade=vec3(0);
+
+    // if(normal_cam_coords.xyz!=vec3(0)){ //if we have normals we apply shading othersiw we don;t 
+     
+    //     normal_cam_coords.xyz/=alpha;
+    //     pos_cam_coords.xyz/=alpha;
+    //     diffuse_color.xyz/=alpha;
+    //     normal_cam_coords.xyz=normalize(normal_cam_coords.xyz);
+
+
+    //     for(int i=0; i<nr_active_spot_lights; i++){
+    //         shade+=apply_spot_light(spot_lights[i], diffuse_color.xyz, pos_cam_coords.xyz, normal_cam_coords.xyz, specular_color.xyz, shininess);
+    //     }
+    // }else{
+    //     shade= diffuse_color.xyz;
+    // }
+
+    
+
+    // //get ao attempt 2
+    // float ao_term;
+    // if(enable_ssao){
+    //     ao_term=texture(ao_tex, uv_in).x;
+    // }else {
+    //     ao_term=1.0;
+    // }
+
+ 
+
+    // vec4 color=vec4(shade*ao_term,1.0)+ vec4(ambient_color*ambient_color_power, 1.0);
+    // vec4 color_without_light=vec4(diffuse_color.xyz*ao_term,1.0) + vec4(ambient_color*ambient_color_power, 1.0);
+    // color=mix(color_without_light, color, light_factor); //remove the color and leave only the diffuse and ao if necesarry
+    // color=mix(diffuse_color, color, shading_factor); //remove even the ao term and leaves only diffuse
+
+    // //if the diffuse_color is black we output the ao term 
+    // if(alpha==0.0){
+    //     color=vec4(vec3(1)*ao_term,1.0);
+    // }
+
+
+    // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
+    // if(enable_edl_lighting){
+    //     // float depth = texture(log_depth_tex, uv_in).x;
+    //     depth=linear_depth(depth);
+    //     depth=log2(depth);
+    //     if(depth!=1.0){ //if we have a depth of 1.0 it means for this pixels we haven't stored anything. Storing something in this texture is only done for points
+    //         depth = (depth == 1.0) ? 0.0 : depth;
+    //         float res = response(depth);
+    //         // float edl_strength=16.0;
+    //         float shade = exp(-res * 300.0 * edl_strength);
+    //         color = vec4(diffuse_color.xyz * shade, 1.0);
+    //     }
+        
+    // }
+
+
+
+    // out_color=color;
+
+
+
+
+
+    //PBR  mostly based on https://learnopengl.com/PBR/Lighting
+
+    // float depth=texture(depth_tex, uv_in).x;
+    // if(depth==1.0){
+    //     //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
+    //     if (use_background_img){
+    //         out_color=texture(background_tex, uv_in);
+    //         return;
+    //     }else{
+    //         discard;
+    //     }
+    // }
+
+
+    // vec3 N= decode_normal(texture(normal_tex, uv_in).xy );  //normal in camera coordinates
+    // vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
+    // vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
+    // // vec3 V = normalize( -P_c ); //view vector that goes from position of the fragment towards the camera
+    // vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
+    // vec3 albedo=texture(diffuse_tex, uv_in).xyz;
+    // float metalness=texture(metalness_and_roughness_tex, uv_in).x;
+    // float roughness=texture(metalness_and_roughness_tex, uv_in).y;
+    // float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
+
+    // vec3 F0 = vec3(0.04); 
+    // F0 = mix(F0, albedo, metalness);
+
+    // // // reflectance equation
+    // // vec3 Lo = vec3(0.0);
+    // // for(int i = 0; i < nr_active_spot_lights; ++i) {
+    // //     // calculate per-light radiance
+    // //     vec3 L = normalize( spot_lights[i].pos - P_w);
+    // //     vec3 H = normalize(V + L);
+    // //     float distance    = length(spot_lights[i].pos  - P_w);
+    // //     float attenuation = 1.0 / (distance * distance);
+    // //     vec3 radiance     = spot_lights[i].color  * attenuation;        
+        
+    // //     // cook-torrance brdf
+    // //     float NDF = DistributionGGX(N, H, roughness);        
+    // //     float G   = GeometrySmith(N, V, L, roughness);      
+    // //     vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+        
+    // //     vec3 kS = F;
+    // //     vec3 kD = vec3(1.0) - kS;
+    // //     kD *= 1.0 - metalness;	  
+        
+    // //     vec3 numerator    = NDF * G * F;
+    // //     float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+    // //     vec3 specular     = numerator / max(denominator, 0.001);  
+            
+    // //     // add to outgoing radiance Lo
+    // //     float NdotL = max(dot(N, L), 0.0);                
+    // //     Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
+    // // }   
+
+
+    // //dbug
+    // // reflectance equation
+    // vec3 Lo = vec3(0.0);
+    // // for(int i = 0; i < nr_active_spot_lights; ++i) {
+    //     // calculate per-light radiance
+    //     vec3 L = normalize( spot_lights[0].pos - P_w);
+    //     // vec3 L = normalize( P_w- spot_lights[0].pos );
+    //     vec3 H = normalize(V + L);
+    //     // float distance    = length( spot_lights[0].pos  - P_w);
+    //     // float attenuation = 1.0 / (distance * distance);
+    //     // vec3 radiance     = spot_lights[0].color  * attenuation;        
+
+    //     // out_color=vec4(attenuation);
+    //     // out_color=vec4(radiance, 1.0);
+        
+    //     // cook-torrance brdf
+    //     // float NDF = DistributionGGX(N, H, roughness);        
+    //     // float G   = GeometrySmith(N, V, L, roughness);      
+    //     vec3 F    = fresnelSchlick( dot(N, V), F0);       
+        
+    //     vec3 kS = F;
+    //     // vec3 kD = vec3(1.0) - kS;
+    //     // kD *= 1.0 - metalness;	  
+
+    //     // out_color=vec4( (H+1.0)*0.5, 1.0);
+    //     // out_color=vec4((kS+1.0)*0.5, 1.0);
+        
+    //     // vec3 numerator    = NDF * G * F;
+    //     // float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+    //     // vec3 specular     = numerator / max(denominator, 0.001);  
+            
+    //     // add to outgoing radiance Lo
+    //     // float NdotL = max(dot(N, L), 0.0);                
+    //     // Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
+
+    //     // out_color=vec4(NdotL);
+    //     // out_color=vec4(radiance, 1.0);
+    //     out_color=vec4(kS, 1.0);
+    //     // out_color=vec4(L, 1.0);
+
+    //     // float spec = pow(max(dot(N, H), 0.0), 100);
+    //     // out_color=vec4(spec);
+    // // }   
+
+  
+    // // vec3 ambient = vec3(0.03) * albedo * ao;
+    // // vec3 color = ambient + Lo;
+	
+    // // color = color / (color + vec3(1.0));
+    // // color = pow(color, vec3(1.0/2.2)); 
+
+    // // out_color=vec4(color, 1.0);
+
+
+    // //debug 
+    // // out_color = vec4((N+1.0)*0.5, 1.0);
+    // // out_color= vec4(P_w, 1.0);
+
+
+
+
+
+
+
+
+    //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
     if(depth==1.0){
         //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
@@ -235,89 +494,70 @@ void main(){
             discard;
         }
     }
-   
+    vec3 N= decode_normal(texture(normal_tex, uv_in).xy ); 
+    vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
+    vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
+    vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
+    vec3 albedo=texture(diffuse_tex, uv_in).xyz;
+    float metalness=texture(metalness_and_roughness_tex, uv_in).x;
+    float roughness=texture(metalness_and_roughness_tex, uv_in).y;
+    float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
 
-    pos_cam_coords.xyz= position_cam_coords_from_depth(depth); 
+    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+    vec3 F0 = vec3(0.04); 
+    F0 = mix(F0, albedo, metalness);
 
-    //show
-    // out_color=vec4(pos_cam_coords.xy, 0.0, 1.0);
-    // out_color=vec4(pos_cam_coords.xyz, 1.0);
-    // out_color=vec4(view_ray_in, 1.0);
-    // out_color=vec4(normalize(view_ray_in).xy, 0.0, 1.0);
-    // out_color=vec4(vec3(linearDepth), 1.0);
-    // out_color=vec4(vec3(depth), 1.0);
-    // out_color=vec4(vec3(linear_depth(depth))*0.01, 1.0);
-    // out_color=vec4(vec3(1.0, 0.0, 0.0), 1.0);
-    // return;
+    // reflectance equation
+    vec3 Lo = vec3(0.0);
+    for(int i = 0; i < nr_active_spot_lights; ++i) 
+    {
+        // calculate per-light radiance
+        vec3 L = normalize(spot_lights[i].pos - P_w);
+        vec3 H = normalize(V + L);
+        float distance = length(spot_lights[i].pos - P_w);
+        float attenuation = 1.0 / (distance * distance);
+        vec3 radiance = spot_lights[i].color * attenuation;
 
-
-
-    vec4 diffuse_color=texture(diffuse_tex, uv_in);
-    vec2 normal_gbuf=texture(normal_cam_coords_tex, uv_in).xy; //recover normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-    vec4 normal_cam_coords = vec4( decode_normal(normal_gbuf), 1.0);
-    
-    
-
-    float alpha=diffuse_color.w; //an alpha between 0 and 1 will leave the color unchanged, but if it's above 1 it means we have to normalize because we have contributions from more than one pixel, for example when splatting the alpha is interpreted as a confidence
-
-    vec3 shade=vec3(0);
-
-    if(normal_cam_coords.xyz!=vec3(0)){ //if we have normals we apply shading othersiw we don;t 
-     
-        normal_cam_coords.xyz/=alpha;
-        pos_cam_coords.xyz/=alpha;
-        diffuse_color.xyz/=alpha;
-        normal_cam_coords.xyz=normalize(normal_cam_coords.xyz);
-
-
-        for(int i=0; i<nr_active_spot_lights; i++){
-            shade+=apply_spot_light(spot_lights[i], diffuse_color.xyz, pos_cam_coords.xyz, normal_cam_coords.xyz, specular_color.xyz, shininess);
-        }
-    }else{
-        shade= diffuse_color.xyz;
-    }
-
-    
-
-    //get ao attempt 2
-    float ao_term;
-    if(enable_ssao){
-        ao_term=texture(ao_tex, uv_in).x;
-    }else {
-        ao_term=1.0;
-    }
-
- 
-
-    vec4 color=vec4(shade*ao_term,1.0)+ vec4(ambient_color*ambient_color_power, 1.0);
-    vec4 color_without_light=vec4(diffuse_color.xyz*ao_term,1.0) + vec4(ambient_color*ambient_color_power, 1.0);
-    color=mix(color_without_light, color, light_factor); //remove the color and leave only the diffuse and ao if necesarry
-    color=mix(diffuse_color, color, shading_factor); //remove even the ao term and leaves only diffuse
-
-    //if the diffuse_color is black we output the ao term 
-    if(alpha==0.0){
-        color=vec4(vec3(1)*ao_term,1.0);
-    }
-
-
-    //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
-    if(enable_edl_lighting){
-        // float depth = texture(log_depth_tex, uv_in).x;
-        depth=linear_depth(depth);
-        depth=log2(depth);
-        if(depth!=1.0){ //if we have a depth of 1.0 it means for this pixels we haven't stored anything. Storing something in this texture is only done for points
-            depth = (depth == 1.0) ? 0.0 : depth;
-            float res = response(depth);
-            // float edl_strength=16.0;
-            float shade = exp(-res * 300.0 * edl_strength);
-            color = vec4(diffuse_color.xyz * shade, 1.0);
-        }
+        // Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);   
+        float G   = GeometrySmith(N, V, L, roughness);      
+        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+           
+        vec3 nominator    = NDF * G * F; 
+        float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+        vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
         
-    }
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metalness;	  
 
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);        
 
+        // add to outgoing radiance Lo
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-    out_color=color;
+    }   
+    
+    // ambient lighting (note that the next IBL tutorial will replace 
+    // this ambient lighting with environment lighting).
+    vec3 ambient = vec3(0.03) * albedo * ao;
 
+    vec3 color = ambient + Lo;
+
+    // HDR tonemapping
+    color = color / (color + vec3(1.0));
+    // gamma correct
+    color = pow(color, vec3(1.0/2.2)); 
+
+    out_color = vec4(color, 1.0);
    
 }

@@ -534,9 +534,10 @@ void Gui::update() {
     }
     if(m_show_debug_textures){
         // show_gl_texture(m_view->m_gbuffer.tex_with_name("position_gtex").get_tex_id(), "position_gtex", true);
-        show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_and_weight_gtex").get_tex_id(), "diffuse_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").get_tex_id(), "diffuse_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").get_tex_id(), "normal_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").get_tex_id(), "metalness_and_roughness_gtex", true);
         // show_gl_texture(m_view->m_gbuffer.tex_with_name("ao_gtex").get_tex_id(), "ao_gtex", true);
         // show_gl_texture(m_view->m_gbuffer.tex_with_name("log_depth_gtex").get_tex_id(), "log_depth_gtex", true);
         // show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);

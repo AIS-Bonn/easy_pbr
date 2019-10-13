@@ -3,13 +3,10 @@
 //in
 layout(location = 0) in vec3 normal_in;
 layout(location = 1) in vec3 position_cam_coords_in; //position of the vertex in the camera coordinate system (so the world coordinate is multipled by tf_cam_world or also known as the view matrix)
-layout(location = 2) in vec3 normal_cam_coords_in; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
+// layout(location = 2) in vec3 normal_cam_coords_in; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
 layout(location = 3) in vec3 color_per_vertex_in;
 layout(location = 4) in vec2 uv_in;
 layout(location = 5) in vec3 position_world_in;
-//only for solid rendering where there is only one value for metaless and roughness instead of a map
-in float metalness_in;
-in float roughness_in;
 
 
 
@@ -24,6 +21,9 @@ layout(location = 4) out vec2 metalness_and_roughness_out;
 // //uniform
 uniform int color_type;
 uniform sampler2D tex; //the rgb tex that is used for coloring
+//only for solid rendering where there is only one value for metaless and roughness instead of a map
+uniform float metalness;
+uniform float roughness;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 vec2 encode_normal(vec3 normal){
@@ -76,13 +76,14 @@ void main(){
         diffuse_out = color_per_vertex_in; //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
-    metalness_and_roughness_out=vec2(metalness_in, roughness_in);
+    metalness_and_roughness_out=vec2(metalness, roughness);
+    // metalness_and_roughness_out=vec2(0.5, 0.5);
 
     // normal_out = vec4(normal_cam_coords_in, 1.0);
 
     //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
-    normal_out=encode_normal(normal_cam_coords_in);
+    normal_out=encode_normal(normal_in);
 
     // position_out = vec4(position_cam_coords_in, 1.0);
 }

@@ -1331,7 +1331,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     
      //shader setup
     GL_C( m_compose_final_quad_shader.use() );
-    m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_cam_coords_tex");
+    m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"),"metalness_and_roughness_tex");
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
@@ -1346,6 +1346,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     }
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
+    m_compose_final_quad_shader.uniform_v3_float(m_camera->eye(), "eye_pos");
     m_compose_final_quad_shader.uniform_4x4(V, "V");
     m_compose_final_quad_shader.uniform_float(m_camera->m_near, "z_near");
     m_compose_final_quad_shader.uniform_float(m_camera->m_far, "z_far");
