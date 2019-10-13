@@ -118,6 +118,7 @@ private:
 
 
     int m_selected_mesh_idx; //index of the selected mesh from the scene, we will use this index to modify properties of the selected mesh
+    int m_selected_spot_light_idx; 
     int m_mesh_tex_idx;
     bool m_show_debug_textures;
     ImGuizmo::OPERATION m_guizmo_operation=ImGuizmo::ROTATE;

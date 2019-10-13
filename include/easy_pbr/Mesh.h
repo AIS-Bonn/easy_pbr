@@ -47,8 +47,8 @@ struct VisOptions{
     Eigen::Vector3f m_line_color = Eigen::Vector3f(1.0, 0.0, 0.0);   //used for lines and wireframes
     Eigen::Vector3f m_solid_color = Eigen::Vector3f(1.0, 206.0/255.0, 143.0/255.0);
     Eigen::Vector3f m_label_color = Eigen::Vector3f(1.0, 160.0/255.0, 0.0);
-    float m_metalness=0.5;
-    float m_roughness=0.5;
+    float m_metalness=0.0;
+    float m_roughness=0.2;
 
     //we define some functions for settings colors both for convenicence and easily calling then from python with pybind
     void set_color_solid(){

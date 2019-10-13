@@ -512,12 +512,35 @@ void main(){
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < nr_active_spot_lights; ++i) 
     {
+
+        
+        //check if the current fragment in in the fov of the light by pojecting from world back into the light
+        vec4 pos_light_space=spot_lights[i].VP * vec4(P_w, 1.0);
+        // perform perspective divide https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+        vec3 proj_in_light = pos_light_space.xyz / pos_light_space.w;
+        // transform to [0,1] range because the proj_in_light is now in normalized device coordinates [-1,1] and we want it in [0,1] https://community.khronos.org/t/shadow-mapping-bias-before-the-w-divide/63877/6
+        proj_in_light = proj_in_light * 0.5 + 0.5;
+        //check if we are outside the image or behind it
+        if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
+            continue;
+        }
+
+
+        //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+        float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
+        float current_depth = proj_in_light.z;  
+        float epsilon = 0.000001;
+        if (closest_depth + epsilon < current_depth){
+            continue;
+        }
+        
+
         // calculate per-light radiance
         vec3 L = normalize(spot_lights[i].pos - P_w);
         vec3 H = normalize(V + L);
         float distance = length(spot_lights[i].pos - P_w);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = spot_lights[i].color * attenuation;
+        vec3 radiance = spot_lights[i].color *spot_lights[i].power * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   

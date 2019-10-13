@@ -56,6 +56,7 @@ Gui::Gui( const std::string config_file,
         m_show_profiler_window(true),
         m_show_player_window(true),
         m_selected_mesh_idx(0),
+        m_selected_spot_light_idx(0),
         m_mesh_tex_idx(0),
         m_show_debug_textures(false),
         m_guizmo_operation(ImGuizmo::TRANSLATE),
@@ -307,7 +308,7 @@ void Gui::update() {
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Camera")) {
         //select the camera, either the defalt camera or one of the point lights 
-        if(ImGui::ListBoxHeader("Enabled camera", m_view->m_spot_lights.size()+1, 6)){ //all the point lights + the default camera
+        if(ImGui::ListBoxHeader("Enabled camera", m_view->m_spot_lights.size()+1, 6)){ //all the spot
 
             //push the text for the default camera
             if(m_view->m_camera==m_view->m_default_camera){
@@ -345,6 +346,34 @@ void Gui::update() {
         // if ( ImGui::InputText("pose", m_camera_pose) ){
         //     m_view->m_camera->from_string(m_camera_pose);
         // }
+        
+    }
+
+
+    ImGui::Separator();
+    if (ImGui::CollapsingHeader("Lights")) {
+        if(ImGui::ListBoxHeader("Selected lights", m_view->m_spot_lights.size(), 6)){ //all the spot lights
+
+            //push light selection box for the spot lights
+            for (int i = 0; i < (int)m_view->m_spot_lights.size(); i++) {
+                if( m_selected_spot_light_idx == i ){
+                    ImGui::PushStyleColor(ImGuiCol_Header,ImVec4(0.3f, 0.3f, 0.3f, 1.00f));
+                }else{
+                    ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
+                }      
+                if(ImGui::Selectable( ("SpotLight_"+std::to_string(i)).c_str(), true ) ){ 
+                    m_selected_spot_light_idx=i;
+                }
+                ImGui::PopStyleColor(1);
+            }
+            ImGui::ListBoxFooter();
+
+            //modify properties
+            ImGui::SliderFloat("Power", &m_view->m_spot_lights[m_selected_spot_light_idx]->m_power, 100.0, 500.0);
+            ImGui::ColorEdit3("Color", m_view->m_spot_lights[m_selected_spot_light_idx]->m_color.data());
+
+
+        }
         
     }
 
