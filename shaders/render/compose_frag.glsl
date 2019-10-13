@@ -498,7 +498,7 @@ void main(){
     vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
     vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
     vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
-    vec3 albedo=texture(diffuse_tex, uv_in).xyz;
+    vec3 albedo=pow( texture(diffuse_tex, uv_in).xyz, vec3(2.2) );
     float metalness=texture(metalness_and_roughness_tex, uv_in).x;
     float roughness=texture(metalness_and_roughness_tex, uv_in).y;
     float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
