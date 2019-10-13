@@ -7,6 +7,10 @@ layout(location = 2) in vec3 normal_cam_coords_in; //normal of the vertex in the
 layout(location = 3) in vec3 color_per_vertex_in;
 layout(location = 4) in vec2 uv_in;
 layout(location = 5) in vec3 position_world_in;
+//only for solid rendering where there is only one value for metaless and roughness instead of a map
+in float metalness_in;
+in float roughness_in;
+
 
 
 //out
@@ -15,6 +19,7 @@ layout(location = 0) out vec4 position_out;
 layout(location = 1) out vec3 diffuse_out;
 // layout(location = 3) out vec4 normal_out;
 layout(location = 3) out vec2 normal_out;
+layout(location = 4) out vec2 metalness_and_roughness_out;
 
 // //uniform
 uniform int color_type;
@@ -70,6 +75,8 @@ void main(){
     }else{
         diffuse_out = color_per_vertex_in; //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
+
+    metalness_and_roughness_out=vec2(metalness_in, roughness_in);
 
     // normal_out = vec4(normal_cam_coords_in, 1.0);
 

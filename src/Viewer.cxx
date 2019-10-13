@@ -859,6 +859,8 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_4x4(MVP, "MVP");
     m_draw_mesh_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
+    m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
+    m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
     if(mesh->m_core->m_label_mngr){
         m_draw_mesh_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }

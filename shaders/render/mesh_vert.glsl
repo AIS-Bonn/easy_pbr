@@ -7,6 +7,8 @@ in vec3 color_per_vertex;
 in vec2 uv;
 in int label_pred_per_vertex;
 in int label_gt_per_vertex;
+in float metalness;
+in float roughness;
 
 //out
 layout(location = 0) out vec3 normal_out;
@@ -15,6 +17,8 @@ layout(location = 2) out vec3 normal_cam_coords_out; //normal of the vertex in t
 layout(location = 3) out vec3 color_per_vertex_out;
 layout(location = 4) out vec2 uv_out;
 layout(location = 5) out vec3 position_world_out; //useful for some hacks like when when we want to discard all fragments above a certain height
+
+
 
 //uniforms
 uniform mat4 M; //model matrix which moves from an object centric frame into the world frame. If the mesh is already in the world frame, then this will be an identity

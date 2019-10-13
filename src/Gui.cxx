@@ -214,6 +214,8 @@ void Gui::update() {
             ImGui::ColorEdit3("Point color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_point_color.data());
             ImGui::ColorEdit3("Line color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_line_color.data());
             ImGui::ColorEdit3("Label color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_label_color.data());
+            ImGui::SliderFloat("Metalness", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_metalness, 0.0f, 1.0f) ;
+            ImGui::SliderFloat("Roughness", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_roughness, 0.0f, 1.0f  );
 
 
             //min max in y for plotting height of point clouds

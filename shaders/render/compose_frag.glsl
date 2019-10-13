@@ -12,14 +12,11 @@ uniform sampler2D position_cam_coords_tex;
 uniform sampler2D diffuse_tex;
 uniform sampler2D metalness_and_roughness_tex;
 uniform sampler2D log_depth_tex;
-// uniform sampler2D specular_tex;
-// uniform sampler2D shininess_tex;
 uniform sampler2D ao_tex;
 uniform sampler2D depth_tex;
 uniform sampler2D background_tex;
 
 //uniform
-// uniform mat4 P_inv;
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
 uniform mat4 V; //from projecting a light position from world into the main camera 
 uniform int color_type;
@@ -46,9 +43,7 @@ uniform vec2 neighbours[neighbour_count];
 
 //support for maximum 8 lights 
 struct SpotLight {
-//    vec4 position; // the position is in xyz,  where the w component will be 1 for omilights and 0 for directional lights as per  https://www.tomdalling.com/blog/modern-opengl/08-even-more-lighting-directional-lights-spotlights-multiple-lights/
     vec3 pos;
-    // vec3 lookat_cam_coords;
     vec3 color; //the color of the light
     float power; // how much strenght does the light have
     mat4 VP; //projects world coordinates into the light 
@@ -56,7 +51,6 @@ struct SpotLight {
 };
 uniform SpotLight spot_lights[8];
 // uniform Light omni_lights[8]; //At the moment I drop support for omni light at least partially until I have a class that can draw shadow maps into a omni light
-// uniform sampler2D spot_light_shadow_maps[8];
 uniform int nr_active_spot_lights;
 
 
@@ -88,13 +82,6 @@ vec3 decode_normal(vec2 normal){
     normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
     return normal_decoded;
 
-    // vec3 normal_decoded;
-    // // normal_decoded.z=length(normal.xy)*2.0-1.0;
-    // normal_decoded.z=length(normal.xy);
-    // normal_decoded.xy=normal.xy/normal_decoded.z;
-    // // normal_decoded.xy=normal.xy;
-    // // normal_decoded=normalize(normal_decoded);
-    // return normal_decoded;
 }
 //  //decode normals as done by david bernard in https://hub.jmonkeyengine.org/t/solved-strange-shining-problem/32962/4 and https://github.com/davidB/jme3_ext_deferred/blob/master/src/main/resources/ShaderLib/DeferredUtils.glsllib
 //  // return +/- 1
@@ -171,35 +158,6 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
 }
 
 
-
-// vec3 apply_light(Light light, vec3 diffuse_color, vec3 pos_cam_coords, vec3 normal_cam_coords, vec3 specular_color, float shininess){
-//     // return vec3(0);
-
-
-//     //weight the diffuse_color contrubtion by the dot product between light_vector and normal
-//     vec3 dir_to_light;
-//     if(light.position.w == 1.0 ){ //its an omni light
-//         vec3 vec_pos_to_light = vec3(light.position) - pos_cam_coords;
-//         dir_to_light = normalize (vec_pos_to_light);
-//     }else{ //its a directional lgith
-//         dir_to_light=normalize(vec3(light.position));
-//     }
-//     float dot_prod = dot (dir_to_light, normal_cam_coords );
-//     float clamped_dot_prod = max (dot_prod, 0.0);
-//     vec3  diffuse_lit = diffuse_color * clamped_dot_prod * light.color* light.power ;    // Diffuse intensity
-
-//     vec3 reflection_eye = reflect (-dir_to_light, normalize(normal_cam_coords)); //reflect the light *coming in* about the normal vector
-//     vec3 surface_to_viewer_eye = normalize (-pos_cam_coords);
-//     float dot_prod_specular = dot (reflection_eye, surface_to_viewer_eye);
-//     dot_prod_specular = float(abs(dot_prod)==dot_prod) * max (dot_prod_specular, 0.0);
-//     float specular_factor = pow (dot_prod_specular, shininess);
-//     vec3 specular_lit = specular_color * specular_factor * light.color * light.power;    // specular intensity
-
-//     return diffuse_lit+specular_lit;
-//     // return diffuse_lit;
-// }
-
-
 vec3 apply_spot_light(SpotLight light, vec3 diffuse_color, vec3 pos_cam_coords, vec3 normal_cam_coords, vec3 specular_color, float shininess){
     // return vec3(0);
 
@@ -261,26 +219,12 @@ vec3 apply_spot_light(SpotLight light, vec3 diffuse_color, vec3 pos_cam_coords, 
 }
 
 
-// float z_far=50000;
-// float z_near=0.01;
-
 
 
 void main(){
 
-    // vec4 pos_cam_coords=texture(position_cam_coords_tex, uv_in);
     vec4 pos_cam_coords;
-    // if(pos_cam_coords.w==0.0){
-    //     discard; // is a pixel not covered by a mesh so we discard it and therefore we will see the background color that was used in glclearColor
-    // }
 
-    //calculate the pos_cam_coords from the depth buffer like said at the bottom of this article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
-    float ProjectionA = z_far / (z_far - z_near);
-    float ProjectionB = (-z_far * z_near) / (z_far - z_near);
-    // Sample the depth and convert to linear view space Z (assume it gets sampled as
-    // a floating point value of the range [0,1])
-    // float depth = DepthTexture.Sample(PointSampler, texCoord).x;
-    // float linearDepth = ProjectionB / (depth - ProjectionA);
     float depth=texture(depth_tex, uv_in).x;
     if(depth==1.0){
         //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
@@ -291,16 +235,7 @@ void main(){
             discard;
         }
     }
-    // depth= depth*2.0 -1.0; //transform to depth to the NDC in the range [-1,1] https://stackoverflow.com/a/16597492
-    // depth=depth*2.0;
-    // float linearDepth = ProjectionB / (depth - ProjectionA);
-    // float linearDepth=linear_depth(depth);
-    // vec3 view_ray = vec3(pos_cam_coords.xy / pos_cam_coords.z, 1.0f);
-    // pos_cam_coords.xyz= view_ray* linearDepth;
-    // pos_cam_coords.xyz= normalize(view_ray_in) * linearDepth;
-    // pos_cam_coords.xyz= view_ray_in * linearDepth;
-    // pos_cam_coords.xyz= normalize(view_ray_in) * depth;
-    // pos_cam_coords.xyz= view_ray_in * depth;
+   
 
     pos_cam_coords.xyz= position_cam_coords_from_depth(depth); 
 
@@ -317,11 +252,8 @@ void main(){
 
 
 
-    /////START DEBUG HERE
-
     vec4 diffuse_color=texture(diffuse_tex, uv_in);
-    //recover normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-    vec2 normal_gbuf=texture(normal_cam_coords_tex, uv_in).xy;
+    vec2 normal_gbuf=texture(normal_cam_coords_tex, uv_in).xy; //recover normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     vec4 normal_cam_coords = vec4( decode_normal(normal_gbuf), 1.0);
     
     
@@ -339,7 +271,6 @@ void main(){
 
 
         for(int i=0; i<nr_active_spot_lights; i++){
-            // if(i==0)
             shade+=apply_spot_light(spot_lights[i], diffuse_color.xyz, pos_cam_coords.xyz, normal_cam_coords.xyz, specular_color.xyz, shininess);
         }
     }else{
@@ -388,10 +319,5 @@ void main(){
 
     out_color=color;
 
-
-    //debug 
-    // vec3 diff=position_cam_coords_from_depth(depth) - pos_cam_coords.xyz;
-    // float dot_val=dot(diff, diff); 
-    // out_color=vec4(vec3(dot_val),1.0);
    
 }
