@@ -468,8 +468,7 @@ void Viewer::draw(const GLuint fbo_id){
 
     TIME_START("gbuffer");
     m_gbuffer.bind_for_draw();
-    m_gbuffer.clear();
-    // m_gbuffer.tex_with_name("log_depth_gtex").set_constant(1.0);
+    m_gbuffer.clear_depth();
     TIME_END("gbuffer");
 
     TIME_START("geom_pass");
@@ -1503,6 +1502,33 @@ void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path)
 }
 void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex){
 
+
+    //create projection and view matrices for the 6 faces we want to render;
+    Camera cam;
+    cam.m_fov=90;
+    cam.m_near=0.1;
+    cam.m_far=10.0;
+    cam.set_eye(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+    Eigen::Vector2f viewport_size;
+    viewport_size<<512, 512;
+
+    Eigen::Matrix4f P=cam.proj_matrix(viewport_size);
+    // std::vector<>
+
+
+    // std::vector<Eigen::Matrix4f> view_matrices;
+
+
+    // glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    // glm::mat4 captureViews[] =
+    // {
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    // };
 }
 
 

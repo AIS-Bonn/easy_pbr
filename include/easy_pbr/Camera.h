@@ -17,6 +17,7 @@ public:
 
     void set_view_matrix();
     void set_eye(Eigen::Vector3f);
+    void set_lookat(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up);
     Eigen::Matrix4f view_matrix(); //gets the transform from world coordinates to the camera frame, so tf_cam_world which maps points from the world into the frame of the camera
     Eigen::Affine3f tf_world_cam_affine(); //transform the from the camera frame into the world frame
     Eigen::Affine3f tf_cam_world_affine(); //transforms the scene from the world coordinates and puts it infront of the camera, this is the view_matrix but expressed as an affine (actually rigid) matrix
@@ -63,6 +64,7 @@ private:
     bool m_prev_mouse_pos_valid;
 
 
+    Eigen::Matrix4f compute_view_matrix(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up); //computes a view matrix that places the camera at eye, looking at a the point "center" and orientated with the up vector which is usually (0,1,0)
     Eigen::Matrix4f compute_projection_matrix(const float fov, const float aspect, const float znear, const float zfar);
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 

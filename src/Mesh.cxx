@@ -743,17 +743,24 @@ void Mesh::create_full_screen_quad(){
 
 }
 
-void Mesh::make_box(){
-    V.resize(4,3);
-    V.row(0) << -1.0, -1.0, 0.0;
-    V.row(1) << 1.0, -1.0, 0.0;
-    V.row(2) << 1.0, 1.0, 0.0;
-    V.row(3) << -1.0, 1.0, 0.0;
+void Mesh::make_box_ndc(){
+    //makes a 1x1x1 vox in NDC. which has Z going into the screen
+    V.resize(8,3);
+    //behind face (which has negative Z as the camera is now looking in the positive Z direction and this will be the face that is behind the camera)
+    V.row(0) << -1.0, -1.0, -1.0; //bottom-left
+    V.row(1) << 1.0, -1.0, -1.0; //bottom-right
+    V.row(2) << 1.0, 1.0, -1.0; //top-right
+    V.row(3) << -1.0, 1.0, -1.0; //top-left
+    //front face
+    V.row(4) << -1.0, -1.0, 1.0; //bottom-left
+    V.row(5) << 1.0, -1.0, 1.0; //bottom-right
+    V.row(6) << 1.0, 1.0, 1.0; //top-right
+    V.row(7) << -1.0, 1.0, 1.0; //top-left
 
-
-    F.resize(2,3);
-    F.row(0) << 0,1,2;
-    F.row(1) << 0,2,3;
+    //faces (2 triangles per faces, with 6 faces which makes 12 triangles)
+    // F.resize(12,3);
+    // F.row(0) << 0,1,2;
+    // F.row(1) << 0,2,3;
 
 }
 

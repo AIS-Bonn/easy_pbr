@@ -58,6 +58,35 @@ Eigen::Vector3f Camera::lookat(){
     return tf_world_cam_affine() * (Eigen::Vector3f(0,0,-1)*m_lookat_dist);
 }
 
+// https://github.com/OpenGP/htrack/blob/master/util/eigen_opengl_helpers.h
+void Camera::set_lookat(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up){
+    Eigen::Matrix4f view=compute_view_matrix(eye, center, up);
+
+    //set the m_lookat_dist, m_rotation_conj and m_translation so that we can get the same view matrix by calling view_matrix()
+    m_translation=eye;
+
+
+// Vector3 f = (center - eye).normalized();
+//   Vector3 u = up.normalized();
+//   Vector3 s = f.cross(u).normalized();
+//   u = s.cross(f);
+//   Matrix4 mat = Matrix4::Zero();
+//   mat(0,0) = s.x();
+//   mat(0,1) = s.y();
+//   mat(0,2) = s.z();
+//   mat(0,3) = -s.dot(eye);
+//   mat(1,0) = u.x();
+//   mat(1,1) = u.y();
+//   mat(1,2) = u.z();
+//   mat(1,3) = -u.dot(eye);
+//   mat(2,0) = -f.x();
+//   mat(2,1) = -f.y();
+//   mat(2,2) = -f.z();
+//   mat(2,3) = f.dot(eye);
+//   mat.row(3) << 0,0,0,1; 
+// return mat;
+}
+
 void Camera::dolly(const Eigen::Vector3f & dv){
     m_translation += dv;
 }
@@ -108,6 +137,29 @@ Eigen::Matrix4f Camera::compute_projection_matrix(const float fov, const float a
     P(3,2)=-1.0;
 
     return P;
+}
+
+// https://github.com/OpenGP/htrack/blob/master/util/eigen_opengl_helpers.h
+Eigen::Matrix4f Camera::compute_view_matrix(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up){
+    Eigen::Vector3f f = (center - eye).normalized();
+    Eigen::Vector3f u = up.normalized();
+    Eigen::Vector3f s = f.cross(u).normalized();
+    u = s.cross(f);
+    Eigen::Matrix4f mat = Eigen::Matrix4f::Zero();
+    mat(0,0) = s.x();
+    mat(0,1) = s.y();
+    mat(0,2) = s.z();
+    mat(0,3) = -s.dot(eye);
+    mat(1,0) = u.x();
+    mat(1,1) = u.y();
+    mat(1,2) = u.z();
+    mat(1,3) = -u.dot(eye);
+    mat(2,0) = -f.x();
+    mat(2,1) = -f.y();
+    mat(2,2) = -f.z();
+    mat(2,3) = f.dot(eye);
+    mat.row(3) << 0,0,0,1; 
+    return mat;
 }
 
 void Camera::mouse_pressed(const MouseButton mb, const int modifier){
