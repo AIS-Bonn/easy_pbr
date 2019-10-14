@@ -68,12 +68,12 @@ Viewer::Viewer(const std::string config_file):
     m_sigma_depth(0.002),
     m_ambient_color( 71.0/255.0, 70.0/255.0, 66.3/255.0  ),
     m_ambient_color_power(0.1),
-    m_specular_color(77.0/255.0, 77.0/255.0, 77.0/255.0 ),
-    m_shininess(14.5),
+    // m_specular_color(77.0/255.0, 77.0/255.0, 77.0/255.0 ),
+    // m_shininess(14.5),
     m_enable_culling(false),
     m_enable_ssao(true),
-    m_shading_factor(1.0),
-    m_light_factor(1.0),
+    // m_shading_factor(1.0),
+    // m_light_factor(1.0),
     m_surfel_blend_dist(-50),
     m_surfel_blend_dist2(0),
     m_first_draw(true)
@@ -114,8 +114,8 @@ void Viewer::init_params(const std::string config_file){
     m_ao_power = vis_config["ao_power"];
     m_sigma_spacial = vis_config["ao_blur_sigma_spacial"];
     m_sigma_depth = vis_config["ao_blur_sigma_depth"];
-    m_shading_factor = vis_config["shading_factor"];
-    m_light_factor = vis_config["light_factor"];
+    // m_shading_factor = vis_config["shading_factor"];
+    // m_light_factor = vis_config["light_factor"];
     m_enable_edl_lighting= vis_config["enable_edl_lighting"];
     m_edl_strength = vis_config["edl_strength"];
     m_enable_surfel_splatting = vis_config["enable_surfel_splatting"];
@@ -1352,16 +1352,15 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
     m_compose_final_quad_shader.uniform_v3_float(m_camera->eye(), "eye_pos");
-    m_compose_final_quad_shader.uniform_4x4(V, "V");
     m_compose_final_quad_shader.uniform_float(m_camera->m_near, "z_near");
     m_compose_final_quad_shader.uniform_float(m_camera->m_far, "z_far");
     m_compose_final_quad_shader.uniform_v3_float(m_ambient_color , "ambient_color");
     m_compose_final_quad_shader.uniform_float(m_ambient_color_power , "ambient_color_power");
-    m_compose_final_quad_shader.uniform_v3_float(m_specular_color , "specular_color");
-    m_compose_final_quad_shader.uniform_float(m_shininess , "shininess");
+    // m_compose_final_quad_shader.uniform_v3_float(m_specular_color , "specular_color");
+    // m_compose_final_quad_shader.uniform_float(m_shininess , "shininess");
     m_compose_final_quad_shader.uniform_bool(m_enable_ssao , "enable_ssao");
-    m_compose_final_quad_shader.uniform_float(m_shading_factor , "shading_factor");
-    m_compose_final_quad_shader.uniform_float(m_light_factor , "light_factor");
+    // m_compose_final_quad_shader.uniform_float(m_shading_factor , "shading_factor");
+    // m_compose_final_quad_shader.uniform_float(m_light_factor , "light_factor");
     m_compose_final_quad_shader.uniform_v2_float(m_viewport_size , "viewport_size"); //for eye dome lighing 
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
@@ -1564,7 +1563,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
                         mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
                         m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        m_light_factor=0.0; 
+                        // m_light_factor=0.0; 
                 }
                 break;
             }
@@ -1573,7 +1572,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
                         mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
                         m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        m_light_factor=0.0; 
+                        // m_light_factor=0.0; 
                 }
                 break;
             }
@@ -1582,7 +1581,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
                         mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
                         m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        m_light_factor=0.0; 
+                        // m_light_factor=0.0; 
                 }
                 break;
             }

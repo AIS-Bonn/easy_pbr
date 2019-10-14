@@ -186,11 +186,11 @@ void Gui::update() {
                     if (ImGui::Selectable( MeshColorType::_names()[n], is_selected)){
                         m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_color_type= MeshColorType::_values()[n]; //select this one because we clicked on it
                         //if we selected texture, set the light factor to 0
-                        if(MeshColorType::_values()[n]==+MeshColorType::Texture){
-                            m_view->m_light_factor=0.0;
-                        }else{
-                            m_view->m_light_factor=1.0;
-                        }
+                        // if(MeshColorType::_values()[n]==+MeshColorType::Texture){
+                            // m_view->m_light_factor=0.0;
+                        // }else{
+                            // m_view->m_light_factor=1.0;
+                        // }
                     }
                     if (is_selected)
                         ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
@@ -234,10 +234,9 @@ void Gui::update() {
         ImGui::ColorEdit3("BG color",m_view->m_background_color.data());
         ImGui::ColorEdit3("Ambient color",m_view->m_ambient_color.data());
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
-        ImGui::ColorEdit3("Specular color",m_view->m_specular_color.data());
-        ImGui::SliderFloat("Shininess", &m_view->m_shininess, 0.0f, 50.0f);
-        ImGui::SliderFloat("Shading factor", &m_view->m_shading_factor, 0.0f, 1.0f);
-        ImGui::SliderFloat("Light factor", &m_view->m_light_factor, 0.0f, 1.0f);
+        // ImGui::ColorEdit3("Specular color",m_view->m_specular_color.data());
+        // ImGui::SliderFloat("Shading factor", &m_view->m_shading_factor, 0.0f, 1.0f);
+        // ImGui::SliderFloat("Light factor", &m_view->m_light_factor, 0.0f, 1.0f);
         ImGui::SliderFloat("Surfel blend dist", &m_view->m_surfel_blend_dist, -50.0f, 50.0f);
         ImGui::SliderFloat("Surfel blend dist2", &m_view->m_surfel_blend_dist2, -50.0f, 50.0f);
 

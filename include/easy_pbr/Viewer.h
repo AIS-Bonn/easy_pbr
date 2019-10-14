@@ -142,12 +142,10 @@ public:
     float m_sigma_depth;    
     Eigen::Vector3f m_ambient_color;   
     float m_ambient_color_power;
-    Eigen::Vector3f m_specular_color;
-    float m_shininess;
     bool m_enable_culling;
     bool m_enable_ssao;
-    float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
-    float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
+    // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
+    // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
     float m_surfel_blend_dist; // how much distant to the surfels need to be so that they pass the depth test and they get blended together 
     float m_surfel_blend_dist2; // how much distant to the surfels need to be so that they pass the depth test and they get blended together 
     bool m_enable_edl_lighting;
