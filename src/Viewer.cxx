@@ -121,6 +121,8 @@ void Viewer::init_params(const std::string config_file){
     m_enable_surfel_splatting = vis_config["enable_surfel_splatting"];
     m_use_background_img = vis_config["use_background_img"];
     m_background_img_path = (std::string)vis_config["background_img_path"];
+    m_use_environment_map = vis_config["use_environment_map"];
+    m_environment_map_path = (std::string) vis_config["environment_map_path"];
 
     m_subsample_factor = vis_config["subsample_factor"];
     m_viewport_size/=m_subsample_factor;
@@ -319,11 +321,15 @@ void Viewer::init_opengl(){
 
     //add the background image 
     if(m_use_background_img){
-        cv::Mat img=cv::imread(m_background_img_path);
-        CHECK(img.data) << "Could not background image " << m_background_img_path;
-        cv::Mat img_flipped;
-        cv::flip(img, img_flipped, 0); //flip around the horizontal axis
-        m_background_tex.upload_from_cv_mat(img_flipped);
+        read_background_img(m_background_tex, m_background_img_path);
+    }
+
+
+    //initialize a cubemap 
+    if(m_use_environment_map){
+        read_background_img(m_background_tex, m_environment_map_path);
+        //if it's equirectangular we convert it to cubemap because it is faster to sample
+        equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
     }
 
 }
@@ -1486,7 +1492,18 @@ void Viewer::create_random_samples_hemisphere(){
         m_random_samples.row(i) *= scale;
     }
 }
-    
+
+void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path){
+    cv::Mat img=cv::imread(img_path);
+    CHECK(img.data) << "Could not open background image " << img_path;
+    cv::Mat img_flipped;
+    cv::flip(img, img_flipped, 0); //flip around the horizontal axis
+    tex.upload_from_cv_mat(img_flipped);
+
+}
+void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex){
+
+}
 
 
 void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier){

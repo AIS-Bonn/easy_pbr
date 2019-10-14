@@ -14,6 +14,7 @@
 
 #include "Shader.h"
 #include "GBuffer.h"
+#include "CubeMap.h"
 #include "ColorMngr.h"
 // #include "surfel_renderer/Camera.h"
 
@@ -126,6 +127,7 @@ public:
     gl::Texture2D m_rvec_tex;
     gl::Texture2D m_depth_linear_tex;
     gl::Texture2D m_background_tex; //in the case we want an image as the background
+    gl::CubeMap m_environment_cubemap_tex; //used for image-based ligthing
     Eigen::MatrixXf m_random_samples;
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
 
@@ -153,6 +155,8 @@ public:
     bool m_enable_surfel_splatting;
     bool m_use_background_img;
     std::string m_background_img_path;
+    bool m_use_environment_map;
+    std::string m_environment_map_path;
 
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 
@@ -164,6 +168,8 @@ private:
 
     bool m_first_draw;
 
+    void read_background_img(gl::Texture2D& tex, const std::string img_path);
+    void equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex);
 
 
 
