@@ -412,7 +412,10 @@ void Viewer::draw(const GLuint fbo_id){
 
         std::cout << " get centroid " << centroid << std::endl;
     
-        m_camera->set_eye(centroid);
+        // m_camera->set_lookat(centroid);
+        // m_camera->set_eye(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
+        // LOG(FATAL) << "Camera is setup with a direction of " << m_camera->direction();
+        m_camera->set_position(centroid);
         m_camera->push_away_by_dist(3.0*scale);
 
         m_first_draw=false;
@@ -1311,6 +1314,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_compose_final_shader.dispatch(m_gbuffer.width(), m_gbuffer.height(), 16 , 16);
     // TIME_END("compose");
 
+    VLOG(1) << "eye is " << m_camera->position();
+
 
     //attempt 2 to make it a bit faster 
     TIME_START("compose");
@@ -1351,13 +1356,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     }
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
-    m_compose_final_quad_shader.uniform_v3_float(m_camera->eye(), "eye_pos");
+    m_compose_final_quad_shader.uniform_v3_float(m_camera->position(), "eye_pos");
     m_compose_final_quad_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_compose_final_quad_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_compose_final_quad_shader.uniform_v3_float(m_ambient_color , "ambient_color");
     m_compose_final_quad_shader.uniform_float(m_ambient_color_power , "ambient_color_power");
-    // m_compose_final_quad_shader.uniform_v3_float(m_specular_color , "specular_color");
-    // m_compose_final_quad_shader.uniform_float(m_shininess , "shininess");
     m_compose_final_quad_shader.uniform_bool(m_enable_ssao , "enable_ssao");
     // m_compose_final_quad_shader.uniform_float(m_shading_factor , "shading_factor");
     // m_compose_final_quad_shader.uniform_float(m_light_factor , "light_factor");
@@ -1385,7 +1388,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         //position in cam coords
         std::string uniform_pos_name =  uniform_name +"["+std::to_string(i)+"]"+".pos";
         GLint uniform_pos_loc=m_compose_final_quad_shader.get_uniform_location(uniform_pos_name);
-        glUniform3fv(uniform_pos_loc, 1, m_spot_lights[i]->eye().data()); 
+        glUniform3fv(uniform_pos_loc, 1, m_spot_lights[i]->position().data()); 
 
         //lookat in cam coords
         // std::string uniform_lookat_name =  uniform_name +"["+std::to_string(i)+"]"+".lookat";
@@ -1507,7 +1510,7 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     cam.m_fov=90;
     cam.m_near=0.1;
     cam.m_far=10.0;
-    cam.set_eye(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+    cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
     Eigen::Vector2f viewport_size;
     viewport_size<<512, 512;
 
