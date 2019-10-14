@@ -1352,8 +1352,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
     m_compose_final_quad_shader.uniform_v3_float(m_camera->eye(), "eye_pos");
-    m_compose_final_quad_shader.uniform_float(m_camera->m_near, "z_near");
-    m_compose_final_quad_shader.uniform_float(m_camera->m_far, "z_far");
+    m_compose_final_quad_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+    m_compose_final_quad_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_compose_final_quad_shader.uniform_v3_float(m_ambient_color , "ambient_color");
     m_compose_final_quad_shader.uniform_float(m_ambient_color_power , "ambient_color_power");
     // m_compose_final_quad_shader.uniform_v3_float(m_specular_color , "specular_color");
