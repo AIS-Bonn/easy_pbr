@@ -21,18 +21,17 @@ Camera::Camera():
     m_fov(45.0),
     m_near(0.01),
     m_far(5000),
-    // m_lookat_dist(1),
-    // m_rotation_conj(1,0,0,0),
-    // m_translation(0,0,5),
+    m_lookat_dist(1),
     m_is_mouse_down(false),
     m_prev_mouse_pos_valid(false),
     m_is_initialized(false)
 {
 
-    m_position<< 0,0,1;
+    m_model_matrix.setIdentity();
+    // m_position<< 0,0,1;
     // m_orientation.setIdentity();
-    m_up=Eigen::Vector3f::UnitY();
-    m_lookat.setZero();
+    // m_up=Eigen::Vector3f::UnitY();
+    // m_lookat.setZero();
 
 }
 
@@ -40,15 +39,15 @@ Camera::Camera():
 Eigen::Matrix4f Camera::model_matrix(){
     // return m_model_matrix.matrix();
 
-    Eigen::Matrix3f cam_axes;
+    // Eigen::Matrix3f cam_axes=this->cam_axes();
 
-    Eigen::Vector3f direction= this->direction();
-    Eigen::Vector3f right= (up().cross(direction)).normalized(); //the order is imporant 
-    Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
+    // Eigen::Vector3f direction= this->direction();
+    // Eigen::Vector3f right= (up().cross(direction)).normalized(); //the order is imporant 
+    // Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
 
-    cam_axes.col(0)=right;
-    cam_axes.col(1)=up_recalc;
-    cam_axes.col(2)=-direction;
+    // cam_axes.col(0)=right;
+    // cam_axes.col(1)=up_recalc;
+    // cam_axes.col(2)=-direction;
 
     //reorthogonalize  https://stackoverflow.com/a/23086492
     // Eigen::AngleAxisf aa(cam_axes);    // RotationMatrix to AxisAngle
@@ -78,33 +77,47 @@ Eigen::Matrix4f Camera::model_matrix(){
     // VLOG(1) << "2quaternionAndBack \n" << Eigen::Quaternionf(cam_axes).toRotationMatrix();
 
     // m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
-    Eigen::Affine3f model_matrix;
-    model_matrix.linear()=cam_axes;
-    model_matrix.translation()=m_position;
+    // Eigen::Affine3f model_matrix;
+    // model_matrix.linear()=m_orientation.toRotationMatrix();
+    // model_matrix.translation()=m_position;
 
-    return model_matrix.matrix();
+    return m_model_matrix.matrix();
 }
 Eigen::Matrix4f Camera::view_matrix(){
     return model_matrix().inverse().matrix();
 }
 Eigen::Vector3f Camera::position(){
-    // return m_model_matrix.translation();
-    return m_position;
+    return m_model_matrix.translation();
+    // return m_position;
 }
 Eigen::Vector3f Camera::lookat(){
-    // return m_model_matrix * (Eigen::Vector3f(0,0,-1)*m_lookat_dist);
-    return m_lookat;
+    return Eigen::Affine3f(model_matrix()) * (Eigen::Vector3f(0,0,-1)*m_lookat_dist);
+    // return m_lookat;
 }
 Eigen::Vector3f Camera::up(){
-    return m_up;
+    // return m_up;
 }
 Eigen::Vector3f Camera::direction(){
-    Eigen::Vector3f direction= (lookat() - position()).normalized();
-    return direction;
+    // Eigen::Vector3f direction= (lookat() - position()).normalized();
+    // return direction;
+    return - Eigen::Affine3f(model_matrix()).linear().col(2).normalized();
 }
 float Camera::dist_to_lookat(){
     return (position()-lookat()).norm();
 }
+// Eigen::Matrix3f Camera::cam_axes(){
+//     Eigen::Matrix3f cam_axes;
+
+//     Eigen::Vector3f direction= this->direction();
+//     Eigen::Vector3f right= (up().cross(direction)).normalized(); //the order is imporant 
+//     Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
+
+//     cam_axes.col(0)=right;
+//     cam_axes.col(1)=up_recalc;
+//     cam_axes.col(2)=-direction;
+
+//     return cam_axes;
+// }
 
 
 
@@ -128,34 +141,38 @@ void Camera::set_lookat(const Eigen::Vector3f& lookat){
     // //update lookat dist 
     // m_lookat_dist= (lookat - position()).norm();
 
-    m_lookat=lookat;
+    // m_lookat=lookat;
+
+    m_lookat_dist=(position()-lookat).norm();
 
 }
 void Camera::set_position(const Eigen::Vector3f& pos){
-    // m_model_matrix.translation()=pos;
-    m_position=pos;
+    Eigen::Vector3f look=lookat();
+    m_model_matrix.translation()=pos;
+    set_lookat(look); //updates the distance at which we have the lookat because we now moved the position
+    // m_position=pos;
     // m_lookat_dist= (lookat() - pos).norm();
 }
-void Camera::set_up(const Eigen::Vector3f& up){
-    m_up=up;
+// void Camera::set_up(const Eigen::Vector3f& up){
+//     // m_up=up;
 
-    // Eigen::Matrix3f cam_axes;
+//     // Eigen::Matrix3f cam_axes;
 
-    // Eigen::Vector3f direction= this->direction();
-    // Eigen::Vector3f right= up.cross(direction); //the order is imporant 
-    // Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
+//     // Eigen::Vector3f direction= this->direction();
+//     // Eigen::Vector3f right= up.cross(direction); //the order is imporant 
+//     // Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
 
-    // cam_axes.col(0)=right;
-    // cam_axes.col(1)=up_recalc;
-    // cam_axes.col(2)=direction;
+//     // cam_axes.col(0)=right;
+//     // cam_axes.col(1)=up_recalc;
+//     // cam_axes.col(2)=direction;
 
-    // m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
-}
+//     // m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
+// }
 
 
 //convenicence
 void Camera::dolly(const Eigen::Vector3f & dv){
-    m_position += dv;
+    m_model_matrix.translation() += dv;
 }
 
 void Camera::push_away(const float s){
@@ -178,38 +195,53 @@ void Camera::orbit(const Eigen::Quaternionf& q_x, const Eigen::Quaternionf& q_y)
 //          m_rotation_conj.conjugate() * Eigen::Vector3f(0,0,1) * m_lookat_dist);
 
     //model matrix, translate it to the origin, rotate, translate back
-    Eigen::Vector3f t = lookat()-position();
-    float dist=dist_to_lookat();
-    // VLOG(1) << "dist_to_lookat before is " << dist;
+    // Eigen::Vector3f t = lookat()-position();
+    Eigen::Vector3f look = lookat();
+    Eigen::Vector3f pos = position();
 
-    Eigen::Affine3f model_matrix_rotated;
-    model_matrix_rotated=Eigen::Translation3f(t) * q_y * Eigen::Translation3f(-t) * Eigen::Affine3f(model_matrix());
-    model_matrix_rotated=Eigen::Translation3f(t) * q_x * Eigen::Translation3f(-t) * model_matrix_rotated;
+    // float dist=dist_to_lookat();
+    float dist=m_lookat_dist;
+    VLOG(1) << "dist_to_lookat before is " << dist;
+
+    // VLOG(1) << "at origin mat should be " << (Eigen::Translation3f(-t) * Eigen::Affine3f(model_matrix()) ).matrix();
+
+    Eigen::Affine3f original_mat=Eigen::Affine3f(model_matrix()); //
+    // original_mat.translation()-=lookat();
+
+
+    Eigen::Affine3f model_matrix_rotated = Eigen::Translation3f(look) * q_x * Eigen::Translation3f(-look) * original_mat ;
+    model_matrix_rotated = Eigen::Translation3f(look) * q_y * Eigen::Translation3f(-look) * model_matrix_rotated ;
+    // Eigen::Affine3f model_matrix_rotated =  q_x * Eigen::Translation3f(-look) * original_mat ;
 
     // m_model_matrix=rotated;dist_to_lookat
+
+
     
 
     // model_matrix_rotated.translation()=-direction()*dist_to_lookat;
 
     //set our new position 
-    m_position=model_matrix_rotated.translation();
+    // m_position=model_matrix_rotated.translation();
+    // m_orientation=model_matrix_rotated.linear();
+    m_model_matrix=model_matrix_rotated;
 
-    //if the up vector is no longer pointing up, change it to a down vector
-    Eigen::Vector3f new_up=(model_matrix_rotated.linear().col(1)).normalized();
-    float pointing_up=new_up.dot(Eigen::Vector3f::UnitY()); //if it's still pointing up then the dot product is positive, if not it is negative
-    // if(pointing_up>=0.02){
-        // m_up=Eigen::Vector3f::UnitY();
+    // //if the up vector is no longer pointing up, change it to a down vector
+    // Eigen::Vector3f new_up=(model_matrix_rotated.linear().col(1)).normalized();
+    // float pointing_up=new_up.dot(Eigen::Vector3f::UnitY()); //if it's still pointing up then the dot product is positive, if not it is negative
+    // if(pointing_up>0.0){
+    //     m_up=Eigen::Vector3f::UnitY();
     // }else{
-        // m_up=-Eigen::Vector3f::UnitY();
+    //     m_up=-Eigen::Vector3f::UnitY();
     // }
-    VLOG(1) << pointing_up;
+    // VLOG(1) << pointing_up;
 
 
     //the position may have diverged because of innacuracies so we set the distance to the lookat point to be the same as before
-    m_position=lookat()-direction()*dist; //starting from lookat we move in the negative view direction
+    // m_model_matrix.translation()=lookat()-direction()*dist; //starting from lookat we move in the negative view direction
+    m_model_matrix.translation()=-direction()*dist; //starting from lookat we move in the negative view direction
 
 
-    // VLOG(1) << "dist_to_lookat after is " << dist_to_lookat();
+    VLOG(1) << "dist_to_lookat after is " << dist_to_lookat();
 }
 
 
@@ -436,11 +468,11 @@ void Camera::two_axis_rotation(Eigen::Quaternionf& q_x, Eigen::Quaternionf& q_y,
   
     // Eigen::Quaternionf rot_output;
 
-    //rotate around Y
+    // rotate around Y
     Eigen::Vector3f axis_y;
-    // axis_y << 0,1,0; 
-    axis_y = Eigen::Affine3f(model_matrix()).linear().col(1);
-    q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.x()-prev_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
+    axis_y << 0,1,0; 
+    // axis_y = Eigen::Affine3f(model_matrix()).linear().col(1);
+    q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.x()-current_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
     q_y.normalize(); 
 
     // //rotate around x
@@ -451,10 +483,12 @@ void Camera::two_axis_rotation(Eigen::Quaternionf& q_x, Eigen::Quaternionf& q_y,
     // // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
     // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
     // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output;
-    q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
+    q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
     q_x.normalize();
 
     // return rot_output;
+
+    // q_x=q_y*q_x.conjugate();
 
 }
 

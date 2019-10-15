@@ -25,12 +25,13 @@ public:
     Eigen::Vector3f up();
     Eigen::Vector3f direction();
     float dist_to_lookat();
+    // Eigen::Matrix3f cam_axes();
 
 
     //setters
     void set_lookat(const Eigen::Vector3f& lookat);
     void set_position(const Eigen::Vector3f& pos);
-    void set_up(const Eigen::Vector3f& up);
+    // void set_up(const Eigen::Vector3f& up);
 
 
     //convenience functions
@@ -79,7 +80,7 @@ public:
     float m_fov;
     float m_near;
     float m_far;
-    // float m_lookat_dist;
+    float m_lookat_dist;
     bool m_is_initialized; //the camera start in a somewhat default position. Initializing it means putting the camera in position in which you see the scene. This can be done with from_string or can be done by the viewer automatically when the first update is done. If you used from_string then the viewer doesnt need to do anything
 
 private:
@@ -89,11 +90,12 @@ private:
     // Eigen::Vector3f m_translation;
     // Eigen::Vector3f m_position;
     // Eigen::Quaternionf m_orientation;
-    // Eigen::Affine3f m_model_matrix; //transforms from cam to world coordinates. So the same as tf_world_cam
-    Eigen::Vector3f m_position;
+    Eigen::Affine3f m_model_matrix; //transforms from cam to world coordinates. So the same as tf_world_cam
+    // Eigen::Vector3f m_position;
     // Eigen::Matrix3f m_orientation; //the columns represent the x,y,z axes of the camera frame. Take into account that the z is negated here
-    Eigen::Vector3f m_up; //usually just (0,1,0)
-    Eigen::Vector3f m_lookat;
+    // Eigen::Vector3f m_up; //usually just (0,1,0)
+    // Eigen::Quaternionf m_orientation;
+    // Eigen::Vector3f m_lookat;
 
     //mouse things
     bool m_is_mouse_down;
