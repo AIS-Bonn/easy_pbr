@@ -169,7 +169,7 @@ void Camera::push_away_by_dist(const float new_dist){
     dolly(-direction()*(new_dist));
 }
 
-void Camera::orbit(const Eigen::Quaternionf & q){
+void Camera::orbit(const Eigen::Quaternionf& q_x, const Eigen::Quaternionf& q_y){
 //   Eigen::Vector3f old_at = lookat();
 //   m_rotation_conj = q.conjugate();
 //   m_translation = 
@@ -182,8 +182,9 @@ void Camera::orbit(const Eigen::Quaternionf & q){
     float dist=dist_to_lookat();
     // VLOG(1) << "dist_to_lookat before is " << dist;
 
-    Eigen::Affine3f model_matrix_rotated=Eigen::Translation3f(t) * q * Eigen::Translation3f(-t) * Eigen::Affine3f(model_matrix());
-    // Eigen::Affine3f rotated=Eigen::Translation3f(t) * Eigen::Translation3f(-t) * m_model_matrix;
+    Eigen::Affine3f model_matrix_rotated;
+    model_matrix_rotated=Eigen::Translation3f(t) * q_y * Eigen::Translation3f(-t) * Eigen::Affine3f(model_matrix());
+    model_matrix_rotated=Eigen::Translation3f(t) * q_x * Eigen::Translation3f(-t) * model_matrix_rotated;
 
     // m_model_matrix=rotated;dist_to_lookat
     
@@ -391,9 +392,9 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
 
       if(mouse_mode==MouseMode::Rotation && m_prev_mouse_pos_valid){
 
-            Eigen::Quaternionf q;
-            q=two_axis_rotation( viewport_size, 2.0, m_prev_rotation, m_prev_mouse, m_current_mouse );
-            orbit(q);
+            Eigen::Quaternionf q_x, q_y;
+            two_axis_rotation(q_x, q_y, viewport_size, 2.0, m_prev_rotation, m_prev_mouse, m_current_mouse );
+            orbit(q_x,q_y);
 
       }else if(mouse_mode==MouseMode::Translation &&  m_prev_mouse_pos_valid){
 
@@ -421,7 +422,7 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
 
      }
       m_prev_mouse=m_current_mouse;
-    //   m_prev_rotation = m_rotation_conj;
+      m_prev_rotation = Eigen::Affine3f(model_matrix()).linear();
     //   m_prev_translation = m_translation;
       m_prev_mouse_pos_valid=true;
 
@@ -431,25 +432,29 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
 }
 
 
-Eigen::Quaternionf Camera::two_axis_rotation(const Eigen::Vector2f viewport_size, const float speed, const Eigen::Quaternionf prev_rotation, const Eigen::Vector2f prev_mouse, const Eigen::Vector2f current_mouse){
+void Camera::two_axis_rotation(Eigen::Quaternionf& q_x, Eigen::Quaternionf& q_y, const Eigen::Vector2f viewport_size, const float speed, const Eigen::Quaternionf prev_rotation, const Eigen::Vector2f prev_mouse, const Eigen::Vector2f current_mouse){
   
-    Eigen::Quaternionf rot_output;
+    // Eigen::Quaternionf rot_output;
 
     //rotate around Y
     Eigen::Vector3f axis_y;
-    axis_y << 0,1,0; 
-    rot_output =  Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.x()-prev_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
-    rot_output.normalize(); 
+    // axis_y << 0,1,0; 
+    axis_y = Eigen::Affine3f(model_matrix()).linear().col(1);
+    q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.x()-prev_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
+    q_y.normalize(); 
 
-    //rotate around x
+    // //rotate around x
     Eigen::Vector3f axis_x;
     axis_x << 1,0,0; 
-    // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
+    axis_x = Eigen::Affine3f(model_matrix()).linear().col(0);
+    // // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
+    // // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
     // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
-    rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output.conjugate();
-    rot_output.normalize();
+    // rot_output = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) * rot_output;
+    q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
+    q_x.normalize();
 
-    return rot_output;
+    // return rot_output;
 
 }
 
