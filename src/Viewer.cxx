@@ -1316,11 +1316,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_compose_final_shader.dispatch(m_gbuffer.width(), m_gbuffer.height(), 16 , 16);
     // TIME_END("compose");
 
-    VLOG(1) << "eye is " << m_camera->position().transpose();
+    // VLOG(1) << "eye is " << m_camera->position().transpose();
     // VLOG(1) << "direction is " << m_camera->direction().transpose();
-    VLOG(1) << " lookat is " << m_camera->lookat().transpose();
-    VLOG(1) << "model matrix is \n" << m_camera->model_matrix();
-    VLOG(1) << "view matrix is \n" << m_camera->view_matrix();
+    // VLOG(1) << " lookat is " << m_camera->lookat().transpose();
+    // VLOG(1) << "model matrix is \n" << m_camera->model_matrix();
+    // VLOG(1) << "view matrix is \n" << m_camera->view_matrix();
 
 
     //attempt 2 to make it a bit faster 

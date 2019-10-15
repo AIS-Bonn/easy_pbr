@@ -24,6 +24,7 @@ public:
     Eigen::Vector3f lookat();
     Eigen::Vector3f up();
     Eigen::Vector3f direction();
+    float dist_to_lookat();
 
 
     //setters
@@ -88,7 +89,9 @@ private:
     // Eigen::Vector3f m_translation;
     // Eigen::Vector3f m_position;
     // Eigen::Quaternionf m_orientation;
-    Eigen::Affine3f m_model_matrix; //transforms from cam to world coordinates. So the same as tf_world_cam
+    // Eigen::Affine3f m_model_matrix; //transforms from cam to world coordinates. So the same as tf_world_cam
+    Eigen::Vector3f m_position;
+    // Eigen::Matrix3f m_orientation; //the columns represent the x,y,z axes of the camera frame. Take into account that the z is negated here
     Eigen::Vector3f m_up; //usually just (0,1,0)
     Eigen::Vector3f m_lookat;
 
