@@ -412,11 +412,13 @@ void Viewer::draw(const GLuint fbo_id){
 
         std::cout << " get centroid " << centroid << std::endl;
     
+        m_camera->set_lookat(centroid);
+        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
+        // m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
         // m_camera->set_lookat(centroid);
-        // m_camera->set_eye(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
         // LOG(FATAL) << "Camera is setup with a direction of " << m_camera->direction();
-        m_camera->set_position(centroid);
-        m_camera->push_away_by_dist(3.0*scale);
+        // m_camera->set_position(centroid);
+        // m_camera->push_away_by_dist(3.0*scale);
 
         m_first_draw=false;
         m_camera->m_is_initialized=true;
@@ -1314,7 +1316,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_compose_final_shader.dispatch(m_gbuffer.width(), m_gbuffer.height(), 16 , 16);
     // TIME_END("compose");
 
-    VLOG(1) << "eye is " << m_camera->position();
+    VLOG(1) << "eye is " << m_camera->position().transpose();
+    // VLOG(1) << "direction is " << m_camera->direction().transpose();
+    VLOG(1) << " lookat is " << m_camera->lookat().transpose();
+    VLOG(1) << "model matrix is \n" << m_camera->model_matrix();
+    VLOG(1) << "view matrix is \n" << m_camera->view_matrix();
 
 
     //attempt 2 to make it a bit faster 
