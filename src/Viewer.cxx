@@ -218,7 +218,8 @@ void Viewer::compile_shaders(){
     m_compose_final_quad_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/compose_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/compose_frag.glsl"  );
 
     m_ssao_ao_pass_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/ao_pass_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/ao_pass_frag.glsl" );
-    m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
+    // m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
+    m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_frag.glsl");
     m_bilateral_blur_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_frag.glsl");
 }
 
@@ -955,20 +956,53 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
 void Viewer::ssao_pass(){
 
+    //SSAO needs to perform a lot of accesses to the depth map in order to calculate occlusion. Due to cache coherency it is faster to sampler from a downsampled depth map
+    //furthermore we only need the linearized depth map. So we first downsample the depthmap, then we linearize it and we run the ao shader and then the bilateral blurring
 
+    //SETUP-------------------------
     //dont perform depth checking nor write into the depth buffer 
-    TIME_START("ao_pass");
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-
     //viewport setup. We render into a smaller viewport so tha the ao_tex is a bit smaller
     Eigen::Vector2i new_viewport_size=calculate_mipmap_size(m_gbuffer.width(), m_gbuffer.height(), m_ssao_downsample);
     glViewport(0.0f , 0.0f, new_viewport_size.x(), new_viewport_size.y() );
-            
     //deal with the textures
     m_ao_tex.allocate_or_resize(GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
-    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample); //we sample the depth mat a lot of times to compute visibility. Due to cache coherency it's faster to sampler a smaller images so we mipmap up until m_ssao_downsample level
+    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample); 
 
+
+
+
+    //LINEARIZE-------------------------
+    TIME_START("depth_linearize_pass");
+    m_depth_linear_tex.allocate_or_resize( GL_R16F, GL_RED, GL_HALF_FLOAT, new_viewport_size.x(), new_viewport_size.y() );
+
+    // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_depth_linearize_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_depth_linearize_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+
+    m_depth_linearize_shader.use();
+    m_depth_linearize_shader.uniform_int(m_ssao_downsample, "pyr_lvl");
+    m_depth_linearize_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+    m_depth_linearize_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
+    m_depth_linearize_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
+   
+    m_depth_linearize_shader.draw_into(m_depth_linear_tex, "depth_linear_out");
+
+    // draw
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    TIME_END("depth_linearize_pass");
+
+
+
+
+
+
+
+
+    //SSAO----------------------------------------
+    TIME_START("ao_pass");
     //matrix setup
     Eigen::Matrix3f V_rot = Eigen::Affine3f(m_camera->view_matrix()).linear(); //for rotating the normals from the world coords to the cam_coords
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
@@ -985,13 +1019,11 @@ void Viewer::ssao_pass(){
     GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "P") );
     m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
     m_ssao_ao_pass_shader.uniform_3x3(V_rot, "V_rot");
-    m_ssao_ao_pass_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
-    m_ssao_ao_pass_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
     m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
-    m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl");
-    m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
+    // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl"); //no need for pyramid because we only sample from depth_linear_tex which is already downsampled and has no mipmap
+    m_ssao_ao_pass_shader.bind_texture(m_depth_linear_tex,"depth_linear_tex");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
    
@@ -1011,25 +1043,7 @@ void Viewer::ssao_pass(){
 
 
 
-
-
-
-
-
-
-
-
-    //depth linearize in to perform later a bilateral blur of the ao based on depth 
-    TIME_START("depth_linearize_pass");
-    // m_depth_linear_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
-    m_depth_linear_tex.allocate_or_resize( GL_R16F, GL_RED, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
-    m_depth_linearize_shader.use();
-    m_depth_linearize_shader.uniform_float(m_camera->m_near, "z_near");
-    m_depth_linearize_shader.uniform_float(m_camera->m_far, "z_far");
-    m_depth_linearize_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
-    m_depth_linearize_shader.bind_image(m_depth_linear_tex, GL_WRITE_ONLY, "depth_linear_img");
-    m_depth_linearize_shader.dispatch(m_gbuffer.width(), m_gbuffer.height(), 16 , 16);
-    TIME_END("depth_linearize_pass");
+    
 
 
 

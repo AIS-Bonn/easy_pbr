@@ -10,7 +10,8 @@ layout(location = 0) out vec4 ao_out;
 
 //uniforms
 uniform sampler2D normal_tex;
-uniform sampler2D depth_tex;
+// uniform sampler2D depth_tex;
+uniform sampler2D depth_linear_tex;
 uniform sampler2D rvec_tex;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
@@ -24,14 +25,20 @@ uniform float kernel_radius;
 uniform int pyr_lvl;
 
 
-float linear_depth(float depth_sample){
-    // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
-    float linearDepth = projection_b / (depth_sample - projection_a);
-    return linearDepth;
-}
+// float linear_depth(float depth_sample){
+//     // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+//     float linearDepth = projection_b / (depth_sample - projection_a);
+//     return linearDepth;
+// }
 
-vec3 position_cam_coords_from_depth(float depth){
-    float linear_depth=linear_depth(depth);
+// vec3 position_cam_coords_from_depth(float depth){
+//     float linear_depth=linear_depth(depth);
+//     vec3 position_cam_coords;
+//     position_cam_coords= normalize(view_ray_in) * linear_depth;
+//     return position_cam_coords;
+// }
+
+vec3 position_cam_coords_from_linear_depth(float linear_depth){
     vec3 position_cam_coords;
     position_cam_coords= normalize(view_ray_in) * linear_depth;
     return position_cam_coords;
@@ -60,8 +67,8 @@ vec3 decode_normal(vec2 normal){
 
 void main() {
 
-    float depth=textureLod(depth_tex, uv_in, pyr_lvl).x;
-    if(depth==1.0){
+    float depth_linear=texture(depth_linear_tex, uv_in).x;
+    if(depth_linear==1.0){
         discard;
     }
 
@@ -80,7 +87,7 @@ void main() {
 
     //get position in cam coordinates
     vec4 position_cam_coords;
-    position_cam_coords.xyz= position_cam_coords_from_depth(depth); 
+    position_cam_coords.xyz= position_cam_coords_from_linear_depth(depth_linear); 
     vec3 origin=position_cam_coords.xyz;
 
 
@@ -93,7 +100,7 @@ void main() {
     }
 
 
-    ivec2 img_size=textureSize( depth_tex, 0); //we get the image size of the highest mipmap. This way we will tile mode the noise, having more randomness and improving the result
+    ivec2 img_size=textureSize( normal_tex, 0); //we get the image size of the highest mipmap. This way we will tile mode the noise, having more randomness and improving the result
     vec2 noise_scale=vec2(img_size)/vec2( textureSize( rvec_tex, 0) );
     vec3 rvec = texture(rvec_tex, uv_in * noise_scale).xyz; //scaling the uv coords will make the random vecs tile over the screen in tiles of 4x4 (if the texture is 4x4 of course)
     vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
@@ -124,8 +131,8 @@ void main() {
         } 
         
         // get sample depth:
-        float sample_depth=textureLod(depth_tex, offset.xy, pyr_lvl).x;
-        float sample_z = position_cam_coords_from_depth( sample_depth ).z ;
+        float sample_depth_linear=texture(depth_linear_tex, offset.xy).x;
+        float sample_z = position_cam_coords_from_linear_depth( sample_depth_linear ).z ;
         
         bool is_sample_within_radius=abs(origin.z - sample_z) < kernel_radius; 
         if(is_sample_within_radius){ //only consider occlusion for the samples that are actually withing radius, some will project to very far away objects or even the background and should not be considered
