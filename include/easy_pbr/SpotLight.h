@@ -22,6 +22,7 @@ public:
     SpotLight(const configuru::Config& config);
 
     // void render_to_shadow_map(const MeshCore& mesh);
+    void set_power_for_point(const Eigen::Vector3f& point, const float power);
     void render_mesh_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
     void render_points_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
     void clear_shadow_map();

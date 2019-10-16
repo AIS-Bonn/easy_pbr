@@ -282,7 +282,7 @@ void main(){
             //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
             float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
             float current_depth = proj_in_light.z;  
-            float epsilon = 0.000001;
+            float epsilon = 0.001;
             if (closest_depth + epsilon < current_depth){
                 continue;
             }

@@ -67,7 +67,7 @@ Viewer::Viewer(const std::string config_file):
     m_sigma_spacial(2.0),
     m_sigma_depth(0.002),
     m_ambient_color( 71.0/255.0, 70.0/255.0, 66.3/255.0  ),
-    m_ambient_color_power(0.1),
+    m_ambient_color_power(0.05),
     m_enable_culling(false),
     m_enable_ssao(true),
     m_first_draw(true)
@@ -224,35 +224,9 @@ void Viewer::compile_shaders(){
 void Viewer::init_opengl(){
     // //initialize the g buffer with some textures 
     GL_C( m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
-    // GL_C( m_gbuffer.add_texture("position_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) );
-    // GL_C( m_gbuffer.add_texture("specular_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) );
-    // GL_C( m_gbuffer.add_texture("shininess_gtex", GL_R16F, GL_RED, GL_HALF_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) );
-    //all floats 
-    // GL_C( m_gbuffer.add_texture("position_gtex", GL_RGBA32F, GL_RGBA, GL_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGBA32F, GL_RGBA, GL_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("specular_gtex", GL_RGBA32F, GL_RGBA, GL_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("shininess_gtex", GL_RGBA32F, GL_RGBA, GL_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGBA32F, GL_RGBA, GL_FLOAT) );
-    //all half floats
-
-
     GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
-    // GL_C( m_gbuffer.add_texture("diffuse_and_weight_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) ); //need to be half float because we accumulate colors for the surfels
-    // GL_C( m_gbuffer.add_texture("position_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) ); //the alpha channels IS used here, if it's zero it means we have nothing covered by a mesh and the composer can discard that pixel
-    //as explaine here a good packing for normals would be GL_RGB10_A2 https://community.khronos.org/t/defer-rendering-framebuffer-w-renderbuffer-help-optimizing/74230/2
-    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) ); // the alpha channels of this one is not used by it's faster to have a 4 byte aligned one
-    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB10_A2, GL_RGBA,  GL_UNSIGNED_INT_10_10_10_2) ); // the alpha channels of this one is not used by it's faster to have a 4 byte aligned one
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
-
-    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );  //as done by david bernard in https://hub.jmonkeyengine.org/t/solved-strange-shining-problem/32962/4 and https://github.com/davidB/jme3_ext_deferred/blob/master/src/main/resources/ShaderLib/DeferredUtils.glsllib  
-    //  GL_C( m_gbuffer.add_texture("ao_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); //stores the ao and the ao blurred in the second channel 
-    // GL_C( m_gbuffer.add_texture("log_depth_gtex", GL_R32F, GL_RED, GL_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("log_depth_gtex", GL_R16F, GL_RED, GL_HALF_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("specular_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) );
-    // GL_C( m_gbuffer.add_texture("shininess_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT) );
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     m_gbuffer.sanity_check();
 
@@ -360,7 +334,6 @@ void Viewer::draw(const GLuint fbo_id){
     if(m_viewport_size.x()==m_gbuffer.width() || m_viewport_size.y()==m_gbuffer.height()){
         m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
     }
-    // clear_framebuffers();
 
     hotload_shaders();
 
@@ -380,28 +353,65 @@ void Viewer::draw(const GLuint fbo_id){
         Eigen::Vector3f centroid = m_scene->get_centroid();
         float scale = m_scene->get_scale();
 
-        std::cout << " get centroid " << centroid << std::endl;
+        std::cout << " scene centroid " << centroid << std::endl;
+        std::cout << " scene scale " << scale << std::endl;
     
         m_camera->set_lookat(centroid);
         m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
-        // m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
-        // m_camera->set_lookat(centroid);
-        // LOG(FATAL) << "Camera is setup with a direction of " << m_camera->direction();
-        // m_camera->set_position(centroid);
-        // m_camera->push_away_by_dist(3.0*scale);
+        m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
+        m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
 
         m_first_draw=false;
         m_camera->m_is_initialized=true;
+
+        //also place the lights and set their znear and far accordingly
+        //key light
+        if(m_spot_lights.size()>=1){
+            std::shared_ptr<SpotLight> key = m_spot_lights[0];
+            Eigen::Vector3f dir_movement;
+            dir_movement<<0.5, 0.5, 0.5;
+            dir_movement=dir_movement.normalized();
+            key->set_lookat(centroid);
+            key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+            key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
+            key->m_far=( (centroid-key->position()).norm()*10 ) ;
+            key->m_fov=60;
+            key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+            key->m_color<< 255.0/255.0, 185.0/255.0, 100/255.0;
+        }
+        //fill light
+        if(m_spot_lights.size()>=2){
+            std::shared_ptr<SpotLight> fill = m_spot_lights[1];
+            Eigen::Vector3f dir_movement;
+            dir_movement<< -0.5, 0.5, 0.5;
+            dir_movement=dir_movement.normalized();
+            fill->set_lookat(centroid);
+            fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+            fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
+            fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
+            fill->m_fov=60;
+            fill->set_power_for_point(centroid, 0.5); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+            fill->m_color<< 118.0/255.0, 255.0/255.0, 230/255.0;
+        }
+        //rim light
+        if(m_spot_lights.size()>=3){
+            std::shared_ptr<SpotLight> rim = m_spot_lights[2];
+            Eigen::Vector3f dir_movement;
+            dir_movement<< -0.5, 0.5, -0.6;
+            dir_movement=dir_movement.normalized();
+            rim->set_lookat(centroid);
+            rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+            rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
+            rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
+            rim->m_fov=60;
+            rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+            rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
+        }
+
+
     }
 
-    // //Check if we need to upload to gpu
-    // for(int i=0; i<m_scene->get_nr_meshes(); i++){
-    //     MeshSharedPtr mesh=m_scene->get_mesh_with_idx(i);
-    //     if(mesh->m_is_dirty){
-    //         mesh->upload_to_gpu();
-    //         mesh->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
-    //     }        
-    // }
+
     TIME_START("update_meshes");
     update_meshes_gl();
     TIME_END("update_meshes");

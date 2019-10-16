@@ -52,7 +52,8 @@ Eigen::Vector3f Camera::lookat(){
     return m_lookat;
 }
 Eigen::Vector3f Camera::direction(){
-    return  -cam_axes().col(2);
+    // return  -cam_axes().col(2);
+    return (lookat()-position()).normalized(); //better to return this than the cam_axes() because the recalculate orientation needs the direction before actually updating the cam_axes
 }
 Eigen::Vector3f Camera::up(){
     return m_up;
@@ -151,7 +152,8 @@ void Camera::recalculate_orientation(){
     cam_axes.col(0)=right;
     cam_axes.col(1)=up_recalc;
     cam_axes.col(2)=-direction;
-    m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
+    // m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
+    m_model_matrix.linear()=cam_axes;
 }
 // // https://github.com/OpenGP/htrack/blob/master/util/eigen_opengl_helpers.h
 // Eigen::Matrix4f Camera::compute_view_matrix(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up){
@@ -239,13 +241,13 @@ Eigen::Quaternionf Camera::two_axis_rotation(const Eigen::Vector2f viewport_size
     // rotate around Y axis of the world (the vector 0,1,0)
     Eigen::Vector3f axis_y;
     axis_y << 0,1,0; 
-    Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.x()-current_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
+    Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.x()-prev_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
     q_y.normalize(); 
 
     // //rotate around x axis of the camera coordinate
     Eigen::Vector3f axis_x;
     axis_x = cam_axes().col(0);
-    Eigen::Quaternionf q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
+    Eigen::Quaternionf q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
     q_x.normalize();
 
     rot_output=q_y*q_x;

@@ -40,6 +40,15 @@ void SpotLight::init_opengl(){
     m_shadow_map_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/shadow_map_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/shadow_map_frag.glsl"  );
 }
 
+void SpotLight::set_power_for_point(const Eigen::Vector3f& point, const float power){
+    //we assume a quadratic decay of power with distance: float attenuation = 1.0 / (distance * distance);
+    float dist=dist_to_lookat();
+    float attenuation=1.0/ (dist*dist);
+
+    //power that the point receive is m_power*attenuation. If we want the power there to be power: power=m_power*attenuation. Therefore 
+    m_power=power/attenuation;
+}
+
 // void PointLight::render_to_shadow_map(const MeshCore& mesh){
 void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
 
