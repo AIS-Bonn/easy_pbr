@@ -1062,6 +1062,7 @@ void Viewer::ssao_pass(){
 
 
     //matrix setup
+    Eigen::Matrix3f V_rot = Eigen::Affine3f(m_camera->view_matrix()).linear(); //for rotating the normals from the world coords to the cam_coords
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f P_inv=P.inverse();
 
@@ -1076,6 +1077,7 @@ void Viewer::ssao_pass(){
     m_ssao_ao_pass_shader.use();
     GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "P") );
     m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
+    m_ssao_ao_pass_shader.uniform_3x3(V_rot, "V_rot");
     m_ssao_ao_pass_shader.uniform_float(m_camera->m_near, "z_near");
     m_ssao_ao_pass_shader.uniform_float(m_camera->m_far, "z_far");
     m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
@@ -1084,7 +1086,7 @@ void Viewer::ssao_pass(){
     // m_ssao_ao_pass_shader.uniform_int(0,"pyr_lvl");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
-    m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_cam_coords_tex");
+    m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
     // m_ssao_ao_pass_shader.bind_image(m_ao_tex, GL_WRITE_ONLY, "ao_img");
     // m_ssao_ao_pass_shader.dispatch(m_ao_tex.width(), m_ao_tex.height(), 16 , 16);

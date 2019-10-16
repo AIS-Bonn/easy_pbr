@@ -9,13 +9,14 @@ layout(location = 0) out vec4 ao_out;
 
 
 //uniforms
-uniform sampler2D normal_cam_coords_tex;
+uniform sampler2D normal_tex;
 uniform sampler2D depth_tex;
 uniform sampler2D rvec_tex;
 uniform float z_near;
 uniform float z_far;
 uniform mat4 P;
 uniform mat4 P_inv;
+uniform mat3 V_rot;
 const int MAX_NR_SAMPLES=256;
 uniform int nr_samples;
 uniform vec3 random_samples[MAX_NR_SAMPLES];
@@ -102,13 +103,15 @@ void main() {
     // //debug why the gbuffer is not updating
     // ao_out=vec4(1.0);
 
-    vec2 normal_encoded=texture(normal_cam_coords_tex, uv_in).xy;
+    vec2 normal_encoded=texture(normal_tex, uv_in).xy;
     if(normal_encoded==vec2(0)){ //we have something like a point cloud without normals. so we just it to everything visible
         ao_out=vec4(1.0);
         return;
     }
     // vec3 normal_encoded=textureLod(normal_cam_coords_tex, uv_in, pyr_lvl).xyz;
     vec3 normal=decode_normal(normal_encoded);
+    //we need the normal in cam coordinates so we have to rotate it
+    normal=V_rot*normal;
 
 
 
