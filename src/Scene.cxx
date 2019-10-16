@@ -255,7 +255,7 @@ std::shared_ptr<Mesh> Scene::create_grid(const int nr_segments, const float y_po
     int nr_segments_even= round(nr_segments / 2) * 2; // so we have an even number of segments on each side and then one running thgou th emiddle
     int half_size=nr_segments_even/2;
     int nr_points_per_side=nr_segments_even+1;// the +1 is because we will have 3 lines if we choose 2 segments, we have to consider the one that runs through the middle of the scene
-    MeshSharedPtr mesh_grid=MeshCreate();
+    MeshSharedPtr mesh_grid=Mesh::create();
     mesh_grid->V.resize( (nr_points_per_side)*(nr_points_per_side), 3 ); 
     int idx=0;
     for(int x=-half_size; x<=half_size; x++){
@@ -320,7 +320,7 @@ std::shared_ptr<Mesh> Scene::create_grid(const int nr_segments, const float y_po
 
 std::shared_ptr<Mesh> Scene::create_floor(const float y_pos){
 
-    MeshSharedPtr mesh_floor=MeshCreate();
+    MeshSharedPtr mesh_floor=Mesh::create();
 
     //make 4 vertices
     mesh_floor->V.resize( 4, 3 ); 

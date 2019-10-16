@@ -25,8 +25,8 @@ class RandGenerator;
 
 
 class Mesh;
-template <class ...Args>
-std::shared_ptr<Mesh> MeshCreate(Args&& ...args);
+// template <class ...Args>
+// std::shared_ptr<Mesh> MeshCreate(Args&& ...args);
 
 struct VisOptions{
      //visualization params (it's nice to have here so that the various algorithms that run in different threads can set them)
@@ -77,6 +77,10 @@ struct VisOptions{
 class Mesh : public std::enable_shared_from_this<Mesh>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    template <class ...Args>
+    static std::shared_ptr<Mesh> create( Args&& ...args ){
+        return std::shared_ptr<Mesh>( new Mesh(std::forward<Args>(args)...) );
+    }
     Mesh();
     ~Mesh()=default; 
 
@@ -193,11 +197,6 @@ public:
   
 
 private:
-
-    template<class... Args>
-    friend  std::shared_ptr<Mesh> MeshCreate(Args&&... args){
-        return std::shared_ptr<Mesh>(new Mesh(std::forward<Args>(args)...));
-    }
 
     std::string named(const std::string msg) const{
         return name.empty()? msg : name + ": " + msg;    

@@ -59,7 +59,7 @@ Viewer::Viewer(const std::string config_file):
     m_draw_mesh_shader("draw_mesh"),
     m_draw_wireframe_shader("draw_wireframe"),
     m_rvec_tex("rvec_tex"),
-    m_fullscreen_quad(MeshGLCreate()),
+    m_fullscreen_quad(MeshGL::create()),
     m_ssao_downsample(1),
     m_nr_samples(64),
     m_kernel_radius(-1),
@@ -221,6 +221,8 @@ void Viewer::compile_shaders(){
     // m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
     m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_frag.glsl");
     m_bilateral_blur_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_frag.glsl");
+
+    m_equirectangular2cubemap_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/equirectangular2cubemap/equirectangular2cubemap_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/equirectangular2cubemap/equirectangular2cubemap_frag.glsl");
 }
 
 void Viewer::init_opengl(){
@@ -278,6 +280,15 @@ void Viewer::init_opengl(){
         equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
     }
 
+    
+    m_camera->m_fov=90;
+    m_camera->m_near=0.01;
+    m_camera->m_far=10.0;
+    Eigen::Vector3f lookat;
+    lookat<< 0,0,-0.001;
+    m_camera->set_lookat(lookat); //camera in the middle of the NDC
+    m_camera->set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+
 }
 
 void Viewer::hotload_shaders(){
@@ -293,7 +304,66 @@ void Viewer::hotload_shaders(){
 
 void Viewer::update(const GLuint fbo_id){
     pre_draw();
-    draw(fbo_id);
+    // draw(fbo_id);
+
+    //try to draw here the cube because I want to
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    clear_framebuffers();
+    Eigen::Vector2f viewport_size;
+    viewport_size<< 512, 512;
+    glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
+
+   
+
+    //create mesh
+    MeshSharedPtr cube = Mesh::create();
+    cube->make_box_ndc();
+    MeshGLSharedPtr cube_gl = MeshGL::create();
+    cube_gl->assign_core(cube);
+    cube_gl->upload_to_gpu();
+
+
+    // Eigen::Matrix4f MVP=compute_mvp_matrix(cube_gl);
+    Eigen::Matrix4f M,V,P, MVP;
+    V=m_camera->view_matrix();
+    P=m_camera->proj_matrix(viewport_size); 
+    MVP=P*V;
+    VLOG(1) <<"MVP is " << MVP;
+    VLOG(1) <<"V is " << V;
+
+
+
+   
+
+    //render this cube 
+    GL_C( glDisable(GL_CULL_FACE) );
+    //dont perform depth checking nor write into the depth buffer 
+    GL_C( glDepthMask(false) );
+    GL_C( glDisable(GL_DEPTH_TEST) );
+
+    gl::Shader& shader=m_equirectangular2cubemap_shader;
+
+    // Set attributes that the vao will pulll from buffers
+    GL_C( cube_gl->vao.vertex_attribute(shader, "position_ndc", cube_gl->V_buf, 3) );
+    GL_C( cube_gl->vao.indices(cube_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    // //shader setup
+    GL_C( shader.use() );
+    shader.uniform_4x4(MVP, "MVP");
+    GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
+
+    // draw
+    GL_C( cube_gl->vao.bind() ); 
+    GL_C( glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+
+    // //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+
+
+
+
 
     if(m_show_gui){
         m_gui->update();
@@ -559,7 +629,7 @@ void Viewer::update_meshes_gl(){
                 m_meshes_gl[idx_found]->upload_to_gpu();
                 m_meshes_gl[idx_found]->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
             }else{
-                MeshGLSharedPtr mesh_gpu=MeshGLCreate();
+                MeshGLSharedPtr mesh_gpu=MeshGL::create();
                 mesh_gpu->assign_core(mesh_core); //GPU implementation points to the cpu data
                 mesh_core->assign_mesh_gpu(mesh_gpu); // cpu data points to the gpu implementation
                 mesh_gpu->upload_to_gpu();
@@ -1350,11 +1420,54 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     cam.m_near=0.1;
     cam.m_far=10.0;
     cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
-    Eigen::Vector2f viewport_size;
-    viewport_size<<512, 512;
 
-    Eigen::Matrix4f P=cam.proj_matrix(viewport_size);
+    //create mesh
+    MeshSharedPtr cube;
+    cube->make_box_ndc();
+    MeshGLSharedPtr cube_gl;
+    cube_gl->assign_core(cube);
+    cube_gl->upload_to_gpu();
+
+   
+
+    //render this cube 
+    glDisable(GL_CULL_FACE);
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+
+    gl::Shader& shader=m_equirectangular2cubemap_shader;
+
+    // Set attributes that the vao will pulll from buffers
+    GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
+    cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    // //shader setup
+    GL_C( shader.use() );
+    shader.bind_texture(equirectangular_tex,"equirectangular_tex");
+
+    // draw
+    cube_gl->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+    // //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+
+
+
+ 
+
+    //
+
+    //ge    
+    // Eigen::Vector2f viewport_size;
+    // viewport_size<<512, 512;
+    // Eigen::Matrix4f P=cam.proj_matrix(viewport_size);
     // std::vector<>
+
+
 
 
     // std::vector<Eigen::Matrix4f> view_matrices;
@@ -1494,7 +1607,7 @@ void Viewer::glfw_resize(GLFWwindow* window, int width, int height){
 void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
     for(int i=0; i<count; i++){
        VLOG(1) << "loading mesh from path " << paths[i]; 
-       MeshSharedPtr mesh = MeshCreate();
+       MeshSharedPtr mesh = Mesh::create();
        mesh->load_from_file(std::string(paths[i]));
        std::string name= "mesh_" + std::to_string(m_scene->get_nr_meshes());
        m_scene->add_mesh(mesh,name);

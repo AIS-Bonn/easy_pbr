@@ -21,12 +21,17 @@
 
 //in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
 class MeshGL;
-template <class ...Args>
-std::unique_ptr<MeshGL> MeshGLCreate(Args&& ...args);
+// template <class ...Args>
+// std::unique_ptr<MeshGL> MeshGLCreate(Args&& ...args);
 
 class MeshGL {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
+    template <class ...Args>
+    static std::shared_ptr<MeshGL> create( Args&& ...args ){
+        return std::shared_ptr<MeshGL>( new MeshGL(std::forward<Args>(args)...) );
+    }
     ~MeshGL()=default;
 
     void assign_core(std::shared_ptr<Mesh>);
@@ -65,11 +70,6 @@ public:
 private:
     MeshGL();  // we put the constructor as private so as to dissalow creating Mesh on the stack because we want to only used shared ptr for it
     
-    //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
-    template<class... Args>
-    friend  std::unique_ptr<MeshGL> MeshGLCreate(Args&&... args){
-        return std::unique_ptr<MeshGL>(new MeshGL(std::forward<Args>(args)...));
-    }
 
 
 };

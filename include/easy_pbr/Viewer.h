@@ -118,6 +118,7 @@ public:
     gl::Shader m_ssao_ao_pass_shader;
     gl::Shader m_depth_linearize_shader;
     gl::Shader m_bilateral_blur_shader;
+    gl::Shader m_equirectangular2cubemap_shader;
 
     gl::GBuffer m_gbuffer;
 
