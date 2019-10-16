@@ -221,8 +221,6 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
             Eigen::Vector3f diff = pos1 - pos0;
             Eigen::Vector3f new_pos=m_model_matrix.translation() - Eigen::Vector3f(diff[0],diff[1],diff[2]);
             move_cam_and_lookat(new_pos);
-            // m_model_matrix.translation() = m_model_matrix.translation() - Eigen::Vector3f(diff[0],diff[1],diff[2]);
-            // m_lookat-=Eigen::Vector3f(diff[0],diff[1],diff[2]);
 
 
         }
@@ -264,9 +262,9 @@ void Camera::mouse_released(const MouseButton mb, const int modifier){
 void Camera::mouse_scroll(const float x, const float y){
     float val;
     if(y<0){
-      val=0.9;
-    }else{
       val=1.1;
+    }else{
+      val=0.9;
     }
     push_away(val);
 }

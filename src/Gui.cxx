@@ -237,8 +237,8 @@ void Gui::update() {
         // ImGui::ColorEdit3("Specular color",m_view->m_specular_color.data());
         // ImGui::SliderFloat("Shading factor", &m_view->m_shading_factor, 0.0f, 1.0f);
         // ImGui::SliderFloat("Light factor", &m_view->m_light_factor, 0.0f, 1.0f);
-        ImGui::SliderFloat("Surfel blend dist", &m_view->m_surfel_blend_dist, -50.0f, 50.0f);
-        ImGui::SliderFloat("Surfel blend dist2", &m_view->m_surfel_blend_dist2, -50.0f, 50.0f);
+        // ImGui::SliderFloat("Surfel blend dist", &m_view->m_surfel_blend_dist, -50.0f, 50.0f);
+        // ImGui::SliderFloat("Surfel blend dist2", &m_view->m_surfel_blend_dist2, -50.0f, 50.0f);
 
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);

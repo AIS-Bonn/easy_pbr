@@ -22,6 +22,13 @@ config_file="empty.cfg"
 # TIME_END = lambda name: Profiler.end(name)
 
 
+mesh=Mesh()
+mesh.load_from_file("/media/rosu/Data/phd/c_ws/src/surfel_renderer/data/m600-lowres.ply")
+# mesh.make_box_ndc()
+Scene.show(mesh, "box")
+
+
+
 def empty():
     view=Viewer(config_file) #first because it needs to init context
     while True:

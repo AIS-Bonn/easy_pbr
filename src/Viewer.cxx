@@ -68,40 +68,19 @@ Viewer::Viewer(const std::string config_file):
     m_sigma_depth(0.002),
     m_ambient_color( 71.0/255.0, 70.0/255.0, 66.3/255.0  ),
     m_ambient_color_power(0.1),
-    // m_specular_color(77.0/255.0, 77.0/255.0, 77.0/255.0 ),
-    // m_shininess(14.5),
     m_enable_culling(false),
     m_enable_ssao(true),
-    // m_shading_factor(1.0),
-    // m_light_factor(1.0),
-    m_surfel_blend_dist(-50),
-    m_surfel_blend_dist2(0),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
         init_params(config_file);
-        // gladLoadGL();
-    //     bool err = gladLoadGL() == 0;
-    //         if (err)
-    // {
-    //     fprintf(stderr, "Failed to initialize OpenGL loader!\n");
-    //     return ;
-    // }
-        // init_context();
         compile_shaders(); 
         init_opengl();                     
         m_gui=std::make_shared<Gui>(config_file, this, m_window); //needs to be initialized here because here we have done a gladloadgl
-        // m_recorder->m_view=std::make_shared<Viewer>(this);
-        // m_gui->init_fonts();
 
 }
 
 void Viewer::init_params(const std::string config_file){
-
-    //get the config filename
-    // ros::NodeHandle private_nh("~");
-    // std::string config_file= getParamElseThrow<std::string>(private_nh, "config_file");
-    // std::string config_file="config.cfg";
 
     //read all the parameters
     Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
@@ -114,8 +93,6 @@ void Viewer::init_params(const std::string config_file){
     m_ao_power = vis_config["ao_power"];
     m_sigma_spacial = vis_config["ao_blur_sigma_spacial"];
     m_sigma_depth = vis_config["ao_blur_sigma_depth"];
-    // m_shading_factor = vis_config["shading_factor"];
-    // m_light_factor = vis_config["light_factor"];
     m_enable_edl_lighting= vis_config["enable_edl_lighting"];
     m_edl_strength = vis_config["edl_strength"];
     m_enable_surfel_splatting = vis_config["enable_surfel_splatting"];
@@ -173,12 +150,9 @@ bool Viewer::init_context(){
     m_viewport_size<< window_width, window_height;
 
 
-    // window=init_context(window_width, window_height); // We initialize context here because Viewer has a lot of member variables that need a GL context
-    // std::shared_ptr<Viewer> view = Viewer::create(window_width, window_height); //need to pass the size so that the viewer also knows the size of the viewport
     glfwSetWindowUserPointer(m_window, this); // so in the glfw we can acces the viewer https://stackoverflow.com/a/28660673
     setup_callbacks_viewer(m_window);
 
-    // return window;
     return true;
 }
 
@@ -235,19 +209,15 @@ void Viewer::switch_callbacks(GLFWwindow* window) {
 
 void Viewer::compile_shaders(){
        
-    GL_C( m_draw_points_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_frag.glsl"  ) );
-    GL_C( m_draw_points_gbuffer_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_gbuffer_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_gbuffer_frag.glsl"  ) );
+    m_draw_points_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/points_frag.glsl" ) ;
     m_draw_lines_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/lines_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/lines_frag.glsl"  );
     m_draw_mesh_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/mesh_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/mesh_frag.glsl"  );
     m_draw_wireframe_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/wireframe_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/wireframe_frag.glsl"  );
     m_draw_surfels_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/render/surfels_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/surfels_frag.glsl" , std::string(CMAKE_SOURCE_DIR)+"/shaders/render/surfels_geom.glsl" );
     m_compose_final_quad_shader.compile( std::string(CMAKE_SOURCE_DIR)+"/shaders/render/compose_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/render/compose_frag.glsl"  );
 
-    // m_ssao_geom_pass_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/geom_pass_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/geom_pass_frag.glsl" );
-    // m_ssao_ao_pass_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/ao_pass_compute.glsl");
     m_ssao_ao_pass_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/ao_pass_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/ao_pass_frag.glsl" );
     m_depth_linearize_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
-    // m_bilateral_blur_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_compute.glsl");
     m_bilateral_blur_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_frag.glsl");
 }
 
@@ -623,52 +593,6 @@ void Viewer::clear_framebuffers(){
 }
 
 
-void Viewer::render_points(const MeshGLSharedPtr mesh){
-
-    //sanity checks 
-    if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
-        LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
-    }
-
-
-    // Set attributes that the vao will pulll from buffers
-    if(mesh->m_core->V.size()){
-        mesh->vao.vertex_attribute(m_draw_points_shader, "position", mesh->V_buf, 3);
-    }
-    if(mesh->m_core->C.size()){
-        mesh->vao.vertex_attribute(m_draw_points_shader, "color_per_vertex", mesh->C_buf, 3);
-    }
-    if(mesh->m_core->NV.size()){ // just in case we want to show the colors corresponding to the normals
-        mesh->vao.vertex_attribute(m_draw_points_shader, "normal", mesh->NV_buf, 3);
-    }
-    if(mesh->m_core->L_pred.size()){
-        mesh->vao.vertex_attribute(m_draw_points_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    } 
-    if(mesh->m_core->L_gt.size()){
-        mesh->vao.vertex_attribute(m_draw_points_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
-    } 
-
-
-    //shader setup
-    m_draw_points_shader.use();
-    Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
-    m_draw_points_shader.uniform_4x4(MVP, "MVP");
-    m_draw_points_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
-    m_draw_points_shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color, "point_color"); //for solid color
-    if(mesh->m_core->m_label_mngr){
-        m_draw_points_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
-    }
-
-
-    glPointSize(mesh->m_core->m_vis.m_point_size);
-
-    // draw
-    mesh->vao.bind(); 
-    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
-
-
-}
-
 void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //sanity checks 
@@ -676,26 +600,27 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
         LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
     }
 
+    gl::Shader& shader= m_draw_points_shader;
 
     // Set attributes that the vao will pulll from buffers
     if(mesh->m_core->V.size()){
-        mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "position", mesh->V_buf, 3);
+        mesh->vao.vertex_attribute(shader, "position", mesh->V_buf, 3);
     }
     if(mesh->m_core->NV.size()){
-        mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "normal", mesh->NV_buf, 3);
-        m_draw_points_gbuffer_shader.uniform_bool(true, "has_normals");
+        mesh->vao.vertex_attribute(shader, "normal", mesh->NV_buf, 3);
+        shader.uniform_bool(true, "has_normals");
     }
     if(mesh->m_core->C.size()){
-        GL_C(mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "color_per_vertex", mesh->C_buf, 3) );
+        GL_C(mesh->vao.vertex_attribute(shader, "color_per_vertex", mesh->C_buf, 3) );
     }
     if(mesh->m_core->I.size()){
-        GL_C(mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "intensity_per_vertex", mesh->I_buf, 1) );
+        GL_C(mesh->vao.vertex_attribute(shader, "intensity_per_vertex", mesh->I_buf, 1) );
     }
     if(mesh->m_core->L_pred.size()){
-        mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
+        mesh->vao.vertex_attribute(shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
     } 
     if(mesh->m_core->L_gt.size()){
-        mesh->vao.vertex_attribute(m_draw_points_gbuffer_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
+        mesh->vao.vertex_attribute(shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
     } 
 
 
@@ -711,38 +636,32 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
         m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
     }
-    m_draw_points_gbuffer_shader.use();
-    m_draw_points_gbuffer_shader.uniform_4x4(M, "M");
-    m_draw_points_gbuffer_shader.uniform_4x4(MV, "MV");
-    m_draw_points_gbuffer_shader.uniform_4x4(MVP, "MVP");
-    m_draw_points_gbuffer_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
-    m_draw_points_gbuffer_shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
-    m_draw_points_gbuffer_shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
-    m_draw_points_gbuffer_shader.uniform_float(mesh->m_core->min_y(), "min_y");
-    m_draw_points_gbuffer_shader.uniform_float(mesh->m_core->max_y(), "max_y");
+    shader.use();
+    shader.uniform_4x4(M, "M");
+    shader.uniform_4x4(MV, "MV");
+    shader.uniform_4x4(MVP, "MVP");
+    shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
+    shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
+    shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
+    shader.uniform_float(mesh->m_core->min_y(), "min_y");
+    shader.uniform_float(mesh->m_core->max_y(), "max_y");
     if(mesh->m_core->m_label_mngr){
-        m_draw_points_gbuffer_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
+        shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
     if(mesh->m_cur_tex_ptr->get_tex_storage_initialized() ){ 
-        m_draw_mesh_shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
+        shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     }
 
 
     m_gbuffer.bind_for_draw();
-    m_draw_points_gbuffer_shader.draw_into(m_gbuffer,
-                                    {
-                                    // std::make_pair("position_out", "position_gtex"),
-                                    std::make_pair("normal_out", "normal_gtex"),
-                                    std::make_pair("diffuse_out", "diffuse_and_metalness_gtex"),
-                                    }
-                                    ); //makes the shaders draw into the buffers we defines in the gbuffer
-
-    // m_draw_points_gbuffer_shader.draw_into(m_gbuffer,
-    //                             // {std::make_pair("position_out", "position_gtex"),
-    //                             {std::make_pair("normal_out", "normal_gtex")
-    //                             // std::make_pair("diffuse_out", "diffuse_and_weight_gtex"),
-    //                             }
-    //                             ); //makes the shaders draw into the buffers we defines in the gbuffer
+    shader.draw_into(m_gbuffer,
+                    {
+                    // std::make_pair("position_out", "position_gtex"),
+                    std::make_pair("normal_out", "normal_gtex"),
+                    std::make_pair("diffuse_out", "diffuse_gtex"),
+                    std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
+                    }
+                    ); //makes the shaders draw into the buffers we defines in the gbuffer
 
     glPointSize(mesh->m_core->m_vis.m_point_size);
 
@@ -910,113 +829,113 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     //we disable surfel rendering for the moment because I changed the gbuffer diffuse texture from Half float to RGBA8 because it's a lot faster. This however means that the color accumulation cannot happen anymore in that render target. Also I didn't modify the surfel shader to output the encoded normals as per the CryEngine3 pipeline. Due to all these reasons I will disable for now the surfel rendering
     // LOG(FATAL) << "Surfel rendering disabled because we disabled the accumulation of color into the render target. this makes the rest of the program way faster. Also we would need to modify the surfel fragment shader to output encoded normals";
 
-    //sanity checks 
-    CHECK(mesh->m_core->V.rows()==mesh->m_core->V_tangent_u.rows() ) << "Mesh does not have tangent for each vertex. We cannot render surfels without the tangent" << mesh->m_core->V.rows() << " " << mesh->m_core->V_tangent_u.rows();
-    CHECK(mesh->m_core->V.rows()==mesh->m_core->V_length_v.rows() ) << "Mesh does not have lenght_u for each vertex. We cannot render surfels without the V_lenght_u" << mesh->m_core->V.rows() << " " << mesh->m_core->V_length_v.rows();
-    if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
-        LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
-    }
+    // //sanity checks 
+    // CHECK(mesh->m_core->V.rows()==mesh->m_core->V_tangent_u.rows() ) << "Mesh does not have tangent for each vertex. We cannot render surfels without the tangent" << mesh->m_core->V.rows() << " " << mesh->m_core->V_tangent_u.rows();
+    // CHECK(mesh->m_core->V.rows()==mesh->m_core->V_length_v.rows() ) << "Mesh does not have lenght_u for each vertex. We cannot render surfels without the V_lenght_u" << mesh->m_core->V.rows() << " " << mesh->m_core->V_length_v.rows();
+    // if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
+    //     LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
+    // }
 
-    // bool enable_solid_color=!mesh->m_core->C.size();
+    // // bool enable_solid_color=!mesh->m_core->C.size();
 
-     // Set attributes that the vao will pulll from buffers
-    if(mesh->m_core->V.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "position", mesh->V_buf, 3);
-    }
-    if(mesh->m_core->NV.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "normal", mesh->NV_buf, 3);
-    }
-    if(mesh->m_core->V_tangent_u.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "tangent_u", mesh->V_tangent_u_buf, 3);
-    }
-    if(mesh->m_core->V_length_v.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "lenght_v", mesh->V_lenght_v_buf, 1);
-    }
-    if(mesh->m_core->C.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "color_per_vertex", mesh->C_buf, 3);
-    }
-    if(mesh->m_core->L_pred.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    } 
-    if(mesh->m_core->L_gt.size()){
-        mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
-    }
+    //  // Set attributes that the vao will pulll from buffers
+    // if(mesh->m_core->V.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "position", mesh->V_buf, 3);
+    // }
+    // if(mesh->m_core->NV.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "normal", mesh->NV_buf, 3);
+    // }
+    // if(mesh->m_core->V_tangent_u.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "tangent_u", mesh->V_tangent_u_buf, 3);
+    // }
+    // if(mesh->m_core->V_length_v.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "lenght_v", mesh->V_lenght_v_buf, 1);
+    // }
+    // if(mesh->m_core->C.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "color_per_vertex", mesh->C_buf, 3);
+    // }
+    // if(mesh->m_core->L_pred.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
+    // } 
+    // if(mesh->m_core->L_gt.size()){
+    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
+    // }
 
-    //matrices setuo
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
-    Eigen::Matrix4f V = m_camera->view_matrix();
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
-    Eigen::Matrix4f MV = V*M;
-    Eigen::Matrix4f MVP = P*V*M;
+    // //matrices setuo
+    // Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    // Eigen::Matrix4f V = m_camera->view_matrix();
+    // Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    // Eigen::Matrix4f MV = V*M;
+    // Eigen::Matrix4f MVP = P*V*M;
 
-    if(m_enable_surfel_splatting){
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE,GL_ONE);
-    }
-    //params
-    // glDisable(GL_DEPTH_TEST);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA_SATURATE,GL_DST_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    // glBlendEquation(GL_MAX);
-    // glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_SRC_ALPHA);
-    // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
-    // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
+    // if(m_enable_surfel_splatting){
+    //     glEnable(GL_BLEND);
+    //     glBlendFunc(GL_ONE,GL_ONE);
+    // }
+    // //params
+    // // glDisable(GL_DEPTH_TEST);
+    // // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+    // // glBlendFunc(GL_SRC_ALPHA_SATURATE,GL_DST_ALPHA);
+    // // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+    // // glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    // // glBlendEquation(GL_MAX);
+    // // glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_SRC_ALPHA);
+    // // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
+    // // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
  
-    //shader setup
-    if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
-        m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
-    }
-    m_draw_surfels_shader.use();
-    m_draw_surfels_shader.uniform_4x4(MV, "MV");
-    m_draw_surfels_shader.uniform_4x4(MVP, "MVP");
-    m_draw_surfels_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
-    m_draw_surfels_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
-    if(mesh->m_core->m_label_mngr){
-        m_draw_surfels_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
-    }
-    // m_draw_surfels_shader.uniform_bool( enable_solid_color , "enable_solid_color");
-    // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
-    // m_draw_surfels_shader.uniform_v3_float(m_specular_color , "specular_color");
-    // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
-    // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
+    // //shader setup
+    // if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
+    //     m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
+    // }
+    // m_draw_surfels_shader.use();
+    // m_draw_surfels_shader.uniform_4x4(MV, "MV");
+    // m_draw_surfels_shader.uniform_4x4(MVP, "MVP");
+    // m_draw_surfels_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
+    // m_draw_surfels_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
+    // if(mesh->m_core->m_label_mngr){
+    //     m_draw_surfels_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
+    // }
+    // // m_draw_surfels_shader.uniform_bool( enable_solid_color , "enable_solid_color");
+    // // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
+    // // m_draw_surfels_shader.uniform_v3_float(m_specular_color , "specular_color");
+    // // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
+    // // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
 
 
 
-    //draw only into depth map
-    m_draw_surfels_shader.uniform_bool(true , "enable_visibility_test");
-    m_draw_surfels_shader.draw_into( m_gbuffer,{} );
-    mesh->vao.bind(); 
-    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
+    // //draw only into depth map
+    // m_draw_surfels_shader.uniform_bool(true , "enable_visibility_test");
+    // m_draw_surfels_shader.draw_into( m_gbuffer,{} );
+    // mesh->vao.bind(); 
+    // glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
 
-    //now draw into the gbuffer only the ones that pass the visibility test
-    glDepthMask(false); //don't write to depth buffer but do perform the checking
-    glEnable( GL_POLYGON_OFFSET_FILL );
-    glPolygonOffset(m_surfel_blend_dist, m_surfel_blend_dist2); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
-    m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
-    m_gbuffer.bind_for_draw();
-    m_draw_surfels_shader.draw_into(m_gbuffer,
-                                    {
-                                    // std::make_pair("position_out", "position_gtex"),
-                                    std::make_pair("normal_out", "normal_gtex"),
-                                    std::make_pair("diffuse_out", "diffuse_and_weight_gtex"),
-                                    // std::make_pair("specular_out", "specular_gtex"),
-                                    // std::make_pair("shininess_out", "shininess_gtex")
-                                    }
-                                    );
-    mesh->vao.bind(); 
-    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
+    // //now draw into the gbuffer only the ones that pass the visibility test
+    // glDepthMask(false); //don't write to depth buffer but do perform the checking
+    // // glEnable( GL_POLYGON_OFFSET_FILL );
+    // // glPolygonOffset(m_surfel_blend_dist, m_surfel_blend_dist2); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
+    // m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
+    // m_gbuffer.bind_for_draw();
+    // m_draw_surfels_shader.draw_into(m_gbuffer,
+    //                                 {
+    //                                 // std::make_pair("position_out", "position_gtex"),
+    //                                 std::make_pair("normal_out", "normal_gtex"),
+    //                                 std::make_pair("diffuse_out", "diffuse_and_weight_gtex"),
+    //                                 // std::make_pair("specular_out", "specular_gtex"),
+    //                                 // std::make_pair("shininess_out", "shininess_gtex")
+    //                                 }
+    //                                 );
+    // mesh->vao.bind(); 
+    // glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
 
-    GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
-    glDisable(GL_BLEND);
-    glDisable( GL_POLYGON_OFFSET_FILL );
-    glDepthMask(true);
+    // GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
+    // glDisable(GL_BLEND);
+    // glDisable( GL_POLYGON_OFFSET_FILL );
+    // glDepthMask(true);
 
 
 }

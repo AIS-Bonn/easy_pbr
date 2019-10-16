@@ -197,6 +197,16 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0){
 }  
 
 
+const vec2 invAtan = vec2(0.1591, 0.3183);
+vec2 SampleSphericalMap(vec3 v)
+{
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+    uv *= invAtan;
+    uv += 0.5;
+    return uv;
+}
+
+
 
 void main(){
 
@@ -205,7 +215,14 @@ void main(){
     if(depth==1.0){
         //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
         if (use_background_img){
-            out_color=texture(background_tex, uv_in);
+            // out_color=texture(background_tex, uv_in);
+            vec2 uv = SampleSphericalMap(normalize(view_ray_in)); // make sure to normalize localPos
+            vec3 color = texture(background_tex, uv).xyz;
+            //tonemap
+            // color = color / (color + vec3(1.0));
+            // gamma correct
+            color = pow(color, vec3(1.0/2.2)); 
+            out_color = vec4(color, 1.0);
             return;
         }else{
             discard;
