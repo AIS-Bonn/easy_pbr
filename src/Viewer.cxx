@@ -955,93 +955,6 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
 void Viewer::ssao_pass(){
 
-    // LOG(WARNING) << "Not working at the moment because the position cam coords tex is not used anymore. You would need to reconstruct from the depth texture";
-
-    //subsample the positions from the gbuffer 
-    TIME_START("downsample");
-    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample);
-    TIME_END("downsample");
-
-    //AO pass--------------------------
-
-    // //TODO may be a bug here because the downsampled size by width/ssao subsample may not correspnd to the same size as in the pyramid as the mip map may do some flooring or ceeling, we need to check that
-    // Eigen::Vector2i new_size=calculate_mipmap_size(m_gbuffer.width(), m_gbuffer.height(), m_ssao_downsample);
-    // TIME_START("ao_pass");
-    // m_ao_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_size.x(), new_size.y() ); //either fully allocates it or resizes if the size changes
-    // Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
-    // Eigen::Matrix4f P_inv=P.inverse();
-
-    // m_ssao_ao_pass_shader.use();
-    // GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "proj") );
-    // m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
-    // m_ssao_ao_pass_shader.uniform_float(m_camera->m_near, "z_near");
-    // m_ssao_ao_pass_shader.uniform_float(m_camera->m_far, "z_far");
-    // m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
-    // m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
-    // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample,"pyr_lvl");
-    // m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
-    // m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
-    // m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_cam_coords_tex");
-    // m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
-    // m_ssao_ao_pass_shader.bind_image(m_ao_tex, GL_WRITE_ONLY, "ao_img");
-    // m_ssao_ao_pass_shader.dispatch(m_ao_tex.width(), m_ao_tex.height(), 16 , 16);
-    // TIME_END("ao_pass");
-
-
-    // //ATTEMPT2
-    // // Set attributes that the vao will pulll from buffers
-    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_ssao_ao_pass_shader, "position", m_fullscreen_quad->V_buf, 3) );
-    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_ssao_ao_pass_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
-    // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-
-
-    // m_ssao_downsample=0;
-    // Eigen::Vector2i new_size=calculate_mipmap_size(m_gbuffer.width(), m_gbuffer.height(), m_ssao_downsample);
-    // TIME_START("ao_pass");
-    // m_ao_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_size.x(), new_size.y() ); //either fully allocates it or resizes if the size changes
-    // Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
-    // Eigen::Matrix4f P_inv=P.inverse();
-
-    // m_ssao_ao_pass_shader.use();
-    // GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "P") );
-    // m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
-    // m_ssao_ao_pass_shader.uniform_float(m_camera->m_near, "z_near");
-    // m_ssao_ao_pass_shader.uniform_float(m_camera->m_far, "z_far");
-    // m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
-    // m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
-    // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample,"pyr_lvl");
-    // // m_ssao_ao_pass_shader.uniform_int(0,"pyr_lvl");
-    // m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
-    // m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
-    // m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_cam_coords_tex");
-    // m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
-    // // m_ssao_ao_pass_shader.bind_image(m_ao_tex, GL_WRITE_ONLY, "ao_img");
-    // // m_ssao_ao_pass_shader.dispatch(m_ao_tex.width(), m_ao_tex.height(), 16 , 16);
-
-    // // // glColorMask(false, false, false, true);
-    // m_gbuffer.bind_for_draw();
-    // m_ssao_ao_pass_shader.draw_into(m_gbuffer,
-    //                                 {
-    //                                 // std::make_pair("position_out", "position_gtex"),
-    //                                 std::make_pair("ao_out", "ao_gtex"),
-    //                                 // std::make_pair("specular_out", "specular_gtex"),
-    //                                 // std::make_pair("shininess_out", "shininess_gtex")
-    //                                 }
-    //                                 );
-
-
-    // // // draw
-    // // m_fullscreen_quad->vao.bind(); 
-    // // glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    // // glColorMask(true, true, true, true);
-    // TIME_END("ao_pass");
-
-    // //restore 
-    // GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
-
-
-
-
 
     //dont perform depth checking nor write into the depth buffer 
     TIME_START("ao_pass");
@@ -1053,13 +966,8 @@ void Viewer::ssao_pass(){
     glViewport(0.0f , 0.0f, new_viewport_size.x(), new_viewport_size.y() );
             
     //deal with the textures
-    // m_ao_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
     m_ao_tex.allocate_or_resize(GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
-    m_ao_tex.clear();
-    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample);
-    // m_gbuffer.tex_with_name("normal_gtex").generate_mipmap(m_ssao_downsample);
-
-
+    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample); //we sample the depth mat a lot of times to compute visibility. Due to cache coherency it's faster to sampler a smaller images so we mipmap up until m_ssao_downsample level
 
     //matrix setup
     Eigen::Matrix3f V_rot = Eigen::Affine3f(m_camera->view_matrix()).linear(); //for rotating the normals from the world coords to the cam_coords
@@ -1067,7 +975,6 @@ void Viewer::ssao_pass(){
     Eigen::Matrix4f P_inv=P.inverse();
 
 
-    ///attempt 3 something is wrong with the clearing of the gbuffer
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_ssao_ao_pass_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_ssao_ao_pass_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
@@ -1078,47 +985,24 @@ void Viewer::ssao_pass(){
     GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "P") );
     m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
     m_ssao_ao_pass_shader.uniform_3x3(V_rot, "V_rot");
-    m_ssao_ao_pass_shader.uniform_float(m_camera->m_near, "z_near");
-    m_ssao_ao_pass_shader.uniform_float(m_camera->m_far, "z_far");
+    m_ssao_ao_pass_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+    m_ssao_ao_pass_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
     m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
-    // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample,"pyr_lvl");
-    // m_ssao_ao_pass_shader.uniform_int(0,"pyr_lvl");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
+    m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
-    // m_ssao_ao_pass_shader.bind_image(m_ao_tex, GL_WRITE_ONLY, "ao_img");
-    // m_ssao_ao_pass_shader.dispatch(m_ao_tex.width(), m_ao_tex.height(), 16 , 16);
-
-
-
-
-    // // glColorMask(false, false, false, true);
-    // m_gbuffer.bind_for_draw();
-    // m_ssao_ao_pass_shader.draw_into(m_gbuffer,
-    //                                 {
-    //                                 // std::make_pair("position_out", "position_gtex"),
-    //                                 std::make_pair("ao_out", "ao_gtex"),
-    //                                 // std::make_pair("specular_out", "specular_gtex"),
-    //                                 // std::make_pair("shininess_out", "shininess_gtex")
-    //                                 }
-    //                                 );
+   
     m_ssao_ao_pass_shader.draw_into(m_ao_tex, "ao_out");
 
-
-
     // // draw
-    // m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    // glColorMask(true, true, true, true);
     TIME_END("ao_pass");
 
     //restore the state
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
-    // GLenum draw_buffers[1];
-    // draw_buffers[0]=GL_BACK;
-    // glDrawBuffers(1,draw_buffers);
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
     glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
@@ -1179,7 +1063,7 @@ void Viewer::ssao_pass(){
 
     // m_ao_blurred_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
     m_ao_blurred_tex.allocate_or_resize( GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() );
-    m_ao_blurred_tex.clear();
+    // m_ao_blurred_tex.clear();
 
 
 
@@ -1201,7 +1085,8 @@ void Viewer::ssao_pass(){
     m_bilateral_blur_shader.uniform_float(m_sigma_spacial, "sigma_spacial");
     m_bilateral_blur_shader.uniform_float(m_sigma_depth, "sigma_depth");
     m_bilateral_blur_shader.bind_texture(m_ao_tex, "texSource");
-    m_bilateral_blur_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"texLinearDepth");
+    // m_bilateral_blur_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"texLinearDepth");
+    m_bilateral_blur_shader.bind_texture(m_depth_linear_tex,"texLinearDepth");
 
 
 

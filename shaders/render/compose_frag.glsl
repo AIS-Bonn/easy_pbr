@@ -58,8 +58,7 @@ const float PI = 3.14159265359;
 
 
 
-float linear_depth(float depth_sample)
-{
+float linear_depth(float depth_sample){
     // depth_sample = 2.0 * depth_sample - 1.0;
     // float z_linear = 2.0 * z_near * z_far / (z_far + z_near - depth_sample * (z_far - z_near));
     // return z_linear;
