@@ -145,13 +145,13 @@ Eigen::Matrix4f Camera::compute_projection_matrix(const float fov, const float a
 void Camera::recalculate_orientation(){
     Eigen::Matrix3f cam_axes;
 
-    Eigen::Vector3f direction= this->direction();
-    Eigen::Vector3f right= (up().cross(direction)).normalized(); //the order is imporant 
-    Eigen::Vector3f up_recalc =  (direction.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
+    Eigen::Vector3f dir= this->direction();
+    Eigen::Vector3f right= (up().cross(-dir)).normalized(); //the order is imporant. We assume a right handed system, up is y axis and (-dir) is the z axis. Dir points towards the negative z
+    Eigen::Vector3f up_recalc =  (-dir.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
 
     cam_axes.col(0)=right;
     cam_axes.col(1)=up_recalc;
-    cam_axes.col(2)=-direction;
+    cam_axes.col(2)=-dir;
     // m_model_matrix.linear()=Eigen::Quaternionf(cam_axes).toRotationMatrix();
     m_model_matrix.linear()=cam_axes;
 }
@@ -241,13 +241,13 @@ Eigen::Quaternionf Camera::two_axis_rotation(const Eigen::Vector2f viewport_size
     // rotate around Y axis of the world (the vector 0,1,0)
     Eigen::Vector3f axis_y;
     axis_y << 0,1,0; 
-    Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.x()-prev_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
+    Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.x()-current_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
     q_y.normalize(); 
 
     // //rotate around x axis of the camera coordinate
     Eigen::Vector3f axis_x;
     axis_x = cam_axes().col(0);
-    Eigen::Quaternionf q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(current_mouse.y()-prev_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
+    Eigen::Quaternionf q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.y()-current_mouse.y())/viewport_size.y()*speed,  axis_x.normalized() ) ) ;
     q_x.normalize();
 
     rot_output=q_y*q_x;

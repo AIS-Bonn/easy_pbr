@@ -362,6 +362,8 @@ void Viewer::draw(const GLuint fbo_id){
         m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
         m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
 
+        // LOG(FATAL) << "Cam axes is " << m_camera->cam_axes();
+ 
         m_first_draw=false;
         m_camera->m_is_initialized=true;
 
