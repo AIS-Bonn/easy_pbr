@@ -70,6 +70,7 @@ Viewer::Viewer(const std::string config_file):
     m_ambient_color_power(0.05),
     m_enable_culling(false),
     m_enable_ssao(true),
+    m_lights_follow_camera(true),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -1479,17 +1480,42 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
     else //if (button == GLFW_MOUSE_BUTTON_3)
         mb = Camera::MouseButton::Middle;
 
-    if (action == GLFW_PRESS)
+    if (action == GLFW_PRESS){
         m_camera->mouse_pressed(mb,modifier);
-    else
+        if(m_lights_follow_camera && m_camera==m_default_camera){
+            for(int i=0; i<m_spot_lights.size(); i++){
+                m_spot_lights[i]->mouse_pressed(mb,modifier);
+            }
+        }
+    }
+    else{
         m_camera->mouse_released(mb,modifier);
+        if(m_lights_follow_camera && m_camera==m_default_camera){
+            for(int i=0; i<m_spot_lights.size(); i++){
+                m_spot_lights[i]->mouse_released(mb,modifier);
+            }
+        }
+    }
     
 }
 void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
     m_camera->mouse_move(x, y, m_viewport_size*m_subsample_factor );
+    //only move if we are controlling the main camera and only if we rotating
+    if(m_lights_follow_camera && m_camera==m_default_camera && m_camera->mouse_mode==Camera::MouseMode::Rotation){
+        for(int i=0; i<m_spot_lights.size(); i++){
+            m_spot_lights[i]->mouse_move(x, y, m_viewport_size*m_subsample_factor );
+        }
+    }
+        
 }
 void Viewer::glfw_mouse_scroll(GLFWwindow* window, double x, double y){
     m_camera->mouse_scroll(x,y);
+    //do not use scroll on the lights because they will get closer to the surface and therefore appear way brither than they should be
+    // if(m_lights_follow_camera && m_camera==m_default_camera){
+    //     for(int i=0; i<m_spot_lights.size(); i++){
+    //         m_spot_lights[i]->mouse_scroll(x,y);
+    //     }
+    // }
     
 }
 void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int modifier){

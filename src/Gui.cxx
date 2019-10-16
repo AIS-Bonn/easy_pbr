@@ -240,6 +240,7 @@ void Gui::update() {
         // ImGui::SliderFloat("Surfel blend dist", &m_view->m_surfel_blend_dist, -50.0f, 50.0f);
         // ImGui::SliderFloat("Surfel blend dist2", &m_view->m_surfel_blend_dist2, -50.0f, 50.0f);
 
+        ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);
         ImGui::Checkbox("Enable EDL", &m_view->m_enable_edl_lighting);

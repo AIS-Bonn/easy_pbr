@@ -152,6 +152,7 @@ public:
     std::string m_background_img_path;
     bool m_use_environment_map;
     std::string m_environment_map_path;
+    bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
 
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 
