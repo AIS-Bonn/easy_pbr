@@ -758,10 +758,39 @@ void Mesh::make_box_ndc(){
     V.row(7) << -1.0, 1.0, 1.0; //top-left
 
     //faces (2 triangles per faces, with 6 faces which makes 12 triangles)
-    // F.resize(12,3);
-    // F.row(0) << 0,1,2;
-    // F.row(1) << 0,2,3;
-
+    F.resize(12,3);
+    F.setZero();
+    //behind //we put them clockwise because we look at them from the outside, all of the other faces are counterclockwise because we see them from inside the cube
+    F.row(0) << 2,1,0;
+    F.row(1) << 2,0,3;
+    //front
+    // 7,6
+    // 4,5
+    F.row(2) << 4,5,6;
+    F.row(3) << 7,4,6;
+    //bottom
+    // 45
+    // 01
+    F.row(4) << 5,0,1;
+    F.row(5) << 4,0,5;
+    //top
+    // 32
+    // 76
+    F.row(6) << 7,6,3;
+    F.row(7) << 3,6,2;
+    //left
+        // 7
+        // 4
+    // 3
+    // 0
+    F.row(8) << 3,0,4;
+    F.row(9) << 3,4,7;
+    // 6
+    // 5
+        // 2
+        // 1
+    F.row(10) << 6,5,1;
+    F.row(11) << 6,1,2;
 }
 
 void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){

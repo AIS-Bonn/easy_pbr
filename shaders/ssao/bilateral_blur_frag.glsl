@@ -87,6 +87,10 @@ void main()
 {
   vec4  center_c = texture2D( texSource, texCoord );
   float center_d = texture2D( texLinearDepth, texCoord).x;
+
+  if(center_d==1.0){
+      discard;
+  }
   
   vec4  c_total = center_c;
   float w_total = 1.0;

@@ -44,8 +44,8 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     //if that was the first mesh that was added, add also a grid for the ground 
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
-        // MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
-        MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
+        MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
+        // MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
         m_meshes.push_back(mesh_grid);
 
     }
@@ -69,8 +69,8 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
         // MeshSharedPtr mesh_grid=Mesh::create();
-        // MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
-        MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
+        MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
+        // MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
         m_meshes.push_back(mesh_grid);
       
     }

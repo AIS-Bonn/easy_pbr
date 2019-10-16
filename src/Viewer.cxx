@@ -70,7 +70,7 @@ Viewer::Viewer(const std::string config_file):
     m_ambient_color_power(0.05),
     m_enable_culling(false),
     m_enable_ssao(true),
-    m_lights_follow_camera(true),
+    m_lights_follow_camera(false),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -373,7 +373,7 @@ void Viewer::draw(const GLuint fbo_id){
         if(m_spot_lights.size()>=1){
             std::shared_ptr<SpotLight> key = m_spot_lights[0];
             Eigen::Vector3f dir_movement;
-            dir_movement<<0.5, 0.5, 0.5;
+            dir_movement<<0.5, 0.6, 0.5;
             dir_movement=dir_movement.normalized();
             key->set_lookat(centroid);
             key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
@@ -387,7 +387,7 @@ void Viewer::draw(const GLuint fbo_id){
         if(m_spot_lights.size()>=2){
             std::shared_ptr<SpotLight> fill = m_spot_lights[1];
             Eigen::Vector3f dir_movement;
-            dir_movement<< -0.5, 0.5, 0.5;
+            dir_movement<< -0.5, 0.6, 0.5;
             dir_movement=dir_movement.normalized();
             fill->set_lookat(centroid);
             fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
@@ -401,7 +401,7 @@ void Viewer::draw(const GLuint fbo_id){
         if(m_spot_lights.size()>=3){
             std::shared_ptr<SpotLight> rim = m_spot_lights[2];
             Eigen::Vector3f dir_movement;
-            dir_movement<< -0.5, 0.5, -0.6;
+            dir_movement<< -0.5, 0.6, -0.5;
             dir_movement=dir_movement.normalized();
             rim->set_lookat(centroid);
             rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
