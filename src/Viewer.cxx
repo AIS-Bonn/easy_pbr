@@ -283,13 +283,13 @@ void Viewer::init_opengl(){
     }
 
     
-    m_camera->m_fov=90;
-    m_camera->m_near=0.01;
-    m_camera->m_far=10.0;
-    Eigen::Vector3f lookat;
-    lookat<< 0,0,-0.001;
-    m_camera->set_lookat(lookat); //camera in the middle of the NDC
-    m_camera->set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+    // m_camera->m_fov=90;
+    // m_camera->m_near=0.01;
+    // m_camera->m_far=10.0;
+    // Eigen::Vector3f lookat;
+    // lookat<< 0,0,-0.001;
+    // m_camera->set_lookat(lookat); //camera in the middle of the NDC
+    // m_camera->set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
 }
 
@@ -306,61 +306,61 @@ void Viewer::hotload_shaders(){
 
 void Viewer::update(const GLuint fbo_id){
     pre_draw();
-    // draw(fbo_id);
+    draw(fbo_id);
 
 
-    //attempt 2 
-    //try to draw here the cube because I want to
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    clear_framebuffers();
-    Eigen::Vector2f viewport_size;
-    viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
-    glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
+    // //attempt 2 
+    // //try to draw here the cube because I want to
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    // clear_framebuffers();
+    // Eigen::Vector2f viewport_size;
+    // viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
+    // glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
    
 
-    //create mesh
-    MeshSharedPtr quad = Mesh::create();
-    quad->create_full_screen_quad();
-    MeshGLSharedPtr quad_gl = MeshGL::create();
-    quad_gl->assign_core(quad);
-    quad_gl->upload_to_gpu();
+    // //create mesh
+    // MeshSharedPtr quad = Mesh::create();
+    // quad->create_full_screen_quad();
+    // MeshGLSharedPtr quad_gl = MeshGL::create();
+    // quad_gl->assign_core(quad);
+    // quad_gl->upload_to_gpu();
 
 
-    //cam matrices.
-    // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
-    //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
-    Eigen::Matrix4f P_inv;
-    Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear();
-    P_inv=m_camera->proj_matrix(viewport_size).inverse();
+    // //cam matrices.
+    // // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
+    // //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
+    // Eigen::Matrix4f P_inv;
+    // Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear();
+    // P_inv=m_camera->proj_matrix(viewport_size).inverse();
    
 
-    //render this cube 
-    GL_C( glDisable(GL_CULL_FACE) );
-    //dont perform depth checking nor write into the depth buffer 
-    GL_C( glDepthMask(false) );
-    GL_C( glDisable(GL_DEPTH_TEST) );
+    // //render this cube 
+    // GL_C( glDisable(GL_CULL_FACE) );
+    // //dont perform depth checking nor write into the depth buffer 
+    // GL_C( glDepthMask(false) );
+    // GL_C( glDisable(GL_DEPTH_TEST) );
 
-    gl::Shader& shader=m_equirectangular2cubemap_shader;
+    // gl::Shader& shader=m_equirectangular2cubemap_shader;
 
-    // Set attributes that the vao will pulll from buffers
-    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
-    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    // // Set attributes that the vao will pulll from buffers
+    // GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
+    // GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
-    // //shader setup
-    GL_C( shader.use() );
-    shader.uniform_3x3(V_inv_rot, "V_inv_rot");
-    shader.uniform_4x4(P_inv, "P_inv");
-    GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
+    // // //shader setup
+    // GL_C( shader.use() );
+    // shader.uniform_3x3(V_inv_rot, "V_inv_rot");
+    // shader.uniform_4x4(P_inv, "P_inv");
+    // GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
 
-    // draw
-    GL_C( quad_gl->vao.bind() ); 
-    GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+    // // draw
+    // GL_C( quad_gl->vao.bind() ); 
+    // GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
 
-    // //restore the state
-    glDepthMask(true);
-    glEnable(GL_DEPTH_TEST);
+    // // //restore the state
+    // glDepthMask(true);
+    // glEnable(GL_DEPTH_TEST);
 
 
 
@@ -1304,6 +1304,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f P_inv = P.inverse();
     Eigen::Matrix4f V_inv = V.inverse(); //used for projecting the cam coordinates positions (which were hit with MV) stored into the gbuffer back into the world coordinates (so just makes them be affected by M which is the model matrix which just puts things into a common world coordinate)
+    Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear(); //used for getting the view rays from the cam coords to the world coords so we can sample the cubemap
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_id); 
     clear_framebuffers();
@@ -1327,6 +1328,9 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     if (m_use_background_img){
         m_compose_final_quad_shader.bind_texture(m_background_tex, "background_tex");
     }
+    if (m_use_environment_map){
+        m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
+    }
     // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("specular_gtex"),"specular_tex");
     // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("shininess_gtex"),"shininess_tex");
     if(m_enable_ssao){
@@ -1335,6 +1339,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     }
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
+    m_compose_final_quad_shader.uniform_3x3(V_inv_rot, "V_inv_rot");
     m_compose_final_quad_shader.uniform_v3_float(m_camera->position(), "eye_pos");
     m_compose_final_quad_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_compose_final_quad_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
@@ -1347,6 +1352,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
     m_compose_final_quad_shader.uniform_bool(m_use_background_img , "use_background_img"); 
+    m_compose_final_quad_shader.uniform_bool(m_use_environment_map , "use_environment_map");
 
     //fill up the samplers for the spot lights
     // for(int i=0; i<m_spot_lights.size(); i++){
@@ -1484,46 +1490,125 @@ void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path)
 void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex){
 
 
-    //create projection and view matrices for the 6 faces we want to render;
-    Camera cam;
-    cam.m_fov=90;
-    cam.m_near=0.1;
-    cam.m_far=10.0;
-    cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
-    //create mesh
-    MeshSharedPtr cube;
-    cube->make_box_ndc();
-    MeshGLSharedPtr cube_gl;
-    cube_gl->assign_core(cube);
-    cube_gl->upload_to_gpu();
+
+    // //attempt 2 
+    //try to draw here the cube because I want to
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    // clear_framebuffers();
+    Eigen::Vector2f viewport_size;
+    viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
+    glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
    
 
+    //create mesh
+    MeshSharedPtr quad = Mesh::create();
+    quad->create_full_screen_quad();
+    MeshGLSharedPtr quad_gl = MeshGL::create();
+    quad_gl->assign_core(quad);
+    quad_gl->upload_to_gpu();
+
+    //create cam
+    Camera cam;
+    cam.m_fov=90;
+    cam.m_near=0.01;
+    cam.m_far=10.0;
+    Eigen::Vector3f lookat;
+    lookat<< 0,0,-1.0;
+    cam.set_lookat(lookat); 
+    cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+
+
+    //cam matrices.
+    // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
+    //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
+    Eigen::Matrix4f P_inv;
+    Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
+    P_inv=cam.proj_matrix(viewport_size).inverse();
+   
+
     //render this cube 
-    glDisable(GL_CULL_FACE);
+    GL_C( glDisable(GL_CULL_FACE) );
     //dont perform depth checking nor write into the depth buffer 
-    glDepthMask(false);
-    glDisable(GL_DEPTH_TEST);
+    GL_C( glDepthMask(false) );
+    GL_C( glDisable(GL_DEPTH_TEST) );
 
     gl::Shader& shader=m_equirectangular2cubemap_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
-    cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
+    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
     GL_C( shader.use() );
-    shader.bind_texture(equirectangular_tex,"equirectangular_tex");
 
-    // draw
-    cube_gl->vao.bind(); 
-    glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    for(int i=0; i<6; i++){
+        shader.uniform_3x3(V_inv_rot, "V_inv_rot");
+        shader.uniform_4x4(P_inv, "P_inv");
+        GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
+        shader.draw_into(m_environment_cubemap_tex, "out_color", i);
+
+        // draw
+        GL_C( quad_gl->vao.bind() ); 
+        GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+    
+    }
 
     // //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
+
+
+
+
+
+
+
+
+
+    //attempt 1 
+    // //create projection and view matrices for the 6 faces we want to render;
+    // Camera cam;
+    // cam.m_fov=90;
+    // cam.m_near=0.1;
+    // cam.m_far=10.0;
+    // cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+
+    // //create mesh
+    // MeshSharedPtr cube;
+    // cube->make_box_ndc();
+    // MeshGLSharedPtr cube_gl;
+    // cube_gl->assign_core(cube);
+    // cube_gl->upload_to_gpu();
+
+   
+
+    // //render this cube 
+    // glDisable(GL_CULL_FACE);
+    // //dont perform depth checking nor write into the depth buffer 
+    // glDepthMask(false);
+    // glDisable(GL_DEPTH_TEST);
+
+    // gl::Shader& shader=m_equirectangular2cubemap_shader;
+
+    // // Set attributes that the vao will pulll from buffers
+    // GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
+    // cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    // // //shader setup
+    // GL_C( shader.use() );
+    // shader.bind_texture(equirectangular_tex,"equirectangular_tex");
+
+    // // draw
+    // cube_gl->vao.bind(); 
+    // glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+    // // //restore the state
+    // glDepthMask(true);
+    // glEnable(GL_DEPTH_TEST);
 
 
 

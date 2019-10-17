@@ -3,6 +3,7 @@
 //in
 layout(location=1) in vec2 uv_in;
 layout(location=2) in vec3 view_ray_in;
+layout(location=3) in vec3 world_view_ray_in;
 
 //out
 layout(location = 0) out vec4 out_color;
@@ -15,6 +16,7 @@ uniform sampler2D log_depth_tex;
 uniform sampler2D ao_tex;
 uniform sampler2D depth_tex;
 uniform sampler2D background_tex;
+uniform samplerCube environment_cubemap_tex;
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
@@ -33,6 +35,7 @@ uniform float light_factor;
 uniform bool enable_edl_lighting;
 uniform float edl_strength;
 uniform bool use_background_img;
+uniform bool use_environment_map;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 
@@ -221,6 +224,11 @@ void main(){
             // color = color / (color + vec3(1.0));
             // gamma correct
             color = pow(color, vec3(1.0/2.2)); 
+            out_color = vec4(color, 1.0);
+            return;
+        }else if(use_environment_map){
+            vec3 env_color = texture(environment_cubemap_tex, world_view_ray_in).rgb;
+            vec3 color = pow(env_color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             return;
         }else{
