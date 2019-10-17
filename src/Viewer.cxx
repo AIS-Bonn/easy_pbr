@@ -319,23 +319,19 @@ void Viewer::update(const GLuint fbo_id){
    
 
     //create mesh
-    MeshSharedPtr cube = Mesh::create();
-    cube->make_box_ndc();
-    MeshGLSharedPtr cube_gl = MeshGL::create();
-    cube_gl->assign_core(cube);
-    cube_gl->upload_to_gpu();
+    MeshSharedPtr quad = Mesh::create();
+    quad->create_full_screen_quad();
+    MeshGLSharedPtr quad_gl = MeshGL::create();
+    quad_gl->assign_core(quad);
+    quad_gl->upload_to_gpu();
 
 
-    // Eigen::Matrix4f MVP=compute_mvp_matrix(cube_gl);
-    Eigen::Matrix4f M,V,P, MVP;
-    V=m_camera->view_matrix();
-    P=m_camera->proj_matrix(viewport_size); 
-    MVP=P*V;
-    VLOG(1) <<"MVP is " << MVP;
-    VLOG(1) <<"V is " << V;
-
-
-
+    //cam matrices.
+    // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
+    //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
+    Eigen::Matrix4f P_inv;
+    Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear();
+    P_inv=m_camera->proj_matrix(viewport_size).inverse();
    
 
     //render this cube 
@@ -347,18 +343,19 @@ void Viewer::update(const GLuint fbo_id){
     gl::Shader& shader=m_equirectangular2cubemap_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( cube_gl->vao.vertex_attribute(shader, "position_ndc", cube_gl->V_buf, 3) );
-    GL_C( cube_gl->vao.indices(cube_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
+    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
     GL_C( shader.use() );
-    shader.uniform_4x4(MVP, "MVP");
+    shader.uniform_3x3(V_inv_rot, "V_inv_rot");
+    shader.uniform_4x4(P_inv, "P_inv");
     GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
 
     // draw
-    GL_C( cube_gl->vao.bind() ); 
-    GL_C( glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+    GL_C( quad_gl->vao.bind() ); 
+    GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
 
     // //restore the state
     glDepthMask(true);
