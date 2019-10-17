@@ -227,8 +227,11 @@ void main(){
             out_color = vec4(color, 1.0);
             return;
         }else if(use_environment_map){
-            vec3 env_color = texture(environment_cubemap_tex, world_view_ray_in).rgb;
-            vec3 color = pow(env_color, vec3(1.0/2.2)); 
+            vec3 color = texture(environment_cubemap_tex, world_view_ray_in).rgb;
+            //tonemap
+            color = color / (color + vec3(1.0));
+            //gamma correct
+            color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             return;
         }else{
@@ -332,7 +335,10 @@ void main(){
         
         // ambient lighting (note that the next IBL tutorial will replace 
         // this ambient lighting with environment lighting).
+        // vec3 ambient = vec3(ambient_color_power) * ambient_color * ao;
         vec3 ambient = vec3(ambient_color_power) * ambient_color * ao;
+        // vec3 ambient_irradiance=texture(environment_cubemap_tex, N).rgb;
+        // vec3 ambient = ambient_irradiance * ao;
 
         color = ambient + Lo;
 

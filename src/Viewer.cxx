@@ -19,9 +19,9 @@
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
-// #include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
 #include "RandGenerator.h"
+#include "opencv_utils.h"
 
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define PROFILER_IMPLEMENTATION 1
@@ -36,7 +36,7 @@
 #include <configuru.hpp>
 using namespace configuru;
 
-// using namespace easy_pbr::utils;
+using namespace easy_pbr::utils;
 
 //ros
 // #include "easy_pbr/utils/RosTools.h"
@@ -102,6 +102,7 @@ void Viewer::init_params(const std::string config_file){
     m_background_img_path = (std::string)vis_config["background_img_path"];
     m_use_environment_map = vis_config["use_environment_map"];
     m_environment_map_path = (std::string) vis_config["environment_map_path"];
+    m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
 
     m_subsample_factor = vis_config["subsample_factor"];
     m_viewport_size/=m_subsample_factor;
@@ -357,75 +358,6 @@ void Viewer::update(const GLuint fbo_id){
     // // draw
     // GL_C( quad_gl->vao.bind() ); 
     // GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
-
-    // // //restore the state
-    // glDepthMask(true);
-    // glEnable(GL_DEPTH_TEST);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //attempt 1
-    // //try to draw here the cube because I want to
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    // clear_framebuffers();
-    // Eigen::Vector2f viewport_size;
-    // viewport_size<< 512, 512;
-    // glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
-
-   
-
-    // //create mesh
-    // MeshSharedPtr cube = Mesh::create();
-    // cube->make_box_ndc();
-    // MeshGLSharedPtr cube_gl = MeshGL::create();
-    // cube_gl->assign_core(cube);
-    // cube_gl->upload_to_gpu();
-
-
-    // // Eigen::Matrix4f MVP=compute_mvp_matrix(cube_gl);
-    // Eigen::Matrix4f M,V,P, MVP;
-    // V=m_camera->view_matrix();
-    // P=m_camera->proj_matrix(viewport_size); 
-    // MVP=P*V;
-    // VLOG(1) <<"MVP is " << MVP;
-    // VLOG(1) <<"V is " << V;
-
-
-
-   
-
-    // //render this cube 
-    // GL_C( glDisable(GL_CULL_FACE) );
-    // //dont perform depth checking nor write into the depth buffer 
-    // GL_C( glDepthMask(false) );
-    // GL_C( glDisable(GL_DEPTH_TEST) );
-
-    // gl::Shader& shader=m_equirectangular2cubemap_shader;
-
-    // // Set attributes that the vao will pulll from buffers
-    // GL_C( cube_gl->vao.vertex_attribute(shader, "position_ndc", cube_gl->V_buf, 3) );
-    // GL_C( cube_gl->vao.indices(cube_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
-    // // //shader setup
-    // GL_C( shader.use() );
-    // shader.uniform_4x4(MVP, "MVP");
-    // GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
-
-    // // draw
-    // GL_C( cube_gl->vao.bind() ); 
-    // GL_C( glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
 
     // // //restore the state
     // glDepthMask(true);
@@ -1480,7 +1412,8 @@ void Viewer::create_random_samples_hemisphere(){
 }
 
 void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path){
-    cv::Mat img=cv::imread(img_path);
+    cv::Mat img=cv::imread(img_path, -1); //the -1 is so that it reads the image as floats
+    // LOG(FATAL) << "image has type " << type2string(img.type());
     CHECK(img.data) << "Could not open background image " << img_path;
     cv::Mat img_flipped;
     cv::flip(img, img_flipped, 0); //flip around the horizontal axis
