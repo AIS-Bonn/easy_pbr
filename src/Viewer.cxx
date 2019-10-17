@@ -71,7 +71,6 @@ Viewer::Viewer(const std::string config_file):
     m_enable_culling(false),
     m_enable_ssao(true),
     m_lights_follow_camera(false),
-    m_environment_cubemap_resolution(512),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -238,8 +237,6 @@ void Viewer::init_opengl(){
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode(GL_NEAREST);
 
-    m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
-
 
 
     m_rvec_tex.set_wrap_mode(GL_REPEAT); //so we repeat the random vectors specified in this 4x4 matrix over the whole image
@@ -289,7 +286,7 @@ void Viewer::init_opengl(){
     m_camera->m_far=10.0;
     Eigen::Vector3f lookat;
     lookat<< 0,0,-0.001;
-    m_camera->set_lookat(lookat); //camera in the middle of the cube
+    m_camera->set_lookat(lookat); //camera in the middle of the NDC
     m_camera->set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
 }
@@ -313,7 +310,7 @@ void Viewer::update(const GLuint fbo_id){
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
     clear_framebuffers();
     Eigen::Vector2f viewport_size;
-    viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
+    viewport_size<< 512, 512;
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
    
@@ -1260,10 +1257,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     if (m_use_background_img){
         m_compose_final_quad_shader.bind_texture(m_background_tex, "background_tex");
     }
-    if (m_use_environment_map){
-        m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
-    }
-    
     // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("specular_gtex"),"specular_tex");
     // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("shininess_gtex"),"shininess_tex");
     if(m_enable_ssao){
@@ -1284,7 +1277,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
     m_compose_final_quad_shader.uniform_bool(m_use_background_img , "use_background_img"); 
-    m_compose_final_quad_shader.uniform_bool(m_use_environment_map , "use_environment_map");
 
     //fill up the samplers for the spot lights
     // for(int i=0; i<m_spot_lights.size(); i++){
@@ -1422,75 +1414,42 @@ void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path)
 void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex){
 
 
-
-
-
-
-
-    //try to draw here the cube because I want to
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    // clear_framebuffers();
-    m_environment_cubemap_tex.clear();
-    Eigen::Vector2f viewport_size;
-    viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
-    glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
-
-   
-
-    //create mesh
-    MeshSharedPtr cube = Mesh::create();
-    cube->make_box_ndc();
-    MeshGLSharedPtr cube_gl = MeshGL::create();
-    cube_gl->assign_core(cube);
-    cube_gl->upload_to_gpu();
-
-    //create cam
+    //create projection and view matrices for the 6 faces we want to render;
     Camera cam;
     cam.m_fov=90;
-    cam.m_near=0.01;
+    cam.m_near=0.1;
     cam.m_far=10.0;
-    Eigen::Vector3f lookat;
-    lookat<< 0,0,-0.001;
-    cam.set_lookat(lookat); 
     cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
-    Eigen::Matrix4f M,V,P, MVP;
-    V=cam.view_matrix();
-    P=cam.proj_matrix(viewport_size); 
-    MVP=P*V;
+    //create mesh
+    MeshSharedPtr cube;
+    cube->make_box_ndc();
+    MeshGLSharedPtr cube_gl;
+    cube_gl->assign_core(cube);
+    cube_gl->upload_to_gpu();
 
    
 
     //render this cube 
-    GL_C( glDisable(GL_CULL_FACE) );
+    glDisable(GL_CULL_FACE);
     //dont perform depth checking nor write into the depth buffer 
-    GL_C( glDepthMask(false) );
-    GL_C( glDisable(GL_DEPTH_TEST) );
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
 
     gl::Shader& shader=m_equirectangular2cubemap_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( cube_gl->vao.vertex_attribute(shader, "position_ndc", cube_gl->V_buf, 3) );
-    GL_C( cube_gl->vao.indices(cube_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
+    cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
     GL_C( shader.use() );
-
-    for(int i=0; i<6; i++){
-        //TODO setup new camera
-        shader.uniform_4x4(MVP, "MVP");
-        GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );
-        shader.draw_into(m_environment_cubemap_tex, "out_color", i);
-
-        // draw
-        GL_C( cube_gl->vao.bind() ); 
-        GL_C( glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
-    }
+    shader.bind_texture(equirectangular_tex,"equirectangular_tex");
 
     // draw
-    // GL_C( cube_gl->vao.bind() ); 
-    // GL_C( glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+    cube_gl->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
     // //restore the state
     glDepthMask(true);
@@ -1498,61 +1457,6 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    // //create projection and view matrices for the 6 faces we want to render;
-    // Camera cam;
-    // cam.m_fov=90;
-    // cam.m_near=0.1;
-    // cam.m_far=10.0;
-    // cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
-
-    // //create mesh
-    // MeshSharedPtr cube;
-    // cube->make_box_ndc();
-    // MeshGLSharedPtr cube_gl;
-    // cube_gl->assign_core(cube);
-    // cube_gl->upload_to_gpu();
-
-   
-
-    // //render this cube 
-    // glDisable(GL_CULL_FACE);
-    // //dont perform depth checking nor write into the depth buffer 
-    // glDepthMask(false);
-    // glDisable(GL_DEPTH_TEST);
-
-    // gl::Shader& shader=m_equirectangular2cubemap_shader;
-
-    // // Set attributes that the vao will pulll from buffers
-    // GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
-    // cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
-    // // //shader setup
-    // GL_C( shader.use() );
-    // shader.bind_texture(equirectangular_tex,"equirectangular_tex");
-
-    // // draw
-    // cube_gl->vao.bind(); 
-    // glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
-
-    // // //restore the state
-    // glDepthMask(true);
-    // glEnable(GL_DEPTH_TEST);
-
-
-    //-------------------------
  
 
     //
