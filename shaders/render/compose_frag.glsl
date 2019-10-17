@@ -215,13 +215,14 @@ void main(){
     //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
     if(depth==1.0){
-        //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
+        // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
         if (use_background_img){
+        // if (false){
             // out_color=texture(background_tex, uv_in);
             vec2 uv = SampleSphericalMap(normalize(view_ray_in)); // make sure to normalize localPos
             vec3 color = texture(background_tex, uv).xyz;
             //tonemap
-            // color = color / (color + vec3(1.0));
+            color = color / (color + vec3(1.0));
             // gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
@@ -233,10 +234,13 @@ void main(){
             //gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
+            // out_color = vec4(1.0);
             return;
         }else{
             discard;
         }
+
+        discard;
     }
     vec3 albedo=pow( texture(diffuse_tex, uv_in).xyz, vec3(2.2) );
 
@@ -285,7 +289,7 @@ void main(){
             proj_in_light = proj_in_light * 0.5 + 0.5;
             //check if we are outside the image or behind it
             if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
-                continue;
+                // continue;
             }
 
 

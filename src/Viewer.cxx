@@ -1260,11 +1260,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     if (m_use_background_img){
         m_compose_final_quad_shader.bind_texture(m_background_tex, "background_tex");
     }
-    if (m_use_environment_map){
-        m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
-    }
-    // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("specular_gtex"),"specular_tex");
-    // m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("shininess_gtex"),"shininess_tex");
+    //cubemap has to be always bound otherwise the whole program crashes for some reason...
+    m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
     if(m_enable_ssao){
         m_compose_final_quad_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
         // m_compose_final_quad_shader.bind_texture(m_ao_tex,"ao_tex");
