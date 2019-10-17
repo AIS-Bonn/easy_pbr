@@ -1412,7 +1412,7 @@ void Viewer::create_random_samples_hemisphere(){
 }
 
 void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path){
-    cv::Mat img=cv::imread(img_path, -1); //the -1 is so that it reads the image as floats
+    cv::Mat img=cv::imread(img_path, -1); //the -1 is so that it reads the image as floats because we might read a .hdr image which needs high precision
     // LOG(FATAL) << "image has type " << type2string(img.type());
     CHECK(img.data) << "Could not open background image " << img_path;
     cv::Mat img_flipped;
