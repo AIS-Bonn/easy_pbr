@@ -1514,9 +1514,9 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     cam.m_fov=90;
     cam.m_near=0.01;
     cam.m_far=10.0;
-    Eigen::Vector3f lookat;
-    lookat<< 0,0,-1.0;
-    cam.set_lookat(lookat); 
+    // Eigen::Vector3f lookat;
+    // lookat<< 0,0,-1.0;
+    // cam.set_lookat(lookat); 
     cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
 
@@ -1524,8 +1524,23 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
     //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
     Eigen::Matrix4f P_inv;
-    Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
     P_inv=cam.proj_matrix(viewport_size).inverse();
+
+    std::vector<Eigen::Vector3f> lookat_vectors(6); //ordering of the faces is from here https://learnopengl.com/Advanced-OpenGL/Cubemaps
+    lookat_vectors[0] << 1,0,0; //right
+    lookat_vectors[1] << -1,0,0; //left
+    lookat_vectors[2] << 0,1,0; //up
+    lookat_vectors[3] << 0,-1,0; //down
+    lookat_vectors[4] << 0,0,1; //backwards
+    lookat_vectors[5] << 0,0,-1; //forward
+    std::vector<Eigen::Vector3f> up_vectors(6); //all of the cameras have a up vector towards positive y except the ones that look at the top and bottom faces
+    //TODO for some reason the up vectors had to be negated (so the camera is upside down) and only then it works. I have no idea why
+    up_vectors[0] << 0,-1,0; //right
+    up_vectors[1] << 0,-1,0; //left
+    up_vectors[2] << 0,0,1; //up
+    up_vectors[3] << 0,0,-1; //down
+    up_vectors[4] << 0,-1,0; //backwards
+    up_vectors[5] << 0,-1,0; //forward
    
 
     //render this cube 
@@ -1545,6 +1560,12 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     GL_C( shader.use() );
 
     for(int i=0; i<6; i++){
+        //move the camera to look at the corresponding face of the cube 
+        cam.set_lookat(lookat_vectors[i]); 
+        cam.set_up(up_vectors[i]); 
+        Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
+
+
         shader.uniform_3x3(V_inv_rot, "V_inv_rot");
         shader.uniform_4x4(P_inv, "P_inv");
         GL_C( shader.bind_texture(m_background_tex,"equirectangular_tex") );

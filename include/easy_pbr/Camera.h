@@ -31,6 +31,7 @@ public:
     //setters
     void set_lookat(const Eigen::Vector3f& lookat); //updates the orientation according to the up vector so that it points towards lookat
     void set_position(const Eigen::Vector3f& pos); //updates the orientation according to the up vector so that it keeps pointing towards lookat
+    void set_up(const Eigen::Vector3f& up);
 
 
     //convenience functions

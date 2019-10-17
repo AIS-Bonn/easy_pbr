@@ -84,6 +84,11 @@ void Camera::set_position(const Eigen::Vector3f& pos){
     //setting a new position means rotating the cam so that it still looks at the lookat point
     recalculate_orientation();
 }
+void Camera::set_up(const Eigen::Vector3f& up){
+    m_up=up;
+
+    recalculate_orientation();
+}
 
 
 //convenicence
