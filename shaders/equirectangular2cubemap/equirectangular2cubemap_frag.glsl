@@ -1,7 +1,7 @@
 #version 430 core
 
 //in
-layout(location = 0) in vec3 view_ray_in;
+layout(location = 0) in vec3 position_ndc_in;
 
 //out
 layout(location = 0) out vec4 out_color;
@@ -21,9 +21,8 @@ vec2 SampleSphericalMap(vec3 v)
 
 void main(){
 
-    vec2 uv = SampleSphericalMap(normalize(view_ray_in)); // make sure to normalize localPos
+    vec2 uv = SampleSphericalMap(normalize(position_ndc_in)); // make sure to normalize localPos
     vec3 color = texture(equirectangular_tex, uv).xyz;
-    // vec3 color=vec3(uv,1.0);
 
     out_color = vec4(color, 1.0);
     // out_color = vec4(1.0);
