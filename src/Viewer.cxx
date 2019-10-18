@@ -104,6 +104,7 @@ void Viewer::init_params(const std::string config_file){
     m_use_environment_map = vis_config["use_environment_map"];
     m_environment_map_path = (std::string) vis_config["environment_map_path"];
     m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
+    m_irradiance_cubemap_resolution = vis_config["irradiance_cubemap_resolution"];
 
     m_subsample_factor = vis_config["subsample_factor"];
     m_viewport_size/=m_subsample_factor;
@@ -1265,8 +1266,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         m_compose_final_quad_shader.bind_texture(m_background_tex, "background_tex");
     }
     //cubemap has to be always bound otherwise the whole program crashes for some reason...
-    // m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
-    m_compose_final_quad_shader.bind_texture(m_irradiance_cubemap_tex, "environment_cubemap_tex");
+    m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
+    m_compose_final_quad_shader.bind_texture(m_irradiance_cubemap_tex, "irradiance_cubemap_tex");
     if(m_enable_ssao){
         m_compose_final_quad_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
         // m_compose_final_quad_shader.bind_texture(m_ao_tex,"ao_tex");

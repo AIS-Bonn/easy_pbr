@@ -17,6 +17,7 @@ uniform sampler2D ao_tex;
 uniform sampler2D depth_tex;
 uniform sampler2D background_tex;
 uniform samplerCube environment_cubemap_tex;
+uniform samplerCube irradiance_cubemap_tex;
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
@@ -229,6 +230,7 @@ void main(){
             return;
         }else if(use_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+            // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             //tonemap
             color = color / (color + vec3(1.0));
             //gamma correct
@@ -337,12 +339,19 @@ void main(){
 
         }   
         
-        // ambient lighting (note that the next IBL tutorial will replace 
-        // this ambient lighting with environment lighting).
-        // vec3 ambient = vec3(ambient_color_power) * ambient_color * ao;
-        vec3 ambient = vec3(ambient_color_power) * ambient_color * ao;
-        // vec3 ambient_irradiance=texture(environment_cubemap_tex, N).rgb;
-        // vec3 ambient = ambient_irradiance * ao;
+        // ambient lighting (we now use IBL as the ambient term)
+        vec3 ambient=vec3(0.0);
+        if (use_environment_map){
+            vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
+            vec3 kD = 1.0 - kS;
+            kD *= 1.0 - metalness;	  
+            vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
+            vec3 diffuse      = irradiance * albedo;
+            ambient = (kD * diffuse) * ao;
+        }else{
+            ambient = vec3(ambient_color_power) * ambient_color * ao;
+        }
+       
 
         color = ambient + Lo;
 
