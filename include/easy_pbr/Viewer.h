@@ -119,6 +119,7 @@ public:
     gl::Shader m_depth_linearize_shader;
     gl::Shader m_bilateral_blur_shader;
     gl::Shader m_equirectangular2cubemap_shader;
+    gl::Shader m_radiance2irradiance_shader;
 
     gl::GBuffer m_gbuffer;
 
@@ -128,6 +129,7 @@ public:
     gl::Texture2D m_depth_linear_tex;
     gl::Texture2D m_background_tex; //in the case we want an image as the background
     gl::CubeMap m_environment_cubemap_tex; //used for image-based ligthing
+    gl::CubeMap m_irradiance_cubemap_tex; //averages the radiance around the hermisphere for each direction. Used for diffuse IBL
     Eigen::MatrixXf m_random_samples;
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
 
@@ -155,6 +157,7 @@ public:
     std::string m_environment_map_path;
     bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
     int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
+    int m_irradiance_cubemap_resolution;
 
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 
@@ -168,6 +171,7 @@ private:
 
     void read_background_img(gl::Texture2D& tex, const std::string img_path);
     void equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex);
+    void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance
 
 
 
