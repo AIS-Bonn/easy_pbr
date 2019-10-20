@@ -1,5 +1,6 @@
 #include "easy_pbr/Viewer.h"
 
+#include <string> //find_last_of
 
 //loguru
 #define LOGURU_IMPLEMENTATION 1
@@ -22,6 +23,7 @@
 #include "easy_pbr/LabelMngr.h"
 #include "RandGenerator.h"
 #include "opencv_utils.h"
+#include "string_utils.h"
 
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define PROFILER_IMPLEMENTATION 1
@@ -242,6 +244,8 @@ void Viewer::init_opengl(){
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode(GL_NEAREST);
 
+    //cubemaps 
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //to linearly filter across faces of the cube
     m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
     m_irradiance_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution);
 
@@ -1802,11 +1806,24 @@ void Viewer::glfw_resize(GLFWwindow* window, int width, int height){
 
 void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
     for(int i=0; i<count; i++){
-       VLOG(1) << "loading mesh from path " << paths[i]; 
-       MeshSharedPtr mesh = Mesh::create();
-       mesh->load_from_file(std::string(paths[i]));
-       std::string name= "mesh_" + std::to_string(m_scene->get_nr_meshes());
-       m_scene->add_mesh(mesh,name);
+        VLOG(1) << "loading from path " << paths[i]; 
+
+        std::string file_ext = std::string(paths[i]).substr(std::string(paths[i]).find_last_of(".") + 1);
+        trim(file_ext); //remove whitespaces from beggining and end
+        if(file_ext=="hdr" || file_ext=="HDR"){
+            //load environment map
+            m_use_environment_map=true;
+            read_background_img(m_background_tex, paths[i]);
+            equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
+            radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+        }else{
+            MeshSharedPtr mesh = Mesh::create();
+            mesh->load_from_file(std::string(paths[i]));
+            std::string name= "mesh_" + std::to_string(m_scene->get_nr_meshes());
+            m_scene->add_mesh(mesh,name);
+        }
+
+
     }
 }
 
