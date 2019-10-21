@@ -75,6 +75,7 @@ Viewer::Viewer(const std::string config_file):
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
+    m_prefilter_cubemap_resolution(128),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -107,6 +108,7 @@ void Viewer::init_params(const std::string config_file){
     m_environment_map_path = (std::string) vis_config["environment_map_path"];
     m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
     m_irradiance_cubemap_resolution = vis_config["irradiance_cubemap_resolution"];
+    m_prefilter_cubemap_resolution = vis_config["prefilter_cubemap_resolution"];
 
     m_subsample_factor = vis_config["subsample_factor"];
     m_viewport_size/=m_subsample_factor;
@@ -230,6 +232,7 @@ void Viewer::compile_shaders(){
 
     m_equirectangular2cubemap_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_frag.glsl");
     m_radiance2irradiance_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_frag.glsl");
+    m_prefilter_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/prefilter_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/prefilter_frag.glsl");
 }
 
 void Viewer::init_opengl(){
@@ -242,12 +245,16 @@ void Viewer::init_opengl(){
     m_gbuffer.sanity_check();
 
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
-    m_gbuffer.tex_with_name("normal_gtex").set_filter_mode(GL_NEAREST);
+    m_gbuffer.tex_with_name("normal_gtex").set_filter_mode_min_mag(GL_NEAREST);
 
     //cubemaps 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //to linearly filter across faces of the cube
     m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
     m_irradiance_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution);
+    m_prefilter_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_prefilter_cubemap_resolution, m_prefilter_cubemap_resolution);
+    m_prefilter_cubemap_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
+    m_prefilter_cubemap_tex.set_filter_mode_mag(GL_LINEAR);
+    m_prefilter_cubemap_tex.generate_mipmap_full();
 
 
     m_rvec_tex.set_wrap_mode(GL_REPEAT); //so we repeat the random vectors specified in this 4x4 matrix over the whole image
@@ -290,6 +297,7 @@ void Viewer::init_opengl(){
         //if it's equirectangular we convert it to cubemap because it is faster to sample
         equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
         radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+        prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
     }
 
     
@@ -1272,6 +1280,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     //cubemap has to be always bound otherwise the whole program crashes for some reason...
     m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
     m_compose_final_quad_shader.bind_texture(m_irradiance_cubemap_tex, "irradiance_cubemap_tex");
+    m_compose_final_quad_shader.bind_texture(m_prefilter_cubemap_tex, "prefilter_cubemap_tex");
+    m_compose_final_quad_shader.uniform_int(m_environment_cubemap_resolution, "radiance_cubemap_resolution");
     if(m_enable_ssao){
         m_compose_final_quad_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
         // m_compose_final_quad_shader.bind_texture(m_ao_tex,"ao_tex");
@@ -1684,6 +1694,100 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
 }
+void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex){
+
+    // Eigen::Vector2f viewport_size;
+    // viewport_size<< m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution;
+    // glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
+
+   
+
+    //create mesh
+    MeshSharedPtr quad = Mesh::create();
+    quad->create_full_screen_quad();
+    MeshGLSharedPtr quad_gl = MeshGL::create();
+    quad_gl->assign_core(quad);
+    quad_gl->upload_to_gpu();
+
+    //create cam
+    Camera cam;
+    cam.m_fov=90;
+    cam.m_near=0.01;
+    cam.m_far=10.0;
+    cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
+
+
+    //cam matrices.
+    // We supply to the shader the coordinates in clip_space. The perspective division by w will leave the coordinates unaffected therefore the NDC is the same
+    //we need to revert from clip space back to a world ray so we multiply with P_inv and afterwards with V_inv (but only the rotational part because we don't want to skybox to move when we translate the camera)
+    Eigen::Matrix4f P_inv;
+
+    std::vector<Eigen::Vector3f> lookat_vectors(6); //ordering of the faces is from here https://learnopengl.com/Advanced-OpenGL/Cubemaps
+    lookat_vectors[0] << 1,0,0; //right
+    lookat_vectors[1] << -1,0,0; //left
+    lookat_vectors[2] << 0,1,0; //up
+    lookat_vectors[3] << 0,-1,0; //down
+    lookat_vectors[4] << 0,0,1; //backwards
+    lookat_vectors[5] << 0,0,-1; //forward
+    std::vector<Eigen::Vector3f> up_vectors(6); //all of the cameras have a up vector towards positive y except the ones that look at the top and bottom faces
+    //TODO for some reason the up vectors had to be negated (so the camera is upside down) and only then it works. I have no idea why
+    up_vectors[0] << 0,-1,0; //right
+    up_vectors[1] << 0,-1,0; //left
+    up_vectors[2] << 0,0,1; //up
+    up_vectors[3] << 0,0,-1; //down
+    up_vectors[4] << 0,-1,0; //backwards
+    up_vectors[5] << 0,-1,0; //forward
+   
+
+    //render this cube 
+    GL_C( glDisable(GL_CULL_FACE) );
+    //dont perform depth checking nor write into the depth buffer 
+    GL_C( glDepthMask(false) );
+    GL_C( glDisable(GL_DEPTH_TEST) );
+
+    gl::Shader& shader=m_prefilter_shader;
+
+    // Set attributes that the vao will pulll from buffers
+    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
+    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    // //shader setup
+    GL_C( shader.use() );
+    GL_C( shader.bind_texture(radiance_tex,"radiance_cubemap_tex") );
+
+    int mip_lvls=m_prefilter_cubemap_tex.mipmap_nr_lvls();
+    for (unsigned int mip = 0; mip < mip_lvls; ++mip){
+        // reisze viewport according to mip-level size.
+        Eigen::Vector2f viewport_size;
+        viewport_size<< m_prefilter_cubemap_resolution * std::pow(0.5, mip), m_prefilter_cubemap_resolution * std::pow(0.5, mip);
+        glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
+
+
+        for(int i=0; i<6; i++){
+            //move the camera to look at the corresponding face of the cube 
+            cam.set_lookat(lookat_vectors[i]); 
+            cam.set_up(up_vectors[i]); 
+            Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
+            P_inv=cam.proj_matrix(viewport_size).inverse();
+
+            float roughness = (float)mip / (float)(mip_lvls - 1);
+            shader.uniform_float(roughness, "roughness");
+            shader.uniform_3x3(V_inv_rot, "V_inv_rot");
+            shader.uniform_4x4(P_inv, "P_inv");
+            shader.draw_into(prefilter_tex, "out_color", i, mip);
+
+            // draw
+            GL_C( quad_gl->vao.bind() ); 
+            GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+        
+        }
+    }
+
+    // //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+}
 
 
 void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier){
@@ -1816,6 +1920,7 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
             read_background_img(m_background_tex, paths[i]);
             equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
             radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+            prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
         }else{
             MeshSharedPtr mesh = Mesh::create();
             mesh->load_from_file(std::string(paths[i]));

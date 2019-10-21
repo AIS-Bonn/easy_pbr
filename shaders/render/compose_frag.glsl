@@ -18,6 +18,7 @@ uniform sampler2D depth_tex;
 uniform sampler2D background_tex;
 uniform samplerCube environment_cubemap_tex;
 uniform samplerCube irradiance_cubemap_tex;
+uniform samplerCube prefilter_cubemap_tex;
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
@@ -234,6 +235,7 @@ void main(){
         }else if(use_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 0.5 ).rgb;
             //tonemap
             color = color / (color + vec3(1.0));
             //gamma correct
