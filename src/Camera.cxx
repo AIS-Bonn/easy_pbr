@@ -18,7 +18,7 @@ using namespace easy_pbr::utils;
 
 
 Camera::Camera():
-    m_fov(45.0),
+    m_fov(30.0),
     m_near(0.01),
     m_far(5000),
     // m_lookat_dist(1),

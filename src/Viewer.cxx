@@ -455,7 +455,7 @@ void Viewer::draw(const GLuint fbo_id){
         std::cout << " scene scale " << scale << std::endl;
     
         m_camera->set_lookat(centroid);
-        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*3*scale); //move the eye backwards so that is sees the whole scene
+        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale); //move the eye backwards so that is sees the whole scene
         m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
         m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
 
@@ -752,6 +752,8 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     shader.uniform_4x4(MVP, "MVP");
     shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
+    shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
+    shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
     shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
     shader.uniform_float(mesh->m_core->min_y(), "min_y");
     shader.uniform_float(mesh->m_core->max_y(), "max_y");

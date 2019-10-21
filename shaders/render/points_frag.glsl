@@ -31,11 +31,15 @@ layout(location = 5) in float log_depth_in;
 layout(location = 1) out vec4 diffuse_out;
 layout(location = 3) out vec2 normal_out;
 layout(location = 4) out float log_depth_out;
+layout(location = 5) out vec2 metalness_and_roughness_out;
 
 // //uniform
 uniform int color_type;
 uniform sampler2D tex; //the rgb tex that is used for coloring
 uniform bool has_normals=false; //if we have normals this will get set to true
+//only for solid rendering where there is only one value for metaless and roughness instead of a map
+uniform float metalness;
+uniform float roughness;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 vec2 encode_normal(vec3 normal){
@@ -93,6 +97,7 @@ void main(){
         //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
     normal_out=encode_normal(normal_cam_coords_in);
+    metalness_and_roughness_out=vec2(metalness, roughness);
     // vec3 normal = normalize(cross(dFdx(position_cam_coords_in), dFdy(position_cam_coords_in)));
     // normal_out=vec4(normal,1.0);
     // normal_out=vec4(normal*0.5 + 0.5,1.0);
