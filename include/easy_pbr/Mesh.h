@@ -48,7 +48,7 @@ struct VisOptions{
     Eigen::Vector3f m_solid_color = Eigen::Vector3f(1.0, 206.0/255.0, 143.0/255.0);
     Eigen::Vector3f m_label_color = Eigen::Vector3f(1.0, 160.0/255.0, 0.0);
     float m_metalness=0.0;
-    float m_roughness=0.2;
+    float m_roughness=0.35;
 
     //we define some functions for settings colors both for convenicence and easily calling then from python with pybind
     void set_color_solid(){
@@ -207,6 +207,7 @@ private:
     // void read_ply(const std::string file_path, std::initializer_list<std::pair<std::reference_wrapper<Eigen::MatrixXd>, std::initializer_list<std::string> >> matrix2properties_list);
     void read_ply(const std::string file_path);
     void write_ply(const std::string file_path);
+    void read_obj(const std::string file_path);
 
 
 

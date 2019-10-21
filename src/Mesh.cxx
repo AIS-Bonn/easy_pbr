@@ -12,7 +12,7 @@
 #include "igl/per_face_normals.h"
 #include "igl/per_vertex_normals.h"
 #include "igl/readOFF.h"
-#include "igl/readOBJ.h"
+// #include "igl/readOBJ.h" //DO NOT USE! The reader is kinda poop and in some formats of obj it just doesnt read the faces
 // #include "igl/readPLY.h" // DO NOT USE! At the moment libigl readPLY has a memory leak https://github.com/libigl/libigl/issues/919
 #include "tinyply.h"
 #include "igl/writePLY.h"
@@ -23,6 +23,9 @@
 #include <igl/vertex_triangle_adjacency.h>
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/connect_boundary_to_infinity.h>
+
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
+#include "tiny_obj_loader.h"
 
 //for reading pcd files
 // #include <pcl/io/pcd_io.h>
@@ -264,10 +267,11 @@ void Mesh::load_from_file(const std::string file_path){
         //            } );
     } else if (file_ext == "obj" || file_ext == "OBJ") {
         // igl::readOBJ(file_path, mesh.V, mesh.F);
-        Eigen::MatrixXd CN; //corner normals
-        Eigen::MatrixXi FTC;
-        Eigen::MatrixXi FN;
-        igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
+        // Eigen::MatrixXd CN; //corner normals
+        // Eigen::MatrixXi FTC;
+        // Eigen::MatrixXi FN;
+        // igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
+        read_obj(file_path);
     // }else if (file_ext == "pcd") {
     //     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     //     pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
@@ -1370,6 +1374,133 @@ void Mesh::write_ply(const std::string file_path){
 
 	// Write a binary file
     ply_file.write(outstream_binary, true);
+}
+
+void Mesh::read_obj(const std::string file_path){
+
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+
+    std::string warn;
+    std::string err;
+
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_path.c_str());
+
+    LOG_IF(WARNING, shapes.size()!=1) << "Warning when loading obj with path " << file_path << " " << warn;
+    LOG_IF(FATAL, !err.empty()) << "Failed to load obj with path " << file_path << " " << err;
+    LOG_IF(FATAL, !ret) << "Failed to load obj with path: " << file_path;
+    //I ONLY SUPPORT ONE SHAPE AT THE MOMENT
+    LOG_IF(FATAL, shapes.size()!=1) << "We only support one shape at the moment. Supporting more shapes requires meddling with the indices of the faces for different shapes. This object has nr_shapes: "<< shapes.size();
+
+
+    //allocate vectors
+    V.resize((int)(attrib.vertices.size()) / 3,  3);
+    if ((int)(attrib.normals.size())!=0){
+        NV.resize((int)(attrib.normals.size()) / 3,  3);
+    }
+    if ((int)(attrib.texcoords.size())!=0){
+        UV.resize((int)(attrib.texcoords.size()) / 2,  2);
+    }
+    if (shapes[0].mesh.indices.size()!=0){
+        F.resize(shapes[0].mesh.indices.size()/3,  3);
+    }
+
+
+    if (F.rows()!=0){
+        for (size_t f = 0; f < shapes[0].mesh.indices.size()/3; f++) {
+            int idx0 = shapes[0].mesh.indices[3*f+0].vertex_index;
+            int idx1 = shapes[0].mesh.indices[3*f+1].vertex_index;
+            int idx2 = shapes[0].mesh.indices[3*f+2].vertex_index;
+            F.row(f) << idx0, idx1, idx2;
+        }
+    }
+
+
+    for (size_t v = 0; v < attrib.vertices.size() / 3; v++) {
+        //xyz
+        float x = attrib.vertices[3*v+0];
+        float y = attrib.vertices[3*v+1];
+        float z = attrib.vertices[3*v+2];
+        V.row(v) << x,y,z;
+        //normals
+        if(NV.rows()!=0){
+            float nx = attrib.normals[3*v+0];
+            float ny = attrib.normals[3*v+1];
+            float nz = attrib.normals[3*v+2];
+            NV.row(v) << nx,ny,nz;
+        }
+        //texcoords
+        if(UV.rows()!=0){
+            float tu = attrib.texcoords[2*v+0];
+            float tv = attrib.texcoords[2*v+1];
+            UV.row(v) << tu,tv;
+        }
+    }
+
+
+
+//     printf("# of vertices  = %d\n", (int)(attrib.vertices.size()) / 3);
+//   printf("# of normals   = %d\n", (int)(attrib.normals.size()) / 3);
+//   printf("# of texcoords = %d\n", (int)(attrib.texcoords.size()) / 2);
+//   printf("# of materials = %d\n", (int)materials.size());
+//   printf("# of shapes    = %d\n", (int)shapes.size());
+
+
+    // //obtain the nr of vertices for all shapes
+    // int nr_verts=0;
+    // // Loop over shapes
+    // for (size_t s = 0; s < shapes.size(); s++) {
+    //     // Loop over faces(polygon)
+    //     size_t index_offset = 0;
+    //     for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+    //         int fv = shapes[s].mesh.num_face_vertices[f];
+
+    //         // Loop over vertices in the face.
+    //         for (size_t v = 0; v < fv; v++) {
+    //         // access to vertex
+    //         int idx = shapes[s].mesh.indices[index_offset + v];
+    //         nr_verts=std::max(nr_verts,idx);
+    //         }
+    //         index_offset += fv;
+
+    //     }
+    // }
+    // nr_verts=nr_verts+1; //if we have 3 verts, the maximum index will be 2. So to get the nr of verts we have to sum up 1
+
+
+
+    // // Loop over shapes
+    // for (size_t s = 0; s < shapes.size(); s++) {
+    //     // Loop over faces(polygon)
+    //     size_t index_offset = 0;
+    //     for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+    //         int fv = shapes[s].mesh.num_face_vertices[f];
+
+    //         // Loop over vertices in the face.
+    //         for (size_t v = 0; v < fv; v++) {
+    //         // access to vertex
+    //         tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+    //         tinyobj::real_t vx = attrib.vertices[3*idx.vertex_index+0];
+    //         tinyobj::real_t vy = attrib.vertices[3*idx.vertex_index+1];
+    //         tinyobj::real_t vz = attrib.vertices[3*idx.vertex_index+2];
+    //         tinyobj::real_t nx = attrib.normals[3*idx.normal_index+0];
+    //         tinyobj::real_t ny = attrib.normals[3*idx.normal_index+1];
+    //         tinyobj::real_t nz = attrib.normals[3*idx.normal_index+2];
+    //         tinyobj::real_t tx = attrib.texcoords[2*idx.texcoord_index+0];
+    //         tinyobj::real_t ty = attrib.texcoords[2*idx.texcoord_index+1];
+    //         // Optional: vertex colors
+    //         // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
+    //         // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
+    //         // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
+    //         }
+    //         index_offset += fv;
+
+    //         // per-face material
+    //         shapes[s].mesh.material_ids[f];
+    //     }
+    // }
+
 }
 
 

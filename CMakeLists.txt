@@ -128,6 +128,11 @@ if(NOT tiny_ply_POPULATED)
   FetchContent_Populate(tiny_ply)
 endif()
 FetchContent_Declare(
+  tiny_obj
+  GIT_REPOSITORY https://github.com/syoyo/tinyobjloader
+  GIT_TAG        v2.0.0-rc1 
+)
+FetchContent_Declare(
   utils
   GIT_REPOSITORY https://github.com/RaduAlexandru/utils.git
 )
@@ -137,7 +142,7 @@ FetchContent_Declare(
 )
 # add_subdirectory( ${pybind11_SOURCE_DIR})
 ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue  utils easy_gl)
+FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue tiny_obj  utils easy_gl)
 
 
 ###   INCLUDES   #########################################################
@@ -156,11 +161,11 @@ include_directories(${configuru_SOURCE_DIR})
 include_directories(${better_enums_SOURCE_DIR})
 include_directories(${concurrent_queue_SOURCE_DIR})
 include_directories(${tiny_ply_SOURCE_DIR}/source)
+include_directories(${tiny_obj_SOURCE_DIR})
 include_directories(${utils_SOURCE_DIR}/include)
 include_directories(${easy_gl_SOURCE_DIR})
 include_directories("/usr/include/python3.6m/")
 
-message("lollllllllllllllll" ${tiny_ply_SOURCE_DIR})
 
 
 ###   SOURCES   #################################################################
