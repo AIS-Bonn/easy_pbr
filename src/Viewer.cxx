@@ -76,6 +76,7 @@ Viewer::Viewer(const std::string config_file):
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
     m_prefilter_cubemap_resolution(128),
+    m_brdf_lut_resolution(512),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -109,6 +110,7 @@ void Viewer::init_params(const std::string config_file){
     m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
     m_irradiance_cubemap_resolution = vis_config["irradiance_cubemap_resolution"];
     m_prefilter_cubemap_resolution = vis_config["prefilter_cubemap_resolution"];
+    m_brdf_lut_resolution = vis_config["brdf_lut_resolution"];
 
     m_subsample_factor = vis_config["subsample_factor"];
     m_viewport_size/=m_subsample_factor;
@@ -233,6 +235,7 @@ void Viewer::compile_shaders(){
     m_equirectangular2cubemap_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_frag.glsl");
     m_radiance2irradiance_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_frag.glsl");
     m_prefilter_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/prefilter_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/prefilter_frag.glsl");
+    m_integrate_brdf_shader.compile(std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/integrate_brdf_vert.glsl", std::string(CMAKE_SOURCE_DIR)+"/shaders/ibl/integrate_brdf_frag.glsl");
 }
 
 void Viewer::init_opengl(){
@@ -256,6 +259,8 @@ void Viewer::init_opengl(){
     m_prefilter_cubemap_tex.set_filter_mode_mag(GL_LINEAR);
     m_prefilter_cubemap_tex.generate_mipmap_full();
 
+    //brdf_lut_tex 
+    m_brdf_lut_tex.allocate_tex_storage(GL_RG16F, GL_RG, GL_HALF_FLOAT, m_brdf_lut_resolution, m_brdf_lut_resolution);
 
     m_rvec_tex.set_wrap_mode(GL_REPEAT); //so we repeat the random vectors specified in this 4x4 matrix over the whole image
 
@@ -292,6 +297,7 @@ void Viewer::init_opengl(){
 
 
     //initialize a cubemap 
+    integrate_brdf(m_brdf_lut_tex); //we leave it outside the if because when we drag some hdr map into the viewer we don't want to integrate the brdf every time
     if(m_use_environment_map){
         read_background_img(m_background_tex, m_environment_map_path);
         //if it's equirectangular we convert it to cubemap because it is faster to sample
@@ -1281,7 +1287,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.bind_texture(m_environment_cubemap_tex, "environment_cubemap_tex");
     m_compose_final_quad_shader.bind_texture(m_irradiance_cubemap_tex, "irradiance_cubemap_tex");
     m_compose_final_quad_shader.bind_texture(m_prefilter_cubemap_tex, "prefilter_cubemap_tex");
-    m_compose_final_quad_shader.uniform_int(m_environment_cubemap_resolution, "radiance_cubemap_resolution");
+    m_compose_final_quad_shader.bind_texture(m_brdf_lut_tex, "brdf_lut_tex");
     if(m_enable_ssao){
         m_compose_final_quad_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
         // m_compose_final_quad_shader.bind_texture(m_ao_tex,"ao_tex");
@@ -1693,6 +1699,7 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     // //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
 }
 void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex){
 
@@ -1755,6 +1762,7 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     // //shader setup
     GL_C( shader.use() );
     GL_C( shader.bind_texture(radiance_tex,"radiance_cubemap_tex") );
+    shader.uniform_int(m_environment_cubemap_resolution, "radiance_cubemap_resolution");
 
     int mip_lvls=m_prefilter_cubemap_tex.mipmap_nr_lvls();
     for (unsigned int mip = 0; mip < mip_lvls; ++mip){
@@ -1787,6 +1795,42 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     // //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+}
+void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
+
+    TIME_START("compose");
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+
+    Eigen::Vector2f viewport_size;
+    viewport_size<< m_brdf_lut_resolution, m_brdf_lut_resolution;
+    glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
+
+
+    gl::Shader& shader=m_integrate_brdf_shader;    
+
+     // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+     //shader setup
+    GL_C( shader.use() );
+    shader.draw_into(brdf_lut_tex, "out_color");
+
+    // draw
+    m_fullscreen_quad->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    TIME_END("compose");
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
 }
 
 

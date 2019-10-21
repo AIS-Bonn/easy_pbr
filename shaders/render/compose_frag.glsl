@@ -19,6 +19,7 @@ uniform sampler2D background_tex;
 uniform samplerCube environment_cubemap_tex;
 uniform samplerCube irradiance_cubemap_tex;
 uniform samplerCube prefilter_cubemap_tex;
+uniform sampler2D brdf_lut_tex;
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
@@ -235,7 +236,7 @@ void main(){
         }else if(use_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 0.5 ).rgb;
+            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.5 ).rgb;
             //tonemap
             color = color / (color + vec3(1.0));
             //gamma correct
@@ -243,6 +244,7 @@ void main(){
             out_color = vec4(color, 1.0);
             // out_color = vec4(1.0);
             return;
+            // discard;
         }else{
             discard;
         }
@@ -271,6 +273,7 @@ void main(){
         vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
         vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
         vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
+        vec3 R = reflect(-V, N); 
         float metalness=texture(metalness_and_roughness_tex, uv_in).x;
         float roughness=texture(metalness_and_roughness_tex, uv_in).y;
         float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
@@ -296,7 +299,7 @@ void main(){
             proj_in_light = proj_in_light * 0.5 + 0.5;
             //check if we are outside the image or behind it
             if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
-                // continue;
+                // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
             }
 
 
@@ -347,12 +350,22 @@ void main(){
         // ambient lighting (we now use IBL as the ambient term)
         vec3 ambient=vec3(0.0);
         if (use_environment_map){
-            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+            vec3 kS = F; 
             vec3 kD = 1.0 - kS;
             kD *= 1.0 - metalness;	  
             vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
             vec3 diffuse      = irradiance * albedo;
-            ambient = (kD * diffuse) * ao;
+
+            // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+            const float MAX_REFLECTION_LOD = 4.0;
+            vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+            vec2 brdf  = texture(brdf_lut_tex, vec2(max(dot(N, V), 0.0), roughness)).rg;
+            vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+
+            // ambient = (kD * diffuse) * ao;
+            ambient = (kD * diffuse + specular) * ao;
         }else{
             ambient = vec3(ambient_color_power) * ambient_color * ao;
         }

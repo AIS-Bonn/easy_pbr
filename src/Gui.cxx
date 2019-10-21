@@ -572,6 +572,7 @@ void Gui::update() {
         // show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);
         show_gl_texture(m_view->m_ao_tex.get_tex_id(), "ao_tex", true);
         show_gl_texture(m_view->m_ao_blurred_tex.get_tex_id(), "ao_blurred_tex", true);
+        show_gl_texture(m_view->m_brdf_lut_tex.get_tex_id(), "brdf_lut_tex", true);
         // // show_gl_texture(m_core->m_view->m_rvec_tex.get_tex_id(), "rvec_tex", true);
         // show_gl_texture(m_view->m_depth_linear_tex.get_tex_id(), "depth_linear_tex", true);
 
