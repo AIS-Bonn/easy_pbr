@@ -1073,7 +1073,7 @@ void Viewer::ssao_pass(){
 
     //LINEARIZE-------------------------
     TIME_START("depth_linearize_pass");
-    m_depth_linear_tex.allocate_or_resize( GL_R16F, GL_RED, GL_HALF_FLOAT, new_viewport_size.x(), new_viewport_size.y() );
+    m_depth_linear_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() );
 
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_depth_linearize_shader, "position", m_fullscreen_quad->V_buf, 3) );
