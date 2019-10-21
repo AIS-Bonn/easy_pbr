@@ -155,9 +155,10 @@ public:
     bool m_enable_edl_lighting;
     float m_edl_strength;
     bool m_enable_surfel_splatting;
-    bool m_use_background_img;
+    bool m_show_background_img;
     std::string m_background_img_path;
-    bool m_use_environment_map;
+    bool m_enable_ibl; //we need an environment map for ibl
+    bool m_show_environment_map; //we can still use ibl without showing the environment map
     std::string m_environment_map_path;
     bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
     int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution

@@ -37,8 +37,9 @@ uniform float shading_factor;
 uniform float light_factor;
 uniform bool enable_edl_lighting;
 uniform float edl_strength;
-uniform bool use_background_img;
-uniform bool use_environment_map;
+uniform bool show_background_img;
+uniform bool show_environment_map;
+uniform bool enable_ibl;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 
@@ -222,18 +223,15 @@ void main(){
     float depth=texture(depth_tex, uv_in).x;
     if(depth==1.0){
         // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
-        if (use_background_img){
-        // if (false){
-            // out_color=texture(background_tex, uv_in);
-            vec2 uv = SampleSphericalMap(normalize(view_ray_in)); // make sure to normalize localPos
-            vec3 color = texture(background_tex, uv).xyz;
+        if (show_background_img){
+            vec3 color = texture(background_tex, uv_in).xyz;
             //tonemap
             color = color / (color + vec3(1.0));
             // gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             return;
-        }else if(use_environment_map){
+        }else if(show_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.5 ).rgb;
@@ -244,7 +242,6 @@ void main(){
             out_color = vec4(color, 1.0);
             // out_color = vec4(1.0);
             return;
-            // discard;
         }else{
             discard;
         }
@@ -349,7 +346,7 @@ void main(){
         
         // ambient lighting (we now use IBL as the ambient term)
         vec3 ambient=vec3(0.0);
-        if (use_environment_map){
+        if (enable_ibl){
             vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
             vec3 kS = F; 
             vec3 kD = 1.0 - kS;

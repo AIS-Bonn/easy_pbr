@@ -103,9 +103,10 @@ void Viewer::init_params(const std::string config_file){
     m_enable_edl_lighting= vis_config["enable_edl_lighting"];
     m_edl_strength = vis_config["edl_strength"];
     m_enable_surfel_splatting = vis_config["enable_surfel_splatting"];
-    m_use_background_img = vis_config["use_background_img"];
+    m_show_background_img = vis_config["show_background_img"];
     m_background_img_path = (std::string)vis_config["background_img_path"];
-    m_use_environment_map = vis_config["use_environment_map"];
+    m_enable_ibl = vis_config["enable_ibl"];
+    m_show_environment_map = vis_config["show_environment_map"];
     m_environment_map_path = (std::string) vis_config["environment_map_path"];
     m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
     m_irradiance_cubemap_resolution = vis_config["irradiance_cubemap_resolution"];
@@ -291,14 +292,14 @@ void Viewer::init_opengl(){
     GL_C( m_fullscreen_quad->upload_to_gpu() );
 
     //add the background image 
-    if(m_use_background_img){
+    if(m_show_background_img){
         read_background_img(m_background_tex, m_background_img_path);
     }
 
 
     //initialize a cubemap 
     integrate_brdf(m_brdf_lut_tex); //we leave it outside the if because when we drag some hdr map into the viewer we don't want to integrate the brdf every time
-    if(m_use_environment_map){
+    if(m_enable_ibl){
         read_background_img(m_background_tex, m_environment_map_path);
         //if it's equirectangular we convert it to cubemap because it is faster to sample
         equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
@@ -1280,7 +1281,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"),"metalness_and_roughness_tex");
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
-    if (m_use_background_img){
+    if (m_show_background_img){
         m_compose_final_quad_shader.bind_texture(m_background_tex, "background_tex");
     }
     //cubemap has to be always bound otherwise the whole program crashes for some reason...
@@ -1306,8 +1307,9 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_v2_float(m_viewport_size , "viewport_size"); //for eye dome lighing 
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
-    m_compose_final_quad_shader.uniform_bool(m_use_background_img , "use_background_img"); 
-    m_compose_final_quad_shader.uniform_bool(m_use_environment_map , "use_environment_map");
+    m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
 
     //fill up the samplers for the spot lights
     // for(int i=0; i<m_spot_lights.size(); i++){
@@ -1960,7 +1962,7 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
         trim(file_ext); //remove whitespaces from beggining and end
         if(file_ext=="hdr" || file_ext=="HDR"){
             //load environment map
-            m_use_environment_map=true;
+            m_enable_ibl=true;
             read_background_img(m_background_tex, paths[i]);
             equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
             radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);

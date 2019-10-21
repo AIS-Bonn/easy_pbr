@@ -245,6 +245,8 @@ void Gui::update() {
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);
         ImGui::Checkbox("Enable EDL", &m_view->m_enable_edl_lighting);
         ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
+        ImGui::Checkbox("Enable IBL", &m_view->m_enable_ibl);
+        ImGui::Checkbox("Show Environment", &m_view->m_show_environment_map);
 
 
         ImGui::Separator();
