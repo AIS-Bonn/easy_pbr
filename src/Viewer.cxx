@@ -446,6 +446,9 @@ void Viewer::update(const GLuint fbo_id){
     pre_draw();
     draw(fbo_id);
 
+    cv::Mat mat=download_to_cv_mat();
+    Gui::show(mat, "mat");
+
 
     // //attempt 2 
     // //try to draw here the cube because I want to
@@ -1461,6 +1464,16 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
+cv::Mat Viewer::download_to_cv_mat(){
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+    int w=m_viewport_size.x()*m_subsample_factor;
+    int h=m_viewport_size.y()*m_subsample_factor;
+    cv::Mat cv_mat(h, w, CV_8UC4);
+    glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, cv_mat.data);
+    cv::Mat cv_mat_flipped;
+    cv::flip(cv_mat, cv_mat_flipped, 0);
+    return cv_mat_flipped;
+}
 
 Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
     Eigen::Matrix4f M,V,P, MVP;
