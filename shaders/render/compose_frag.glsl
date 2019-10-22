@@ -215,6 +215,44 @@ vec2 SampleSphericalMap(vec3 v)
     return uv;
 }
 
+//from google filament renderer https://github.com/google/filament/blob/master/shaders/src/tone_mapping.fs
+float luminance(const vec3 linear) {
+    return dot(linear, vec3(0.2126, 0.7152, 0.0722));
+}
+vec3 Tonemap_Linear(const vec3 x) {
+    return x;
+}
+
+vec3 Tonemap_Reinhard(const vec3 x) {
+    // Reinhard et al. 2002, "Photographic Tone Reproduction for Digital Images", Eq. 3
+    return x / (1.0 + luminance(x));
+}
+
+vec3 Tonemap_Unreal(const vec3 x) {
+    // Unreal, Documentation: "Color Grading"
+    // Adapted to be close to Tonemap_ACES, with similar range
+    // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
+    return x / (x + 0.155) * 1.019;
+}
+
+vec3 Tonemap_FilmicALU(const vec3 x) {
+    // Hable 2010, "Filmic Tonemapping Operators"
+    // Based on Duiker's curve, optimized by Hejl and Burgess-Dawson
+    // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
+    vec3 c = max(vec3(0.0), x - 0.004);
+    return (c * (c * 6.2 + 0.5)) / (c * (c * 6.2 + 1.7) + 0.06);
+}
+
+vec3 Tonemap_ACES(const vec3 x) {
+    // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return (x * (a * x + b)) / (x * (c * x + d) + e);
+}
+
 
 
 void main(){
@@ -226,7 +264,8 @@ void main(){
         if (show_background_img){
             vec3 color = texture(background_tex, uv_in).xyz;
             //tonemap
-            color = color / (color + vec3(1.0));
+            // color = color / (color + vec3(1.0));
+            color = Tonemap_Reinhard(color);
             // gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
@@ -234,9 +273,10 @@ void main(){
         }else if(show_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.5 ).rgb;
+            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
             //tonemap
-            color = color / (color + vec3(1.0));
+            // color = color / (color + vec3(1.0));
+            color = Tonemap_Reinhard(color);
             //gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
@@ -372,11 +412,16 @@ void main(){
 
     }
 
+    color = Tonemap_Reinhard(color);
+    // color = Tonemap_Unreal(color);
+    // color = Tonemap_FilmicALU(color);
+    // color = Tonemap_ACES(color);
 
     // HDR tonemapping
-    color = color / (color + vec3(1.0));
+    // color = color / (color + vec3(1.0));
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
+
 
     
 

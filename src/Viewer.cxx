@@ -409,7 +409,8 @@ void Viewer::configure_auto_params(){
             key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
         }
         if (!key->m_color.allFinite()){
-            key->m_color<< 255.0/255.0, 185.0/255.0, 100/255.0;
+            // key->m_color<< 255.0/255.0, 185.0/255.0, 100/255.0;
+            key->m_color<< 255.0/255.0, 221.0/255.0, 180/255.0;
         }
     }
     //fill light
@@ -423,7 +424,7 @@ void Viewer::configure_auto_params(){
         fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
         fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
         fill->m_fov=60;
-        fill->set_power_for_point(centroid, 0.5); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+        fill->set_power_for_point(centroid, 0.8); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
         fill->m_color<< 118.0/255.0, 255.0/255.0, 230/255.0;
     }
     //rim light
@@ -438,7 +439,8 @@ void Viewer::configure_auto_params(){
         rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
         rim->m_fov=60;
         rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
-        rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
+        // rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
+        rim->m_color<< 157.0/255.0, 227.0/255.0, 255.0/255.0;
     }
 }
 
