@@ -152,6 +152,7 @@ public:
     bool m_enable_ssao;
     // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
     // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
+    bool m_auto_edl;
     bool m_enable_edl_lighting;
     float m_edl_strength;
     bool m_enable_surfel_splatting;
@@ -176,6 +177,8 @@ private:
 
     bool m_first_draw;
 
+    // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan
+    void configure_auto_params();
     void read_background_img(gl::Texture2D& tex, const std::string img_path);
     void equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex);
     void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance

@@ -4,6 +4,7 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
+
 #include "easy_pbr/MeshGL.h"
 
 
@@ -27,10 +28,49 @@ SpotLight::SpotLight(const configuru::Config& config)
     init_opengl();
 }
 
+// float try_float_else_nan(const Config& cfg){
+//     // tries to parse the cfg as a float, if it doesn't work, return a signaling nan
+//     float val;
+//     try{
+//         val=(float)cfg;
+//     }catch(std::runtime_error& e){
+//         //if it's not a float it should be a string of "auto". Otherwise it's an error
+//         std::string s = (std::string)cfg;
+//         if (s=="auto"){
+//             return std::numeric_limits<float>::signaling_NaN(); //will be used as a sentinel for values that need to be assigned automatically later
+//         }else{
+//             LOG(FATAL) << "We expected the config value to be either float or a string containing \"auto\". However it is a string of. " << s;
+//         }
+//     }
+//     return val;
+
+// }
+
+// float try_eigenv3_else_nan(const Config& cfg){
+//     // tries to parse the cfg as a eigen::Vector3f, if it doesn't work, return a signaling nan
+//     Eigen::Vector3f vec;
+//     try{
+//         vec=cfg;
+//     }catch(std::runtime_error& e){
+//         //if it's not a eigen::vec3 it should be a string of "auto". Otherwise it's an error
+//         std::string s = (std::string)cfg;
+//         if (s=="auto"){
+//             //will be used as a sentinel for values that need to be assigned automatically later
+//             for(int i=0; i<vec.rows(); i++){
+//                 vec[i]=std::numeric_limits<float>::signaling_NaN();
+//             }
+//         }else{
+//             LOG(FATAL) << "We expected the config value to be either float or a string containing \"auto\". However it is a string of. " << s;
+//         }
+//     }
+//     return vec;
+
+// }
+
 void SpotLight::init_params(const configuru::Config& config ){
 
-    m_power=config["power"];
-    m_color=config["color"];
+    m_power=config.get_float_else_nan("power");
+    m_color=config.try_eigenv3_else_nan("color");
     m_create_shadow=config["create_shadow"];
     m_shadow_map_resolution=config["shadow_map_resolution"];
 

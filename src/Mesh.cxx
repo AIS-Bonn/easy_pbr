@@ -1402,17 +1402,27 @@ void Mesh::read_obj(const std::string file_path){
     if ((int)(attrib.texcoords.size())!=0){
         UV.resize((int)(attrib.texcoords.size()) / 2,  2);
     }
-    if (shapes[0].mesh.indices.size()!=0){
-        F.resize(shapes[0].mesh.indices.size()/3,  3);
+    // if (shapes[0].mesh.indices.size()!=0){
+        // F.resize(shapes[0].mesh.indices.size()/3,  3);
+    // }
+    //how many faces in ALL shapes
+    int nr_faces=0;
+    for (size_t s = 0; s < shapes.size(); s++) {
+        nr_faces+=shapes[s].mesh.indices.size()/3;
     }
+    F.resize(nr_faces,  3);
 
 
     if (F.rows()!=0){
-        for (size_t f = 0; f < shapes[0].mesh.indices.size()/3; f++) {
-            int idx0 = shapes[0].mesh.indices[3*f+0].vertex_index;
-            int idx1 = shapes[0].mesh.indices[3*f+1].vertex_index;
-            int idx2 = shapes[0].mesh.indices[3*f+2].vertex_index;
-            F.row(f) << idx0, idx1, idx2;
+        int cumulative_nr_faces_per_shape=0;
+        for (size_t s = 0; s < shapes.size(); s++) {
+            for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
+                int idx0 = shapes[0].mesh.indices[3*f+0].vertex_index;
+                int idx1 = shapes[0].mesh.indices[3*f+1].vertex_index;
+                int idx2 = shapes[0].mesh.indices[3*f+2].vertex_index;
+                F.row(f+cumulative_nr_faces_per_shape) << idx0, idx1, idx2;
+            }
+            cumulative_nr_faces_per_shape+=shapes[s].mesh.indices.size()/3;
         }
     }
 

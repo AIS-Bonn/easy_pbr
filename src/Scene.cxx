@@ -313,6 +313,7 @@ std::shared_ptr<Mesh> Scene::create_grid(const int nr_segments, const float y_po
     mesh_grid->name="grid_floor";
     mesh_grid->m_vis.m_show_lines=true;
     mesh_grid->m_vis.m_line_color<<0.6, 0.6, 0.6;
+    mesh_grid->m_vis.m_show_mesh=false;
     return mesh_grid;
 
 }

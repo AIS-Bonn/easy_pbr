@@ -1,6 +1,7 @@
 #include "easy_pbr/Viewer.h"
 
 #include <string> //find_last_of
+#include <limits> //signaling_nan
 
 //loguru
 #define LOGURU_IMPLEMENTATION 1
@@ -87,43 +88,68 @@ Viewer::Viewer(const std::string config_file):
 
 }
 
+// float try_float_else_nan(const Config& cfg){
+//     // tries to parse the cfg as a float, if it doesn't work, return a signaling nan
+//     float val;
+//     try{
+//         val=(float)cfg;
+//     }catch(std::runtime_error& e){
+//         //if it's not a float it should be a string of "auto". Otherwise it's an error
+//         std::string s = (std::string)cfg;
+//         if (s=="auto"){
+//             return std::numeric_limits<float>::signaling_NaN(); //will be used as a sentinel for values that need to be assigned automatically later
+//         }else{
+//             LOG(FATAL) << "We expected the config value to be either float or a string containing \"auto\". However it is a string of. " << s;
+//         }
+//     }
+//     return val;
+
+// }
+
 void Viewer::init_params(const std::string config_file){
 
     //read all the parameters
     Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
     Config vis_config=cfg["visualization"];
+    //general
     m_show_gui = vis_config["show_gui"];
-    m_enable_culling = vis_config["enable_culling"];
-    m_enable_ssao = vis_config["enable_ssao"];
-    m_ssao_downsample = vis_config["ao_downsample"];
-    m_kernel_radius = vis_config["kernel_radius"];
-    m_ao_power = vis_config["ao_power"];
-    m_sigma_spacial = vis_config["ao_blur_sigma_spacial"];
-    m_sigma_depth = vis_config["ao_blur_sigma_depth"];
-    m_enable_edl_lighting= vis_config["enable_edl_lighting"];
-    m_edl_strength = vis_config["edl_strength"];
-    m_enable_surfel_splatting = vis_config["enable_surfel_splatting"];
-    m_show_background_img = vis_config["show_background_img"];
-    m_background_img_path = (std::string)vis_config["background_img_path"];
-    m_enable_ibl = vis_config["enable_ibl"];
-    m_show_environment_map = vis_config["show_environment_map"];
-    m_environment_map_path = (std::string) vis_config["environment_map_path"];
-    m_environment_cubemap_resolution = vis_config["environment_cubemap_resolution"];
-    m_irradiance_cubemap_resolution = vis_config["irradiance_cubemap_resolution"];
-    m_prefilter_cubemap_resolution = vis_config["prefilter_cubemap_resolution"];
-    m_brdf_lut_resolution = vis_config["brdf_lut_resolution"];
-
     m_subsample_factor = vis_config["subsample_factor"];
-    m_viewport_size/=m_subsample_factor;
+    m_enable_culling = vis_config["enable_culling"];
+    //cam
+    m_camera->m_near=vis_config["cam"].get_float_else_nan("near")  ;
+    m_camera->m_far=vis_config["cam"].get_float_else_nan("far");
 
-    //camera stuff 
-    m_camera->m_near=vis_config["camera_near"];
-    m_camera->m_far=vis_config["camera_far"];
+
+    //ssao
+    m_enable_ssao = vis_config["ssao"]["enable_ssao"];
+    m_ssao_downsample = vis_config["ssao"]["ao_downsample"];
+    m_kernel_radius = vis_config["ssao"].get_float_else_nan("kernel_radius");
+    m_ao_power = vis_config["ssao"]["ao_power"];
+    m_sigma_spacial = vis_config["ssao"]["ao_blur_sigma_spacial"];
+    m_sigma_depth = vis_config["ssao"]["ao_blur_sigma_depth"];
+
+    //edl
+    m_auto_edl= vis_config["edl"]["auto_settings"];
+    m_enable_edl_lighting= vis_config["edl"]["enable_edl_lighting"];
+    m_edl_strength = vis_config["edl"]["edl_strength"];
+
+    //background
+    m_show_background_img = vis_config["background"]["show_background_img"];
+    m_background_img_path = (std::string)vis_config["background"]["background_img_path"];
+
+    //ibl
+    m_enable_ibl = vis_config["ibl"]["enable_ibl"];
+    m_show_environment_map = vis_config["ibl"]["show_environment_map"];
+    m_environment_map_path = (std::string) vis_config["ibl"]["environment_map_path"];
+    m_environment_cubemap_resolution = vis_config["ibl"]["environment_cubemap_resolution"];
+    m_irradiance_cubemap_resolution = vis_config["ibl"]["irradiance_cubemap_resolution"];
+    m_prefilter_cubemap_resolution = vis_config["ibl"]["prefilter_cubemap_resolution"];
+    m_brdf_lut_resolution = vis_config["ibl"]["brdf_lut_resolution"];
 
     //create the spot lights
-    int nr_spot_lights=vis_config["nr_spot_lights"];
+    int nr_spot_lights=vis_config["lights"]["nr_spot_lights"];
     for(int i=0; i<nr_spot_lights; i++){   
-        Config light_cfg=vis_config["spot_light_"+std::to_string(i)];
+        Config light_cfg=vis_config["lights"]["spot_light_"+std::to_string(i)];
         std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
         m_spot_lights.push_back(light);
     }
@@ -329,6 +355,93 @@ void Viewer::hotload_shaders(){
     #endif
 }
 
+void Viewer::configure_auto_params(){
+    Eigen::Vector3f centroid = m_scene->get_centroid();
+    float scale = m_scene->get_scale();
+
+    std::cout << " scene centroid " << centroid << std::endl;
+    std::cout << " scene scale " << scale << std::endl;
+
+    //CAMERA------------
+    if (!m_camera->m_is_initialized){
+        m_camera->set_lookat(centroid);
+        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+        if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
+        }
+        if (std::isnan(m_camera->m_far) ){
+            m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
+        }
+        m_camera->m_is_initialized=true;
+    }
+
+    //SSAO---------------
+    if (std::isnan(m_kernel_radius) ){
+        m_kernel_radius=0.05*scale;
+    }
+
+    //EDL--------
+    if (m_auto_edl ){
+        //we enable edl only if all the meshes in the scene don't show any meshes
+        m_enable_edl_lighting=true;
+        for(int i=0; i<m_scene->get_nr_meshes(); i++){
+            if (m_scene->get_mesh_with_idx(i)->m_vis.m_show_mesh){
+                m_enable_edl_lighting=false;
+                break;
+            }
+        }
+    }
+    
+
+    //LIGHTS-----------------------
+    //key light
+    if(m_spot_lights.size()>=1){
+        std::shared_ptr<SpotLight> key = m_spot_lights[0];
+        Eigen::Vector3f dir_movement;
+        dir_movement<<0.5, 0.6, 0.5;
+        dir_movement=dir_movement.normalized();
+        key->set_lookat(centroid);
+        key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
+        key->m_far=( (centroid-key->position()).norm()*10 ) ;
+        key->m_fov=60;
+        if (std::isnan(key->m_power) ){
+            key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+        }
+        if (!key->m_color.allFinite()){
+            key->m_color<< 255.0/255.0, 185.0/255.0, 100/255.0;
+        }
+    }
+    //fill light
+    if(m_spot_lights.size()>=2){
+        std::shared_ptr<SpotLight> fill = m_spot_lights[1];
+        Eigen::Vector3f dir_movement;
+        dir_movement<< -0.5, 0.6, 0.5;
+        dir_movement=dir_movement.normalized();
+        fill->set_lookat(centroid);
+        fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
+        fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
+        fill->m_fov=60;
+        fill->set_power_for_point(centroid, 0.5); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+        fill->m_color<< 118.0/255.0, 255.0/255.0, 230/255.0;
+    }
+    //rim light
+    if(m_spot_lights.size()>=3){
+        std::shared_ptr<SpotLight> rim = m_spot_lights[2];
+        Eigen::Vector3f dir_movement;
+        dir_movement<< -0.5, 0.6, -0.5;
+        dir_movement=dir_movement.normalized();
+        rim->set_lookat(centroid);
+        rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
+        rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
+        rim->m_fov=60;
+        rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
+        rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
+    }
+}
+
 void Viewer::update(const GLuint fbo_id){
     pre_draw();
     draw(fbo_id);
@@ -447,68 +560,9 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //set the camera to that it sees the whole scene 
-    if(m_first_draw && !m_scene->is_empty() && !m_camera->m_is_initialized ){
-        Eigen::Vector3f centroid = m_scene->get_centroid();
-        float scale = m_scene->get_scale();
-
-        std::cout << " scene centroid " << centroid << std::endl;
-        std::cout << " scene scale " << scale << std::endl;
-    
-        m_camera->set_lookat(centroid);
-        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale); //move the eye backwards so that is sees the whole scene
-        m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
-        m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
-
-        // LOG(FATAL) << "Cam axes is " << m_camera->cam_axes();
- 
+    if(m_first_draw && !m_scene->is_empty() ){
         m_first_draw=false;
-        m_camera->m_is_initialized=true;
-
-        //also place the lights and set their znear and far accordingly
-        //key light
-        if(m_spot_lights.size()>=1){
-            std::shared_ptr<SpotLight> key = m_spot_lights[0];
-            Eigen::Vector3f dir_movement;
-            dir_movement<<0.5, 0.6, 0.5;
-            dir_movement=dir_movement.normalized();
-            key->set_lookat(centroid);
-            key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
-            key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
-            key->m_far=( (centroid-key->position()).norm()*10 ) ;
-            key->m_fov=60;
-            key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
-            key->m_color<< 255.0/255.0, 185.0/255.0, 100/255.0;
-        }
-        //fill light
-        if(m_spot_lights.size()>=2){
-            std::shared_ptr<SpotLight> fill = m_spot_lights[1];
-            Eigen::Vector3f dir_movement;
-            dir_movement<< -0.5, 0.6, 0.5;
-            dir_movement=dir_movement.normalized();
-            fill->set_lookat(centroid);
-            fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
-            fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
-            fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
-            fill->m_fov=60;
-            fill->set_power_for_point(centroid, 0.5); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
-            fill->m_color<< 118.0/255.0, 255.0/255.0, 230/255.0;
-        }
-        //rim light
-        if(m_spot_lights.size()>=3){
-            std::shared_ptr<SpotLight> rim = m_spot_lights[2];
-            Eigen::Vector3f dir_movement;
-            dir_movement<< -0.5, 0.6, -0.5;
-            dir_movement=dir_movement.normalized();
-            rim->set_lookat(centroid);
-            rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
-            rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
-            rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
-            rim->m_fov=60;
-            rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
-            rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
-        }
-
-
+        configure_auto_params(); //automatically sets parameters that were left as "auto" in the config file
     }
 
 
