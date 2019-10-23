@@ -404,7 +404,7 @@ void Viewer::configure_auto_params(){
         key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
         key->m_far=( (centroid-key->position()).norm()*10 ) ;
-        key->m_fov=60;
+        key->m_fov=40;
         if (std::isnan(key->m_power) ){
             key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
         }
@@ -423,7 +423,7 @@ void Viewer::configure_auto_params(){
         fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
         fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
-        fill->m_fov=60;
+        fill->m_fov=40;
         fill->set_power_for_point(centroid, 0.8); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
         fill->m_color<< 118.0/255.0, 255.0/255.0, 230/255.0;
     }
@@ -437,7 +437,7 @@ void Viewer::configure_auto_params(){
         rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
         rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
-        rim->m_fov=60;
+        rim->m_fov=40;
         rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
         // rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
         rim->m_color<< 157.0/255.0, 227.0/255.0, 255.0/255.0;
