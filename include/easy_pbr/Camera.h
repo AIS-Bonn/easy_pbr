@@ -54,6 +54,7 @@ public:
     void mouse_scroll(const float x, const float y);
     void wheel_event();
 
+    float m_exposure;
     float m_fov;
     float m_near;
     float m_far;

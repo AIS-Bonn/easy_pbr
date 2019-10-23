@@ -342,6 +342,7 @@ void Gui::update() {
         ImGui::SliderFloat("FOV", &m_view->m_camera->m_fov, 30.0, 120.0);
         ImGui::SliderFloat("near", &m_view->m_camera->m_near, 0.01, 10.0);
         ImGui::SliderFloat("far", &m_view->m_camera->m_far, 100.0, 5000.0);
+        ImGui::SliderFloat("Exposure", &m_view->m_camera->m_exposure, 0.1, 10.0);
         // if(ImGui::Button("Print") ){
         //     m_view->m_camera->print();
         // }

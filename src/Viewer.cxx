@@ -1310,6 +1310,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
+    m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
 
     //fill up the samplers for the spot lights
     // for(int i=0; i<m_spot_lights.size(); i++){

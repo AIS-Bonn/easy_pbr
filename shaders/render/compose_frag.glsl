@@ -33,8 +33,6 @@ uniform sampler2D ao_img;
 uniform float ssao_subsample_factor;
 uniform vec2 viewport_size;
 uniform bool enable_ssao;
-uniform float shading_factor;
-uniform float light_factor;
 uniform bool enable_edl_lighting;
 uniform float edl_strength;
 uniform bool show_background_img;
@@ -42,6 +40,7 @@ uniform bool show_environment_map;
 uniform bool enable_ibl;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
+uniform float exposure;
 
 
 //for edl 
@@ -267,6 +266,7 @@ void main(){
             // color = color / (color + vec3(1.0));
             color = Tonemap_Reinhard(color);
             // gamma correct
+            color=color*exposure;
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             return;
@@ -278,6 +278,7 @@ void main(){
             // color = color / (color + vec3(1.0));
             color = Tonemap_Reinhard(color);
             //gamma correct
+            color=color*exposure;
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             // out_color = vec4(1.0);
@@ -412,6 +413,7 @@ void main(){
 
     }
 
+
     color = Tonemap_Reinhard(color);
     // color = Tonemap_Unreal(color);
     // color = Tonemap_FilmicALU(color);
@@ -420,6 +422,7 @@ void main(){
     // HDR tonemapping
     // color = color / (color + vec3(1.0));
     // gamma correct
+    color=color*exposure;
     color = pow(color, vec3(1.0/2.2)); 
 
 
