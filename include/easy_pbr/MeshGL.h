@@ -21,8 +21,6 @@
 
 //in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
 class MeshGL;
-// template <class ...Args>
-// std::unique_ptr<MeshGL> MeshGLCreate(Args&& ...args);
 
 class MeshGL {
 public:
@@ -69,8 +67,6 @@ public:
     std::shared_ptr<Mesh> m_core;
 private:
     MeshGL();  // we put the constructor as private so as to dissalow creating Mesh on the stack because we want to only used shared ptr for it
-    
-
 
 };
 

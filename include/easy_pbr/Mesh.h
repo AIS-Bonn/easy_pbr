@@ -14,19 +14,15 @@
 
 
 
-
-// BETTER_ENUM(MeshColorType, int, Solid = 0, Texture, NormalVector, SSAO, Semantic )
 BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, SSAO, Height, Intensity )
 
 
-class MeshGL; //we forward declare this so we can have from the core a pointer to the gpu stuff
+class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff
 class LabelMngr;
 class RandGenerator;
 
 
 class Mesh;
-// template <class ...Args>
-// std::shared_ptr<Mesh> MeshCreate(Args&& ...args);
 
 struct VisOptions{
      //visualization params (it's nice to have here so that the various algorithms that run in different threads can set them)
@@ -88,7 +84,6 @@ public:
     void add(const Mesh& new_mesh); //Adds another mesh to this one and combines it into one
     void clear();
     void assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu); //assigns the pointer to the gpu implementation of this mesh
-    // void assign(const MeshCore& new_core);
     void load_from_file(const std::string file_path);
     void save_to_file(const std::string file_path);
     bool is_empty()const;
@@ -207,7 +202,6 @@ private:
 
 
     //We use this for reading ply files because the readPLY from libigl has a memory leak https://github.com/libigl/libigl/issues/919
-    // void read_ply(const std::string file_path, std::initializer_list<std::pair<std::reference_wrapper<Eigen::MatrixXd>, std::initializer_list<std::string> >> matrix2properties_list);
     void read_ply(const std::string file_path);
     void write_ply(const std::string file_path);
     void read_obj(const std::string file_path);

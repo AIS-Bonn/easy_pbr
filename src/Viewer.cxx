@@ -88,23 +88,6 @@ Viewer::Viewer(const std::string config_file):
 
 }
 
-// float try_float_else_nan(const Config& cfg){
-//     // tries to parse the cfg as a float, if it doesn't work, return a signaling nan
-//     float val;
-//     try{
-//         val=(float)cfg;
-//     }catch(std::runtime_error& e){
-//         //if it's not a float it should be a string of "auto". Otherwise it's an error
-//         std::string s = (std::string)cfg;
-//         if (s=="auto"){
-//             return std::numeric_limits<float>::signaling_NaN(); //will be used as a sentinel for values that need to be assigned automatically later
-//         }else{
-//             LOG(FATAL) << "We expected the config value to be either float or a string containing \"auto\". However it is a string of. " << s;
-//         }
-//     }
-//     return val;
-
-// }
 
 void Viewer::init_params(const std::string config_file){
 
@@ -333,14 +316,6 @@ void Viewer::init_opengl(){
         prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
     }
 
-    
-    // m_camera->m_fov=90;
-    // m_camera->m_near=0.01;
-    // m_camera->m_far=10.0;
-    // Eigen::Vector3f lookat;
-    // lookat<< 0,0,-0.001;
-    // m_camera->set_lookat(lookat); //camera in the middle of the NDC
-    // m_camera->set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
 }
 
@@ -1236,23 +1211,6 @@ void Viewer::ssao_pass(){
 
 void Viewer::compose_final_image(const GLuint fbo_id){
 
-    // TIME_START("compose");
-    // m_compose_final_shader.use();
-    // // m_compose_final_shader.bind_texture(m_gbuffer.tex_with_name("position_gtex"),"position_cam_coords_tex");
-    // m_compose_final_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_cam_coords_tex");
-    // // m_compose_final_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
-    // GL_C( m_compose_final_shader.bind_image(m_gbuffer.tex_with_name("final_img_gtex"), GL_WRITE_ONLY, "final_img") );
-    // m_compose_final_shader.dispatch(m_gbuffer.width(), m_gbuffer.height(), 16 , 16);
-    // TIME_END("compose");
-
-    // VLOG(1) << "eye is " << m_camera->position().transpose();
-    // VLOG(1) << "direction is " << m_camera->direction().transpose();
-    // VLOG(1) << " lookat is " << m_camera->lookat().transpose();
-    // VLOG(1) << "model matrix is \n" << m_camera->model_matrix();
-    // VLOG(1) << "view matrix is \n" << m_camera->view_matrix();
-
-
-    //attempt 2 to make it a bit faster 
     TIME_START("compose");
 
     //matrices setuo
@@ -1312,10 +1270,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
     m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
 
-    //fill up the samplers for the spot lights
-    // for(int i=0; i<m_spot_lights.size(); i++){
-        // m_compose_final_quad_shader.bind_texture(m_spot_lights[i]->get_shadow_map_ref(), "spot_light_shadow_maps.["+std::to_string(i)+"]" );
-    // }
 
     //fill up the vector of spot lights 
     m_compose_final_quad_shader.uniform_int(m_spot_lights.size(), "nr_active_spot_lights");
@@ -1332,11 +1286,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         std::string uniform_pos_name =  uniform_name +"["+std::to_string(i)+"]"+".pos";
         GLint uniform_pos_loc=m_compose_final_quad_shader.get_uniform_location(uniform_pos_name);
         glUniform3fv(uniform_pos_loc, 1, m_spot_lights[i]->position().data()); 
-
-        //lookat in cam coords
-        // std::string uniform_lookat_name =  uniform_name +"["+std::to_string(i)+"]"+".lookat";
-        // GLint uniform_lookat_loc=m_compose_final_quad_shader.get_uniform_location(uniform_lookat_name);
-        // glUniform3fv(uniform_lookat_loc, 1, m_spot_lights[i]->lookat().data()); 
 
         //color
         std::string uniform_color_name = uniform_name +"["+std::to_string(i)+"]"+".color";
@@ -1375,16 +1324,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_v2_float(neighbours , "neighbours");
 
 
-    // m_draw_mesh_shader.uniform_int(mesh->m_color_type._to_integral() , "color_type");
-    // m_draw_mesh_shader.uniform_v3_float(mesh->m_solid_color , "solid_color");
-    // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
-    // m_draw_mesh_shader.uniform_v3_float(mesh->m_specular_color , "specular_color");
-    // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
-    // m_draw_mesh_shader.uniform_float(mesh->m_shininess , "shininess");
-    // m_draw_mesh_shader.bind_texture(m_ao_blurred_tex, "ao_img");
-    // m_draw_mesh_shader.uniform_float(m_ssao_subsample_factor , "ssao_subsample_factor");
-
-
     // draw
     m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -1394,15 +1333,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
 
-
-    // //blit 
-    // TIME_START("blit");
-    // m_gbuffer.bind_for_read();
-    // GL_C( glReadBuffer(GL_COLOR_ATTACHMENT0 + m_gbuffer.attachment_nr("final_img_gtex")) );
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    // glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    // GL_C( glBlitFramebuffer(0, 0, m_viewport_size.x(), m_viewport_size.y(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT,    GL_NEAREST) );
-    // TIME_END("blit");
 
 }
 
@@ -1420,11 +1350,9 @@ cv::Mat Viewer::download_to_cv_mat(){
 Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
     Eigen::Matrix4f M,V,P, MVP;
 
-    // M.setIdentity();
     M=mesh->m_core->m_model_matrix.cast<float>().matrix();
     V=m_camera->view_matrix();
     P=m_camera->proj_matrix(m_viewport_size); 
-    // VLOG(1) << "View matrix is \n" << V;
     MVP=P*V*M;
     return MVP;
 }
@@ -1449,7 +1377,6 @@ void Viewer::create_random_samples_hemisphere(){
 
 void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path){
     cv::Mat img=cv::imread(img_path, -1); //the -1 is so that it reads the image as floats because we might read a .hdr image which needs high precision
-    // LOG(FATAL) << "image has type " << type2string(img.type());
     CHECK(img.data) << "Could not open background image " << img_path;
     cv::Mat img_flipped;
     cv::flip(img, img_flipped, 0); //flip around the horizontal axis
@@ -1459,12 +1386,6 @@ void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path)
 void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex){
 
 
-
-
-    // //attempt 2 
-    //try to draw here the cube because I want to
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    // clear_framebuffers();
     Eigen::Vector2f viewport_size;
     viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
@@ -1475,9 +1396,6 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     cam.m_fov=90;
     cam.m_near=0.01;
     cam.m_far=10.0;
-    // Eigen::Vector3f lookat;
-    // lookat<< 0,0,-1.0;
-    // cam.set_lookat(lookat); 
     cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
 
 

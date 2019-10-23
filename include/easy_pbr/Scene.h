@@ -1,7 +1,6 @@
 #pragma once
 
 #include "easy_pbr/Mesh.h"
-// #include "surfel_renderer/Viewer.h"
 
 #include <vector>
 #include <memory>
@@ -25,7 +24,6 @@ public:
     static int get_idx_for_name(const std::string name);
     static bool does_mesh_with_name_exist(const std::string name);
     static void remove_meshes_starting_with_name(const std::string name_prefix); // check all the meshes and removed the ones that start with a certain name
-    // void update(const std::shared_ptr<Mesh> mesh, const std::string name);
 
     //more high level operations on the meshes in the scene
     static Eigen::Vector3f get_centroid(); //returns the aproximate center of our scene which consists of all meshes 
@@ -37,8 +35,5 @@ public:
 private:
     static std::vector< std::shared_ptr<Mesh> > m_meshes;
     static std::mutex m_mesh_mutex; // when adding a new mesh to the scene, we need to lock them so it can be thread safe
-
-    // static std::shared_ptr<Mesh> create_grid(const int nr_segments, const float y_pos);
-    // static std::shared_ptr<Mesh> create_floor(const float y_pos);
 
 };

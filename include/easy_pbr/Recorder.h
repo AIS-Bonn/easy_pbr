@@ -6,7 +6,6 @@
 #include <memory>
 #include "GBuffer.h"
 
-// #include "surfel_renderer/utils/shared_queue.h"
 #include "concurrentqueue.h"
 
 class Viewer;
@@ -24,7 +23,6 @@ public:
     Recorder();
     Recorder(Viewer* view);
     ~Recorder();
-    // Recorder(const std::shared_ptr<Viewer> view);
     void write_viewer_to_png();
     void record_viewer(); //is called automatically by update() if the m_is_recording is set to true but sometimes I want to call it explicitly from python and record exatly when I want
     void update();
@@ -35,8 +33,6 @@ public:
     Viewer* m_view;
 
     //params 
-    // char m_results_path[256] = "./results_movies/";
-    // char m_single_png_filename[64] = "img.png";
     std::string m_results_path;
     std::string m_single_png_filename;
     float m_magnification;
@@ -62,10 +58,5 @@ private:
 
     std::vector<std::thread> m_writer_threads; 
     bool m_threads_are_running;
-    // std::vector<cv::Mat> m_cv_mats_buffer;
-    // int m_idx_last_mat_added;
-    // int m_idx_mat_to_write;
-    // bool m_need_to_write;
-    // std::mutex m_mutex_update_last_added;
 
 };

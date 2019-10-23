@@ -10,21 +10,20 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 
-#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include "Shader.h"
 #include "GBuffer.h"
 #include "CubeMap.h"
 #include "ColorMngr.h"
-// #include "surfel_renderer/Camera.h"
 
 //dir watcher
 #include "dir_watcher/dir_watcher.hpp"
 
 // pybind
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/eigen.h>
+// #include <pybind11/pybind11.h>
+// #include <pybind11/stl.h>
+// #include <pybind11/eigen.h>
 
 
 class Scene;
@@ -75,7 +74,6 @@ public:
     void pre_draw();
     void post_draw();
     void draw(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer)
-    // void clear_framebuffers(const Eigen::Vector4f background_color);
     void clear_framebuffers();
     void compile_shaders();
     void hotload_shaders();
@@ -115,7 +113,6 @@ public:
     gl::Shader m_draw_wireframe_shader;
     gl::Shader m_draw_surfels_shader;
     gl::Shader m_compose_final_quad_shader;
-    // gl::Shader m_ssao_geom_pass_shader;
     gl::Shader m_ssao_ao_pass_shader;
     gl::Shader m_depth_linearize_shader;
     gl::Shader m_bilateral_blur_shader;

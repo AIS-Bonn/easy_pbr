@@ -31,12 +31,6 @@ public:
     bool has_shadow_map();
     gl::Texture2D& get_shadow_map_ref();
 
-    // float m_fov_x;
-    // float m_fov_y;
-    // float m_near;
-    // float m_far;
-    // Eigen::Vector3f m_pos;
-
     float m_power;
     Eigen::Vector3f m_color; 
     bool m_create_shadow;
@@ -45,9 +39,6 @@ private:
 
     void init_params(const configuru::Config& config_file);
     void init_opengl();
-
-    // Eigen::Matrix4f get_view_matrix(); // puts the scene or mesh in the coordinate system of the light
-    // Eigen::Matrix4f get_proj_matrix(); // projects the mesh from the coordinate system of the light into the light itself
 
     gl::Shader m_shadow_map_shader;
     gl::GBuffer m_shadow_map_fbo; //fbo that contains only depth maps for usage as a shadow map

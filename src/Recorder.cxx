@@ -43,8 +43,6 @@ Recorder::Recorder():
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i]=std::thread( &Recorder::write_to_file_threaded, this);
     }
-    
-    // m_writer_thread=std::thread( &Recorder::write_to_file_threaded, this);
 
 }
 
@@ -59,7 +57,6 @@ Recorder::~Recorder(){
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i].join();
     }
-    // m_writer_thread.join();
 }
     
 
@@ -89,12 +86,12 @@ void Recorder::write_viewer_to_png(){
     int height = std::round(m_view->m_viewport_size.y() );
     width*=m_magnification;
     height*=m_magnification;
-    VLOG(1) << "Viewer has size of viewport" << m_view->m_viewport_size.x()  << " " << m_view->m_viewport_size.y();
+    // VLOG(1) << "Viewer has size of viewport" << m_view->m_viewport_size.x()  << " " << m_view->m_viewport_size.y();
 
     //create a framebuffer to hold the final image
     m_framebuffer.set_size(width*m_view->m_subsample_factor, height*m_view->m_subsample_factor ); //established what will be the size of the textures attached to this framebuffer
     m_framebuffer.sanity_check();
-    VLOG(1) << "framebuffer has size of" << m_framebuffer.width()  << " " << m_framebuffer.height();
+    // VLOG(1) << "framebuffer has size of" << m_framebuffer.width()  << " " << m_framebuffer.height();
 
     //clear
     m_framebuffer.bind();
@@ -133,17 +130,10 @@ void Recorder::record_viewer(){
     fs::create_directories(root/dir);
     VLOG(1) << "Recorder writing into " << full_path;
 
-    // //read the pixels directly from the default framebuffer
-    // int width=m_view->m_viewport_size.x();
-    // int height=m_view->m_viewport_size.y();
-    // cv::Mat cv_mat = cv::Mat::zeros(cv::Size(width, height), CV_8UC3);
-    // glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, cv_mat.data);
-
-
     //attempt 2 to make the reading faster
-    std::cout << "----------------------------------------------------------" << std::endl;
-    std::cout << "writing in pbo " << m_idx_pbo_write <<std::endl;
-    std::cout << "reading from pbo " << m_idx_pbo_read << std::endl;
+    // std::cout << "----------------------------------------------------------" << std::endl;
+    // std::cout << "writing in pbo " << m_idx_pbo_write <<std::endl;
+    // std::cout << "reading from pbo " << m_idx_pbo_read << std::endl;
     int width=m_view->m_viewport_size.x()*m_view->m_subsample_factor;
     int height=m_view->m_viewport_size.y()*m_view->m_subsample_factor;
     TIME_START("record_write_pbo");
@@ -172,26 +162,6 @@ void Recorder::record_viewer(){
 	    }
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         GL_C( glBindBuffer(GL_PIXEL_PACK_BUFFER, 0 ) );
-        // cv_mat.data=(uchar*)data; //unsafe but it's faster than doing a full copy
-
-        // write to file        
-        // TIME_START("write_to_file");
-        // cv::Mat cv_mat_flipped;
-        // cv::flip(cv_mat, cv_mat_flipped, 0);
-        // cv::imwrite(full_path.string(),cv_mat_flipped);
-        // cv::imwrite(full_path.string(),cv_mat);
-        // std::thread t1( &Recorder::write_to_file_threaded, this, cv_mat, full_path.string());
-
-
-        // m_cv_mats_buffer[m_idx_mat_to_write]=cv_mat;
-        // m_mutex_update_last_added.lock();
-        // m_idx_last_mat_added=m_idx_mat_to_write;
-        // m_mutex_update_last_added.unlock();
-        // m_need_to_write=true;
-        // m_idx_mat_to_write=(m_idx_mat_to_write+1) % NUM_IMGS_BUFFERED;
-
-        //attempt 3
-        // m_cv_mats_queue.push(cv_mat);
 
         //attempt 4
         MatWithFilePath mat_with_file;
@@ -199,10 +169,6 @@ void Recorder::record_viewer(){
         mat_with_file.file_path=m_full_paths[m_idx_pbo_read];
         m_cv_mats_queue.enqueue(mat_with_file);
         m_nr_frames_recorded++;
-
-
-        // TIME_END("write_to_file");
-        // glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
 
     }
@@ -221,38 +187,8 @@ void Recorder::record_viewer(){
 void Recorder::write_to_file_threaded(){
 
 
-    std::cout << "Thread for writing to file" << std::endl;
-
     // while(ros::ok()){
     while(m_threads_are_running){
-        // if(m_need_to_write){
-        //     m_need_to_write=false;
-        // }else{
-        //     std::this_thread::sleep_for(std::chrono::milliseconds(3));
-        //     continue;
-        // }
-
-        // //make the dirs 
-        // fs::path root (std::string(CMAKE_SOURCE_DIR));
-        // fs::path dir (m_results_path);
-        // fs::path png_name (std::to_string(m_frames_recorded)+".png");
-        // fs::path full_path = root/ dir / png_name;
-        // fs::create_directory(root/dir);
-
-        // if(m_cv_mats_queue.size()==0){
-        //     m_frames_recorded=0; // reset the counter to indicate that we start a new sequence
-        // }
-
-
-        // std::cout << "????????????writing============" << std::endl;
-        // int local_idx_last_mat_added; //on this thread we store a local copy of the index of the img we need to write so the main thread can keep updating it if necessary
-        // m_mutex_update_last_added.lock();
-        // local_idx_last_mat_added=m_idx_last_mat_added;
-        // m_mutex_update_last_added.unlock();
-
-        // cv::Mat cv_mat;
-        // m_cv_mats_queue.wait_and_pop(cv_mat);
-
 
         //attempt3 with moodycamel 
         MatWithFilePath mat_with_file;
@@ -263,20 +199,13 @@ void Recorder::write_to_file_threaded(){
         }
 
 
-
         // TIME_START("write_to_file");
         cv::Mat cv_mat_flipped;
-        // cv::flip(m_cv_mats_buffer[local_idx_last_mat_added], cv_mat_flipped, 0);
         cv::flip(mat_with_file.cv_mat, cv_mat_flipped, 0);
-        std::cout << "????????????writing============ to " << mat_with_file.file_path << std::endl;
         cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
         // TIME_END("write_to_file");
 
-        // m_frames_recorded++;
     }
-   
-
-
 
 }
 

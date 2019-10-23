@@ -113,10 +113,7 @@ void MeshGL::upload_to_gpu(){
     I_buf.upload_data(I_f.size()*sizeof(float), I_f.data(), GL_DYNAMIC_DRAW); 
 
     if(m_core->m_rgb_tex_cpu.data){
-        // std::cout << "UPLOADING" << std::endl;
-        // std::cout << "m_tex_cpu is of size " << m_core->m_tex_cpu.rows << " " << m_core->m_tex_cpu.cols << " type " << type2string(m_core->m_tex_cpu.type()) << std::endl;
         GL_C(m_rgb_tex->upload_from_cv_mat(m_core->m_rgb_tex_cpu) );
-        // std::cout << "FINISHED UPLOADING" << std::endl;
     }
 
     m_core->m_is_dirty=false;
