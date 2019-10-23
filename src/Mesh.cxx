@@ -1296,6 +1296,7 @@ void Mesh::read_ply(const std::string file_path){
         if (color->t == tinyply::Type::UINT8) {
             Eigen::Map<RowMatrixXuc> mf( (unsigned char*)color->buffer.get(), color->count, 3);
             C=mf.cast<double>();
+            C=C.array()/255.0;
         }else if (color->t == tinyply::Type::FLOAT32) {
             Eigen::Map<RowMatrixXf> mf( (float*)color->buffer.get(), color->count, 3);
             C=mf.cast<double>();
@@ -1310,6 +1311,14 @@ void Mesh::read_ply(const std::string file_path){
             Eigen::Map<RowMatrixXi> mf( (unsigned int*)faces->buffer.get(), faces->count, 3);
             F=mf.cast<int>();
         }else{ LOG(FATAL) <<"We assume that the faces are integers or unsigned integers but for some reason they are not"; }
+    }
+
+    //set some sensible visualization values
+    if (!has_faces){
+        m_vis.m_show_mesh=false;
+    }
+    if(has_color){
+        m_vis.set_color_pervertcolor();
     }
 
 
