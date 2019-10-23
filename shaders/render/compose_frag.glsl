@@ -340,14 +340,35 @@ void main(){
                 // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
             }
 
-
-            //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
-            float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
-            float current_depth = proj_in_light.z;  
-            float epsilon = 0.0001;
-            if (closest_depth + epsilon < current_depth){
-                continue;
+            //percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
+            ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
+            float xOffset = 1.0/shadow_map_size.x;
+            float yOffset = 1.0/shadow_map_size.y;
+            float Factor = 0.0;
+            for (int y = -1 ; y <= 1 ; y++) {
+                for (int x = -1 ; x <= 1 ; x++) {
+                    vec2 Offsets = vec2(x * xOffset, y * yOffset);
+                    vec2 UV = proj_in_light.xy + Offsets;
+                    float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
+                    float current_depth = proj_in_light.z;  
+                    float epsilon = 0.0001;
+                    if (closest_depth + epsilon < current_depth){
+                        continue; //in shadow
+                    }else{
+                        Factor+=1.0;
+                    }
+                }
             }
+            Factor=( (Factor / 18.0)*2.0);
+
+
+            // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+            // float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
+            // float current_depth = proj_in_light.z;  
+            // float epsilon = 0.0001;
+            // if (closest_depth + epsilon < current_depth){
+            //     continue;
+            // }
             
 
             // calculate per-light radiance
@@ -381,7 +402,8 @@ void main(){
             float NdotL = max(dot(N, L), 0.0);        
 
             // add to outgoing radiance Lo
-            Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+            Lo += (kD * albedo / PI + specular) * radiance * NdotL * Factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+            // Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
         }   
         
