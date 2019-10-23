@@ -75,7 +75,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("save_to_file", &Mesh::save_to_file )
     .def("clone", &Mesh::clone )
     .def("is_empty", &Mesh::is_empty )
-    .def("make_box_ndc", &Mesh::make_box_ndc )
+    .def("create_box_ndc", &Mesh::create_box_ndc )
     .def_readwrite("name", &Mesh::name)
     .def_readwrite("m_width", &Mesh::m_width)
     .def_readwrite("m_height", &Mesh::m_height)

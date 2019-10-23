@@ -38,7 +38,7 @@ private:
     static std::vector< std::shared_ptr<Mesh> > m_meshes;
     static std::mutex m_mesh_mutex; // when adding a new mesh to the scene, we need to lock them so it can be thread safe
 
-    static std::shared_ptr<Mesh> create_grid(const int nr_segments, const float y_pos);
-    static std::shared_ptr<Mesh> create_floor(const float y_pos);
+    // static std::shared_ptr<Mesh> create_grid(const int nr_segments, const float y_pos);
+    // static std::shared_ptr<Mesh> create_floor(const float y_pos);
 
 };

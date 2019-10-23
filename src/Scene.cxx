@@ -46,8 +46,8 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     //if that was the first mesh that was added, add also a grid for the ground 
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
-        MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
-        // MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
+        MeshSharedPtr mesh_grid=Mesh::create();
+        mesh_grid->create_grid(8, mesh->V.col(1).minCoeff(), get_scale());
         m_meshes.push_back(mesh_grid);
 
     }
@@ -96,9 +96,8 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
     //if that was the first mesh that was added, add also a grid for the ground 
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
-        // MeshSharedPtr mesh_grid=Mesh::create();
-        MeshSharedPtr mesh_grid=create_grid(8, mesh->V.col(1).minCoeff());
-        // MeshSharedPtr mesh_grid=create_floor(mesh->V.col(1).minCoeff());
+        MeshSharedPtr mesh_grid=Mesh::create();
+        mesh_grid->create_grid(8, mesh->V.col(1).minCoeff(), get_scale());
         m_meshes.push_back(mesh_grid);
       
     }
@@ -276,111 +275,6 @@ float Scene::get_scale(){
     // VLOG(1) << "scale is " << scale;
 
     return scale;
-}
-
-std::shared_ptr<Mesh> Scene::create_grid(const int nr_segments, const float y_pos){
-
-    int nr_segments_even= round(nr_segments / 2) * 2; // so we have an even number of segments on each side and then one running thgou th emiddle
-    int half_size=nr_segments_even/2;
-    int nr_points_per_side=nr_segments_even+1;// the +1 is because we will have 3 lines if we choose 2 segments, we have to consider the one that runs through the middle of the scene
-    MeshSharedPtr mesh_grid=Mesh::create();
-    mesh_grid->V.resize( (nr_points_per_side)*(nr_points_per_side), 3 ); 
-    int idx=0;
-    for(int x=-half_size; x<=half_size; x++){
-        for(int y=-half_size; y<=half_size; y++){
-            mesh_grid->V.row(idx) << x, 0, y;
-            idx++;
-        }
-    }
-    //make edges horizontally
-    int nr_edges=half_size*2*nr_points_per_side*2; // we will have half_size*2 for each line, and we have nr_points_per_size lines and since we both hotiz and ertical we multiply by 2
-    mesh_grid->E.resize( nr_edges, 2 ); 
-    idx=0;
-    int idx_prev_point=-1;
-    for(int y=-half_size; y<=half_size; y++){
-        for(int x=-half_size; x<=half_size; x++){
-            int idx_cur_point=(y+half_size)*nr_points_per_side + x + half_size;
-            if(idx_prev_point!=-1){
-                mesh_grid->E.row(idx) << idx_prev_point, idx_cur_point;
-                idx++;
-            }
-            idx_prev_point=idx_cur_point;
-        }
-        idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
-    } 
-
-    //maked edges vertically
-    idx_prev_point=-1;
-    for(int x=-half_size; x<=half_size; x++){
-        for(int y=-half_size; y<=half_size; y++){
-            int idx_cur_point=(y+half_size)*nr_points_per_side + x + half_size;
-            // std::cout << "idx cur points is " << idx_cur_point << '\n';
-            if(idx_prev_point!=-1){
-                mesh_grid->E.row(idx) << idx_prev_point, idx_cur_point;
-                idx++;
-            }
-
-            idx_prev_point=idx_cur_point;
-        }
-        idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
-    } 
-
-    //scale it to be in range [-1, 1]
-    mesh_grid->V.array()/=half_size;
-    //scale to be in the range of the mesh 
-    mesh_grid->V.array()*=get_scale();
-
-    //find the minimal point in y of the mesh so we put the grid there 
-    Eigen::Affine3d trans=Eigen::Affine3d::Identity();
-    Eigen::Vector3d t;
-    t<< 0, y_pos, 0;
-    trans.translate(t);
-    mesh_grid->apply_transform(trans,true);
- 
-
-    mesh_grid->name="grid_floor";
-    mesh_grid->m_vis.m_show_lines=true;
-    mesh_grid->m_vis.m_line_color<<0.6, 0.6, 0.6;
-    mesh_grid->m_vis.m_show_mesh=false;
-    return mesh_grid;
-
-}
-
-
-std::shared_ptr<Mesh> Scene::create_floor(const float y_pos){
-
-    MeshSharedPtr mesh_floor=Mesh::create();
-
-    //make 4 vertices
-    mesh_floor->V.resize( 4, 3 ); 
-    mesh_floor->V.row(0) << -1, 0, -1;
-    mesh_floor->V.row(1) << 1, 0, -1;
-    mesh_floor->V.row(2) << 1, 0, 1;
-    mesh_floor->V.row(3) << -1, 0, 1;
-
-    //make 2 faces
-    mesh_floor->F.resize( 2, 3 ); 
-    mesh_floor->F.row(0) << 2, 1, 0;
-    mesh_floor->F.row(1) << 3, 2, 0;
-    mesh_floor->recalculate_normals();
-
-    //scale to be in the range of the mesh 
-    mesh_floor->V.array()*=2*get_scale();
-
-    //find the minimal point in y of the mesh so we put the grid there 
-    Eigen::Affine3d trans=Eigen::Affine3d::Identity();
-    Eigen::Vector3d t;
-    t<< 0, y_pos, 0;
-    trans.translate(t);
-    mesh_floor->apply_transform(trans,true);
- 
-
-    mesh_floor->name="grid_floor";
-    mesh_floor->m_vis.m_show_mesh=true;
-    mesh_floor->m_vis.m_solid_color<<47.0/255, 47.0/255, 47.0/255;
-    mesh_floor->m_vis.m_roughness=1.0;
-    return mesh_floor;
-
 }
 
 bool Scene::is_empty(){

@@ -748,7 +748,7 @@ void Mesh::create_full_screen_quad(){
 
 }
 
-void Mesh::make_box_ndc(){
+void Mesh::create_box_ndc(){
     //makes a 1x1x1 vox in NDC. which has Z going into the screen
     V.resize(8,3);
     //behind face (which has negative Z as the camera is now looking in the positive Z direction and this will be the face that is behind the camera)
@@ -796,6 +796,106 @@ void Mesh::make_box_ndc(){
         // 1
     F.row(10) << 6,5,1;
     F.row(11) << 6,1,2;
+}
+
+void Mesh::create_grid(const int nr_segments, const float y_pos, const float scale){
+
+    int nr_segments_even= round(nr_segments / 2) * 2; // so we have an even number of segments on each side and then one running thgou th emiddle
+    int half_size=nr_segments_even/2;
+    int nr_points_per_side=nr_segments_even+1;// the +1 is because we will have 3 lines if we choose 2 segments, we have to consider the one that runs through the middle of the scene
+    V.resize( (nr_points_per_side)*(nr_points_per_side), 3 ); 
+    int idx=0;
+    for(int x=-half_size; x<=half_size; x++){
+        for(int y=-half_size; y<=half_size; y++){
+            V.row(idx) << x, 0, y;
+            idx++;
+        }
+    }
+    //make edges horizontally
+    int nr_edges=half_size*2*nr_points_per_side*2; // we will have half_size*2 for each line, and we have nr_points_per_size lines and since we both hotiz and ertical we multiply by 2
+    E.resize( nr_edges, 2 ); 
+    idx=0;
+    int idx_prev_point=-1;
+    for(int y=-half_size; y<=half_size; y++){
+        for(int x=-half_size; x<=half_size; x++){
+            int idx_cur_point=(y+half_size)*nr_points_per_side + x + half_size;
+            if(idx_prev_point!=-1){
+                E.row(idx) << idx_prev_point, idx_cur_point;
+                idx++;
+            }
+            idx_prev_point=idx_cur_point;
+        }
+        idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
+    } 
+
+    //maked edges vertically
+    idx_prev_point=-1;
+    for(int x=-half_size; x<=half_size; x++){
+        for(int y=-half_size; y<=half_size; y++){
+            int idx_cur_point=(y+half_size)*nr_points_per_side + x + half_size;
+            // std::cout << "idx cur points is " << idx_cur_point << '\n';
+            if(idx_prev_point!=-1){
+                E.row(idx) << idx_prev_point, idx_cur_point;
+                idx++;
+            }
+
+            idx_prev_point=idx_cur_point;
+        }
+        idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
+    } 
+
+    //scale it to be in range [-1, 1]
+    V.array()/=half_size;
+    //scale to be in the range of the mesh 
+    V.array()*=scale;
+
+    //find the minimal point in y of the mesh so we put the grid there 
+    Eigen::Affine3d trans=Eigen::Affine3d::Identity();
+    Eigen::Vector3d t;
+    t<< 0, y_pos, 0;
+    trans.translate(t);
+    apply_transform(trans,true);
+ 
+
+    name="grid_floor";
+    m_vis.m_show_lines=true;
+    m_vis.m_line_color<<0.6, 0.6, 0.6;
+    m_vis.m_show_mesh=false;
+
+}
+
+
+void Mesh::create_floor(const float y_pos, const float scale){
+
+    //make 4 vertices
+    V.resize( 4, 3 ); 
+    V.row(0) << -1, 0, -1;
+    V.row(1) << 1, 0, -1;
+    V.row(2) << 1, 0, 1;
+    V.row(3) << -1, 0, 1;
+
+    //make 2 faces
+    F.resize( 2, 3 ); 
+    F.row(0) << 2, 1, 0;
+    F.row(1) << 3, 2, 0;
+    recalculate_normals();
+
+    //scale to be in the range of the mesh 
+    V.array()*=2*get_scale();
+
+    //find the minimal point in y of the mesh so we put the grid there 
+    Eigen::Affine3d trans=Eigen::Affine3d::Identity();
+    Eigen::Vector3d t;
+    t<< 0, y_pos, 0;
+    trans.translate(t);
+    apply_transform(trans,true);
+ 
+
+    name="grid_floor";
+    m_vis.m_show_mesh=true;
+    m_vis.m_solid_color<<47.0/255, 47.0/255, 47.0/255;
+    m_vis.m_roughness=1.0;
+
 }
 
 void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){

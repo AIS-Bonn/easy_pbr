@@ -94,10 +94,13 @@ public:
     bool is_empty()const;
     void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
     void clear_C();
-    void create_full_screen_quad();
-    void make_box_ndc(); //makes a 1x1x1 vox in NDC. which has z going into the screen
     void color_from_label_indices(Eigen::MatrixXi label_indices);
     void sanity_check() const; //check that all the data inside the mesh is valid, there are enough normals for each face, faces don't idx invalid points etc.
+    //create certain meshes
+    void create_full_screen_quad();
+    void create_box_ndc(); //makes a 1x1x1 vox in NDC. which has z going into the screen
+    void create_grid(const int nr_segments, const float y_pos, const float scale);
+    void create_floor(const float y_pos, const float scale);
 
     //lots of mesh ops 
     void remove_marked_vertices(const std::vector<bool>& mask, const bool keep);
