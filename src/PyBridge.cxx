@@ -71,6 +71,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     //Mesh
     py::class_<Mesh, std::shared_ptr<Mesh>> (m, "Mesh")
     .def(py::init<>())
+    .def(py::init<std::string>())
     .def("load_from_file", &Mesh::load_from_file )
     .def("save_to_file", &Mesh::save_to_file )
     .def("clone", &Mesh::clone )

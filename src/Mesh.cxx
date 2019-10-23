@@ -53,6 +53,13 @@ Mesh::Mesh():
 
 }
 
+Mesh::Mesh(const std::string file_path):
+     Mesh() // chain the default constructor
+{
+    load_from_file(file_path);
+
+}
+
 Mesh Mesh::clone(){
     Mesh cloned;
 

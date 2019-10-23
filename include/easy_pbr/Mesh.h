@@ -78,6 +78,7 @@ public:
         return std::shared_ptr<Mesh>( new Mesh(std::forward<Args>(args)...) );
     }
     Mesh();
+    Mesh(const std::string file_path);
     ~Mesh()=default; 
 
     Mesh clone();
