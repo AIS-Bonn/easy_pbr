@@ -359,8 +359,8 @@ void Viewer::configure_auto_params(){
     Eigen::Vector3f centroid = m_scene->get_centroid();
     float scale = m_scene->get_scale();
 
-    std::cout << " scene centroid " << centroid << std::endl;
-    std::cout << " scene scale " << scale << std::endl;
+    // std::cout << " scene centroid " << centroid << std::endl;
+    // std::cout << " scene scale " << scale << std::endl;
 
     //CAMERA------------
     if (!m_camera->m_is_initialized){
@@ -1469,14 +1469,6 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     viewport_size<< m_environment_cubemap_resolution, m_environment_cubemap_resolution;
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
-   
-
-    //create mesh
-    MeshSharedPtr quad = Mesh::create();
-    quad->create_full_screen_quad();
-    MeshGLSharedPtr quad_gl = MeshGL::create();
-    quad_gl->assign_core(quad);
-    quad_gl->upload_to_gpu();
 
     //create cam
     Camera cam;
@@ -1521,8 +1513,8 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     gl::Shader& shader=m_equirectangular2cubemap_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
-    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
@@ -1541,8 +1533,8 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
         shader.draw_into(cubemap_tex, "out_color", i);
 
         // draw
-        GL_C( quad_gl->vao.bind() ); 
-        GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+        GL_C( m_fullscreen_quad->vao.bind() ); 
+        GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
     
     }
 
@@ -1552,82 +1544,6 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
 
 
 
-
-
-
-
-
-
-    //attempt 1 
-    // //create projection and view matrices for the 6 faces we want to render;
-    // Camera cam;
-    // cam.m_fov=90;
-    // cam.m_near=0.1;
-    // cam.m_far=10.0;
-    // cam.set_position(Eigen::Vector3f::Zero()); //camera in the middle of the NDC
-
-    // //create mesh
-    // MeshSharedPtr cube;
-    // cube->make_box_ndc();
-    // MeshGLSharedPtr cube_gl;
-    // cube_gl->assign_core(cube);
-    // cube_gl->upload_to_gpu();
-
-   
-
-    // //render this cube 
-    // glDisable(GL_CULL_FACE);
-    // //dont perform depth checking nor write into the depth buffer 
-    // glDepthMask(false);
-    // glDisable(GL_DEPTH_TEST);
-
-    // gl::Shader& shader=m_equirectangular2cubemap_shader;
-
-    // // Set attributes that the vao will pulll from buffers
-    // GL_C( cube_gl->vao.vertex_attribute(shader, "position", cube_gl->V_buf, 3) );
-    // cube_gl->vao.indices(cube_gl->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
-    // // //shader setup
-    // GL_C( shader.use() );
-    // shader.bind_texture(equirectangular_tex,"equirectangular_tex");
-
-    // // draw
-    // cube_gl->vao.bind(); 
-    // glDrawElements(GL_TRIANGLES, cube_gl->m_core->F.size(), GL_UNSIGNED_INT, 0);
-
-    // // //restore the state
-    // glDepthMask(true);
-    // glEnable(GL_DEPTH_TEST);
-
-
-
- 
-
-    //
-
-    //ge    
-    // Eigen::Vector2f viewport_size;
-    // viewport_size<<512, 512;
-    // Eigen::Matrix4f P=cam.proj_matrix(viewport_size);
-    // std::vector<>
-
-
-
-
-    // std::vector<Eigen::Matrix4f> view_matrices;
-
-
-    // glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    // glm::mat4 captureViews[] =
-    // {
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-    //     glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-    // };
 }
 void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex){
 
@@ -1636,14 +1552,6 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
    
-
-    //create mesh
-    MeshSharedPtr quad = Mesh::create();
-    quad->create_full_screen_quad();
-    MeshGLSharedPtr quad_gl = MeshGL::create();
-    quad_gl->assign_core(quad);
-    quad_gl->upload_to_gpu();
-
     //create cam
     Camera cam;
     cam.m_fov=90;
@@ -1684,8 +1592,8 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     gl::Shader& shader=m_radiance2irradiance_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
-    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
@@ -1704,8 +1612,8 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
         shader.draw_into(irradiance_tex, "out_color", i);
 
         // draw
-        GL_C( quad_gl->vao.bind() ); 
-        GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+        GL_C( m_fullscreen_quad->vao.bind() ); 
+        GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
     
     }
 
@@ -1716,18 +1624,6 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
 }
 void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex){
 
-    // Eigen::Vector2f viewport_size;
-    // viewport_size<< m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution;
-    // glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
-
-   
-
-    //create mesh
-    MeshSharedPtr quad = Mesh::create();
-    quad->create_full_screen_quad();
-    MeshGLSharedPtr quad_gl = MeshGL::create();
-    quad_gl->assign_core(quad);
-    quad_gl->upload_to_gpu();
 
     //create cam
     Camera cam;
@@ -1768,8 +1664,8 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     gl::Shader& shader=m_prefilter_shader;
 
     // Set attributes that the vao will pulll from buffers
-    GL_C( quad_gl->vao.vertex_attribute(shader, "position", quad_gl->V_buf, 3) );
-    GL_C( quad_gl->vao.indices(quad_gl->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
     
     
     // //shader setup
@@ -1799,8 +1695,8 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
             shader.draw_into(prefilter_tex, "out_color", i, mip);
 
             // draw
-            GL_C( quad_gl->vao.bind() ); 
-            GL_C( glDrawElements(GL_TRIANGLES, quad_gl->m_core->F.size(), GL_UNSIGNED_INT, 0) );
+            GL_C( m_fullscreen_quad->vao.bind() ); 
+            GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
         
         }
     }

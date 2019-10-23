@@ -7,10 +7,6 @@
 
 //My stuff
 #include "Profiler.h"
-// #include "MiscUtils.h"
-// #include "easy_pbr/core/Core.h"
-// #include "easy_pbr/data_loader/DataLoaderPNG.h"
-// #include "easy_pbr/data_loader/RosBagPlayer.h"
 #include "easy_pbr/Viewer.h"
 #include "easy_pbr/MeshGL.h"
 #include "easy_pbr/Scene.h"
@@ -18,23 +14,14 @@
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
 #include "string_utils.h"
-// #ifdef WITH_TORCH
-//     #include "easy_pbr/cnn/CNN.h"
-// #endif
 
 //imgui
 #include "imgui_impl_glfw.h"
 #include "imgui_ext/curve.hpp"
 #include "imgui_ext/ImGuiUtils.h"
 
-//ros
-// #include <ros/ros.h>
-// #include "easy_pbr/utils/RosTools.h"
-
 using namespace easy_pbr::utils;
 
-//loguru
-//#include <loguru.hpp>
 
 //configuru
 #define CONFIGURU_WITH_EIGEN 1
@@ -65,7 +52,6 @@ Gui::Gui( const std::string config_file,
         m_subsample_factor(0.5),
         m_decimate_nr_target_faces(100)
          {
-    // m_core = core;
     m_view = view;
 
     init_params(config_file);
@@ -77,7 +63,6 @@ Gui::Gui( const std::string config_file,
 
     init_style();
 
-    // init_fonts();
     //fonts and dpi things
     float font_size=13;
     ImGuiIO& io = ImGui::GetIO();
@@ -92,16 +77,10 @@ Gui::Gui( const std::string config_file,
     ImGuiStyle *style = &ImGui::GetStyle();
     style->ScaleAllSizes(m_hidpi_scaling);
 
-    foo[0].x = -1;
 
 }
 
 void Gui::init_params(const std::string config_file){
-    //get the config filename
-    // ros::NodeHandle private_nh("~");
-    // std::string config_file= getParamElseThrow<std::string>(private_nh, "config_file");
-    //  std::string config_file="config.cfg";
-
     //read all the parameters
     Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
     Config core_config=cfg["core"];
@@ -110,7 +89,6 @@ void Gui::init_params(const std::string config_file){
 }
 
 void Gui::update() {
-    // std::cout << "StaticTest" <<StaticTest::get() << '\n';
     show_images();
 
     ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
@@ -122,11 +100,9 @@ void Gui::update() {
     ImGui::Begin("Menu", nullptr, main_window_flags);
     ImGui::PushItemWidth(135*m_hidpi_scaling);
 
-    draw_overlays();
+    draw_overlays(); //draws stuff like the text indicating the vertices coordinates on top of the vertices in the 3D world
 
   
-
-
 
 
     if (ImGui::CollapsingHeader("Viewer") ) {
@@ -185,12 +161,6 @@ void Gui::update() {
                     bool is_selected = ( current_selected == MeshColorType::_values()[n] );
                     if (ImGui::Selectable( MeshColorType::_names()[n], is_selected)){
                         m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_color_type= MeshColorType::_values()[n]; //select this one because we clicked on it
-                        //if we selected texture, set the light factor to 0
-                        // if(MeshColorType::_values()[n]==+MeshColorType::Texture){
-                            // m_view->m_light_factor=0.0;
-                        // }else{
-                            // m_view->m_light_factor=1.0;
-                        // }
                     }
                     if (is_selected)
                         ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
@@ -226,19 +196,13 @@ void Gui::update() {
             float max_y_plotting = m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(1);
             ImGui::SliderFloat("min_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(0), min_y, std::min(max_y, max_y_plotting) );
             ImGui::SliderFloat("max_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(1), std::max(min_y_plotting, min_y), max_y);
-            // ImGui::SliderFloat("min_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(0), min_y, max_y );
-            // ImGui::SliderFloat("min_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(1), std::max(min_y_plotting, min_y), max_y);
         }
        
 
         ImGui::ColorEdit3("BG color",m_view->m_background_color.data());
         ImGui::ColorEdit3("Ambient color",m_view->m_ambient_color.data());
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
-        // ImGui::ColorEdit3("Specular color",m_view->m_specular_color.data());
-        // ImGui::SliderFloat("Shading factor", &m_view->m_shading_factor, 0.0f, 1.0f);
-        // ImGui::SliderFloat("Light factor", &m_view->m_light_factor, 0.0f, 1.0f);
-        // ImGui::SliderFloat("Surfel blend dist", &m_view->m_surfel_blend_dist, -50.0f, 50.0f);
-        // ImGui::SliderFloat("Surfel blend dist2", &m_view->m_surfel_blend_dist2, -50.0f, 50.0f);
+ 
 
         ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
@@ -343,12 +307,6 @@ void Gui::update() {
         ImGui::SliderFloat("near", &m_view->m_camera->m_near, 0.01, 10.0);
         ImGui::SliderFloat("far", &m_view->m_camera->m_far, 100.0, 5000.0);
         ImGui::SliderFloat("Exposure", &m_view->m_camera->m_exposure, 0.1, 10.0);
-        // if(ImGui::Button("Print") ){
-        //     m_view->m_camera->print();
-        // }
-        // if ( ImGui::InputText("pose", m_camera_pose) ){
-        //     m_view->m_camera->from_string(m_camera_pose);
-        // }
         
     }
 
@@ -380,150 +338,6 @@ void Gui::update() {
         
     }
 
-    // if(m_texturer){
-    //     ImGui::Separator();
-        
-    //     show_gl_texture(m_texturer->thermal_colored_tex_to_bake_id(), "thermal_colored_tex", false);
-    //     show_gl_texture(m_texturer->rgb_tex_to_bake_id(), "RGB_tex", false);
-
-    //     if (ImGui::CollapsingHeader("Texturer")) {
-
-    //         // show_gl_texture(m_texturer->shadow_map_rgb_fbo_depth_id(), "rgbo_shadow_map", true);
-   
-
-    //         if(ImGui::Button("Save thermal_colored_tex_to_bake tex") ){
-    //             cv::Mat rgb_mat;
-    //             rgb_mat=m_texturer->m_thermal_colored_tex_to_bake.download_to_cv_mat();
-
-    //             cv::Mat rgb_mat_bgr;
-    //             cv::cvtColor(rgb_mat, rgb_mat_bgr, CV_BGRA2RGBA);
-
-    //             //convert to 8u
-    //             rgb_mat_bgr*=255;
-    //             cv::Mat rgb_mat_8;
-    //             rgb_mat_bgr.convertTo(rgb_mat_8, CV_8UC1);
-
-    //             cv::imwrite("./thermal_colored_tex_to_bake.png",rgb_mat_8);
-    //         }
-
-    //         if(ImGui::Button("Save rgb_tex_to_bake tex") ){
-    //             cv::Mat rgb_mat;
-    //             rgb_mat=m_texturer->m_rgb_tex_to_bake.download_to_cv_mat();
-
-    //             //convert to 8u
-    //             rgb_mat*=255;
-    //             cv::Mat rgb_mat_8;
-    //             rgb_mat.convertTo(rgb_mat_8, CV_8UC1);
-
-    //             cv::imwrite("./rgb_tex_to_bake.png",rgb_mat_8);
-    //         }
-    //     }
-    // }
-
-    // if(m_mesher){
-    //     ImGui::Separator();
-    //     if (ImGui::CollapsingHeader("Mesher")) {
-    //         if (ImGui::Checkbox("Create naive mesh", &m_mesher->m_compute_naive_mesh) ){
-    //             m_mesher->recompute_mesh_from_last_cloud();
-    //         }
-    //     }
-    // }
-
-
-    // if(m_fire_detector){
-    //     ImGui::Separator();
-    //     if (ImGui::CollapsingHeader("FireDetector")) {
-    //         ImGui::SliderFloat("fire_thresh", &m_fire_detector->m_fire_threshold, 0.0, 1.0);
-
-    //         show_gl_texture(m_fire_detector->binary_tex_id(), "binary_tex", true);
-    //         show_gl_texture(m_fire_detector->positions_world_tex_id(), "position_world_tex", true);
-    //     }
-    // }
-
-
-    // if(m_latticeCPU_test){
-    //     ImGui::Separator();
-    //     if (ImGui::CollapsingHeader("latticeCPU_test")) {
-    //         ImGui::SliderFloat("spacial_sigma", &m_latticeCPU_test->m_spacial_sigma, 0.0, 30.0);
-    //         ImGui::SliderFloat("color_sigma", &m_latticeCPU_test->m_color_sigma, 0.0, 1.0);
-    //     }
-    // }
-
-    // if(m_latticeGPU_test){
-    //     // ImGui::Separator();
-    //     // if (ImGui::CollapsingHeader("latticeGPU_test")) {
-    //     //     for(int i=0; i<m_latticeGPU_test->m_lattice->m_sigmas_val_and_extent.size(); i++){
-    //     //         std::string sigma_name="sigma_"+std::to_string(i);
-    //     //         ImGui::SliderFloat(sigma_name.c_str(), &m_latticeGPU_test->m_lattice->m_sigmas_val_and_extent.first, 0.0, 30.0);
-    //     //     }
-    //     // }
-    // }
-
-
-
-
-    // // ImGui::Separator();
-    // // if (ImGui::CollapsingHeader("Lattice")) {
-    // //     ImGui::SliderFloat("spacial_sigma", &m_core->m_lattice_cpu_test->m_spacial_sigma, 1.0, 100.0);
-    // //     ImGui::SliderFloat("color_sigma", &m_core->m_lattice_cpu_test->m_color_sigma, 0.01, 1.0);
-    // //     ImGui::SliderFloat("surfel_scaling", &m_core->m_lattice_cpu_test->m_surfel_scaling, 0.1, 10.0);
-    // // }
-
-    // // ImGui::Separator();
-    // // if (ImGui::CollapsingHeader("Segmenter")) {
-    // //     ImGui::SliderFloat("spacial_sigma", &m_core->m_segmenter->m_spacial_sigma, 0.25, 100.0);
-    // //     ImGui::SliderFloat("normal_sigma", &m_core->m_segmenter->m_normal_sigma, 0.01, 1.0);
-    // //     ImGui::SliderFloat("min_weight", &m_core->m_segmenter->m_min_weight, 1.0, 100.0);
-    // //     ImGui::SliderFloat("surfel_scaling", &m_core->m_segmenter->m_surfel_scaling, 0.1, 10.0);
-    // // }
-
-    // if(m_ball_detector){
-    //     ImGui::Separator();
-    //     if (ImGui::CollapsingHeader("BallDetector")) {
-    //         // ImGui::Checkbox("filter_by_area", &m_ball_detector->m_params.filterByArea);
-    //         // ImGui::Checkbox("filter_by_circularity", &m_ball_detector->m_params.filterByCircularity);
-    //         // ImGui::Checkbox("filter_by_color", &m_ball_detector->m_params.filterByColor);
-    //         // ImGui::Checkbox("filter_by_convexity", &m_ball_detector->m_params.filterByConvexity);
-    //         // ImGui::Checkbox("filter_by_inertia", &m_ball_detector->m_params.filterByInertia);
-    //         // ImGui::SliderFloat("maxArea", &m_ball_detector->m_params.maxArea, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("maxCircularity", &m_ball_detector->m_params.maxCircularity, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("maxConvexity", &m_ball_detector->m_params.maxConvexity, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("maxInertiaRatio", &m_ball_detector->m_params.maxInertiaRatio, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("maxThreshold", &m_ball_detector->m_params.maxThreshold, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("minArea", &m_ball_detector->m_params.minArea, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("minCircularity", &m_ball_detector->m_params.minCircularity, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("minConvexity", &m_ball_detector->m_params.minConvexity, 0.0, 1.0 );
-    //         // ImGui::SliderFloat("minDistBetweenBlobs", &m_ball_detector->m_params.minDistBetweenBlobs, 0.0, 1.0 );
-    //         // // ImGui::SliderInt("minInertiaRatio", &m_core->m_ball_detector->m_params.minRepeatability, 0, 100 );
-    //         // ImGui::SliderFloat("thresholdStep", &m_ball_detector->m_params.thresholdStep, 0, 100 );
-
-    //         ImGui::SliderFloat("thresholdStep", &m_ball_detector->m_params.thresholdStep, 0.01, 100 );
-    //         ImGui::SliderFloat("minThreshold", &m_ball_detector->m_params.minThreshold, 0, 255 );
-    //         ImGui::SliderFloat("maxThreshold", &m_ball_detector->m_params.maxThreshold, 0, 255 );
-    //         // ImGui::SliderInt("minRepeatability", &m_ball_detector->m_params.minRepeatability, 0, 10 ); //we need a slider for long unsigned int which imgui has as datatype but I am lazy to implement it
-    //         ImGui::SliderFloat("minDistBetweenBlobs", &m_ball_detector->m_params.minDistBetweenBlobs, 0, 100 );
-
-    //         ImGui::Checkbox("filter_by_color", &m_ball_detector->m_params.filterByColor);
-    //         // ImGui::SliderInt("blobColor", &m_ball_detector->m_params.blobColor, 0, 255 ); //we need a slider for uchar which imgui doesnt have
-
-    //         ImGui::Checkbox("filter_by_area", &m_ball_detector->m_params.filterByArea);
-    //         ImGui::SliderFloat("minArea", &m_ball_detector->m_params.minArea, 0.0, 500.0 );
-    //         ImGui::SliderFloat("maxArea", &m_ball_detector->m_params.maxArea, 0.0, 10000.0 );
-
-    //         ImGui::Checkbox("filter_by_circularity", &m_ball_detector->m_params.filterByCircularity);
-    //         ImGui::SliderFloat("minCircularity", &m_ball_detector->m_params.minCircularity, 0.0, 1.0 );
-    //         ImGui::SliderFloat("maxCircularity", &m_ball_detector->m_params.maxCircularity, 0.0, 99999 );
-
-    //         ImGui::Checkbox("filter_by_inertia", &m_ball_detector->m_params.filterByInertia);
-    //         ImGui::SliderFloat("minInertiaRatio", &m_ball_detector->m_params.minInertiaRatio, 0, 100 );
-    //         ImGui::SliderFloat("maxInertiaRatio", &m_ball_detector->m_params.maxInertiaRatio, 0, 99999 );
-
-    //         ImGui::Checkbox("filter_by_convexity", &m_ball_detector->m_params.filterByConvexity);
-    //         ImGui::SliderFloat("minConvexity", &m_ball_detector->m_params.minConvexity, 0.0, 1.0 );
-    //         ImGui::SliderFloat("maxConvexity", &m_ball_detector->m_params.maxConvexity, 0.0, 99999 );
-
-    //     }
-    // }
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("IO")) {
@@ -565,84 +379,14 @@ void Gui::update() {
         ImGui::Checkbox("Show debug textures", &m_show_debug_textures);
     }
     if(m_show_debug_textures){
-        // show_gl_texture(m_view->m_gbuffer.tex_with_name("position_gtex").get_tex_id(), "position_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").get_tex_id(), "diffuse_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").get_tex_id(), "normal_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").get_tex_id(), "metalness_and_roughness_gtex", true);
-        // show_gl_texture(m_view->m_gbuffer.tex_with_name("ao_gtex").get_tex_id(), "ao_gtex", true);
-        // show_gl_texture(m_view->m_gbuffer.tex_with_name("log_depth_gtex").get_tex_id(), "log_depth_gtex", true);
-        // show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);
         show_gl_texture(m_view->m_depth_linear_tex.get_tex_id(), "depth_linear_tex", true);
         show_gl_texture(m_view->m_ao_tex.get_tex_id(), "ao_tex", true);
         show_gl_texture(m_view->m_ao_blurred_tex.get_tex_id(), "ao_blurred_tex", true);
         show_gl_texture(m_view->m_brdf_lut_tex.get_tex_id(), "brdf_lut_tex", true);
-        // // show_gl_texture(m_core->m_view->m_rvec_tex.get_tex_id(), "rvec_tex", true);
-        // show_gl_texture(m_view->m_depth_linear_tex.get_tex_id(), "depth_linear_tex", true);
-
-        // show_gl_texture(m_core->m_lattice_cpu_test->m_input_tex.get_tex_id(), "lattice_input_tex");
-        // show_gl_texture(m_core->m_lattice_cpu_test->m_output_tex.get_tex_id(), "lattice_output_tex");
-
-        // show_gl_texture(m_core->m_ball_detector->m_input_tex.get_tex_id(), "input_rgba_tex");
-
-        // show_gl_texture(m_core->m_cnn->m_input_tex.get_tex_id(), "input_tex");
-        // show_gl_texture(m_core->m_cnn->m_output_tex.get_tex_id(), "output_tex");
-        // show_gl_texture(m_core->m_cnn->m_gt_tex.get_tex_id(), "gt_tex");
-
-        if(m_view->m_scene->does_mesh_with_name_exist("mesh_test")){
-            if (auto mesh_gpu = m_view->m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
-                show_gl_texture(mesh_gpu->m_rgb_tex->get_tex_id(), "m_rgb_tex", true);
-                show_gl_texture(mesh_gpu->m_thermal_colored_tex->get_tex_id(), "m_thermal_colored_tex", true);
-
-                if(ImGui::Button("Save rgb tex") ){
-                    cv::Mat rgb_mat;
-                    rgb_mat=mesh_gpu->m_rgb_tex->download_to_cv_mat();
-
-                    // //debg why its all alpha 0
-                    // for(int y=0; y<rgb_mat.rows; y++){
-                    //     for(int x=0; x<rgb_mat.cols; x++){
-                    //         cv::Vec4f pix;
-                    //         pix=rgb_mat.at<cv::Vec4f>(y,x);
-                    //         VLOG(1) << "pix is " << pix[0] << " " <<pix[1] << " " << pix[2] << " " << pix[3];
-                    //     }
-                    // }
-
-                    cv::Mat rgb_mat_bgr;
-                    cv::cvtColor(rgb_mat, rgb_mat_bgr, CV_BGRA2RGBA);
-
-                    //convert to 8u
-                    rgb_mat_bgr*=255;
-                    cv::Mat rgb_mat_8;
-                    rgb_mat_bgr.convertTo(rgb_mat_8, CV_8UC1);
-
-                    //flip
-                    cv::Mat rgb_mat_8_flipped;
-                    cv::flip(rgb_mat_8, rgb_mat_8_flipped, 0);
-
-                    cv::imwrite("./rgb_tex.png",rgb_mat_8_flipped);
-                }
-                if(ImGui::Button("Save thermal_colored tex") ){
-                    cv::Mat thermal_colored_mat;
-                    thermal_colored_mat=mesh_gpu->m_thermal_colored_tex->download_to_cv_mat( );
-
-                    cv::Mat rgb_mat_bgr;
-                    cv::cvtColor(thermal_colored_mat, rgb_mat_bgr, CV_BGRA2RGBA);
-
-                    //convert to 8u
-                    rgb_mat_bgr*=255;
-                    cv::Mat rgb_mat_8;
-                    rgb_mat_bgr.convertTo(rgb_mat_8, CV_8UC1);
-
-                    //flip
-                    cv::Mat rgb_mat_8_flipped;
-                    cv::flip(rgb_mat_8, rgb_mat_8_flipped, 0);
-
-                    cv::imwrite("./thermal_colored_tex.png",rgb_mat_8_flipped);
-                }
-
-
-            }
-        }
     }
  
 
@@ -658,21 +402,10 @@ void Gui::update() {
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 
-    // ImGui::InputText("exported filename", m_core->m_exported_filename, 1000);
-    // if (ImGui::Button("Write PLY")){
-    //     m_core->write_ply();
-    // }
-    // if (ImGui::Button("Write OBJ")){
-    //     m_core->write_obj();
-    // }
-
-    // static float f = 0.0f;
-    // ImGui::Text("Hello, world!");
-    // ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+  
     if (ImGui::Button("Test Window")) m_show_demo_window ^= 1;
     if (ImGui::Button("Profiler Window")) m_show_profiler_window ^= 1;
     if (ImGui::Button("Player Window")) m_show_player_window ^= 1;
-
 
 
 
@@ -721,60 +454,6 @@ void Gui::update() {
         ImGui::End();
     } 
 
-    // if (m_player){
-    //     ImGuiWindowFlags player_window_flags = 0;
-    //     player_window_flags |=  ImGuiWindowFlags_NoTitleBar;
-    //     ImVec2 size(135*m_hidpi_scaling,56*m_hidpi_scaling);
-    //     ImGui::SetNextWindowSize(size);
-    //     ImGui::SetNextWindowPos(ImVec2(canvas_size.x -size.x , canvas_size.y -size.y ));
-    //     ImGui::Begin("Player", nullptr, player_window_flags);
-    //     ImGui::PushItemWidth(135*m_hidpi_scaling);
-
-
-    //     ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
-    //     const char* icon_play = m_player->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE;
-    //     //play/pause button
-    //     if(ImGui::Button(icon_play,button_size)){
-    //         //if it's paused, then start it
-    //         if (m_player->is_paused()){
-    //             m_player->play();
-    //             // m_core->m_player->m_player_should_continue_after_step =true;
-    //             // m_core->m_player->m_player_should_do_one_step=true;
-    //         }else{
-    //             m_player->pause();
-    //             // m_core->m_player->m_player_should_continue_after_step =false;
-    //             // m_core->m_player->m_player_should_do_one_step=false;
-    //         }
-    //     }
-    //     ImGui::SameLine();
-    //     if(ImGui::Button(ICON_FA_STEP_FORWARD,button_size)){
-    //         // m_core->m_player_should_do_one_step=true;
-    //     }
-    //     // ImGui::SameLine();
-    //     // const char* icon_should_continue = m_core->m_player->m_player_should_continue_after_step? ICON_FA_STOP : ICON_FA_FAST_FORWARD;
-    //     // if(ImGui::Button(icon_should_continue,button_size)){
-    //     //     // //if it's paused, then start it
-    //     //     // if (m_core->m_player->is_paused()){
-    //     //     //     m_core->m_player->play();
-    //     //     //     m_core->m_player->m_player_should_continue_after_step =true;
-    //     //     //     m_core->m_player->m_player_should_do_one_step=true;
-    //     //     // }else{
-    //     //     //     m_core->m_player->pause();
-    //     //     //     m_core->m_player->m_player_should_continue_after_step =false;
-    //     //     //     m_core->m_player->m_player_should_do_one_step=false;
-    //     //     // }
-    //     //
-    //     // }
-    //     ImGui::SameLine();
-    //     if(ImGui::Button(ICON_FA_UNDO,button_size)){
-    //         m_player->reset();
-    //     }
-
-    //     ImGui::End();
-    // }
-
-
-
 
     // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
     if (m_show_demo_window) {
@@ -785,19 +464,19 @@ void Gui::update() {
 
 }
 
-// void Gui::show(const cv::Mat& cv_mat, const std::string name){
+void Gui::show(const cv::Mat& cv_mat, const std::string name){
 
-//     if(!cv_mat.data){
-//         VLOG(3) << "Showing empty image, discaring";
-//         return;
-//     }
+    if(!cv_mat.data){
+        VLOG(3) << "Showing empty image, discaring";
+        return;
+    }
 
-//     std::lock_guard<std::mutex> lock(m_add_cv_mats_mutex);  // so that "show" can be usef from any thread
+    std::lock_guard<std::mutex> lock(m_add_cv_mats_mutex);  // so that "show" can be usef from any thread
 
-//     m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
-//     m_cv_mats_dirty_map[name]=true;
+    m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
+    m_cv_mats_dirty_map[name]=true;
 
-// }
+}
 
 void Gui::show_images(){
 
@@ -948,51 +627,6 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     mesh->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
 
 }
-
-float Gui::pixel_ratio(){
-    // Computes pixel ratio for hidpi devices
-    int buf_size[2];
-    int win_size[2];
-    GLFWwindow* window = glfwGetCurrentContext();
-    glfwGetFramebufferSize(window, &buf_size[0], &buf_size[1]);
-    glfwGetWindowSize(window, &win_size[0], &win_size[1]);
-    return (float) buf_size[0] / (float) win_size[0];
-}
-
-float Gui::hidpi_scaling(){
-    // Computes scaling factor for hidpi devices
-    //float xscale, yscale;
-    //GLFWwindow* window = glfwGetCurrentContext();
-    //glfwGetWindowContentScale(window, &xscale, &yscale);
-    //return 0.5 * (xscale + yscale);
-    return 1.0;
-}
-
-
-// void Gui::register_module(const std::shared_ptr<RosBagPlayer> player){
-//     m_player=player;
-// }
-
-// void Gui::register_module(const std::shared_ptr<Texturer> texturer){
-//     m_texturer=texturer;
-// }
-
-// void Gui::register_module(const std::shared_ptr<FireDetector> fire_detector){
-//     m_fire_detector=fire_detector;
-// }
-
-// void Gui::register_module(const std::shared_ptr<Mesher> mesher){
-//     m_mesher=mesher;
-// }
-
-// void Gui::register_module(const std::shared_ptr<LatticeCPU_test> latticeCPU_test){
-//     m_latticeCPU_test=latticeCPU_test;
-// }
-
-// void Gui::register_module(const std::shared_ptr<BallDetector> ball_detector){
-//     m_ball_detector=ball_detector;
-// }
-
 
 
 void Gui::init_style() {

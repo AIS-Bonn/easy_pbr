@@ -1,9 +1,6 @@
 //My stuff
 #include "easy_pbr/Viewer.h"
 
-#define ENABLE_GL_PROFILING 1
-#include "Profiler.h"
-
 
 int main(int argc, char *argv[]) {
 

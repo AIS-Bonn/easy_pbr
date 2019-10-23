@@ -14,7 +14,7 @@ public:
     enum class MouseMode { None, Rotation, Zoom, Pan, Translation} mouse_mode;
 
     Camera();
-    //stores internally something aking to a model_matrix, that puts the camera from the local camera coordinates into the world coordinates. we call this the model matrix and the inverse is the view_matrix
+    //stores internally something akin to a model_matrix, that puts the camera from the local camera coordinates into the world coordinates. we call this the model matrix and the inverse is the view_matrix
 
     //getters
     Eigen::Matrix4f model_matrix(); //return the model matrix that places the camera in the world. Equivalent to tf_world_cam (maps from the camera coordinates to the world coordinates)
@@ -76,7 +76,6 @@ private:
 
 
     void recalculate_orientation();
-    // Eigen::Matrix4f compute_view_matrix(const Eigen::Vector3f& eye, const Eigen::Vector3f&center, const Eigen::Vector3f& up); //computes a view matrix that places the camera at eye, looking at a the point "center" and orientated with the up vector which is usually (0,1,0)
     Eigen::Matrix4f compute_projection_matrix(const float fov, const float aspect, const float znear, const float zfar);
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
