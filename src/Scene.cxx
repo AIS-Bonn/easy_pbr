@@ -37,7 +37,9 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     }else{
         m_meshes.push_back(mesh);
         m_meshes.back()->name=name;
-        m_meshes.back()->recalculate_normals();
+        if(m_meshes.back()->V.rows()!=m_meshes.back()->NV.rows()){
+            m_meshes.back()->recalculate_normals();
+        }
     }
 
 
@@ -63,7 +65,33 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
 
     m_meshes.push_back(mesh);
     m_meshes.back()->name=name;
-    m_meshes.back()->recalculate_normals();
+    if(m_meshes.back()->V.rows()!=m_meshes.back()->NV.rows()){
+        m_meshes.back()->recalculate_normals();
+    }
+
+    // // //debug
+    // Eigen::MatrixXd NF;
+    // NF.resize(m_meshes.back()->F.rows(),3);
+    // int Frows = m_meshes.back()->F.rows();
+    // // #pragma omp parallel for if (Frows>10000)
+    // for(int i = 0; i < Frows;i++){
+    //     VLOG(1) << "normals for face " << i << " with indices " << m_meshes.back()->F.row(i);
+    //     const Eigen::Matrix<double, 1, 3> v1 = m_meshes.back()->V.row(m_meshes.back()->F(i,1)) - m_meshes.back()->V.row(m_meshes.back()->F(i,0));
+    //     const Eigen::Matrix<double, 1, 3> v2 = m_meshes.back()->V.row(m_meshes.back()->F(i,2)) - m_meshes.back()->V.row(m_meshes.back()->F(i,0));
+    //     VLOG(1) << "normals for face " << i << " with v1 " << v1 << " and v2 " << v2;
+    //     NF.row(i) = v1.cross(v2);//.normalized();
+    //     // double r = N.row(i).norm();
+    //     // if(r == 0)
+    //     // {
+    //     //     N.row(i) = Z;
+    //     // }else
+    //     // {
+    //     //     N.row(i) /= r;
+    //     // }
+    // }
+
+
+
 
     //if that was the first mesh that was added, add also a grid for the ground 
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){

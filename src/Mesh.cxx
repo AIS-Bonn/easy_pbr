@@ -3,6 +3,7 @@
 //c++
 #include <iostream>
 #include <algorithm>
+#include <unordered_map> //for deduplicating obj vertices
 
 //my stuff
 // #include "MiscUtils.h"
@@ -1378,144 +1379,119 @@ void Mesh::write_ply(const std::string file_path){
 
 void Mesh::read_obj(const std::string file_path){
 
+    struct Vertex{
+        Eigen::Vector3d pos=Eigen::Vector3d::Zero();
+        Eigen::Vector3d normal=Eigen::Vector3d::Zero();
+        Eigen::Vector2d tex_coord=Eigen::Vector2d::Zero();
+        Eigen::Vector3d color=Eigen::Vector3d::Zero();
+        bool operator==(const Vertex& other) const {
+            return pos == other.pos && normal==other.normal && tex_coord == other.tex_coord && color == other.color ;
+        }
+    };
+    //has function for vertex
+    struct HashVertex{
+        std::size_t operator()(Vertex const& vertex) const noexcept{
+            return ((MatrixHash<Eigen::Vector3d>{}(vertex.pos) ^
+                   (MatrixHash<Eigen::Vector3d>{}(vertex.normal) << 1)) >> 1) ^
+                   (MatrixHash<Eigen::Vector2d>{}(vertex.tex_coord) << 1);
+        }
+    };
+
+ 
+
+    //attempt 2 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
-
-    std::string warn;
-    std::string err;
+    std::string warn, err;
 
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_path.c_str());
 
     LOG_IF(WARNING, shapes.size()!=1) << "Warning when loading obj with path " << file_path << " " << warn;
     LOG_IF(FATAL, !err.empty()) << "Failed to load obj with path " << file_path << " " << err;
     LOG_IF(FATAL, !ret) << "Failed to load obj with path: " << file_path;
-    //I ONLY SUPPORT ONE SHAPE AT THE MOMENT
-    LOG_IF(FATAL, shapes.size()!=1) << "We only support one shape at the moment. Supporting more shapes requires meddling with the indices of the faces for different shapes. This object has nr_shapes: "<< shapes.size();
+
+    //check if it has normals, tex coords or color
+    bool has_normals, has_tex_coords, has_colors;
+    has_normals=attrib.normals.size()!=0;
+    has_tex_coords=attrib.texcoords.size()!=0;
+    has_colors=attrib.colors.size()!=0;
 
 
-    //allocate vectors
-    V.resize((int)(attrib.vertices.size()) / 3,  3);
-    if ((int)(attrib.normals.size())!=0){
-        NV.resize((int)(attrib.normals.size()) / 3,  3);
-    }
-    if ((int)(attrib.texcoords.size())!=0){
-        UV.resize((int)(attrib.texcoords.size()) / 2,  2);
-    }
-    // if (shapes[0].mesh.indices.size()!=0){
-        // F.resize(shapes[0].mesh.indices.size()/3,  3);
-    // }
-    //how many faces in ALL shapes
-    int nr_faces=0;
-    for (size_t s = 0; s < shapes.size(); s++) {
-        nr_faces+=shapes[s].mesh.indices.size()/3;
-    }
-    F.resize(nr_faces,  3);
 
+    std::vector<Vertex> vertices;
+    std::unordered_map<Vertex, uint32_t, HashVertex> unique_vertices = {};
+    std::vector<int> indices;
 
-    if (F.rows()!=0){
-        int cumulative_nr_faces_per_shape=0;
-        for (size_t s = 0; s < shapes.size(); s++) {
-            for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
-                int idx0 = shapes[0].mesh.indices[3*f+0].vertex_index;
-                int idx1 = shapes[0].mesh.indices[3*f+1].vertex_index;
-                int idx2 = shapes[0].mesh.indices[3*f+2].vertex_index;
-                F.row(f+cumulative_nr_faces_per_shape) << idx0, idx1, idx2;
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            Vertex vertex = {};
+
+            vertex.pos = {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            if(has_normals){
+            vertex.normal = {
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2]
+            };
             }
-            cumulative_nr_faces_per_shape+=shapes[s].mesh.indices.size()/3;
+
+            if (has_tex_coords){
+                vertex.tex_coord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    attrib.texcoords[2 * index.texcoord_index + 1]
+                };
+            }
+
+            //there is no index for the color so we use the vertex_index
+            if (has_colors){
+                vertex.color = {
+                    attrib.colors[3 * index.vertex_index + 0],
+                    attrib.colors[3 * index.vertex_index + 1],
+                    attrib.colors[3 * index.vertex_index + 2]
+                };
+            }
+
+            //push the vertex only if it's the first one we references
+            if (unique_vertices.count(vertex) == 0) {
+                unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
+                vertices.push_back(vertex);
+            }
+            indices.push_back(unique_vertices[vertex]);
+
+            // vertices.push_back(vertex);
+            // indices.push_back(indices.size());
         }
     }
 
+    //push the vertices into  V, NV and so on
+    V.resize(vertices.size(),3);
+    if (has_normals) { NV.resize(vertices.size(),3); };
+    if (has_tex_coords) { UV.resize(vertices.size(),2); };
+    if (has_colors) { C.resize(vertices.size(),2); };
 
-    for (size_t v = 0; v < attrib.vertices.size() / 3; v++) {
-        //xyz
-        float x = attrib.vertices[3*v+0];
-        float y = attrib.vertices[3*v+1];
-        float z = attrib.vertices[3*v+2];
-        V.row(v) << x,y,z;
-        //normals
-        if(NV.rows()!=0){
-            float nx = attrib.normals[3*v+0];
-            float ny = attrib.normals[3*v+1];
-            float nz = attrib.normals[3*v+2];
-            NV.row(v) << nx,ny,nz;
-        }
-        //texcoords
-        if(UV.rows()!=0){
-            float tu = attrib.texcoords[2*v+0];
-            float tv = attrib.texcoords[2*v+1];
-            UV.row(v) << tu,tv;
-        }
+    for(int i=0; i<vertices.size(); i++){
+        V.row(i) = vertices[i].pos;
+        if (has_normals) { NV.row(i) = vertices[i].normal; }
+        if (has_tex_coords) { UV.row(i) = vertices[i].tex_coord; }
+        if (has_colors) { C.row(i) = vertices[i].color; }
     }
 
-
-
-//     printf("# of vertices  = %d\n", (int)(attrib.vertices.size()) / 3);
-//   printf("# of normals   = %d\n", (int)(attrib.normals.size()) / 3);
-//   printf("# of texcoords = %d\n", (int)(attrib.texcoords.size()) / 2);
-//   printf("# of materials = %d\n", (int)materials.size());
-//   printf("# of shapes    = %d\n", (int)shapes.size());
-
-
-    // //obtain the nr of vertices for all shapes
-    // int nr_verts=0;
-    // // Loop over shapes
-    // for (size_t s = 0; s < shapes.size(); s++) {
-    //     // Loop over faces(polygon)
-    //     size_t index_offset = 0;
-    //     for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-    //         int fv = shapes[s].mesh.num_face_vertices[f];
-
-    //         // Loop over vertices in the face.
-    //         for (size_t v = 0; v < fv; v++) {
-    //         // access to vertex
-    //         int idx = shapes[s].mesh.indices[index_offset + v];
-    //         nr_verts=std::max(nr_verts,idx);
-    //         }
-    //         index_offset += fv;
-
-    //     }
-    // }
-    // nr_verts=nr_verts+1; //if we have 3 verts, the maximum index will be 2. So to get the nr of verts we have to sum up 1
-
-
-
-    // // Loop over shapes
-    // for (size_t s = 0; s < shapes.size(); s++) {
-    //     // Loop over faces(polygon)
-    //     size_t index_offset = 0;
-    //     for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-    //         int fv = shapes[s].mesh.num_face_vertices[f];
-
-    //         // Loop over vertices in the face.
-    //         for (size_t v = 0; v < fv; v++) {
-    //         // access to vertex
-    //         tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-    //         tinyobj::real_t vx = attrib.vertices[3*idx.vertex_index+0];
-    //         tinyobj::real_t vy = attrib.vertices[3*idx.vertex_index+1];
-    //         tinyobj::real_t vz = attrib.vertices[3*idx.vertex_index+2];
-    //         tinyobj::real_t nx = attrib.normals[3*idx.normal_index+0];
-    //         tinyobj::real_t ny = attrib.normals[3*idx.normal_index+1];
-    //         tinyobj::real_t nz = attrib.normals[3*idx.normal_index+2];
-    //         tinyobj::real_t tx = attrib.texcoords[2*idx.texcoord_index+0];
-    //         tinyobj::real_t ty = attrib.texcoords[2*idx.texcoord_index+1];
-    //         // Optional: vertex colors
-    //         // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
-    //         // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
-    //         // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
-    //         }
-    //         index_offset += fv;
-
-    //         // per-face material
-    //         shapes[s].mesh.material_ids[f];
-    //     }
-    // }
+    F.resize(indices.size()/3, 3);
+    for(int i=0; i<indices.size()/3; i++){
+        F.row(i) << indices[3*i+0], indices[3*i+1], indices[3*i+2];
+    }
 
 }
 
 
 void Mesh::sanity_check() const{
-    LOG_IF_S(ERROR, F.rows()!=NF.rows()) << name << ": F and NF don't coincide in size, they are " << F.rows() << " and " << NF.rows();
+    // LOG_IF_S(ERROR, F.rows()!=NF.rows()) << name << ": F and NF don't coincide in size, they are " << F.rows() << " and " << NF.rows(); // no need to check for this as I actually don't usually use NF
     LOG_IF_S(ERROR, V.rows()!=NV.rows() && F.size()) << name << ": V and NV don't coincide in size, they are " << V.rows() << " and " << NV.rows();
     LOG_IF_S(ERROR, V.size() && D.size() && V.rows()!=D.rows() ) << name << ": V and D don't coincide " << V.rows() << " and " << D.rows();
     LOG_IF_S(ERROR, V.size() && I.size() && V.rows()!=I.rows() ) << name << ": V and I don't coincide " << V.rows() << " and " << I.rows();
