@@ -3,8 +3,6 @@
 import sys
 sys.path.insert(0, '../build')
 from EasyPBR  import *
-import numpy as np
-import time
 
 config_file="empty.cfg"
 

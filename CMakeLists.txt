@@ -96,11 +96,6 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
   GIT_TAG        v2.4.2
 )
-FetchContent_GetProperties(pybind11)
-if(NOT pybind11_POPULATED)
-  FetchContent_Populate(pybind11)
-  add_subdirectory(${pybind11_SOURCE_DIR})
-endif()
 FetchContent_Declare(
   loguru
   GIT_REPOSITORY https://github.com/RaduAlexandru/loguru.git
@@ -142,12 +137,12 @@ FetchContent_Declare(
 )
 # add_subdirectory( ${pybind11_SOURCE_DIR})
 ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue tiny_obj  utils easy_gl)
+FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru configuru better_enums concurrent_queue tiny_obj  utils easy_gl)
 
 
 ###   INCLUDES   #########################################################
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/extern)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/extern)
 include_directories(${GLFW_INCLUDE_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
@@ -170,23 +165,23 @@ include_directories("/usr/include/python3.6m/")
 
 ###   SOURCES   #################################################################
 set(MY_SRC  
-    # ${CMAKE_SOURCE_DIR}/src/main.cxx
-    ${CMAKE_SOURCE_DIR}/src/Viewer.cxx
-    ${CMAKE_SOURCE_DIR}/src/Gui.cxx
-    ${CMAKE_SOURCE_DIR}/src/Camera.cxx
-    ${CMAKE_SOURCE_DIR}/src/Recorder.cxx
-    ${CMAKE_SOURCE_DIR}/src/Mesh.cxx
-    ${CMAKE_SOURCE_DIR}/src/MeshGL.cxx
-    ${CMAKE_SOURCE_DIR}/src/SpotLight.cxx
-    ${CMAKE_SOURCE_DIR}/src/Scene.cxx
-    ${CMAKE_SOURCE_DIR}/src/LabelMngr.cxx
-    # ${CMAKE_SOURCE_DIR}/src/PyBridge.cxx
+    # ${PROJECT_SOURCE_DIR}/src/main.cxx
+    ${PROJECT_SOURCE_DIR}/src/Viewer.cxx
+    ${PROJECT_SOURCE_DIR}/src/Gui.cxx
+    ${PROJECT_SOURCE_DIR}/src/Camera.cxx
+    ${PROJECT_SOURCE_DIR}/src/Recorder.cxx
+    ${PROJECT_SOURCE_DIR}/src/Mesh.cxx
+    ${PROJECT_SOURCE_DIR}/src/MeshGL.cxx
+    ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
+    ${PROJECT_SOURCE_DIR}/src/Scene.cxx
+    ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
+    # ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx
 )
 file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
 #tinyply because libigl readPLY has a memory leak 
 set(DEPS_SRC ${DEPS_SRC} ${tiny_ply_SOURCE_DIR}/source/tinyply.cpp)
 if(CORE_WITH_DIR_WATCHER)
-    set(DEPS_SRC ${DEPS_SRC} ${CMAKE_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
+    set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
 endif()
 
 
@@ -234,11 +229,11 @@ add_library( easy_pbr ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 set_target_properties(easy_pbr PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 ##pybind
-pybind11_add_module(EasyPBR ${CMAKE_SOURCE_DIR}/src/PyBridge.cxx )
-# target_compile_definitions(Viewer_py PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+pybind11_add_module(EasyPBR ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
+# target_compile_definitions(Viewer_py PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 
 ###   EXECUTABLE   #######################################
-add_executable(run ${CMAKE_SOURCE_DIR}/src/main.cxx  )
+add_executable(run ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 # set_target_properties(surfel_renderer PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 # add_executable(easy_pbr  ${EXTERN_SRC} ${IMGUI_SRC} src/main.cxx)
 
@@ -254,8 +249,8 @@ target_link_libraries(run PRIVATE easy_pbr )
 
 
 #definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easy_pbr PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-target_compile_definitions(easy_pbr PRIVATE AWESOMEFONT_DIR="${CMAKE_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
+target_compile_definitions(easy_pbr PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+target_compile_definitions(easy_pbr PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 target_compile_definitions(easy_pbr PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
 target_compile_definitions(easy_pbr PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 

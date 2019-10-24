@@ -340,8 +340,9 @@ void main(){
                 // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
             }
 
-            //percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
+            // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
             ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
+            // ivec2 shadow_map_size=ivec2(1024);
             float xOffset = 1.0/shadow_map_size.x;
             float yOffset = 1.0/shadow_map_size.y;
             float Factor = 0.0;

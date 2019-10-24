@@ -76,7 +76,7 @@ void Recorder::reset(){
 void Recorder::write_viewer_to_png(){
 
     //make the dirs 
-    fs::path root (std::string(CMAKE_SOURCE_DIR));
+    fs::path root (std::string(PROJECT_SOURCE_DIR));
     fs::path dir (m_results_path);
     fs::path png_name (m_single_png_filename);
     fs::path full_path = root/ dir / png_name;
@@ -123,7 +123,7 @@ void Recorder::write_viewer_to_png(){
 void Recorder::record_viewer(){
 
     //make the dirs 
-    fs::path root (std::string(CMAKE_SOURCE_DIR));
+    fs::path root (std::string(PROJECT_SOURCE_DIR));
     fs::path dir (m_results_path);
     fs::path png_name (std::to_string(m_nr_frames_recorded)+".png");
     fs::path full_path = root/ dir / png_name;
