@@ -59,6 +59,8 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def_readwrite("m_point_color", &VisOptions::m_point_color)
     .def_readwrite("m_line_color", &VisOptions::m_line_color)
     .def_readwrite("m_solid_color", &VisOptions::m_solid_color)
+    .def_readwrite("m_metalness", &VisOptions::m_metalness)
+    .def_readwrite("m_roughness", &VisOptions::m_roughness)
     .def("set_color_solid", &VisOptions::set_color_solid )
     .def("set_color_pervertcolor", &VisOptions::set_color_pervertcolor )
     .def("set_color_texture", &VisOptions::set_color_texture )
@@ -96,6 +98,8 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def_readwrite("L_gt", &Mesh::L_gt)
     .def_readwrite("I", &Mesh::I)
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
+    .def("rotate_x_axis", &Mesh::rotate_x_axis )
+    .def("rotate_y_axis", &Mesh::rotate_y_axis )
     ;
 
 

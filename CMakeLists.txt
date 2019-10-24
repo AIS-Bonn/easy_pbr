@@ -249,7 +249,8 @@ target_link_libraries(run PRIVATE easy_pbr )
 
 
 #definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easy_pbr PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+target_compile_definitions(easy_pbr PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(easy_pbr PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 target_compile_definitions(easy_pbr PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 target_compile_definitions(easy_pbr PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
 target_compile_definitions(easy_pbr PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)

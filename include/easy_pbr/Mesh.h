@@ -110,8 +110,8 @@ public:
     void rotate_90_x_axis();
     void worldGL2worldROS();
     void worldROS2worldGL();
-    void rotate_x_axis(const float rads);
-    void rotate_y_axis(const float rads);
+    void rotate_x_axis(const float degrees);
+    void rotate_y_axis(const float degrees);
     void random_subsample(const float percentage_removal); 
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();

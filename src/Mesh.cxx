@@ -494,22 +494,24 @@ void Mesh::worldROS2worldGL(){
     m_is_dirty=true;
 }
 
-void Mesh::rotate_x_axis(const float rads ){
+void Mesh::rotate_x_axis(const float degrees ){
     Eigen::Affine3d tf;
     tf.setIdentity();
     Eigen::Matrix3d tf_rot;
-    tf_rot = Eigen::AngleAxisd(rads*M_PI, Eigen::Vector3d::UnitX());
+    float rads=degrees2radians(degrees);
+    tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitX());
     tf.matrix().block<3,3>(0,0)=tf_rot;
     apply_transform(tf);
 
     m_is_dirty=true;
 }
 
-void Mesh::rotate_y_axis(const float rads ){
+void Mesh::rotate_y_axis(const float degrees ){
     Eigen::Affine3d tf;
     tf.setIdentity();
     Eigen::Matrix3d tf_rot;
-    tf_rot = Eigen::AngleAxisd(rads*M_PI, Eigen::Vector3d::UnitY());
+    float rads=degrees2radians(degrees);
+    tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitY());
     tf.matrix().block<3,3>(0,0)=tf_rot;
     apply_transform(tf);
 
