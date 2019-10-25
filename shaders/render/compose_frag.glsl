@@ -256,6 +256,8 @@ vec3 Tonemap_ACES(const vec3 x) {
 
 void main(){
 
+    float bloom_threshold=1.0;
+
     //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
     if(depth==1.0){
@@ -276,9 +278,25 @@ void main(){
             // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
             //tonemap
             // color = color / (color + vec3(1.0));
-            color = Tonemap_Reinhard(color);
-            //gamma correct
             color=color*exposure;
+            float brightness=luminance(color);
+            if (brightness>bloom_threshold){
+                // color=vec3(1.0, 0.0, 0.0);
+                // color=color*(brightness-bloom_threshold);
+                // color+=color*(brightness-bloom_threshold)*10;
+            }
+            color = Tonemap_Reinhard(color);
+            // color = Tonemap_Unreal(color);
+            // color = Tonemap_FilmicALU(color);
+            // color = Tonemap_ACES(color);
+            // color=color*exposure;
+            // float brightness=luminance(color);
+            // if (brightness>bloom_threshold){
+            //     // color=vec3(1.0, 0.0, 0.0);
+            //     // color=color*(brightness-bloom_threshold);
+            //     color+=color*(brightness-bloom_threshold);
+            // }
+            //gamma correct
             color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
             // out_color = vec4(1.0);
@@ -437,6 +455,14 @@ void main(){
     }
 
 
+    color=color*exposure;
+    // float brightness = luminance(color);
+    // if (brightness>bloom_threshold){
+    //     color=vec3(1.0, 0.0, 0.0);
+    // } 
+
+
+
     color = Tonemap_Reinhard(color);
     // color = Tonemap_Unreal(color);
     // color = Tonemap_FilmicALU(color);
@@ -445,11 +471,10 @@ void main(){
     // HDR tonemapping
     // color = color / (color + vec3(1.0));
     // gamma correct
-    color=color*exposure;
+    // color=color*exposure;
     color = pow(color, vec3(1.0/2.2)); 
 
-
-    
+ 
 
     out_color = vec4(color, 1.0);
    

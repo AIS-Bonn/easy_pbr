@@ -77,8 +77,10 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("load_from_file", &Mesh::load_from_file )
     .def("save_to_file", &Mesh::save_to_file )
     .def("clone", &Mesh::clone )
+    .def("add", &Mesh::add )
     .def("is_empty", &Mesh::is_empty )
     .def("create_box_ndc", &Mesh::create_box_ndc )
+    .def("create_floor", &Mesh::create_floor )
     .def_readwrite("name", &Mesh::name)
     .def_readwrite("m_width", &Mesh::m_width)
     .def_readwrite("m_height", &Mesh::m_height)
@@ -100,6 +102,9 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def("rotate_x_axis", &Mesh::rotate_x_axis )
     .def("rotate_y_axis", &Mesh::rotate_y_axis )
+    .def("move_in_x", &Mesh::move_in_x )
+    .def("move_in_y", &Mesh::move_in_y )
+    .def("move_in_z", &Mesh::move_in_z )
     ;
 
 
