@@ -1229,7 +1229,7 @@ void Viewer::ssao_pass(){
     // glDrawBuffers(1,draw_buffers);
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
-    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
 
 
 
