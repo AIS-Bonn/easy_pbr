@@ -250,7 +250,7 @@ void Viewer::compile_shaders(){
 
 void Viewer::init_opengl(){
     // //initialize the g buffer with some textures 
-    GL_C( m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
     GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
@@ -456,26 +456,20 @@ void Viewer::post_draw(){
 void Viewer::draw(const GLuint fbo_id){
 
     TIME_SCOPE("draw");
-    glBindFramebuffer(GL_FRAMEBUFFER,fbo_id);
-    clear_framebuffers();
-    
-    //set the gbuffer size in case it changed 
-    if(m_viewport_size.x()/m_subsample_factor==m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor==m_gbuffer.height()){
-        m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
-    }
-
     hotload_shaders();
 
-
+    //GL PARAMS--------------
     if(m_enable_culling){
-        // https://polycount.com/discussion/198579/2d-what-are-you-working-on-2018
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
     }else{
         glDisable(GL_CULL_FACE);
     }
-
-
+    glBindFramebuffer(GL_FRAMEBUFFER,fbo_id);
+    clear_framebuffers();
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
+    glEnable(GL_DEPTH_TEST);
+    
 
     //set the camera to that it sees the whole scene 
     if(m_first_draw && !m_scene->is_empty() ){
@@ -508,8 +502,6 @@ void Viewer::draw(const GLuint fbo_id){
                     }
                 }
             }
-
-    
         }
     }
     TIME_END("shadow_pass");
@@ -517,18 +509,20 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-    //gbuffer
-    TIME_START("setup");
-    glEnable(GL_DEPTH_TEST);
-    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
-    TIME_END("setup");
-
     TIME_START("gbuffer");
+    //set the gbuffer size in case it changed 
+    if(m_viewport_size.x()/m_subsample_factor!=m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor!=m_gbuffer.height()){
+        // VLOG(1) << "m+viewpoer size is " << m_viewport_size.transpose();
+        // VLOG(1) << "gbuffer has size " << m_gbuffer.width() << " " << m_gbuffer.height();
+        m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
+    }
     m_gbuffer.bind_for_draw();
     m_gbuffer.clear_depth();
     TIME_END("gbuffer");
 
+
     TIME_START("geom_pass");
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ); //set the viewport again because rendering the shadow maps, changed it
     //render every mesh into the gbuffer
     for(size_t i=0; i<m_meshes_gl.size(); i++){
         MeshGLSharedPtr mesh=m_meshes_gl[i];
@@ -726,9 +720,6 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     Eigen::Matrix4f MVP = P*V*M;
  
     //shader setup
-    if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
-        m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
-    }
     shader.use();
     shader.uniform_4x4(M, "M");
     shader.uniform_4x4(MV, "MV");
@@ -869,14 +860,12 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
+    // Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
  
     //shader setup
-    if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
-        m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
-    }
     m_draw_mesh_shader.use();
     m_draw_mesh_shader.uniform_4x4(M, "M");
     m_draw_mesh_shader.uniform_4x4(MV, "MV");
