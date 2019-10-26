@@ -44,6 +44,11 @@ Eigen::Matrix4f Camera::proj_matrix(const Eigen::Vector2f viewport_size){
     float aspect=viewport_size.x()/viewport_size.y();
     return compute_projection_matrix(m_fov, aspect, m_near, m_far);
 }
+Eigen::Matrix4f Camera::proj_matrix(const float viewport_width, const float viewport_height){
+    Eigen::Vector2f viewport_size;
+    viewport_size << viewport_width, viewport_height;
+    return proj_matrix(viewport_size);
+}
 Eigen::Vector3f Camera::position(){
     return m_model_matrix.translation();
 }

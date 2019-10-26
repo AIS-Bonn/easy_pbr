@@ -387,6 +387,7 @@ void Gui::update() {
         show_gl_texture(m_view->m_ao_tex.get_tex_id(), "ao_tex", true);
         show_gl_texture(m_view->m_ao_blurred_tex.get_tex_id(), "ao_blurred_tex", true);
         show_gl_texture(m_view->m_brdf_lut_tex.get_tex_id(), "brdf_lut_tex", true);
+        show_gl_texture(m_view->m_final_tex.get_tex_id(), "final_tex", true);
     }
  
 

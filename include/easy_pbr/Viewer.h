@@ -122,6 +122,7 @@ public:
     gl::Shader m_integrate_brdf_shader;
 
     gl::GBuffer m_gbuffer;
+    gl::Texture2D m_final_tex;
 
     gl::Texture2D m_ao_tex;
     gl::Texture2D m_ao_blurred_tex;
@@ -168,12 +169,14 @@ public:
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 
 
-    Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
+    // Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
 
 private:
     // Eigen::Matrix4f compute_mvp_matrix();
 
     bool m_first_draw;
+
+    std::vector< std::function<bool(Viewer& viewer)> > m_callbacks_post_draw;
 
     // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan
     void configure_auto_params();

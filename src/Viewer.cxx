@@ -456,9 +456,11 @@ void Viewer::post_draw(){
 void Viewer::draw(const GLuint fbo_id){
 
     TIME_SCOPE("draw");
+    glBindFramebuffer(GL_FRAMEBUFFER,fbo_id);
+    clear_framebuffers();
     
     //set the gbuffer size in case it changed 
-    if(m_viewport_size.x()==m_gbuffer.width() || m_viewport_size.y()==m_gbuffer.height()){
+    if(m_viewport_size.x()/m_subsample_factor==m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor==m_gbuffer.height()){
         m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
     }
 
@@ -518,7 +520,7 @@ void Viewer::draw(const GLuint fbo_id){
     //gbuffer
     TIME_START("setup");
     glEnable(GL_DEPTH_TEST);
-    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     TIME_END("setup");
 
     TIME_START("gbuffer");
@@ -540,7 +542,6 @@ void Viewer::draw(const GLuint fbo_id){
             if(mesh->m_core->m_vis.m_show_points){
                 render_points_to_gbuffer(mesh);
             }
-            
         }
     }
     TIME_END("geom_pass");
@@ -551,7 +552,7 @@ void Viewer::draw(const GLuint fbo_id){
     }else{
         // m_gbuffer.tex_with_name("position_gtex").generate_mipmap(m_ssao_downsample); //kinda hacky thing to account for possible resizes of the gbuffer and the fact that we might not have mipmaps in it. This solves the black background issue
     }
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
 
 
  
@@ -560,36 +561,48 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //compose the final image
-    glViewport(0.0f , 0.0f, m_viewport_size.x()*m_subsample_factor, m_viewport_size.y()*m_subsample_factor );
     compose_final_image(fbo_id);
 
 
-    // //forward render the lines, points and edges
-    //blit the depth 
-    TIME_START("forward_render");
-    m_gbuffer.bind_for_read();
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id); // write to default framebuffer
-    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_gbuffer.width()*m_subsample_factor, m_gbuffer.height()*m_subsample_factor, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    
 
-    for(size_t i=0; i<m_meshes_gl.size(); i++){
-        MeshGLSharedPtr mesh=m_meshes_gl[i];
-        if(mesh->m_core->m_vis.m_is_visible){
-            // if(mesh->m_core->m_vis.m_show_points){
-            //     render_points(mesh);
-            // }
-            if(mesh->m_core->m_vis.m_show_lines){
-                render_lines(mesh);
-            }
-            if(mesh->m_core->m_vis.m_show_mesh){
-                // render_mesh_to_gbuffer(mesh);
-            }
-            if(mesh->m_core->m_vis.m_show_wireframe){
-                render_wireframe(mesh);
-            }
-        }
-    }
-    TIME_END("forward_render");
+
+    // // //forward render the lines, points and edges
+    // //blit the depth 
+    // TIME_START("forward_render");
+    // m_gbuffer.bind_for_read();
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id); // write to default framebuffer
+    // glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+    // for(size_t i=0; i<m_meshes_gl.size(); i++){
+    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
+    //     if(mesh->m_core->m_vis.m_is_visible){
+    //         // if(mesh->m_core->m_vis.m_show_points){
+    //         //     render_points(mesh);
+    //         // }
+    //         if(mesh->m_core->m_vis.m_show_lines){
+    //             render_lines(mesh);
+    //         }
+    //         if(mesh->m_core->m_vis.m_show_mesh){
+    //             // render_mesh_to_gbuffer(mesh);
+    //         }
+    //         if(mesh->m_core->m_vis.m_show_wireframe){
+    //             render_wireframe(mesh);
+    //         }
+    //     }
+    // }
+    // TIME_END("forward_render");
+
+
+
+    //blit the final texture to the bakc buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_tex.fbo_id());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    glDrawBuffer(GL_BACK);
+    glBlitFramebuffer(0, 0, m_final_tex.width(), m_final_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
 
     //restore state
     glDisable(GL_CULL_FACE);
@@ -708,7 +721,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
  
@@ -758,65 +771,65 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
 void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
-    // Set attributes that the vao will pulll from buffers
-    if(mesh->m_core->V.size()){
-        mesh->vao.vertex_attribute(m_draw_lines_shader, "position", mesh->V_buf, 3);
-    }
-    if(mesh->m_core->E.size()){
-        mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    }
+    // // Set attributes that the vao will pulll from buffers
+    // if(mesh->m_core->V.size()){
+    //     mesh->vao.vertex_attribute(m_draw_lines_shader, "position", mesh->V_buf, 3);
+    // }
+    // if(mesh->m_core->E.size()){
+    //     mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    // }
 
 
-    //shader setup
-    m_draw_lines_shader.use();
-    Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
-    m_draw_lines_shader.uniform_4x4(MVP, "MVP");
-    m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
-    glLineWidth( mesh->m_core->m_vis.m_line_width );
+    // //shader setup
+    // m_draw_lines_shader.use();
+    // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
+    // m_draw_lines_shader.uniform_4x4(MVP, "MVP");
+    // m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
+    // glLineWidth( mesh->m_core->m_vis.m_line_width );
 
 
-    // draw
-    mesh->vao.bind(); 
-    glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
+    // // draw
+    // mesh->vao.bind(); 
+    // glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
 
-    glLineWidth( 1.0f );
+    // glLineWidth( 1.0f );
     
 }
 
 void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
 
-     // Set attributes that the vao will pulll from buffers
-    if(mesh->m_core->V.size()){
-        mesh->vao.vertex_attribute(m_draw_wireframe_shader, "position", mesh->V_buf, 3);
-    }
-    if(mesh->m_core->F.size()){
-        mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    }
+    //  // Set attributes that the vao will pulll from buffers
+    // if(mesh->m_core->V.size()){
+    //     mesh->vao.vertex_attribute(m_draw_wireframe_shader, "position", mesh->V_buf, 3);
+    // }
+    // if(mesh->m_core->F.size()){
+    //     mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    // }
 
 
-    //shader setup
-    m_draw_wireframe_shader.use();
-    Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
-    m_draw_wireframe_shader.uniform_4x4(MVP, "MVP");
+    // //shader setup
+    // m_draw_wireframe_shader.use();
+    // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
+    // m_draw_wireframe_shader.uniform_4x4(MVP, "MVP");
 
-    //openglsetup
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
-    glPolygonOffset(0.0, -5.0);
-    // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
-    glLineWidth( mesh->m_core->m_vis.m_line_width );
-
-
-    // draw
-    mesh->vao.bind(); 
-    glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    // //openglsetup
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
+    // glPolygonOffset(0.0, -5.0);
+    // // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
+    // glLineWidth( mesh->m_core->m_vis.m_line_width );
 
 
-    //revert to previous openglstat
-    glDisable(GL_POLYGON_OFFSET_LINE);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    // glDisable( GL_LINE_SMOOTH );
-    glLineWidth( 1.0f );
+    // // draw
+    // mesh->vao.bind(); 
+    // glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+    // //revert to previous openglstat
+    // glDisable(GL_POLYGON_OFFSET_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // // glDisable( GL_LINE_SMOOTH );
+    // glLineWidth( 1.0f );
     
 }
 
@@ -856,7 +869,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
  
@@ -1073,7 +1086,7 @@ void Viewer::ssao_pass(){
     TIME_START("ao_pass");
     //matrix setup
     Eigen::Matrix3f V_rot = Eigen::Affine3f(m_camera->view_matrix()).linear(); //for rotating the normals from the world coords to the cam_coords
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f P_inv=P.inverse();
 
 
@@ -1210,15 +1223,19 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
     TIME_START("compose");
 
+    //create a final image the same size as the framebuffer
+    m_final_tex.allocate_or_resize(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
+    Eigen::Vector4f val;
+    val << m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0;
+    m_final_tex.set_val(val);
+
     //matrices setuo
     Eigen::Matrix4f V = m_camera->view_matrix();
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f P_inv = P.inverse();
     Eigen::Matrix4f V_inv = V.inverse(); //used for projecting the cam coordinates positions (which were hit with MV) stored into the gbuffer back into the world coordinates (so just makes them be affected by M which is the model matrix which just puts things into a common world coordinate)
     Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear(); //used for getting the view rays from the cam coords to the world coords so we can sample the cubemap
 
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_id); 
-    clear_framebuffers();
 
     //dont perform depth checking nor write into the depth buffer 
     glDepthMask(false);
@@ -1320,6 +1337,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // VLOG(1) << "neighbours is " << neighbours;
     m_compose_final_quad_shader.uniform_v2_float(neighbours , "neighbours");
 
+    m_compose_final_quad_shader.draw_into(m_final_tex, "out_color");
 
     // draw
     m_fullscreen_quad->vao.bind(); 
@@ -1334,25 +1352,25 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 }
 
 cv::Mat Viewer::download_to_cv_mat(){
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); 
-    int w=m_viewport_size.x()*m_subsample_factor;
-    int h=m_viewport_size.y()*m_subsample_factor;
-    cv::Mat cv_mat(h, w, CV_8UC4);
-    glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, cv_mat.data);
-    cv::Mat cv_mat_flipped;
-    cv::flip(cv_mat, cv_mat_flipped, 0);
-    return cv_mat_flipped;
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+    // int w=m_viewport_size.x()*m_subsample_factor;
+    // int h=m_viewport_size.y()*m_subsample_factor;
+    // cv::Mat cv_mat(h, w, CV_8UC4);
+    // glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, cv_mat.data);
+    // cv::Mat cv_mat_flipped;
+    // cv::flip(cv_mat, cv_mat_flipped, 0);
+    // return cv_mat_flipped;
 }
 
-Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
-    Eigen::Matrix4f M,V,P, MVP;
+// Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
+//     Eigen::Matrix4f M,V,P, MVP;
 
-    M=mesh->m_core->m_model_matrix.cast<float>().matrix();
-    V=m_camera->view_matrix();
-    P=m_camera->proj_matrix(m_viewport_size); 
-    MVP=P*V*M;
-    return MVP;
-}
+//     M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+//     V=m_camera->view_matrix();
+//     P=m_camera->proj_matrix(m_viewport_size); 
+//     MVP=P*V*M;
+//     return MVP;
+// }
 
 
 void Viewer::create_random_samples_hemisphere(){
@@ -1687,11 +1705,11 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
     
 }
 void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
-    m_camera->mouse_move(x, y, m_viewport_size*m_subsample_factor );
+    m_camera->mouse_move(x, y, m_viewport_size );
     //only move if we are controlling the main camera and only if we rotating
     if(m_lights_follow_camera && m_camera==m_default_camera && m_camera->mouse_mode==Camera::MouseMode::Rotation){
         for(int i=0; i<m_spot_lights.size(); i++){
-            m_spot_lights[i]->mouse_move(x, y, m_viewport_size*m_subsample_factor );
+            m_spot_lights[i]->mouse_move(x, y, m_viewport_size );
         }
     }
         
@@ -1772,7 +1790,7 @@ void Viewer::glfw_resize(GLFWwindow* window, int width, int height){
     int framebuffer_width;
     int framebuffer_height;
     glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-    m_viewport_size = Eigen::Vector2f(framebuffer_width/m_subsample_factor, framebuffer_height/m_subsample_factor);
+    m_viewport_size = Eigen::Vector2f(framebuffer_width, framebuffer_height);
     // m_viewport_size = Eigen::Vector2f(width/m_subsample_factor, height/m_subsample_factor);
 }
 
