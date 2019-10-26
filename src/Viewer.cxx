@@ -590,12 +590,31 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-    //blit the final texture to the bakc buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
+    TIME_START("forward_render");
+    //blit the final texture to the back buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
     glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_tex.fbo_id());
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
     glDrawBuffer(GL_BACK);
     glBlitFramebuffer(0, 0, m_final_tex.width(), m_final_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    //blit also the depth
+    m_gbuffer.bind_for_read();
+    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+    //forward render the lines and edges 
+    for(size_t i=0; i<m_meshes_gl.size(); i++){
+        MeshGLSharedPtr mesh=m_meshes_gl[i];
+        if(mesh->m_core->m_vis.m_is_visible){
+            if(mesh->m_core->m_vis.m_show_lines){
+                render_lines(mesh);
+            }
+            if(mesh->m_core->m_vis.m_show_wireframe){
+                render_wireframe(mesh);
+            }
+        }
+    }
+    TIME_END("forward_render");
 
 
     //restore state
@@ -762,65 +781,74 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
 void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
-    // // Set attributes that the vao will pulll from buffers
-    // if(mesh->m_core->V.size()){
-    //     mesh->vao.vertex_attribute(m_draw_lines_shader, "position", mesh->V_buf, 3);
-    // }
-    // if(mesh->m_core->E.size()){
-    //     mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    // }
+    // Set attributes that the vao will pulll from buffers
+    if(mesh->m_core->V.size()){
+        mesh->vao.vertex_attribute(m_draw_lines_shader, "position", mesh->V_buf, 3);
+    }
+    if(mesh->m_core->E.size()){
+        mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    }
+
+    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f V = m_camera->view_matrix();
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f MVP = P*V*M;
 
 
-    // //shader setup
-    // m_draw_lines_shader.use();
+    //shader setup
+    m_draw_lines_shader.use();
     // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
-    // m_draw_lines_shader.uniform_4x4(MVP, "MVP");
-    // m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
-    // glLineWidth( mesh->m_core->m_vis.m_line_width );
+    m_draw_lines_shader.uniform_4x4(MVP, "MVP");
+    m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
+    glLineWidth( mesh->m_core->m_vis.m_line_width );
 
 
-    // // draw
-    // mesh->vao.bind(); 
-    // glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
+    // draw
+    mesh->vao.bind(); 
+    glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
 
-    // glLineWidth( 1.0f );
+    glLineWidth( 1.0f );
     
 }
 
 void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
 
-    //  // Set attributes that the vao will pulll from buffers
-    // if(mesh->m_core->V.size()){
-    //     mesh->vao.vertex_attribute(m_draw_wireframe_shader, "position", mesh->V_buf, 3);
-    // }
-    // if(mesh->m_core->F.size()){
-    //     mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    // }
+     // Set attributes that the vao will pulll from buffers
+    if(mesh->m_core->V.size()){
+        mesh->vao.vertex_attribute(m_draw_wireframe_shader, "position", mesh->V_buf, 3);
+    }
+    if(mesh->m_core->F.size()){
+        mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    }
+
+    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f V = m_camera->view_matrix();
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f MVP = P*V*M;
 
 
-    // //shader setup
-    // m_draw_wireframe_shader.use();
-    // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
-    // m_draw_wireframe_shader.uniform_4x4(MVP, "MVP");
+    //shader setup
+    m_draw_wireframe_shader.use();
+    m_draw_wireframe_shader.uniform_4x4(MVP, "MVP");
 
-    // //openglsetup
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
-    // glPolygonOffset(0.0, -5.0);
-    // // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
-    // glLineWidth( mesh->m_core->m_vis.m_line_width );
-
-
-    // // draw
-    // mesh->vao.bind(); 
-    // glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    //openglsetup
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
+    glPolygonOffset(0.0, -5.0);
+    // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
+    glLineWidth( mesh->m_core->m_vis.m_line_width );
 
 
-    // //revert to previous openglstat
-    // glDisable(GL_POLYGON_OFFSET_LINE);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    // // glDisable( GL_LINE_SMOOTH );
-    // glLineWidth( 1.0f );
+    // draw
+    mesh->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+    //revert to previous openglstat
+    glDisable(GL_POLYGON_OFFSET_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // glDisable( GL_LINE_SMOOTH );
+    glLineWidth( 1.0f );
     
 }
 
@@ -860,8 +888,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
-    // Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
-    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
  
