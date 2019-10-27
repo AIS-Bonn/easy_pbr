@@ -16,9 +16,14 @@
 #include "string_utils.h"
 
 //imgui
+#include "imgui.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h" 
 #include "imgui_ext/curve.hpp"
 #include "imgui_ext/ImGuiUtils.h"
+#include <glad/glad.h> // Initialize with gladLoadGL()
+// Include glfw3.h after our OpenGL definitions
+#include <GLFW/glfw3.h>
 
 using namespace easy_pbr::utils;
 

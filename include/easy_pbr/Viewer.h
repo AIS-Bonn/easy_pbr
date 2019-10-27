@@ -3,12 +3,12 @@
 //c++
 #include <memory>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h" 
-#include <glad/glad.h> // Initialize with gladLoadGL()
-// Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h>
+// #include "imgui.h"
+// #include "imgui_impl_glfw.h"
+// #include "imgui_impl_opengl3.h" 
+// #include <glad/glad.h> // Initialize with gladLoadGL()
+// // Include glfw3.h after our OpenGL definitions
+// #include <GLFW/glfw3.h>
 
 #include <Eigen/Geometry>
 
@@ -33,6 +33,7 @@ class Gui;
 class Recorder;
 class RandGenerator;
 class SpotLight;
+class GLFWwindow;
 
 class Viewer {
 public:

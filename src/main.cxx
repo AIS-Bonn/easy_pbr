@@ -10,10 +10,5 @@ int main(int argc, char *argv[]) {
         view->update();
     }
 
-    // Cleanup
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwTerminate();
-
     return 0;
 }
