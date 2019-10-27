@@ -175,7 +175,7 @@ set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
     ${PROJECT_SOURCE_DIR}/src/Scene.cxx
     ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
-    ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx
+    # ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx
     # ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx
 )
 file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
@@ -245,7 +245,17 @@ set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRAR
 
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
-target_link_libraries(EasyPBR PRIVATE easy_pbr_lib )
+
+# ######just liktit to easy_PBR but use the same bybridge
+add_library( synthetic_generator_lib ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx  )
+set_target_properties(synthetic_generator_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_link_libraries(synthetic_generator_lib easy_pbr_lib )
+target_compile_definitions(synthetic_generator_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(synthetic_generator_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+
+
+target_link_libraries(EasyPBR PRIVATE easy_pbr_lib synthetic_generator_lib )
+# target_link_libraries(EasyPBR PRIVATE easy_pbr_lib synthetic_generator_lib )
 target_link_libraries(run PRIVATE easy_pbr_lib )
 
 
