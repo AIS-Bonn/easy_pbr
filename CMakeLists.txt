@@ -225,8 +225,8 @@ endif()
 
 ###   MAIN LIB  ####################
 # add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
-add_library( easy_pbr ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
-set_target_properties(easy_pbr PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+add_library( easy_pbr_lib ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
+set_target_properties(easy_pbr_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 ##pybind
 pybind11_add_module(EasyPBR ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
@@ -243,16 +243,16 @@ set(LIBS -lpthread -ldl) #because loguru needs them
 set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core igl::triangle igl::embree )
 
 
-target_link_libraries(easy_pbr ${LIBS} )
-target_link_libraries(EasyPBR PRIVATE easy_pbr )
-target_link_libraries(run PRIVATE easy_pbr )
+target_link_libraries(easy_pbr_lib ${LIBS} )
+target_link_libraries(EasyPBR PRIVATE easy_pbr_lib )
+target_link_libraries(run PRIVATE easy_pbr_lib )
 
 
 #definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easy_pbr PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-target_compile_definitions(easy_pbr PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
-target_compile_definitions(easy_pbr PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
-target_compile_definitions(easy_pbr PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
-target_compile_definitions(easy_pbr PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
+target_compile_definitions(easy_pbr_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(easy_pbr_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+target_compile_definitions(easy_pbr_lib PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
+target_compile_definitions(easy_pbr_lib PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
+target_compile_definitions(easy_pbr_lib PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
