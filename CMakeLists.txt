@@ -54,7 +54,7 @@ option(LIBIGL_WITH_ANTTWEAKBAR       "Use AntTweakBar"    OFF)
 option(LIBIGL_WITH_CGAL              "Use CGAL"           OFF)
 option(LIBIGL_WITH_COMISO            "Use CoMiso"         OFF)
 option(LIBIGL_WITH_CORK              "Use Cork"           OFF)
-option(LIBIGL_WITH_EMBREE            "Use Embree"         ON)
+option(LIBIGL_WITH_EMBREE            "Use Embree"         OFF)
 option(LIBIGL_WITH_LIM               "Use LIM"            OFF)
 option(LIBIGL_WITH_MATLAB            "Use Matlab"         OFF)
 option(LIBIGL_WITH_MOSEK             "Use MOSEK"          OFF)
@@ -64,7 +64,7 @@ option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"          OFF)
 option(LIBIGL_WITH_PNG               "Use PNG"            OFF)
 option(LIBIGL_WITH_PYTHON            "Use Python"         OFF)
 option(LIBIGL_WITH_TETGEN            "Use Tetgen"         OFF)
-option(LIBIGL_WITH_TRIANGLE          "Use Triangle"       ON)
+option(LIBIGL_WITH_TRIANGLE          "Use Triangle"       OFF)
 option(LIBIGL_WITH_VIEWER            "Use OpenGL viewer"  OFF)
 option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
@@ -240,7 +240,7 @@ add_executable(run ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core igl::triangle igl::embree )
+set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core )
 
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
