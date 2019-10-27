@@ -23,8 +23,9 @@ namespace py = pybind11;
 PYBIND11_MODULE(EasyPBR, m) {
  
     //Viewer
-    py::class_<Viewer> (m, "Viewer") 
-    .def(py::init<const std::string>())
+    py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")
+    // .def(py::init<const std::string>())
+    .def_static("create",  &Viewer::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     ;
 

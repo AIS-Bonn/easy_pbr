@@ -94,8 +94,13 @@ Viewer::Viewer(const std::string config_file):
         init_opengl();                     
         m_gui=std::make_shared<Gui>(config_file, this, m_window); //needs to be initialized here because here we have done a gladloadgl
 
+        VLOG(1) << "Created viewer";
+
 }
 
+Viewer::~Viewer(){
+    LOG(WARNING) << "Destroying viewer";
+}
 
 void Viewer::init_params(const std::string config_file){
 

@@ -35,15 +35,20 @@ class RandGenerator;
 class SpotLight;
 class GLFWwindow;
 
-class Viewer {
+//in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
+class Viewer;
+
+class Viewer: public std::enable_shared_from_this<Viewer> {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Viewer(const std::string config_file);
     //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
-    template<class... Args>
-    static typename std::shared_ptr<Viewer> create(Args&&... args){
-        return std::make_shared<Viewer>(args...);
+    template <class ...Args>
+    static std::shared_ptr<Viewer> create( Args&& ...args ){
+        return std::shared_ptr<Viewer>( new Viewer(std::forward<Args>(args)...) );
+        // return std::make_shared<Viewer>( std::forward<Args>(args)... );
     }
+    // ~Viewer()=default;
+    ~Viewer();
 
     
     bool dummy;  //to initialize the window we provide this dummy variable so we can call initialie context
@@ -173,6 +178,7 @@ public:
     // Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
 
 private:
+    Viewer(const std::string config_file); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();
 
     bool m_first_draw;
