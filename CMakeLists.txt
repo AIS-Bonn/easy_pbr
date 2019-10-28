@@ -246,16 +246,16 @@ set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRAR
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
 
-# ######just liktit to easy_PBR but use the same bybridge
-add_library( synthetic_generator_lib ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx  )
-set_target_properties(synthetic_generator_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_link_libraries(synthetic_generator_lib easy_pbr_lib )
-target_compile_definitions(synthetic_generator_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-target_compile_definitions(synthetic_generator_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+# # ######just liktit to easy_PBR but use the same bybridge
+# add_library( synthetic_generator_lib ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx  )
+# set_target_properties(synthetic_generator_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+# target_link_libraries(synthetic_generator_lib easy_pbr_lib )
+# target_compile_definitions(synthetic_generator_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+# target_compile_definitions(synthetic_generator_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 
 
-target_link_libraries(EasyPBR PRIVATE easy_pbr_lib synthetic_generator_lib )
 # target_link_libraries(EasyPBR PRIVATE easy_pbr_lib synthetic_generator_lib )
+target_link_libraries(EasyPBR PRIVATE easy_pbr_lib )
 target_link_libraries(run PRIVATE easy_pbr_lib )
 
 
@@ -268,14 +268,14 @@ target_compile_definitions(easy_pbr_lib PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
 #################################################################################
-# ##compile the Synthetic generator as another separate thing
-# add_library( synthetic_generator_lib ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx  )
-# set_target_properties(synthetic_generator_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-# pybind11_add_module(MBZIRC_CH1 ${PROJECT_SOURCE_DIR}/src/PyBridgeSynth.cxx )
+##compile the Synthetic generator as another separate thing
+add_library( synthetic_generator_lib ${PROJECT_SOURCE_DIR}/src/SyntheticGenerator.cxx  )
+set_target_properties(synthetic_generator_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+pybind11_add_module(MBZIRC_CH1 ${PROJECT_SOURCE_DIR}/src/PyBridgeSynth.cxx )
 
-# target_link_libraries(synthetic_generator_lib easy_pbr_lib )
-# target_link_libraries(MBZIRC_CH1 PRIVATE synthetic_generator_lib )
+target_link_libraries(synthetic_generator_lib easy_pbr_lib )
+target_link_libraries(MBZIRC_CH1 PRIVATE synthetic_generator_lib )
 
-# target_compile_definitions(synthetic_generator_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-# target_compile_definitions(synthetic_generator_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+target_compile_definitions(synthetic_generator_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(synthetic_generator_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 

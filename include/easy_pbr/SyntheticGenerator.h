@@ -36,6 +36,8 @@ public:
         return std::shared_ptr<SyntheticGenerator>( new SyntheticGenerator(std::forward<Args>(args)...) );
         // return std::make_shared<SyntheticGenerator>( std::forward<Args>(args)... );
     }
+
+    bool dummy_glad;
     
 
 

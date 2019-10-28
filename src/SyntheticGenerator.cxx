@@ -7,7 +7,7 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
-// #include <glad/glad.h>
+#include <glad/glad.h>
 // #include <GLFW/glfw3.h> //glfw3.h after our OpenGL definitions
  
 //My stuff 
@@ -37,6 +37,7 @@ using namespace easy_pbr::utils;
 
 // SyntheticGenerator::SyntheticGenerator(const std::shared_ptr<Viewer>& view):
 SyntheticGenerator::SyntheticGenerator(const std::string& config_file):
+   dummy_glad(gladLoadGL() ),
     #ifdef WITH_DIR_WATCHER 
         dir_watcher(std::string(PROJECT_SOURCE_DIR)+"/shaders/",5)
     #endif

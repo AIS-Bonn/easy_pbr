@@ -109,12 +109,12 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("move_in_z", &Mesh::move_in_z )
     ;
 
-    //SyntheticGenerator
-    py::class_<SyntheticGenerator, std::shared_ptr<SyntheticGenerator>> (m, "SyntheticGenerator")
-    // .def(py::init<const std::shared_ptr<Viewer>>())
-    // .def_static("create",  &SyntheticGenerator::create<const std::shared_ptr<Viewer>& > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
-    .def_static("create",  &SyntheticGenerator::create<const std::string > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
-    ;
+    // //SyntheticGenerator
+    // py::class_<SyntheticGenerator, std::shared_ptr<SyntheticGenerator>> (m, "SyntheticGenerator")
+    // // .def(py::init<const std::shared_ptr<Viewer>>())
+    // // .def_static("create",  &SyntheticGenerator::create<const std::shared_ptr<Viewer>& > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
+    // .def_static("create",  &SyntheticGenerator::create<const std::string > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
+    // ;
 
 
 }
