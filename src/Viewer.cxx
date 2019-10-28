@@ -1,12 +1,12 @@
 #include "easy_pbr/Viewer.h"
 
 //opengl stuff 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h" 
 #include <glad/glad.h> // Initialize with gladLoadGL()
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h" 
 
 #include <string> //find_last_of
 #include <limits> //signaling_nan
@@ -26,6 +26,7 @@
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/MeshGL.h"
+#include "easy_pbr/Mesh.h"
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
@@ -93,8 +94,6 @@ Viewer::Viewer(const std::string config_file):
         compile_shaders(); 
         init_opengl();                     
         m_gui=std::make_shared<Gui>(config_file, this, m_window); //needs to be initialized here because here we have done a gladloadgl
-
-        VLOG(1) << "Created viewer";
 
 }
 
@@ -1254,9 +1253,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
     //create a final image the same size as the framebuffer
     m_final_tex.allocate_or_resize(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
-    Eigen::Vector4f val;
-    val << m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0;
-    m_final_tex.set_val(val);
+    m_final_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
     //matrices setuo
     Eigen::Matrix4f V = m_camera->view_matrix();

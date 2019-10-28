@@ -4,9 +4,8 @@
 #include <iostream>
 #include <algorithm>
 
-//just for debugging stuff 
-// #include "easy_pbr/utils/MiscUtils.h"
-
+//my stuff 
+#include "easy_pbr/Mesh.h";
 
 MeshGL::MeshGL():
     m_first_core_assignment(true),

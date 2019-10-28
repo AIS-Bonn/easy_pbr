@@ -6,14 +6,14 @@
 #include <unordered_map>
 #include <mutex>
 
-#include <glad/glad.h> // Initialize with gladLoadGL()
+// #include <glad/glad.h> // Initialize with gladLoadGL()
 // Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h>
+// #include <GLFW/glfw3.h>
 
-//imgui
-#include <imgui.h>
-#include "imgui_impl_glfw.h"
-#include "imgui_ext/IconsFontAwesome.h"
+// //imgui
+// #include <imgui.h>
+// #include "imgui_impl_glfw.h"
+// #include "imgui_ext/IconsFontAwesome.h"
 #include "ImGuizmo.h"
 
 //opencv
@@ -24,6 +24,9 @@
 
 
 //forward declarations
+class GLFWwindow;
+class ImGuiContext;
+
 class DataLoaderPNG;
 class Viewer;
 class Mesh;

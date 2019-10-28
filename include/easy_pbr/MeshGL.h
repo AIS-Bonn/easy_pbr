@@ -15,9 +15,10 @@
 #include "Texture2D.h"
 #include "VertexArrayObject.h"
 
-#include "easy_pbr/Mesh.h"
+// #include "easy_pbr/Mesh.h"
 
-
+//forward declarations
+class Mesh;
 
 //in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
 class MeshGL;

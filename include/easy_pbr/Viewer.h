@@ -183,7 +183,7 @@ private:
 
     bool m_first_draw;
 
-    std::vector< std::function<bool(Viewer& viewer)> > m_callbacks_post_draw;
+    // std::vector< std::function<bool(Viewer& viewer)> > m_callbacks_post_draw;
 
     // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan
     void configure_auto_params();

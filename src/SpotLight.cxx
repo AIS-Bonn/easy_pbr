@@ -6,6 +6,7 @@
 
 
 #include "easy_pbr/MeshGL.h"
+#include "easy_pbr/Mesh.h"
 
 
 SpotLight::SpotLight(const configuru::Config& config)
