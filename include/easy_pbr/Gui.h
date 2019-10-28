@@ -48,6 +48,7 @@ public:
        );
     void update();
     static void show(const cv::Mat& cv_mat, const std::string name);
+    void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
 
 
 private:
@@ -86,7 +87,6 @@ private:
 
     void init_params(const std::string config_file);
     void init_style();
-    void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
     void edit_transform(const std::shared_ptr<Mesh>& mesh);
     void show_images(); // uplaod all cv mats to gl textures and displays them 
     void draw_overlays(); //draw all the overlays like the vert ids above each vertex of the meshes that are visible

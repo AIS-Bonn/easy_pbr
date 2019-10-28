@@ -431,6 +431,10 @@ void Viewer::configure_auto_params(){
     }
 }
 
+void Viewer::add_callback_post_draw(const std::function<bool(Viewer& viewer)> func){
+    m_callbacks_post_draw.push_back(func);
+}
+
 void Viewer::update(const GLuint fbo_id){
     pre_draw();
     draw(fbo_id);
@@ -455,6 +459,12 @@ void Viewer::pre_draw(){
 }
 
 void Viewer::post_draw(){
+
+    //call any callbacks before we finish the imgui frame so the callbacks have a chance to insert some imgui code
+    for(int i=0; i<m_callbacks_post_draw.size(); i++){
+        m_callbacks_post_draw[i](*this);
+    }
+
     if(m_show_gui){
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
