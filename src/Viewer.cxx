@@ -98,7 +98,7 @@ Viewer::Viewer(const std::string config_file):
 }
 
 Viewer::~Viewer(){
-    LOG(WARNING) << "Destroying viewer";
+    // LOG(WARNING) << "Destroying viewer";
 }
 
 void Viewer::init_params(const std::string config_file){

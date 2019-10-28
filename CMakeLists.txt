@@ -225,17 +225,13 @@ endif()
 
 ###   MAIN LIB  ####################
 # add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
-add_library( easy_pbr_lib ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
-set_target_properties(easy_pbr_lib PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+add_library( easy_pbr_lib SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 
 ##pybind
-pybind11_add_module(EasyPBR ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
-# target_compile_definitions(Viewer_py PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+pybind11_add_module(EasyPBR SHARED ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
 
 ###   EXECUTABLE   #######################################
 add_executable(run ${PROJECT_SOURCE_DIR}/src/main.cxx  )
-# set_target_properties(surfel_renderer PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
-# add_executable(easy_pbr  ${EXTERN_SRC} ${IMGUI_SRC} src/main.cxx)
 
 
 ###   LIBS   ###############################################
