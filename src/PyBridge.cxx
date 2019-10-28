@@ -9,7 +9,6 @@
 #include "easy_pbr/Mesh.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/LabelMngr.h"
-#include "easy_pbr/SyntheticGenerator.h"
 
 
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -107,13 +106,6 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("move_in_x", &Mesh::move_in_x )
     .def("move_in_y", &Mesh::move_in_y )
     .def("move_in_z", &Mesh::move_in_z )
-    ;
-
-    //SyntheticGenerator
-    py::class_<SyntheticGenerator, std::shared_ptr<SyntheticGenerator>> (m, "SyntheticGenerator")
-    // .def(py::init<const std::shared_ptr<Viewer>>())
-    // .def_static("create",  &SyntheticGenerator::create<const std::shared_ptr<Viewer>& > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
-    .def_static("create",  &SyntheticGenerator::create<const std::string > ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     ;
 
 
