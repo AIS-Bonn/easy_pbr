@@ -62,7 +62,7 @@ Viewer::Viewer(const std::string config_file):
     m_scene(new Scene),
     // m_gui(new Gui(this, m_window )),
     m_default_camera(new Camera),
-    m_recorder(new Recorder(this)),
+    m_recorder(new Recorder()),
     m_rand_gen(new RandGenerator()),
     m_viewport_size(640, 480),
     m_background_color(0.2, 0.2, 0.2),
@@ -270,6 +270,12 @@ void Viewer::init_opengl(){
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     m_gbuffer.sanity_check();
 
+    //initialize the final fbo
+    GL_C( m_final_fbo.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo.add_depth("depth_gtex") );
+    m_final_fbo.sanity_check();
+
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode_min_mag(GL_NEAREST);
 
@@ -283,7 +289,7 @@ void Viewer::init_opengl(){
     m_prefilter_cubemap_tex.generate_mipmap_full();
 
     //brdf_lut_tex 
-    m_brdf_lut_tex.allocate_tex_storage(GL_RG16F, GL_RG, GL_HALF_FLOAT, m_brdf_lut_resolution, m_brdf_lut_resolution);
+    m_brdf_lut_tex.allocate_storage(GL_RG16F, GL_RG, GL_HALF_FLOAT, m_brdf_lut_resolution, m_brdf_lut_resolution);
 
     m_rvec_tex.set_wrap_mode(GL_REPEAT); //so we repeat the random vectors specified in this 4x4 matrix over the whole image
 
@@ -472,7 +478,7 @@ void Viewer::post_draw(){
     }
     glfwSwapBuffers(m_window);
 
-    m_recorder->update();
+    // m_recorder->update();
 }
 
 
@@ -614,17 +620,50 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-    TIME_START("forward_render");
-    //blit the final texture to the back buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
+    // TIME_START("forward_render");
+    // //blit the final texture to the back buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
+    // glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    // glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_tex.fbo_id());
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    // glDrawBuffer(GL_BACK);
+    // glBlitFramebuffer(0, 0, m_final_tex.width(), m_final_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    // //blit also the depth
+    // m_gbuffer.bind_for_read();
+    // glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+    // //forward render the lines and edges 
+    // for(size_t i=0; i<m_meshes_gl.size(); i++){
+    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
+    //     if(mesh->m_core->m_vis.m_is_visible){
+    //         if(mesh->m_core->m_vis.m_show_lines){
+    //             render_lines(mesh);
+    //         }
+    //         if(mesh->m_core->m_vis.m_show_wireframe){
+    //             render_wireframe(mesh);
+    //         }
+    //     }
+    // }
+    // TIME_END("forward_render");
+
+
+    //attempt 3 at forward rendering 
+    if(m_viewport_size.x()!=m_final_fbo.width() || m_viewport_size.y()!=m_final_fbo.height()){
+        m_final_fbo.set_size(m_viewport_size.x(), m_viewport_size.y());
+    }
+    m_final_fbo.bind_for_draw();
+    m_final_fbo.clear();
+
+    //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_tex.fbo_id());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_final_tex.width(), m_final_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_composed_tex.fbo_id());
+    m_final_fbo.bind_for_draw();
+    // glDrawBuffer(GL_BACK);
+    glBlitFramebuffer(0, 0, m_composed_tex.width(), m_composed_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
     //blit also the depth
     m_gbuffer.bind_for_read();
     glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 
     //forward render the lines and edges 
     for(size_t i=0; i<m_meshes_gl.size(); i++){
@@ -638,7 +677,14 @@ void Viewer::draw(const GLuint fbo_id){
             }
         }
     }
-    TIME_END("forward_render");
+
+
+    //finally just blit the final fbo to the default framebuffer
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    m_final_fbo.bind_for_read();
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    glDrawBuffer(GL_BACK);
+    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
     //restore state
@@ -777,7 +823,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->m_label_mngr){
         shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
-    if(mesh->m_cur_tex_ptr->get_tex_storage_initialized() ){ 
+    if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
         shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     }
 
@@ -825,6 +871,13 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.uniform_4x4(MVP, "MVP");
     m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
     glLineWidth( mesh->m_core->m_vis.m_line_width );
+
+    m_draw_lines_shader.draw_into(m_final_fbo,
+                                    {
+                                    // std::make_pair("position_out", "position_gtex"),
+                                    std::make_pair("out_color", "color_gtex"),
+                                    }
+                                    ); //makes the shaders draw into the buffers we defines in the gbuffer
 
 
     // draw
@@ -934,7 +987,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     // m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_specular_color , "specular_color");
     // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
     // m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_shininess , "shininess");
-    if(mesh->m_cur_tex_ptr->get_tex_storage_initialized() ){ 
+    if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
         m_draw_mesh_shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     }
 
@@ -1266,8 +1319,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     TIME_START("compose");
 
     //create a final image the same size as the framebuffer
-    m_final_tex.allocate_or_resize(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
-    m_final_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    m_composed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
+    m_composed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
     //matrices setuo
     Eigen::Matrix4f V = m_camera->view_matrix();
@@ -1377,7 +1430,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // VLOG(1) << "neighbours is " << neighbours;
     m_compose_final_quad_shader.uniform_v2_float(neighbours , "neighbours");
 
-    m_compose_final_quad_shader.draw_into(m_final_tex, "out_color");
+    m_compose_final_quad_shader.draw_into(m_composed_tex, "out_color");
 
     // draw
     m_fullscreen_quad->vao.bind(); 

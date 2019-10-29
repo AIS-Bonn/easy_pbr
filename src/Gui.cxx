@@ -366,20 +366,20 @@ void Gui::update() {
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Recorder")) {
-        ImGui::InputText("results_path", m_view->m_recorder->m_results_path);
-        ImGui::InputText("name", m_view->m_recorder->m_single_png_filename);
-        if(ImGui::Button("Write viewer to png") ){
-            m_view->m_recorder->write_viewer_to_png();
-        }
-        ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
+        ImGui::InputText("record_path", m_view->m_recorder->m_recording_path);
+        ImGui::InputText("snapshot_name", m_view->m_recorder->m_snapshot_name);
+        // if(ImGui::Button("Write viewer to png") ){
+        //     m_view->m_recorder->write_viewer_to_png();
+        // }
+        // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
 
-        //recording
-        ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
-        const char* icon_recording = m_view->m_recorder->m_is_recording ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
-        // if(ImGui::Button("Record") ){
-        if(ImGui::Button(icon_recording, button_size) ){
-            m_view->m_recorder->m_is_recording^= 1;
-        }
+        // //recording
+        // ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
+        // const char* icon_recording = m_view->m_recorder->m_is_recording ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
+        // // if(ImGui::Button("Record") ){
+        // if(ImGui::Button(icon_recording, button_size) ){
+        //     m_view->m_recorder->m_is_recording^= 1;
+        // }
     }
 
 
@@ -396,15 +396,15 @@ void Gui::update() {
         ImGui::Checkbox("Show debug textures", &m_show_debug_textures);
     }
     if(m_show_debug_textures){
-        show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").get_tex_id(), "diffuse_gtex", true);
-        show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").get_tex_id(), "normal_gtex", true);
-        show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").get_tex_id(), "depth_gtex", true);
-        show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").get_tex_id(), "metalness_and_roughness_gtex", true);
-        show_gl_texture(m_view->m_depth_linear_tex.get_tex_id(), "depth_linear_tex", true);
-        show_gl_texture(m_view->m_ao_tex.get_tex_id(), "ao_tex", true);
-        show_gl_texture(m_view->m_ao_blurred_tex.get_tex_id(), "ao_blurred_tex", true);
-        show_gl_texture(m_view->m_brdf_lut_tex.get_tex_id(), "brdf_lut_tex", true);
-        show_gl_texture(m_view->m_final_tex.get_tex_id(), "final_tex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").tex_id(), "diffuse_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").tex_id(), "normal_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").tex_id(), "depth_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").tex_id(), "metalness_and_roughness_gtex", true);
+        show_gl_texture(m_view->m_depth_linear_tex.tex_id(), "depth_linear_tex", true);
+        show_gl_texture(m_view->m_ao_tex.tex_id(), "ao_tex", true);
+        show_gl_texture(m_view->m_ao_blurred_tex.tex_id(), "ao_blurred_tex", true);
+        show_gl_texture(m_view->m_brdf_lut_tex.tex_id(), "brdf_lut_tex", true);
+        show_gl_texture(m_view->m_composed_tex.tex_id(), "composed_tex", true);
     }
  
 
@@ -518,7 +518,7 @@ void Gui::show_images(){
 
 
         gl::Texture2D& tex= m_textures_map[name];
-        show_gl_texture(tex.get_tex_id(), name);
+        show_gl_texture(tex.tex_id(), name);
 
 
     }

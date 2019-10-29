@@ -129,7 +129,8 @@ public:
     gl::Shader m_integrate_brdf_shader;
 
     gl::GBuffer m_gbuffer;
-    gl::Texture2D m_final_tex;
+    gl::Texture2D m_composed_tex; //after gbuffer composing
+    gl::GBuffer m_final_fbo; //after rendering also the lines and edges
 
     gl::Texture2D m_ao_tex;
     gl::Texture2D m_ao_blurred_tex;
