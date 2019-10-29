@@ -76,7 +76,7 @@ public:
     void setup_callbacks_viewer(GLFWwindow* window);
     void setup_callbacks_imgui(GLFWwindow* window);
     void switch_callbacks(GLFWwindow* window);
-    void add_callback_post_draw(const std::function<bool(Viewer& viewer)> func);
+    void add_callback_post_draw(const std::function<void(Viewer& viewer)> func);
     void update(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer) 
     void pre_draw();
     void post_draw();
@@ -184,7 +184,7 @@ private:
 
     bool m_first_draw;
 
-    std::vector< std::function<bool(Viewer& viewer)> > m_callbacks_post_draw;
+    std::vector< std::function<void(Viewer& viewer)> > m_callbacks_post_draw;
 
     // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan
     void configure_auto_params();

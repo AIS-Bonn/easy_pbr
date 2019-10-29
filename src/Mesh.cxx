@@ -924,6 +924,14 @@ void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){
     }
 }
 
+Eigen::Vector3d Mesh::centroid(){
+    Eigen::Vector3d min_point = V.colwise().minCoeff(); 
+    Eigen::Vector3d max_point = V.colwise().maxCoeff();
+    Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
+
+    return centroid;
+
+}
 Eigen::VectorXi Mesh::fix_oversplit_due_to_blender_uv(){
 
     //Blender exports a ply in which every triangles has independant vertices, we need to merge them but we cannot merge if vertices have a split in UV space

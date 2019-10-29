@@ -432,7 +432,7 @@ void Viewer::configure_auto_params(){
     }
 }
 
-void Viewer::add_callback_post_draw(const std::function<bool(Viewer& viewer)> func){
+void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_post_draw.push_back(func);
 }
 
