@@ -47,25 +47,27 @@ Recorder::~Recorder(){
 void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
     tex.download_to_pbo();
 
-    int cv_type=gl_internal_format2cv_type(tex.internal_format());
-    cv::Mat cv_mat = cv::Mat::zeros(cv::Size(tex.width(), tex.height()), cv_type);
+    if(tex.cur_pbo_download().storage_initialized() ){
+        int cv_type=gl_internal_format2cv_type(tex.internal_format());
+        cv::Mat cv_mat = cv::Mat::zeros(cv::Size(tex.cur_pbo_download().width(), tex.cur_pbo_download().height()), cv_type); //the size of the texture is not the same as the pbo we ae downloading from because the pbo is delayed a couple of frames so a resizing of texture takes a while to take effect
 
-    tex.download_from_oldest_pbo(cv_mat.data);
+        tex.download_from_oldest_pbo(cv_mat.data);
 
-    //increment the nr of times we have written a tex with this name and create the path where we will write the mat
-    auto got = m_times_written_for_tex.find (name);
-    int nr_times_written=0;
-    if ( got == m_times_written_for_tex.end() ){
-        m_times_written_for_tex[name]=0;
-    }else{
-        nr_times_written=m_times_written_for_tex[name];
-        m_times_written_for_tex[name]++;
+        //increment the nr of times we have written a tex with this name and create the path where we will write the mat
+        auto got = m_times_written_for_tex.find (name);
+        int nr_times_written=0;
+        if ( got == m_times_written_for_tex.end() ){
+            m_times_written_for_tex[name]=0;
+        }else{
+            nr_times_written=m_times_written_for_tex[name];
+            m_times_written_for_tex[name]++;
+        }
+
+        MatWithFilePath mat_with_file;
+        mat_with_file.cv_mat=cv_mat;
+        mat_with_file.file_path= ( fs::path(path)/(name+std::to_string(nr_times_written)+".png") ).string();
+        m_cv_mats_queue.enqueue(mat_with_file);
     }
-
-    MatWithFilePath mat_with_file;
-    mat_with_file.cv_mat=cv_mat;
-    mat_with_file.file_path= ( fs::path(path)/(name+std::to_string(nr_times_written)+".png") ).string();
-    m_cv_mats_queue.enqueue(mat_with_file);
 
 }
     
@@ -197,6 +199,11 @@ void Recorder::write_to_file_threaded(){
         // TIME_START("write_to_file");
         cv::Mat cv_mat_flipped;
         cv::flip(mat_with_file.cv_mat, cv_mat_flipped, 0);
+        if(cv_mat_flipped.channels()==4){
+            cv::cvtColor(cv_mat_flipped, cv_mat_flipped, cv::COLOR_BGRA2RGBA);
+        }else if(cv_mat_flipped.channels()==3){
+            cv::cvtColor(cv_mat_flipped, cv_mat_flipped, cv::COLOR_BGR2RGB);
+        }
         cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
         // TIME_END("write_to_file");
 

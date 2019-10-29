@@ -271,7 +271,7 @@ void Viewer::init_opengl(){
     m_gbuffer.sanity_check();
 
     //initialize the final fbo
-    GL_C( m_final_fbo.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
     GL_C( m_final_fbo.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
     GL_C( m_final_fbo.add_depth("depth_gtex") );
     m_final_fbo.sanity_check();
@@ -648,21 +648,21 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //attempt 3 at forward rendering 
-    if(m_viewport_size.x()!=m_final_fbo.width() || m_viewport_size.y()!=m_final_fbo.height()){
-        m_final_fbo.set_size(m_viewport_size.x(), m_viewport_size.y());
+    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo.height()){
+        m_final_fbo.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
     m_final_fbo.bind_for_draw();
     m_final_fbo.clear();
 
     //blit the rgb from the composed_tex adn the depth from the gbuffer
-    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_composed_tex.fbo_id());
     m_final_fbo.bind_for_draw();
     // glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_composed_tex.width(), m_composed_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBlitFramebuffer(0, 0, m_composed_tex.width(), m_composed_tex.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     //blit also the depth
     m_gbuffer.bind_for_read();
-    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
     // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 
     //forward render the lines and edges 
@@ -684,7 +684,7 @@ void Viewer::draw(const GLuint fbo_id){
     m_final_fbo.bind_for_read();
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
     glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 
     //restore state
@@ -850,6 +850,8 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 }
 
 void Viewer::render_lines(const MeshGLSharedPtr mesh){
+
+    // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
 
     // Set attributes that the vao will pulll from buffers
     if(mesh->m_core->V.size()){
