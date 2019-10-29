@@ -266,6 +266,7 @@ void Viewer::init_opengl(){
     GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) ); 
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     m_gbuffer.sanity_check();
 
@@ -539,7 +540,8 @@ void Viewer::draw(const GLuint fbo_id){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
-    m_gbuffer.clear_depth();
+    // m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
+    m_gbuffer.clear();
     TIME_END("gbuffer");
 
 
@@ -923,6 +925,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
     m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
     m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
+    m_draw_mesh_shader.uniform_int(mesh->m_core->id , "mesh_id");
     if(mesh->m_core->m_label_mngr){
         m_draw_mesh_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
@@ -942,6 +945,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
                                     std::make_pair("normal_out", "normal_gtex"),
                                     std::make_pair("diffuse_out", "diffuse_gtex"),
                                     std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
+                                    std::make_pair("mesh_id_out", "mesh_id_gtex"),
                                     // std::make_pair("specular_out", "specular_gtex"),
                                     // std::make_pair("shininess_out", "shininess_gtex")
                                 //   std::make_pair("normal_world_out", "normal_world_gtex")

@@ -40,6 +40,7 @@
 using namespace easy_pbr::utils;
 
 Mesh::Mesh():
+        id(0),
         m_is_dirty(true),
         m_model_matrix(Eigen::Affine3d::Identity()),
         m_cur_pose(Eigen::Affine3d::Identity()),

@@ -17,6 +17,8 @@ layout(location = 1) out vec3 diffuse_out;
 // layout(location = 3) out vec4 normal_out;
 layout(location = 3) out vec2 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
+layout(location = 5) out int mesh_id_out;
+
 
 // //uniform
 uniform int color_type;
@@ -24,6 +26,7 @@ uniform sampler2D tex; //the rgb tex that is used for coloring
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
+uniform int mesh_id;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 vec2 encode_normal(vec3 normal){
@@ -84,6 +87,8 @@ void main(){
     //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
     normal_out=encode_normal(normal_in);
+
+    mesh_id_out=mesh_id;
 
     // position_out = vec4(position_cam_coords_in, 1.0);
 }

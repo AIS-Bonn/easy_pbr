@@ -183,6 +183,7 @@ public:
 
     //oher stuff that may or may not be needed depending on the application
     uint64_t t; //timestamp or scan nr which will be monotonically increasing
+    int id; //id number that can be used to identity meshes of the same type (vegation, people etc)
     int m_height;
     int m_width;
     float m_view_direction; //direction in which the points have been removed from the velodyne cloud so that it can be unwrapped easier into 2D

@@ -82,6 +82,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("is_empty", &Mesh::is_empty )
     .def("create_box_ndc", &Mesh::create_box_ndc )
     .def("create_floor", &Mesh::create_floor )
+    .def_readwrite("id", &Mesh::id)
     .def_readwrite("name", &Mesh::name)
     .def_readwrite("m_width", &Mesh::m_width)
     .def_readwrite("m_height", &Mesh::m_height)
