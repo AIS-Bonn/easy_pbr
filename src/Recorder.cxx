@@ -43,6 +43,31 @@ Recorder::~Recorder(){
         m_writer_threads[i].join();
     }
 }
+
+void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
+    tex.download_to_pbo();
+
+    int cv_type=gl_internal_format2cv_type(tex.internal_format());
+    cv::Mat cv_mat = cv::Mat::zeros(cv::Size(tex.width(), tex.height()), cv_type);
+
+    tex.download_from_oldest_pbo(cv_mat.data);
+
+    //increment the nr of times we have written a tex with this name and create the path where we will write the mat
+    auto got = m_times_written_for_tex.find (name);
+    int nr_times_written=0;
+    if ( got == m_times_written_for_tex.end() ){
+        m_times_written_for_tex[name]=0;
+    }else{
+        nr_times_written=m_times_written_for_tex[name];
+        m_times_written_for_tex[name]++;
+    }
+
+    MatWithFilePath mat_with_file;
+    mat_with_file.cv_mat=cv_mat;
+    mat_with_file.file_path= ( fs::path(path)/(name+std::to_string(nr_times_written)+".png") ).string();
+    m_cv_mats_queue.enqueue(mat_with_file);
+
+}
     
 
 // void Recorder::write_viewer_to_png(){
