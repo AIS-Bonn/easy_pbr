@@ -4,6 +4,7 @@
 
 //my stuff
 #include "easy_pbr/Viewer.h"
+// #include "opencv_utils.h" //only for debugging
 #define ENABLE_GL_PROFILING 1
 #include "Profiler.h"
 
@@ -29,7 +30,7 @@ Recorder::Recorder():
     // m_idx_pbo_write=0;
     // m_idx_pbo_read=1; //just one in front of the writing one so it will take one full loop of all pbos for it to catch up
 
-    m_writer_threads.resize(4);
+    m_writer_threads.resize(8);
     m_threads_are_running=true;
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i]=std::thread( &Recorder::write_to_file_threaded, this);
@@ -44,12 +45,13 @@ Recorder::~Recorder(){
     }
 }
 
-void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
+void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string format, const std::string path){
     tex.download_to_pbo();
 
     if(tex.cur_pbo_download().storage_initialized() ){
         int cv_type=gl_internal_format2cv_type(tex.internal_format());
         cv::Mat cv_mat = cv::Mat::zeros(cv::Size(tex.cur_pbo_download().width(), tex.cur_pbo_download().height()), cv_type); //the size of the texture is not the same as the pbo we ae downloading from because the pbo is delayed a couple of frames so a resizing of texture takes a while to take effect
+        // VLOG(1) <<"writing mat of type " << easy_pbr::utils::type2string(cv_mat.type());
 
         tex.download_from_oldest_pbo(cv_mat.data);
 
@@ -65,8 +67,12 @@ void Recorder::record(gl::Texture2D& tex, const std::string name, const std::str
 
         MatWithFilePath mat_with_file;
         mat_with_file.cv_mat=cv_mat;
-        mat_with_file.file_path= ( fs::path(path)/(name+std::to_string(nr_times_written)+".png") ).string();
+        mat_with_file.file_path= ( fs::path(path)/(name+std::to_string(nr_times_written)+"."+format) ).string();
         m_cv_mats_queue.enqueue(mat_with_file);
+    }
+
+    if( m_cv_mats_queue.size_approx()>100){
+        LOG(FATAL) << "Enqueued too many cv_mats and couldn't write all of them in time. Consider adding more threads for writing or slowing down the enqueueing";
     }
 
 }
@@ -196,7 +202,7 @@ void Recorder::write_to_file_threaded(){
         }
 
 
-        // TIME_START("write_to_file");
+        TIME_START("write_to_file");
         cv::Mat cv_mat_flipped;
         cv::flip(mat_with_file.cv_mat, cv_mat_flipped, 0);
         if(cv_mat_flipped.channels()==4){
@@ -205,7 +211,7 @@ void Recorder::write_to_file_threaded(){
             cv::cvtColor(cv_mat_flipped, cv_mat_flipped, cv::COLOR_BGR2RGB);
         }
         cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
-        // TIME_END("write_to_file");
+        TIME_END("write_to_file");
 
     }
 
