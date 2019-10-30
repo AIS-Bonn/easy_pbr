@@ -438,6 +438,9 @@ void Viewer::configure_auto_params(){
     }
 }
 
+void Viewer::add_callback_pre_draw(const std::function<void(Viewer& viewer)> func){
+    m_callbacks_pre_draw.push_back(func);
+}
 void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_post_draw.push_back(func);
 }
@@ -461,6 +464,10 @@ void Viewer::pre_draw(){
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+    }
+
+    for(int i=0; i<m_callbacks_pre_draw.size(); i++){
+        m_callbacks_pre_draw[i](*this);
     }
 
 }

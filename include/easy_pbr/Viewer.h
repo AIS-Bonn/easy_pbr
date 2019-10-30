@@ -76,6 +76,7 @@ public:
     void setup_callbacks_viewer(GLFWwindow* window);
     void setup_callbacks_imgui(GLFWwindow* window);
     void switch_callbacks(GLFWwindow* window);
+    void add_callback_pre_draw(const std::function<void(Viewer& viewer)> func);
     void add_callback_post_draw(const std::function<void(Viewer& viewer)> func);
     void update(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer) 
     void pre_draw();
@@ -178,13 +179,14 @@ public:
 
 
     // Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
+    bool m_first_draw;
 
 private:
     Viewer(const std::string config_file); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();
 
-    bool m_first_draw;
 
+    std::vector< std::function<void(Viewer& viewer)> > m_callbacks_pre_draw;
     std::vector< std::function<void(Viewer& viewer)> > m_callbacks_post_draw;
 
     // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan

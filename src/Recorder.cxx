@@ -203,6 +203,14 @@ void Recorder::write_to_file_threaded(){
 
 
         TIME_START("write_to_file");
+
+
+        //create folder
+        fs::path folder=fs::path(mat_with_file.file_path).parent_path();
+        if (!fs::exists(folder)){
+            fs::create_directories(folder);
+        }
+
         cv::Mat cv_mat_flipped;
         cv::flip(mat_with_file.cv_mat, cv_mat_flipped, 0);
         if(cv_mat_flipped.channels()==4){
