@@ -111,8 +111,10 @@ void Viewer::init_params(const std::string config_file){
     m_subsample_factor = vis_config["subsample_factor"];
     m_enable_culling = vis_config["enable_culling"];
     //cam
+    m_camera->m_fov=vis_config["cam"].get_float_else_nan("fov")  ;
     m_camera->m_near=vis_config["cam"].get_float_else_nan("near")  ;
     m_camera->m_far=vis_config["cam"].get_float_else_nan("far");
+    m_camera->m_exposure=vis_config["cam"].get_float_else_nan("exposure");
 
 
     //ssao
@@ -360,12 +362,19 @@ void Viewer::configure_auto_params(){
     if (!m_camera->m_is_initialized){
         m_camera->set_lookat(centroid);
         m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+        if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_fov=30 ;
+        }
         if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
             m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
         }
         if (std::isnan(m_camera->m_far) ){
             m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
         }
+        if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_exposure=1.0;
+         } 
+        
         m_camera->m_is_initialized=true;
     }
 

@@ -87,6 +87,7 @@ Mesh Mesh::clone(){
     cloned.m_rgb_tex_cpu=m_rgb_tex_cpu.clone();
     cloned.m_label_mngr=m_label_mngr; //this is just a shallow copy!
     cloned.t=t;
+    cloned.id=id;
     cloned.m_height=m_height;
     cloned.m_width=m_width;
     cloned.m_view_direction=m_view_direction;
