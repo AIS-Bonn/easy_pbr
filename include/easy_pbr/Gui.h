@@ -11,7 +11,7 @@
 // #include <GLFW/glfw3.h>
 
 // //imgui
-// #include <imgui.h>
+#include <imgui.h> //is needed to be included here because imguizmo needs it
 // #include "imgui_impl_glfw.h"
 // #include "imgui_ext/IconsFontAwesome.h"
 #include "ImGuizmo.h"

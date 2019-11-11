@@ -85,6 +85,7 @@ add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 FetchContent_Declare(
   imguizmo
   GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+  GIT_TAG        ace44b6ddae5c9ee7e48d8e25589838ec40227fa
 )
 FetchContent_Declare(
   libigl
@@ -112,6 +113,7 @@ FetchContent_Declare(
 FetchContent_Declare(
   concurrent_queue
   GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
+  GIT_TAG        cff1001582db67e357d5f77c31e73566003311f2
 )
 FetchContent_Declare(
   tiny_ply
