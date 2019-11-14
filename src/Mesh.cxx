@@ -29,8 +29,8 @@
 #include "tiny_obj_loader.h"
 
 //for reading pcd files
-// #include <pcl/io/pcd_io.h>
-// #include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
 #include "RandGenerator.h"
 #include "ColorMngr.h"
@@ -282,13 +282,13 @@ void Mesh::load_from_file(const std::string file_path){
         // Eigen::MatrixXi FN;
         // igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
         read_obj(file_path);
-    // }else if (file_ext == "pcd") {
-    //     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-    //     pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
-    //     V.resize(cloud->points.size(), 3);
-    //     for (size_t i = 0; i < cloud->points.size (); ++i){
-    //         V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
-    //     }
+    }else if (file_ext == "pcd") {
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
+        V.resize(cloud->points.size(), 3);
+        for (size_t i = 0; i < cloud->points.size (); ++i){
+            V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+        }
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path;
     }

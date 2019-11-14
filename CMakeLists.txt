@@ -76,6 +76,7 @@ find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
 find_package(kqueue REQUIRED)
+find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui
@@ -161,9 +162,11 @@ include_directories(${tiny_ply_SOURCE_DIR}/source)
 include_directories(${tiny_obj_SOURCE_DIR})
 include_directories(${utils_SOURCE_DIR}/include)
 include_directories(${easy_gl_SOURCE_DIR})
+include_directories(${PCL_INCLUDE_DIR})
 include_directories("/usr/include/python3.6m/")
 
-
+# link_directories(${PCL_LIBRARY_DIRS})
+# add_definitions(${PCL_DEFINITIONS})
 
 ###   SOURCES   #################################################################
 set(MY_SRC  
@@ -238,7 +241,7 @@ add_executable(run ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} igl::core )
+set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
