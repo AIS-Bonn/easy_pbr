@@ -31,6 +31,7 @@
 //for reading pcd files
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+// #include <sensor_msgs/PointCloud2.h>
 
 #include "RandGenerator.h"
 #include "ColorMngr.h"
@@ -283,20 +284,68 @@ void Mesh::load_from_file(const std::string file_path){
         // igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
         read_obj(file_path);
     }else if (file_ext == "pcd") {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::io::loadPCDFile<pcl::PointXYZ> (file_path, *cloud);
-        V.resize(cloud->points.size(), 3);
-        for (size_t i = 0; i < cloud->points.size (); ++i){
-            V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+        //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
+        pcl::PCLPointCloud2 cloud_blob;
+        pcl::io::loadPCDFile (file_path, cloud_blob);
+
+        // VLOG(1) << " read pcl cloud with header: " << cloud_blob;
+
+        bool has_rgb=false;
+        bool has_intensity=false;
+        for(int i=0; i<cloud_blob.fields.size(); i++){
+            if(cloud_blob.fields[i].name=="rgb"){
+                has_rgb=true;
+            }
+            if(cloud_blob.fields[i].name=="intensity"){
+                has_intensity=true;
+            }
         }
+
+        //depending on the fields, read as xyz, as xyzrgb or as xyzi, xyzrgbi
+        if(!has_rgb && !has_intensity){
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+            V.resize(cloud->points.size(), 3);
+            for (size_t i = 0; i < cloud->points.size (); ++i){
+                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+            }
+
+        }else if (has_rgb && !has_intensity){
+            pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+            V.resize(cloud->points.size(), 3);
+            C.resize(cloud->points.size(), 3);
+            for (size_t i = 0; i < cloud->points.size (); ++i){
+                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                C.row(i) << (float)cloud->points[i].r/255.0 , (float)cloud->points[i].g/255.0, (float)cloud->points[i].b/255.0;
+            }
+        
+        }else if (has_rgb && has_intensity){
+            LOG(FATAL) << "We not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
+
+        }else if (!has_rgb && has_intensity){
+            pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
+            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+            V.resize(cloud->points.size(), 3);
+            I.resize(cloud->points.size(), 1);
+            for (size_t i = 0; i < cloud->points.size (); ++i){
+                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                I.row(i) << cloud->points[i].intensity;
+            } 
+        }
+
+
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path;
     }
 
     //set some sensible things to see 
-    if(F.rows()==0){
+    if(!F.size()){
         m_vis.m_show_points=true;
         m_vis.m_show_mesh=false;
+    }
+    if(C.size()){
+        m_vis.set_color_pervertcolor();
     }
 
     //calculate the min and max y which will be useful for coloring
