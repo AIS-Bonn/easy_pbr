@@ -55,7 +55,7 @@ private:
 
     // //cv mats are buffered here and they await for the thread that writes them to file
     moodycamel::ConcurrentQueue<MatWithFilePath> m_cv_mats_queue;
-    std::unordered_map<std::string, int> m_times_written_for_tex; //how many times we have written a texture with a certain name
+    // std::unordered_map<std::string, int> m_times_written_for_tex; //how many times we have written a texture with a certain name
     std::vector<std::thread> m_writer_threads; 
     bool m_threads_are_running;
 
