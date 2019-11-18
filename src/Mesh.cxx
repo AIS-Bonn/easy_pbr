@@ -1338,7 +1338,7 @@ float Mesh::get_scale(){
     if(is_empty()){
        return 1.0; 
     }
-    VLOG(1) << "get scale";
+    // VLOG(1) << "get scale";
 
 
     // Eigen::VectorXd min_point; // each row stores the minimum point of the corresponding mesh. 
