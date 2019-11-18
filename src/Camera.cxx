@@ -128,6 +128,7 @@ void Camera::orbit(const Eigen::Quaternionf& q){
 }
 void Camera::rotate(const Eigen::Quaternionf& q){
     m_model_matrix.linear()=q.toRotationMatrix()*Eigen::Affine3f(model_matrix()).linear();
+    //TODO the lookat has to rotate too
 }
 
 
