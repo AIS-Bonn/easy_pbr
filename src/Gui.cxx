@@ -67,7 +67,9 @@ Gui::Gui( const std::string config_file,
         m_guizmo_mode(ImGuizmo::LOCAL),
         m_hidpi_scaling(1.0),
         m_subsample_factor(0.5),
-        m_decimate_nr_target_faces(100)
+        m_decimate_nr_target_faces(100),
+        m_recording_path("./recordings/"),
+        m_snapshot_name("img.png")
          {
     m_view = view;
 
@@ -366,11 +368,11 @@ void Gui::update() {
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Recorder")) {
-        ImGui::InputText("record_path", m_view->m_recorder->m_recording_path);
-        ImGui::InputText("snapshot_name", m_view->m_recorder->m_snapshot_name);
-        // if(ImGui::Button("Write viewer to png") ){
-        //     m_view->m_recorder->write_viewer_to_png();
-        // }
+        ImGui::InputText("record_path", m_recording_path);
+        ImGui::InputText("snapshot_name", m_snapshot_name);
+        if(ImGui::Button("Write viewer to png") ){
+            m_view->m_recorder->write_without_buffering(m_view->m_final_fbo.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+        }
         // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
 
         // //recording

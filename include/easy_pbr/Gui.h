@@ -84,6 +84,10 @@ private:
     float m_subsample_factor;
     int m_decimate_nr_target_faces;
 
+    //recorder stuff 
+    std::string m_recording_path;
+    std::string m_snapshot_name;
+
 
     void init_params(const std::string config_file);
     void init_style();

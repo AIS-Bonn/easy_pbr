@@ -16,9 +16,9 @@ namespace fs = boost::filesystem;
 
 
 Recorder::Recorder():
-    m_is_recording(false),
-    m_recording_path("./results_movies/"),
-    m_snapshot_name("img.png")
+    m_is_recording(false)
+    // m_recording_path("./recordings/"),
+    // m_snapshot_name("img.png")
 {
 
     
@@ -45,7 +45,7 @@ Recorder::~Recorder(){
     }
 }
 
-void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string format, const std::string path){
+void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
     tex.download_to_pbo();
 
     if(tex.cur_pbo_download().storage_initialized() ){
@@ -67,9 +67,26 @@ void Recorder::record(gl::Texture2D& tex, const std::string name, const std::str
 
         MatWithFilePath mat_with_file;
         mat_with_file.cv_mat=cv_mat;
-        mat_with_file.file_path= ( fs::path(path)/(name+"."+format) ).string();
+        mat_with_file.file_path= ( fs::path(path)/name ).string();
         m_cv_mats_queue.enqueue(mat_with_file);
     }
+
+    if( m_cv_mats_queue.size_approx()>100){
+        LOG(FATAL) << "Enqueued too many cv_mats and couldn't write all of them in time. Consider adding more threads for writing or slowing down the enqueueing";
+    }
+
+}
+
+void Recorder::write_without_buffering(gl::Texture2D& tex, const std::string name, const std::string path){
+
+
+    cv::Mat cv_mat;
+    cv_mat=tex.download_to_cv_mat();
+
+    MatWithFilePath mat_with_file;
+    mat_with_file.cv_mat=cv_mat;
+    mat_with_file.file_path= ( fs::path(path)/name ).string();
+    m_cv_mats_queue.enqueue(mat_with_file);
 
     if( m_cv_mats_queue.size_approx()>100){
         LOG(FATAL) << "Enqueued too many cv_mats and couldn't write all of them in time. Consider adding more threads for writing or slowing down the enqueueing";

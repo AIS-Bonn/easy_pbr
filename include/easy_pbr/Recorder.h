@@ -23,7 +23,8 @@ class Recorder: public std::enable_shared_from_this<Recorder>
 public:
     Recorder();
     ~Recorder();
-    void record(gl::Texture2D& tex, const std::string name, const std::string format,  const std::string path); //downloads the tex into a pbo and downlaod from the previous pbo into a cv which is queued for writing
+    void record(gl::Texture2D& tex, const std::string name,  const std::string path); //downloads the tex into a pbo and downlaod from the previous pbo into a cv which is queued for writing
+    void write_without_buffering(gl::Texture2D& tex, const std::string name,  const std::string path); //writes the texture directly, without PBO buffering. useful for taking screenshots
     // void write_viewer_to_png();
     // void record_viewer(); //is called automatically by update() if the m_is_recording is set to true but sometimes I want to call it explicitly from python and record exatly when I want
     // void update();
@@ -34,8 +35,8 @@ public:
     // Viewer* m_view;
 
     //params 
-    std::string m_recording_path;
-    std::string m_snapshot_name;
+    // std::string m_recording_path;
+    // std::string m_snapshot_name;
     bool m_is_recording;
 
 private:
