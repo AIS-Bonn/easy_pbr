@@ -107,6 +107,10 @@ void Gui::init_params(const std::string config_file){
     m_hidpi_scaling= is_hidpi ? 2.0 : 1.0;
 }
 
+void Gui::select_mesh_with_idx(const int idx){
+    m_selected_mesh_idx=idx;
+}
+
 void Gui::update() {
     show_images();
 

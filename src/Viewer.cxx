@@ -1923,6 +1923,8 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
             mesh->load_from_file(std::string(paths[i]));
             std::string name= "mesh_" + std::to_string(m_scene->get_nr_meshes());
             m_scene->add_mesh(mesh,name);
+            //select the newest mesh I added 
+            m_gui->select_mesh_with_idx( m_scene->get_nr_meshes()-1 );
         }
 
 
