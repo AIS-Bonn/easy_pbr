@@ -106,6 +106,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def_readwrite("L_gt", &Mesh::L_gt)
     .def_readwrite("I", &Mesh::I)
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
+    .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
     .def("rotate_x_axis", &Mesh::rotate_x_axis )
     .def("rotate_y_axis", &Mesh::rotate_y_axis )
     .def("random_subsample", &Mesh::random_subsample )

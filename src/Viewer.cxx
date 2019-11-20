@@ -273,10 +273,15 @@ void Viewer::init_opengl(){
     m_gbuffer.sanity_check();
 
     //initialize the final fbo
-    GL_C( m_final_fbo.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_final_fbo.add_depth("depth_gtex") );
-    m_final_fbo.sanity_check();
+    GL_C( m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo_no_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_no_gui.add_depth("depth_gtex") );
+    m_final_fbo_no_gui.sanity_check();
+    //initilize the final_fbo which also has the gui
+    GL_C( m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo_with_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_with_gui.add_depth("depth_gtex") );
+    m_final_fbo_with_gui.sanity_check();
 
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode_min_mag(GL_NEAREST);
@@ -488,17 +493,29 @@ void Viewer::post_draw(){
         m_callbacks_post_draw[i](*this);
     }
 
+    //blit into the fbo_with_gui
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    if(m_viewport_size.x()!=m_final_fbo_with_gui.width() || m_viewport_size.y()!=m_final_fbo_with_gui.height()){
+        m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() );
+    }
+    m_final_fbo_no_gui.bind_for_read();
+    m_final_fbo_with_gui.bind_for_draw();
+    glBlitFramebuffer(0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), 0, 0, m_final_fbo_with_gui.width(),  m_final_fbo_with_gui.height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
     if(m_show_gui){
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+
     
     // finally just blit the final fbo to the default framebuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    m_final_fbo.bind_for_read();
+    // m_final_fbo_no_gui.bind_for_read();
+    m_final_fbo_with_gui.bind_for_read();
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    // glBlitFramebuffer(0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBlitFramebuffer(0, 0, m_final_fbo_with_gui.width(), m_final_fbo_with_gui.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
     glfwSwapBuffers(m_window);
@@ -673,16 +690,16 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //attempt 3 at forward rendering 
-    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo.height()){
-        m_final_fbo.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
+    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
+        m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
-    m_final_fbo.bind_for_draw();
-    m_final_fbo.clear();
+    m_final_fbo_no_gui.bind_for_draw();
+    m_final_fbo_no_gui.clear();
 
     //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_composed_tex.fbo_id());
-    m_final_fbo.bind_for_draw();
+    m_final_fbo_no_gui.bind_for_draw();
     // glDrawBuffer(GL_BACK);
     glBlitFramebuffer(0, 0, m_composed_tex.width(), m_composed_tex.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     //blit also the depth
@@ -899,7 +916,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
     glLineWidth( mesh->m_core->m_vis.m_line_width );
 
-    m_draw_lines_shader.draw_into(m_final_fbo,
+    m_draw_lines_shader.draw_into(m_final_fbo_no_gui,
                                     {
                                     // std::make_pair("position_out", "position_gtex"),
                                     std::make_pair("out_color", "color_gtex"),
@@ -1875,6 +1892,22 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 }
                 break;
             }
+            case GLFW_KEY_H :{
+                VLOG(1) << "toggled the main menu. Press h again for toggling";
+                m_gui->toggle_main_menu();
+                // m_show_gui^=1;
+                break;
+            }
+            case GLFW_KEY_S :{
+                VLOG(1) << "Snapshot";
+                if(m_gui->m_record_gui){
+                    m_recorder->write_without_buffering(m_final_fbo_with_gui.tex_with_name("color_gtex"), m_gui->m_snapshot_name, m_gui->m_recording_path);
+                }else{
+                    m_recorder->write_without_buffering(m_final_fbo_no_gui.tex_with_name("color_gtex"), m_gui->m_snapshot_name, m_gui->m_recording_path);
+                }
+                break;
+            }
+
         }
 
     }else if(action == GLFW_RELEASE){

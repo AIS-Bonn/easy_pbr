@@ -57,6 +57,7 @@ Gui::Gui( const std::string config_file,
          Viewer* view,
          GLFWwindow* window
          ) :
+        m_draw_main_menu(true),
         m_show_demo_window(false),
         m_show_profiler_window(true),
         m_show_player_window(true),
@@ -70,7 +71,8 @@ Gui::Gui( const std::string config_file,
         m_subsample_factor(0.5),
         m_decimate_nr_target_faces(100),
         m_recording_path("./recordings/"),
-        m_snapshot_name("img.png")
+        m_snapshot_name("img.png"),
+        m_record_gui(false)
          {
     m_view = view;
 
@@ -112,9 +114,35 @@ void Gui::select_mesh_with_idx(const int idx){
     m_selected_mesh_idx=idx;
 }
 
+void Gui::toggle_main_menu(){
+    m_draw_main_menu^= 1;
+}
+
 void Gui::update() {
     show_images();
-    show_label_mngr_legend();
+
+    draw_label_mngr_legend();
+    if(m_draw_main_menu){
+        draw_main_menu();
+    }
+    draw_profiler();
+
+
+
+
+
+
+
+    // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+    if (m_show_demo_window) {
+        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+        ImGui::ShowDemoWindow(&m_show_demo_window);
+    }
+
+
+}
+
+void Gui::draw_main_menu(){
 
     ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
 
@@ -386,8 +414,13 @@ void Gui::update() {
         ImGui::InputText("record_path", m_recording_path);
         ImGui::InputText("snapshot_name", m_snapshot_name);
         if(ImGui::Button("Write viewer to png") ){
-            m_view->m_recorder->write_without_buffering(m_view->m_final_fbo.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+            if(m_record_gui){
+                m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+            }else{
+                m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+            }
         }
+        ImGui::Checkbox("Record GUI", &m_record_gui);
         // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
 
         // //recording
@@ -422,6 +455,8 @@ void Gui::update() {
         show_gl_texture(m_view->m_ao_blurred_tex.tex_id(), "ao_blurred_tex", true);
         show_gl_texture(m_view->m_brdf_lut_tex.tex_id(), "brdf_lut_tex", true);
         show_gl_texture(m_view->m_composed_tex.tex_id(), "composed_tex", true);
+        show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_gtex").tex_id(), "fbo_no_gui", true);
+        show_gl_texture(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex").tex_id(), "fbo_with_gui", true);
     }
  
 
@@ -456,7 +491,11 @@ void Gui::update() {
     ImGui::PopItemWidth();
 
     ImGui::End();
+}
 
+void Gui::draw_profiler(){
+
+    ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
 
    if (m_show_profiler_window && Profiler_ns::m_timings.size()>0 ){
         int nr_timings=Profiler_ns::m_timings.size();
@@ -496,15 +535,6 @@ void Gui::update() {
         ImGui::PopItemWidth();
         ImGui::End();
     } 
-
-
-    // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-    if (m_show_demo_window) {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-        ImGui::ShowDemoWindow(&m_show_demo_window);
-    }
-
-
 }
 
 void Gui::show(const cv::Mat& cv_mat, const std::string name){
@@ -641,32 +671,32 @@ void Gui::draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f mod
     &text[0], &text[0] + text.size());
 }
 
-void Gui::show_label_mngr_legend(){
+void Gui::draw_label_mngr_legend(){
     //get the selected mesh 
     //for the selected mesh we show the label mngr labels and color
 
     if(Scene::nr_meshes()!=0){
         MeshSharedPtr mesh=Scene::get_mesh_with_idx(m_selected_mesh_idx);
-
-        ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
-
-        ImGuiWindowFlags window_flags = 0;
-        ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
-        ImGui::SetNextWindowSize(size, ImGuiCond_Always);
-        ImGui::SetNextWindowPos(ImVec2(canvas_size.x/2-size.x/2, canvas_size.y-size.y));
-        ImGui::Begin("LabelMngr", nullptr,
-            ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoResize
-            | ImGuiWindowFlags_NoMove
-            | ImGuiWindowFlags_NoScrollbar
-            | ImGuiWindowFlags_NoScrollWithMouse
-            | ImGuiWindowFlags_NoCollapse
-            // | ImGuiWindowFlags_NoSavedSettings
-            // | ImGuiWindowFlags_NoInputs
-            );
-
-        //since the labelmngr stores the colors in a row major way, the colors of a certain label (a row in the matrix) are not contiguous and therefore cannot be edited with coloredit3. So we copy the color into a small vec3
         if ( mesh->m_label_mngr){
+
+            ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
+
+            ImGuiWindowFlags window_flags = 0;
+            ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
+            ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+            ImGui::SetNextWindowPos(ImVec2(canvas_size.x/2-size.x/2, canvas_size.y-size.y));
+            ImGui::Begin("LabelMngr", nullptr,
+                ImGuiWindowFlags_NoTitleBar
+                | ImGuiWindowFlags_NoResize
+                | ImGuiWindowFlags_NoMove
+                | ImGuiWindowFlags_NoScrollbar
+                | ImGuiWindowFlags_NoScrollWithMouse
+                | ImGuiWindowFlags_NoCollapse
+                // | ImGuiWindowFlags_NoSavedSettings
+                // | ImGuiWindowFlags_NoInputs
+                );
+
+            //since the labelmngr stores the colors in a row major way, the colors of a certain label (a row in the matrix) are not contiguous and therefore cannot be edited with coloredit3. So we copy the color into a small vec3
             for(int i=0; i<mesh->m_label_mngr->nr_classes(); i++){
                 if(i==mesh->m_label_mngr->get_idx_unlabeled()){
                     continue; //don't shot the background label
@@ -698,6 +728,7 @@ void Gui::show_label_mngr_legend(){
    
     
 }
+
 
 void Gui::edit_transform(const MeshSharedPtr& mesh){
 

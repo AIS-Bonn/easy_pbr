@@ -131,7 +131,8 @@ public:
 
     gl::GBuffer m_gbuffer;
     gl::Texture2D m_composed_tex; //after gbuffer composing
-    gl::GBuffer m_final_fbo; //after rendering also the lines and edges
+    gl::GBuffer m_final_fbo_no_gui; //after rendering also the lines and edges but before rendering the gui
+    gl::GBuffer m_final_fbo_with_gui; //after we also render the gui into it
 
     gl::Texture2D m_ao_tex;
     gl::Texture2D m_ao_blurred_tex;

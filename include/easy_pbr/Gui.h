@@ -50,7 +50,12 @@ public:
     static void show(const cv::Mat& cv_mat, const std::string name);
     void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
     void select_mesh_with_idx(const int idx); //set the selection fo the meshes to the one with a certain index
+    void toggle_main_menu();
 
+    //recorder stuff 
+    std::string m_recording_path;
+    std::string m_snapshot_name;
+    bool m_record_gui;
 
 private:
 
@@ -69,6 +74,7 @@ private:
     ImGuizmo::OPERATION m_guizmo_operation=ImGuizmo::ROTATE;
     ImGuizmo::MODE m_guizmo_mode = ImGuizmo::LOCAL;
     float m_hidpi_scaling;
+    bool m_draw_main_menu;
 
     static std::mutex m_add_cv_mats_mutex; //adding or registering images for viewing must be thread safe
     //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context 
@@ -78,6 +84,7 @@ private:
     std::unordered_map<std::string, gl::Texture2D> m_textures_map;
 
 
+
     //IO stuff
     std::string m_write_mesh_file_path;
 
@@ -85,9 +92,6 @@ private:
     float m_subsample_factor;
     int m_decimate_nr_target_faces;
 
-    //recorder stuff 
-    std::string m_recording_path;
-    std::string m_snapshot_name;
 
 
     void init_params(const std::string config_file);
@@ -96,7 +100,9 @@ private:
     void show_images(); // uplaod all cv mats to gl textures and displays them 
     void draw_overlays(); //draw all the overlays like the vert ids above each vertex of the meshes that are visible
     void draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f model_matrix, const std::string text, const Eigen::Vector3f color); //draw any type of overlaid text to the viewer
-    void show_label_mngr_legend();
+    void draw_label_mngr_legend();
+    void draw_main_menu();
+    void draw_profiler();
 
 
 };
