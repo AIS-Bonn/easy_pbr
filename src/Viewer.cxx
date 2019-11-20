@@ -387,7 +387,7 @@ void Viewer::configure_auto_params(){
     if (m_auto_edl ){
         //we enable edl only if all the meshes in the scene don't show any meshes
         m_enable_edl_lighting=true;
-        for(int i=0; i<m_scene->get_nr_meshes(); i++){
+        for(int i=0; i<m_scene->nr_meshes(); i++){
             if (m_scene->get_mesh_with_idx(i)->m_vis.m_show_mesh){
                 m_enable_edl_lighting=false;
                 break;
@@ -492,6 +492,15 @@ void Viewer::post_draw(){
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+    
+    // finally just blit the final fbo to the default framebuffer
+    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    m_final_fbo.bind_for_read();
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_BACK);
+    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+
     glfwSwapBuffers(m_window);
 
     // m_recorder->update();
@@ -695,12 +704,12 @@ void Viewer::draw(const GLuint fbo_id){
     }
 
 
-    //finally just blit the final fbo to the default framebuffer
-    glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    m_final_fbo.bind_for_read();
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    // //finally just blit the final fbo to the default framebuffer
+    // glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
+    // m_final_fbo.bind_for_read();
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+    // glDrawBuffer(GL_BACK);
+    // glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 
     //restore state
@@ -716,7 +725,7 @@ void Viewer::update_meshes_gl(){
   
 
     //Check if we need to upload to gpu
-    for(int i=0; i<m_scene->get_nr_meshes(); i++){
+    for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
         if(mesh_core->m_is_dirty){ //the mesh gl needs updating
 
@@ -754,7 +763,7 @@ void Viewer::update_meshes_gl(){
     //check if any of the mesh in the scene got deleted, in which case we should also delete the corresponding mesh_gl
     //need to do it after updating first the meshes_gl with the new meshes in the scene a some of them may have been added newly just now
     std::vector< std::shared_ptr<MeshGL> > meshes_gl_filtered;
-    for(int i=0; i<m_scene->get_nr_meshes(); i++){
+    for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
 
         //find the mesh_gl with the same name
@@ -1921,10 +1930,10 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
         }else{
             MeshSharedPtr mesh = Mesh::create();
             mesh->load_from_file(std::string(paths[i]));
-            std::string name= "mesh_" + std::to_string(m_scene->get_nr_meshes());
+            std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
             m_scene->add_mesh(mesh,name);
             //select the newest mesh I added 
-            m_gui->select_mesh_with_idx( m_scene->get_nr_meshes()-1 );
+            m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
         }
 
 

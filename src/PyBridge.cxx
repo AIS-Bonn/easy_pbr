@@ -44,6 +44,9 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def("nr_classes", &LabelMngr::nr_classes )
     .def("get_idx_unlabeled", &LabelMngr::get_idx_unlabeled )
     .def("class_frequencies", &LabelMngr::class_frequencies )
+    .def("idx2label", &LabelMngr::idx2label )
+    .def("label2idx", &LabelMngr::label2idx )
+    .def("compact", &LabelMngr::compact )
     ;
 
     //VisOptions

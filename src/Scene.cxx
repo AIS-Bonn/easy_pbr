@@ -85,12 +85,12 @@ void Scene::clear(){
     m_meshes.clear();
 }
 
-int Scene::get_nr_meshes(){
+int Scene::nr_meshes(){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     return m_meshes.size();
 }
 
-int Scene::get_total_nr_vertices(){
+int Scene::nr_vertices(){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     int V_nr=0;
     for (size_t i = 0; i < m_meshes.size(); i++) {
@@ -101,7 +101,7 @@ int Scene::get_total_nr_vertices(){
     return V_nr;
 }
 
-int Scene::get_total_nr_faces(){
+int Scene::nr_faces(){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     int F_nr=0;
     for (size_t i = 0; i < m_meshes.size(); i++) {

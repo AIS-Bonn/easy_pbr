@@ -96,6 +96,7 @@ private:
     void show_images(); // uplaod all cv mats to gl textures and displays them 
     void draw_overlays(); //draw all the overlays like the vert ids above each vertex of the meshes that are visible
     void draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f model_matrix, const std::string text, const Eigen::Vector3f color); //draw any type of overlaid text to the viewer
+    void show_label_mngr_legend();
 
 
 };

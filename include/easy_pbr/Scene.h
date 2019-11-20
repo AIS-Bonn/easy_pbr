@@ -16,11 +16,11 @@ public:
     static void show(const Mesh& mesh, const std::string name); //convenience function. adds to the scene and overwrites if it has the same name
     static void add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name); //adds to the scene even if it has the same name
     static void clear();
-    int get_nr_meshes();
-    int get_total_nr_vertices();
-    int get_total_nr_faces();
+    static int nr_meshes();
+    static int nr_vertices();
+    static int nr_faces();
     static std::shared_ptr<Mesh> get_mesh_with_name(const std::string name);
-    std::shared_ptr<Mesh> get_mesh_with_idx(const unsigned int idx);
+    static std::shared_ptr<Mesh> get_mesh_with_idx(const unsigned int idx);
     static int get_idx_for_name(const std::string name);
     static bool does_mesh_with_name_exist(const std::string name);
     static void remove_meshes_starting_with_name(const std::string name_prefix); // check all the meshes and removed the ones that start with a certain name

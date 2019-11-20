@@ -25,6 +25,7 @@
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Recorder.h"
+#include "easy_pbr/LabelMngr.h"
 #include "string_utils.h"
 
 // //imgui
@@ -113,14 +114,24 @@ void Gui::select_mesh_with_idx(const int idx){
 
 void Gui::update() {
     show_images();
+    show_label_mngr_legend();
 
     ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
 
-    ImGuiWindowFlags main_window_flags = 0;
-    main_window_flags |= ImGuiWindowFlags_NoMove;
-    ImGui::SetNextWindowSize(ImVec2(310*m_hidpi_scaling, canvas_size.y));
+    // ImGui::SetNextWindowSize(ImVec2(canvas_size.x*0.08*m_hidpi_scaling, canvas_size.y), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(310*m_hidpi_scaling, canvas_size.y), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::Begin("Menu", nullptr, main_window_flags);
+    // ImGui::Begin("Menu", nullptr, main_window_flags);
+    ImGui::Begin("Menu", nullptr,
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            // | ImGuiWindowFlags_NoScrollbar
+            // | ImGuiWindowFlags_NoScrollWithMouse
+            // | ImGuiWindowFlags_NoCollapse
+            // | ImGuiWindowFlags_NoSavedSettings
+            // | ImGuiWindowFlags_NoInputs
+            );
     ImGui::PushItemWidth(135*m_hidpi_scaling);
 
     draw_overlays(); //draws stuff like the text indicating the vertices coordinates on top of the vertices in the 3D world
@@ -421,8 +432,8 @@ void Gui::update() {
 
 
     ImGui::Separator();
-    ImGui::Text(("Nr of points: " + format_with_commas(m_view->m_scene->get_total_nr_vertices())).data());
-    ImGui::Text(("Nr of triangles: " + format_with_commas(m_view->m_scene->get_total_nr_vertices())).data());
+    ImGui::Text(("Nr of points: " + format_with_commas(Scene::nr_vertices())).data());
+    ImGui::Text(("Nr of triangles: " + format_with_commas(Scene::nr_vertices())).data());
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 
@@ -442,19 +453,26 @@ void Gui::update() {
     //   // foo[4].y=ImGui::CurveValue(foo[4].x, 5, foo);
     // }
 
-
+    ImGui::PopItemWidth();
 
     ImGui::End();
 
 
    if (m_show_profiler_window && Profiler_ns::m_timings.size()>0 ){
-        ImGuiWindowFlags profiler_window_flags = 0;
-        profiler_window_flags |= ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
         int nr_timings=Profiler_ns::m_timings.size();
         ImVec2 size(330*m_hidpi_scaling,50*m_hidpi_scaling*nr_timings);
-        ImGui::SetNextWindowSize(size);
+        ImGui::SetNextWindowSize(size, ImGuiCond_Always);
         ImGui::SetNextWindowPos(ImVec2(canvas_size.x -size.x , 0));
-        ImGui::Begin("Profiler", nullptr, profiler_window_flags);
+        ImGui::Begin("Profiler", nullptr,
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            // | ImGuiWindowFlags_NoScrollbar
+            // | ImGuiWindowFlags_NoScrollWithMouse
+            // | ImGuiWindowFlags_NoCollapse
+            // | ImGuiWindowFlags_NoSavedSettings
+            // | ImGuiWindowFlags_NoInputs
+            );
         ImGui::PushItemWidth(100*m_hidpi_scaling);
 
 
@@ -475,6 +493,7 @@ void Gui::update() {
             // std::string title = name +  "\n" + "exp_avg: " + stream_exp_mean.str() + " ms " + "("+stream_mean.str()+")";
             ImGui::PlotLines(title.data(), times.data() , times.size() ,times.get_front_idx() );
         }
+        ImGui::PopItemWidth();
         ImGui::End();
     } 
 
@@ -620,6 +639,64 @@ void Gui::draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f mod
             color(2),
             1.0)),
     &text[0], &text[0] + text.size());
+}
+
+void Gui::show_label_mngr_legend(){
+    //get the selected mesh 
+    //for the selected mesh we show the label mngr labels and color
+
+    if(Scene::nr_meshes()!=0){
+        MeshSharedPtr mesh=Scene::get_mesh_with_idx(m_selected_mesh_idx);
+
+        ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
+
+        ImGuiWindowFlags window_flags = 0;
+        ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
+        ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(canvas_size.x/2-size.x/2, canvas_size.y-size.y));
+        ImGui::Begin("LabelMngr", nullptr,
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+            | ImGuiWindowFlags_NoCollapse
+            // | ImGuiWindowFlags_NoSavedSettings
+            // | ImGuiWindowFlags_NoInputs
+            );
+
+        //since the labelmngr stores the colors in a row major way, the colors of a certain label (a row in the matrix) are not contiguous and therefore cannot be edited with coloredit3. So we copy the color into a small vec3
+        if ( mesh->m_label_mngr){
+            for(int i=0; i<mesh->m_label_mngr->nr_classes(); i++){
+                if(i==mesh->m_label_mngr->get_idx_unlabeled()){
+                    continue; //don't shot the background label
+                }
+                if(i>mesh->m_label_mngr->nr_classes()-3){
+                    continue;
+                }
+                std::string label=mesh->m_label_mngr->idx2label(i);
+                Eigen::Vector3f color=Eigen::Vector3d(mesh->m_label_mngr->color_scheme().row(i)).cast<float>();
+                float widget_size=20*m_hidpi_scaling;
+                ImGui::SetNextItemWidth(widget_size); //only gives sizes to the widget and not the label
+                if( ImGui::ColorEdit3(label.c_str(), color.data(), ImGuiColorEditFlags_NoInputs) ){
+                    VLOG(1) << "modif";
+                }
+                float x_size_label=ImGui::CalcTextSize(label.c_str()).x;
+                float total_size=widget_size+x_size_label; //total size of the color rectangle widget+label
+                if(i%6!=0 || i==0){
+                    ImGui::SameLine();
+                    ImGui::Dummy(ImVec2(220.0f-total_size, 0.0f));
+                    ImGui::SameLine();
+                }
+            
+            }
+        }
+        // ImGui::ColorEdit3("Color", m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_solid_color.data(), ImGuiColorEditFlags_NoInputs);
+
+        ImGui::End();
+    }
+   
+    
 }
 
 void Gui::edit_transform(const MeshSharedPtr& mesh){
