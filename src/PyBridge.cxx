@@ -40,6 +40,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     //LabelMngr
     py::class_<LabelMngr, std::shared_ptr<LabelMngr>> (m, "LabelMngr")
     // .def(py::init<>()) //canot initialize it because it required in the construction a configuru::Config object and that is not exposed in python
+    .def(py::init<const std::string, const std::string, const std::string, const int>()) 
     .def("nr_classes", &LabelMngr::nr_classes )
     .def("get_idx_unlabeled", &LabelMngr::get_idx_unlabeled )
     .def("class_frequencies", &LabelMngr::class_frequencies )
@@ -104,6 +105,7 @@ PYBIND11_MODULE(EasyPBR, m) {
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def("rotate_x_axis", &Mesh::rotate_x_axis )
     .def("rotate_y_axis", &Mesh::rotate_y_axis )
+    .def("random_subsample", &Mesh::random_subsample )
     .def("move_in_x", &Mesh::move_in_x )
     .def("move_in_y", &Mesh::move_in_y )
     .def("move_in_z", &Mesh::move_in_z )
