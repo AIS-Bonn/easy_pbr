@@ -1,0 +1,101 @@
+{% set name = "easypbr" %}
+{% set version = "1.0.0" %}
+
+package:
+  name: easypbr
+  version: 1.0.0
+
+source:
+  # url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
+  # sha256: a35704cffadbd042f931899a5564c539835fa7049d0cafff407d7ec7727d3aaa
+  path: ../
+  # git_url: https://github.com/RaduAlexandru/easy_pbr
+  # git_tag: master
+
+requirements:
+  build:
+    # - gcc >=7.4.0
+    # - {{ compiler('cxx') }}
+    # - {{ cdt('mesa-libgl-devel') }}
+      # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
+    # - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    # - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    # - {{ cdt('libx11-devel') }}          # [linux]
+    # - {{ cdt('libxext-devel') }}         # [linux]
+    # - {{ cdt('libxrender-devel') }}	     # [linux]
+    # - {{ cdt('mesa-libgl-devel') }}	     # [linux]
+    # - {{ cdt('mesa-libegl-devel') }}     # [linux]
+    # - {{ cdt('mesa-dri-drivers') }}	     # [linux]
+    # - {{ cdt('libxau-devel') }}          # [linux]
+    # - {{ cdt('alsa-lib-devel') }}        # [linux]
+    # - {{ cdt('gtk2-devel') }}            # [linux]
+    # - {{ cdt('gtkmm24-devel') }}         # [linux]
+    # - {{ cdt('libdrm-devel') }}          # [linux]
+    # - {{ cdt('libxcomposite-devel') }}   # [linux]
+    # - {{ cdt('libxcursor-devel') }}	     # [linux]
+    # - {{ cdt('libxi-devel') }}           # [linux]
+    # - {{ cdt('libxrandr-devel') }}	     # [linux]
+    # - {{ cdt('pciutils-devel') }}        # [linux]
+    # - {{ cdt('libxscrnsaver-devel') }}   # [linux]
+    # - {{ cdt('libxtst-devel') }}         # [linux]
+    # - {{ cdt('libselinux-devel') }}	     # [linux]
+    # - {{ cdt('libxdamage') }}            # [linux]
+    # - {{ cdt('libxfixes') }}             # [linux]
+    # - {{ cdt('libxxf86vm') }}            # [linux]
+    # - {{ cdt('xorg-xf86vidmodeproto') }}            # [linux]
+
+    # - {{ cdt('libx11') }}                # [linux]
+    # - {{ cdt('libxcb') }}                # [linux]
+    # - {{ cdt('libXfixes') }}             # [linux]
+    # - {{ cdt('libXxf86vm') }}            # [linux]
+    # - {{ cdt('libxext') }}               # [linux]
+    # - {{ cdt('libxrender') }}            # [linux]
+    # - {{ cdt('mesa-libgl') }}            # [linux]
+    # - {{ cdt('mesa-dri-drivers') }}      # [linux]
+    # - {{ cdt('libselinux') }}            # [linux]
+    # - {{ cdt('libXdamage') }}            # [linux]
+    # - {{ cdt('libXau') }}                # [linux]
+    # - xorg-libx11
+    # - xorg-xf86vidmodeproto
+    - cmake >=3.14.0
+    # - numpy >=1.7
+    # - python >=3.6
+    # - xorg-libx11
+    # - glfw
+    # - mesa
+    # - libc
+    # - boost
+    # - pcl
+    # - opencv3
+    # - openlibm 
+  run:
+    # - numpy  >=1.7
+    # - python >=3.6
+    # - boost
+    # - pcl
+    # - opencv
+
+# build:
+  # number: 0
+  # script: "{{ PYTHON }} -m pip install . -vv"
+  # script: "{{ PYTHON }}  ./setup.py sdist bdist_wheel -vv"
+
+build:
+  # - {{ compiler('cxx') }}
+  # already linked relative to $ORIGIN, so we need to turn
+  # off conda's relocation mechanism because it screws it up
+  # binary_relocation: false
+
+
+about:
+  home: "https://github.com/RaduAlexandru/easy_pbr"
+  license: "GNU Lesser General Public v3 or later (LGPLv3+)"
+  license_family: LGPL
+  license_file: 
+  summary: "Astronomical source extraction and photometry library"
+  doc_url: 
+  dev_url: 
+
+extra:
+  recipe-maintainers:
+    - your-github-id-here
