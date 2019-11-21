@@ -18,8 +18,8 @@ set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in 
 ####   GLOBAL OPTIONS   ###https://stackoverflow.com/questions/15201064/cmake-conditional-preprocessor-define-on-code
 option(CORE_WITH_VIEWER "Use a GL viewer, or if we don't have it available we will still publish to RViz" ON)
 option(CORE_WITH_HALIDE "Compile Halide" OFF)
-option(CORE_WITH_TORCH "Compile Torch" ON)
-option(CORE_WITH_CUDA "Compile CUDA" ON)
+option(CORE_WITH_TORCH "Compile Torch" OFF)
+option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
 option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
 
@@ -130,6 +130,10 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/syoyo/tinyobjloader
   GIT_TAG        v2.0.0-rc1 
 )
+FetchContent_GetProperties(tiny_obj)
+if(NOT tiny_obj_POPULATED)
+  FetchContent_Populate(tiny_obj)
+endif()
 FetchContent_Declare(
   utils
   GIT_REPOSITORY https://github.com/RaduAlexandru/utils.git
@@ -140,7 +144,7 @@ FetchContent_Declare(
 )
 # add_subdirectory( ${pybind11_SOURCE_DIR})
 ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru configuru better_enums concurrent_queue tiny_obj  utils easy_gl)
+FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru configuru better_enums concurrent_queue  utils easy_gl)
 
 
 ###   INCLUDES   #########################################################
@@ -236,7 +240,7 @@ add_library( easy_pbr_lib SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMG
 pybind11_add_module(EasyPBR SHARED ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
 
 ###   EXECUTABLE   #######################################
-add_executable(run ${PROJECT_SOURCE_DIR}/src/main.cxx  )
+add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 
 ###   LIBS   ###############################################
@@ -246,7 +250,7 @@ set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRAR
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
 target_link_libraries(EasyPBR PRIVATE easy_pbr_lib )
-target_link_libraries(run PRIVATE easy_pbr_lib )
+target_link_libraries(run_easypbr PRIVATE easy_pbr_lib )
 
 
 #definitions for cmake variables that are necesarry during runtime
@@ -255,5 +259,9 @@ target_compile_definitions(easy_pbr_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE
 target_compile_definitions(easy_pbr_lib PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 target_compile_definitions(easy_pbr_lib PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
 target_compile_definitions(easy_pbr_lib PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
+
+install(TARGETS EasyPBR DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS easy_pbr_lib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# install(TARGETS run_easypbr DESTINATION bin)
 
 
