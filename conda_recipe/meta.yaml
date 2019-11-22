@@ -1,6 +1,10 @@
 {% set name = "easypbr" %}
 {% set version = "1.0.0" %}
 
+#following https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html
+#and https://stefan.sofa-rockers.org/2019/04/18/python-packaging-gitlab-conda/#the-package-manager-pip-or-conda
+#and then using conda press to create a python wheel
+
 package:
   name: easypbr
   version: 1.0.0
@@ -19,31 +23,30 @@ requirements:
     # - {{ compiler('cxx') }}
     # - {{ cdt('mesa-libgl-devel') }}
       # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
-    # - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
-    # - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
-    # - {{ cdt('libx11-devel') }}          # [linux]
-    # - {{ cdt('libxext-devel') }}         # [linux]
-    # - {{ cdt('libxrender-devel') }}	     # [linux]
-    # - {{ cdt('mesa-libgl-devel') }}	     # [linux]
-    # - {{ cdt('mesa-libegl-devel') }}     # [linux]
-    # - {{ cdt('mesa-dri-drivers') }}	     # [linux]
-    # - {{ cdt('libxau-devel') }}          # [linux]
-    # - {{ cdt('alsa-lib-devel') }}        # [linux]
-    # - {{ cdt('gtk2-devel') }}            # [linux]
-    # - {{ cdt('gtkmm24-devel') }}         # [linux]
-    # - {{ cdt('libdrm-devel') }}          # [linux]
-    # - {{ cdt('libxcomposite-devel') }}   # [linux]
-    # - {{ cdt('libxcursor-devel') }}	     # [linux]
-    # - {{ cdt('libxi-devel') }}           # [linux]
-    # - {{ cdt('libxrandr-devel') }}	     # [linux]
-    # - {{ cdt('pciutils-devel') }}        # [linux]
-    # - {{ cdt('libxscrnsaver-devel') }}   # [linux]
-    # - {{ cdt('libxtst-devel') }}         # [linux]
-    # - {{ cdt('libselinux-devel') }}	     # [linux]
-    # - {{ cdt('libxdamage') }}            # [linux]
-    # - {{ cdt('libxfixes') }}             # [linux]
-    # - {{ cdt('libxxf86vm') }}            # [linux]
-    # - {{ cdt('xorg-xf86vidmodeproto') }}            # [linux]
+    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    - {{ cdt('libx11-devel') }}          # [linux]
+    - {{ cdt('libxext-devel') }}         # [linux]
+    - {{ cdt('libxrender-devel') }}	     # [linux]
+    - {{ cdt('mesa-libgl-devel') }}	     # [linux]
+    - {{ cdt('mesa-libegl-devel') }}     # [linux]
+    - {{ cdt('mesa-dri-drivers') }}	     # [linux]
+    - {{ cdt('libxau-devel') }}          # [linux]
+    - {{ cdt('alsa-lib-devel') }}        # [linux]
+    - {{ cdt('gtk2-devel') }}            # [linux]
+    - {{ cdt('gtkmm24-devel') }}         # [linux]
+    - {{ cdt('libdrm-devel') }}          # [linux]
+    - {{ cdt('libxcomposite-devel') }}   # [linux]
+    - {{ cdt('libxcursor-devel') }}	     # [linux]
+    - {{ cdt('libxi-devel') }}           # [linux]
+    - {{ cdt('libxrandr-devel') }}	     # [linux]
+    - {{ cdt('pciutils-devel') }}        # [linux]
+    - {{ cdt('libxscrnsaver-devel') }}   # [linux]
+    - {{ cdt('libxtst-devel') }}         # [linux]
+    - {{ cdt('libselinux-devel') }}	     # [linux]
+    - {{ cdt('libxdamage') }}            # [linux]
+    - {{ cdt('libxfixes') }}             # [linux]
+    - {{ cdt('libxxf86vm') }}            # [linux]
 
     # - {{ cdt('libx11') }}                # [linux]
     # - {{ cdt('libxcb') }}                # [linux]
@@ -59,27 +62,18 @@ requirements:
     # - xorg-libx11
     # - xorg-xf86vidmodeproto
     - cmake >=3.14.0
-    # - numpy >=1.7
-    # - python >=3.6
-    # - xorg-libx11
     - glfw
-    # - libc
     - boost
     - pcl
-    - opencv
-    # - openlibm 
+    - libopencv
+    - eigen
   # host:
     # - xorg-libx11                    # [linux]
     # - xorg-libxext                   # [linux]
   run:
     - glfw
-    # - xorg-libx11                    # [linux]
-    # - xorg-libxext                   # [linux]
-    # - numpy  >=1.7
-    # - python >=3.6
-    # - boost
     - pcl
-    - opencv
+    # - opencv
     - libopencv
 
 # build:

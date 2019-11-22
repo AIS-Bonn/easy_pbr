@@ -150,11 +150,14 @@ FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru config
 
 
 ###   INCLUDES   #########################################################
+message("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+message(${Boost_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/extern)
-include_directories(${GLFW_INCLUDE_DIR})
+include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIR})
 if(CORE_WITH_DIR_WATCHER)
     include_directories(${KQUEUE_INCLUDE_DIRS})
 endif()
@@ -170,7 +173,7 @@ include_directories(${tiny_ply_SOURCE_DIR}/source)
 include_directories(${tiny_obj_SOURCE_DIR})
 include_directories(${utils_SOURCE_DIR}/include)
 include_directories(${easy_gl_SOURCE_DIR})
-include_directories(${PCL_INCLUDE_DIR})
+include_directories(${PCL_INCLUDE_DIRS})
 include_directories("/usr/include/python3.6m/")
 
 # link_directories(${PCL_LIBRARY_DIRS})
