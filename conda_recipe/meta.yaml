@@ -19,8 +19,8 @@ source:
 requirements:
   build:
     # - gcc >=7.4.0
-    # - {{ compiler('c') }}
-    # - {{ compiler('cxx') }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     # - {{ cdt('mesa-libgl-devel') }}
       # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
     - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
