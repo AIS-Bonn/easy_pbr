@@ -21,7 +21,7 @@ option(CORE_WITH_HALIDE "Compile Halide" OFF)
 option(CORE_WITH_TORCH "Compile Torch" OFF)
 option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
-option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
+option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
 #setting a python version to 3.6 for pybind so that the bindings work in 3.6 https://github.com/pybind/pybind11/issues/748
 set(PYTHON_VERSION 3.6 CACHE STRING "" FORCE)
@@ -75,7 +75,9 @@ find_package(GLFW REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
-find_package(kqueue REQUIRED)
+if(CORE_WITH_DIR_WATCHER)
+    find_package(kqueue REQUIRED)
+endif()
 find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 FetchContent_Declare(
   imgui
@@ -153,7 +155,9 @@ include_directories(${PROJECT_SOURCE_DIR}/extern)
 include_directories(${GLFW_INCLUDE_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${KQUEUE_INCLUDE_DIRS})
+if(CORE_WITH_DIR_WATCHER)
+    include_directories(${KQUEUE_INCLUDE_DIRS})
+endif()
 include_directories(${LIBIGL_INCLUDE_DIR})
 include_directories(${pybind11_SOURCE_DIR}/include)
 include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples )
@@ -245,7 +249,10 @@ add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${KQUEUE_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
+if(CORE_WITH_DIR_WATCHER)
+    set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
+endif()
+set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 
 
 target_link_libraries(easy_pbr_lib ${LIBS} )

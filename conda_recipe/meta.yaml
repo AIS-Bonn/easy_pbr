@@ -15,6 +15,7 @@ source:
 requirements:
   build:
     # - gcc >=7.4.0
+    # - {{ compiler('c') }}
     # - {{ compiler('cxx') }}
     # - {{ cdt('mesa-libgl-devel') }}
       # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
@@ -61,19 +62,25 @@ requirements:
     # - numpy >=1.7
     # - python >=3.6
     # - xorg-libx11
-    # - glfw
-    # - mesa
+    - glfw
     # - libc
-    # - boost
-    # - pcl
-    # - opencv3
+    - boost
+    - pcl
+    - opencv
     # - openlibm 
+  # host:
+    # - xorg-libx11                    # [linux]
+    # - xorg-libxext                   # [linux]
   run:
+    - glfw
+    # - xorg-libx11                    # [linux]
+    # - xorg-libxext                   # [linux]
     # - numpy  >=1.7
     # - python >=3.6
     # - boost
-    # - pcl
-    # - opencv
+    - pcl
+    - opencv
+    - libopencv
 
 # build:
   # number: 0
@@ -85,6 +92,18 @@ build:
   # already linked relative to $ORIGIN, so we need to turn
   # off conda's relocation mechanism because it screws it up
   # binary_relocation: false
+  #explained here https://stefan.sofa-rockers.org/2019/04/18/python-packaging-gitlab-conda/#the-package-manager-pip-or-conda
+  #and a bit here
+  missing_dso_whitelist:
+    - '*/libGL.so.1'
+    - '*/libc.so.6'
+    - '*/libgcc_s.so.1'
+    - '*/libm.so.6'
+    - '*/libpthread.so.0'
+    - '*/libstdc++.so.6'
+    - '*/ld-linux-x86-64.so.2'
+    - '*/libdl.so.2'
+
 
 
 about:
