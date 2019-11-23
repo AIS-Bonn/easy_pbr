@@ -3,7 +3,8 @@
 import sys
 import os
 # easy_pbr_path= os.path.join( os.path.dirname( os.path.realpath(__file__) ) , '../build')
-easy_pbr_path= "/home/rosu/Downloads/conda/lib/python3.7/site-packages/lib/"
+# easy_pbr_path= "/home/rosu/Downloads/conda/lib/python3.7/site-packages/lib/"
+easy_pbr_path= "/opt/conda/envs/pt/lib/"
 sys.path.append( easy_pbr_path )
 from EasyPBR  import *
 

@@ -1,5 +1,3 @@
-{% set name = "easypbr" %}
-{% set version = "1.0.0" %}
 
 #following https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html
 #and https://stefan.sofa-rockers.org/2019/04/18/python-packaging-gitlab-conda/#the-package-manager-pip-or-conda
@@ -23,7 +21,6 @@ requirements:
     - {{ compiler('cxx') }}
     # - {{ cdt('mesa-libgl-devel') }}
       # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
-    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - {{ cdt('libx11-devel') }}          # [linux]
     - {{ cdt('libxext-devel') }}         # [linux]
@@ -65,16 +62,23 @@ requirements:
     - glfw
     - boost
     - pcl
-    - libopencv
+    - opencv # [win]
+    - libopencv # [linux]
     - eigen
-  # host:
-    # - xorg-libx11                    # [linux]
-    # - xorg-libxext                   # [linux]
+  host:
+    - glfw
+    # - boost
+    - pcl
+    - opencv # [win]
+    - libopencv # [linux]
+    - eigen
   run:
     - glfw
+    # - boost
     - pcl
-    # - opencv
-    - libopencv
+    - opencv # [win]
+    - libopencv # [linux]
+    - eigen
 
 # build:
   # number: 0
