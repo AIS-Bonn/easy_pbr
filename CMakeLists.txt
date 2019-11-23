@@ -10,7 +10,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread -Wall -O3") #we need c++17 because this solves alignment issues with eigen http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1409
 set(PYTORCH_PATH "/opt/pytorch")
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/ros/melodic/\;${PYTORCH_PATH}")
+# set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/ros/melodic/\;${PYTORCH_PATH}")
 set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in c++14 mode so we can use py:overload_cast
 # set(FETCHCONTENT_QUIET NO)
 
@@ -24,21 +24,22 @@ option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF
 option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
 #setting a python version to 3.6 for pybind so that the bindings work in 3.6 https://github.com/pybind/pybind11/issues/748
-set(PYTHON_VERSION 3.6 CACHE STRING "" FORCE)
-unset(PYTHONINTERP_FOUND CACHE)
-unset(PYTHON_EXECUTABLE CACHE)
-unset(PYTHON_VERSION_STRING CACHE)
-unset(PYTHON_VERSION_MAJOR CACHE)
-unset(PYTHON_VERSION_MINOR CACHE)
-unset(PYTHON_VERSION_PATCH CACHE)
-unset(PYBIND11_INCLUDE_DIR CACHE)
-unset(PYTHON_INCLUDE_DIRS CACHE)
-unset(PYTHON_LIBRARIES CACHE)
-unset(PYTHON_MODULE_PREFIX CACHE)
-unset(PYTHON_MODULE_EXTENSION CACHE)
-unset(PYTHON_LIBRARY CACHE)
-set(PYBIND11_PYTHON_VERSION 3.6 CACHE STRING "" FORCE) 
-message("PYBIND11_PYTHON_VERSION is" , ${PYBIND11_PYTHON_VERSION})
+# set(PYTHON_VERSION 3.6 CACHE STRING "" FORCE)
+# unset(PYTHONINTERP_FOUND CACHE)
+# unset(PYTHON_EXECUTABLE CACHE)
+# unset(PYTHON_VERSION_STRING CACHE)
+# unset(PYTHON_VERSION_MAJOR CACHE)
+# unset(PYTHON_VERSION_MINOR CACHE)
+# unset(PYTHON_VERSION_PATCH CACHE)
+# unset(PYBIND11_INCLUDE_DIR CACHE)
+# unset(PYTHON_INCLUDE_DIRS CACHE)
+# unset(PYTHON_LIBRARIES CACHE)
+# unset(PYTHON_MODULE_PREFIX CACHE)
+# unset(PYTHON_MODULE_EXTENSION CACHE)
+# unset(PYTHON_LIBRARY CACHE)
+# set(PYBIND11_PYTHON_VERSION 3.6 CACHE STRING "" FORCE) 
+find_package(PythonLibs REQUIRED)
+# message("PYBIND11_PYTHON_VERSION is" , ${PYBIND11_PYTHON_VERSION})
 
 
 
@@ -150,8 +151,6 @@ FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru config
 
 
 ###   INCLUDES   #########################################################
-message("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
-message(${Boost_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/extern)
 include_directories(${GLFW_INCLUDE_DIRS})
@@ -174,7 +173,8 @@ include_directories(${tiny_obj_SOURCE_DIR})
 include_directories(${utils_SOURCE_DIR}/include)
 include_directories(${easy_gl_SOURCE_DIR})
 include_directories(${PCL_INCLUDE_DIRS})
-include_directories("/usr/include/python3.6m/")
+include_directories(${PYTHON_INCLUDE_DIRS})
+# include_directories("/usr/include/python3.6m/")
 
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
@@ -255,7 +255,7 @@ set(LIBS -lpthread -ldl) #because loguru needs them
 if(CORE_WITH_DIR_WATCHER)
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
-set(LIBS ${LIBS} Eigen3::Eigen  ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
+set(LIBS ${LIBS} Eigen3::Eigen ${PYTHON_LIBRARIES} ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 
 
 target_link_libraries(easy_pbr_lib ${LIBS} )
