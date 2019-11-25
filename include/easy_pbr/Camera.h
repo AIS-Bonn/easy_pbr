@@ -41,6 +41,7 @@ public:
     void push_away(const float s); //moves the camera closer or further from the lookup point. A 's' values of 1 means no movement s>1 means going further and s<1 means closer
     void push_away_by_dist(const float new_dist); //pueshes the camera backwards or forwards until the distance to lookat point matches the new_dist 
     void orbit(const Eigen::Quaternionf& q); //Orbit around the m_lookat by an amount specified by q
+    void orbit_y(const float angle_degrees); //orbit around the y axis of the world a certain amount of degrees
     void rotate(const Eigen::Quaternionf& q); //rotates around the central camera position by a quaternion q
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 

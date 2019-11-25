@@ -9,6 +9,8 @@
 #include "easy_pbr/Mesh.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/LabelMngr.h"
+#include "easy_pbr/Recorder.h"
+#include "easy_pbr/Camera.h"
 
 
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -27,6 +29,17 @@ PYBIND11_MODULE(easypbr, m) {
     // .def(py::init<const std::string>())
     .def_static("create",  &Viewer::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
+    .def_readwrite("m_camera", &Viewer::m_camera )
+    ;
+
+    //Camera
+    py::class_<Camera, std::shared_ptr<Camera>> (m, "Camera")
+    .def(py::init<>())
+    .def("set_lookat", &Camera::set_lookat )
+    .def("push_away", &Camera::push_away )
+    .def("push_away_by_dist", &Camera::push_away_by_dist )
+    .def("orbit_y", &Camera::orbit_y )
+    .def("from_string", &Camera::from_string )
     ;
 
     //Scene
@@ -113,6 +126,12 @@ PYBIND11_MODULE(easypbr, m) {
     .def("move_in_x", &Mesh::move_in_x )
     .def("move_in_y", &Mesh::move_in_y )
     .def("move_in_z", &Mesh::move_in_z )
+    ;
+
+    //Recorder
+    py::class_<Recorder, std::shared_ptr<Recorder>> (m, "Recorder")
+    .def(py::init<>())
+    .def("record", py::overload_cast<std::shared_ptr<Viewer>, const std::string, const std::string >(&Recorder::record) )
     ;
 
 

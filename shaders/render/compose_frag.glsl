@@ -320,7 +320,8 @@ void main(){
             float res = response(depth);
             // float edl_strength=16.0;
             float shade = exp(-res * 300.0 * edl_strength);
-            color = albedo* shade;
+            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+            color = albedo* shade * ao;
         }
     }else{
         //PBR-----------
