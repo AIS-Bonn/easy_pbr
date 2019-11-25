@@ -9,7 +9,7 @@ include(FetchContent)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread -Wall -O3") #we need c++17 because this solves alignment issues with eigen http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1409
-set(PYTORCH_PATH "/opt/pytorch")
+# set(PYTORCH_PATH "/opt/pytorch")
 # set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/ros/melodic/\;${PYTORCH_PATH}")
 set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in c++14 mode so we can use py:overload_cast
 # set(FETCHCONTENT_QUIET NO)
@@ -38,7 +38,6 @@ option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emild
 # unset(PYTHON_MODULE_EXTENSION CACHE)
 # unset(PYTHON_LIBRARY CACHE)
 # set(PYBIND11_PYTHON_VERSION 3.6 CACHE STRING "" FORCE) 
-find_package(PythonLibs REQUIRED)
 # message("PYBIND11_PYTHON_VERSION is" , ${PYBIND11_PYTHON_VERSION})
 
 
@@ -72,6 +71,7 @@ option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
 
 ######   PACKAGES   ############################################################
+find_package(PythonLibs REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -241,10 +241,10 @@ endif()
 
 ###   MAIN LIB  ####################
 # add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
-add_library( easy_pbr_lib SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
+add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 
 ##pybind
-pybind11_add_module(EasyPBR SHARED ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
+pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
 
 ###   EXECUTABLE   #######################################
 add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
@@ -255,23 +255,25 @@ set(LIBS -lpthread -ldl) #because loguru needs them
 if(CORE_WITH_DIR_WATCHER)
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
-set(LIBS ${LIBS} Eigen3::Eigen ${PYTHON_LIBRARIES} ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
+set(LIBS ${LIBS} Eigen3::Eigen ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 
 
-target_link_libraries(easy_pbr_lib ${LIBS} )
-target_link_libraries(EasyPBR PRIVATE easy_pbr_lib )
-target_link_libraries(run_easypbr PRIVATE easy_pbr_lib )
+target_link_libraries(easypbr_cpp ${LIBS} )
+target_link_libraries(easypbr PRIVATE easypbr_cpp)
+target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
 
 
 #definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easy_pbr_lib PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-target_compile_definitions(easy_pbr_lib PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
-target_compile_definitions(easy_pbr_lib PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
-target_compile_definitions(easy_pbr_lib PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
-target_compile_definitions(easy_pbr_lib PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
+target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
+target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
+target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
-install(TARGETS EasyPBR DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS easy_pbr_lib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+#install the libraries in a default search path
+# message("INSTALLING IN " ${CMAKE_INSTALL_LIBDIR})
+# install(TARGETS easypbr DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# install(TARGETS easypbr_cpp DESTINATION ${CMAKE_INSTALL_LIBDIR})
 # install(TARGETS run_easypbr DESTINATION bin)
 
 

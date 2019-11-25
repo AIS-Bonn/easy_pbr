@@ -20,7 +20,7 @@ namespace py = pybind11;
 
 
 
-PYBIND11_MODULE(EasyPBR, m) {
+PYBIND11_MODULE(easypbr, m) {
  
     //Viewer
     py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")

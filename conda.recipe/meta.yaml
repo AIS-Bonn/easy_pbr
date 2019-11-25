@@ -4,8 +4,8 @@
 #and then using conda press to create a python wheel
 
 package:
-  name: easypbr
-  version: 1.0.0
+  name: "easypbr"
+  version: "1.0.0"
 
 source:
   # url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
@@ -19,6 +19,8 @@ requirements:
     # - gcc >=7.4.0
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - python
+    - setuptools
     # - {{ cdt('mesa-libgl-devel') }}
       # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
     - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
@@ -59,20 +61,21 @@ requirements:
     # - xorg-libx11
     # - xorg-xf86vidmodeproto
     - cmake >=3.14.0
+    # - glfw
+    # - boost
+    # - pcl
+    # - opencv # [win]
+    # - libopencv # [linux]
+    # - eigen
+  host:
     - glfw
     - boost
     - pcl
     - opencv # [win]
     - libopencv # [linux]
     - eigen
-  host:
-    - glfw
-    # - boost
-    - pcl
-    - opencv # [win]
-    - libopencv # [linux]
-    - eigen
   run:
+    - python
     - glfw
     # - boost
     - pcl
@@ -101,6 +104,18 @@ build:
     - '*/libstdc++.so.6'
     - '*/ld-linux-x86-64.so.2'
     - '*/libdl.so.2'
+  # run_exports:
+  #   strong:
+  #     - glfw
+  #     - pcl
+  #     - opencv # [win]
+  #     - libopencv # [linux]
+  #     - eigen
+
+test:
+  imports:
+    - easypbr
+
 
 
 
