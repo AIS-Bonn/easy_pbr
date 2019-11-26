@@ -96,7 +96,7 @@ void Recorder::write_without_buffering(gl::Texture2D& tex, const std::string nam
 
 void Recorder::record(std::shared_ptr<Viewer> view, const std::string name, const std::string path){
     //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
-    record(view->m_final_fbo_no_gui.tex_with_name("color_gtex"), name, path);
+    record(view->m_final_fbo_with_gui.tex_with_name("color_gtex"), name, path);
 }
     
 

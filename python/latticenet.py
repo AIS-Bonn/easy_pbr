@@ -27,6 +27,13 @@ car.rotate_y_axis(-90)
 car.move_in_y(-1.1)
 Scene.show(car,"car")
 
+labels_file="/media/rosu/Data/data/semantic_kitti/colorscheme_and_labels/labels.txt"
+colorscheme_file="/media/rosu/Data/data/semantic_kitti/colorscheme_and_labels/color_scheme.txt"
+frequency_file="/media/rosu/Data/data/semantic_kitti/colorscheme_and_labels/frequency_uniform.txt"
+idx_unlabeled=0
+label_mngr=LabelMngr(labels_file, colorscheme_file, frequency_file, idx_unlabeled )
+mesh.m_label_mngr=label_mngr
+
 
 view=Viewer.create(config_file) #first because it needs to init context
 view.m_camera.from_string("56.1016 31.3023 43.6047 -0.185032  0.430075 0.0905343 0.878978 0 0 0 40 0.2 6004.45")

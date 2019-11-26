@@ -682,7 +682,8 @@ void Gui::draw_label_mngr_legend(){
             ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
 
             ImGuiWindowFlags window_flags = 0;
-            ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
+            // ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
+            ImVec2 size=ImVec2(canvas_size.x*0.5-210, canvas_size.y*0.11);
             ImGui::SetNextWindowSize(size, ImGuiCond_Always);
             ImGui::SetNextWindowPos(ImVec2(canvas_size.x/2-size.x/2, canvas_size.y-size.y));
             ImGui::Begin("LabelMngr", nullptr,
@@ -697,25 +698,30 @@ void Gui::draw_label_mngr_legend(){
                 );
 
             //since the labelmngr stores the colors in a row major way, the colors of a certain label (a row in the matrix) are not contiguous and therefore cannot be edited with coloredit3. So we copy the color into a small vec3
+            int nr_drawn_labels=0;
             for(int i=0; i<mesh->m_label_mngr->nr_classes(); i++){
+                std::string label=mesh->m_label_mngr->idx2label(i);
                 if(i==mesh->m_label_mngr->get_idx_unlabeled()){
                     continue; //don't shot the background label
                 }
-                if(i>mesh->m_label_mngr->nr_classes()-3){
+                // if(i>mesh->m_label_mngr->nr_classes()-1){
+                    // continue;
+                // }
+                if (label=="other-ground"){
                     continue;
                 }
-                std::string label=mesh->m_label_mngr->idx2label(i);
                 Eigen::Vector3f color=Eigen::Vector3d(mesh->m_label_mngr->color_scheme().row(i)).cast<float>();
                 float widget_size=20*m_hidpi_scaling;
                 ImGui::SetNextItemWidth(widget_size); //only gives sizes to the widget and not the label
                 if( ImGui::ColorEdit3(label.c_str(), color.data(), ImGuiColorEditFlags_NoInputs) ){
                     VLOG(1) << "modif";
                 }
+                nr_drawn_labels++;
                 float x_size_label=ImGui::CalcTextSize(label.c_str()).x;
                 float total_size=widget_size+x_size_label; //total size of the color rectangle widget+label
-                if(i%6!=0 || i==0){
+                if(nr_drawn_labels%6!=0 || nr_drawn_labels==0){
                     ImGui::SameLine();
-                    ImGui::Dummy(ImVec2(220.0f-total_size, 0.0f));
+                    ImGui::Dummy(ImVec2(218.0f-total_size, 0.0f));
                     ImGui::SameLine();
                 }
             
