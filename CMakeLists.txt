@@ -71,7 +71,7 @@ option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
 
 ######   PACKAGES   ############################################################
-find_package(PythonLibs REQUIRED)
+# find_package(PythonLibs REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -147,7 +147,7 @@ FetchContent_Declare(
 )
 # add_subdirectory( ${pybind11_SOURCE_DIR})
 ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl pybind11 loguru configuru better_enums concurrent_queue  utils easy_gl)
+FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue  utils easy_gl)
 
 
 ###   INCLUDES   #########################################################
@@ -173,7 +173,7 @@ include_directories(${tiny_obj_SOURCE_DIR})
 include_directories(${utils_SOURCE_DIR}/include)
 include_directories(${easy_gl_SOURCE_DIR})
 include_directories(${PCL_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
+# include_directories(${PYTHON_INCLUDE_DIRS})
 # include_directories("/usr/include/python3.6m/")
 
 # link_directories(${PCL_LIBRARY_DIRS})

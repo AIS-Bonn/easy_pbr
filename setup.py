@@ -1,4 +1,3 @@
-import setuptools
 import os
 import re
 import sys
@@ -54,15 +53,16 @@ class CMakeBuild(build_ext):
                                                               self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
+        # print ("build temp is ", self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
-
+        # subprocess.check_call(['make', 'install'], cwd=self.build_temp)
 
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name='easypbr',
     version='1.0.0',
     author="Radu Alexandru Rosu",
@@ -72,36 +72,7 @@ setuptools.setup(
     ext_modules=[CMakeExtension('easypbr')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-
-
-
-    # name="easypbr",
-    # version="0.0.1",
-    # author="Radu Alexandru Rosu",
-    # author_email="rosu@ais.uni-bonn.de",
-    # description="Physically based rendering made easy",
-    # long_description=long_description,
-    # long_description_content_type="text/markdown",
-    # url="https://github.com/RaduAlexandru/easy_pbr",
-    # # packages=setuptools.find_packages(),
-    # classifiers=[
-    #     "Programming Language :: Python :: 3",
-    #     "License :: OSI Approved :: MIT License",
-    #     "Operating System :: OS Independent",
-    # ],
-    # python_requires='>=3.6',
-    # packages=setuptools.find_packages('src'),
-    # # tell setuptools that all packages will be under the 'src' directory
-    # # and nowhere else
-    # package_dir={'':'.'},
-    # # add an extension module named 'python_cpp_example' to the package 
-    # # 'python_cpp_example'
-    # ext_modules=[CMakeExtension('easypbr/easypbr')],
-    # # add custom build_ext command
-    # cmdclass=dict(build_ext=CMakeBuild),
-    # zip_safe=False,
-    # #https://github.com/meshy/pythonwheels/issues/46
-    # # entry_points = {
-    #     # 'console_scripts': [''],
-    # # }
+    # packages=['.'],
+    # package_dir={'': '.'},
+    # package_data={'': ['*.so']},
 )

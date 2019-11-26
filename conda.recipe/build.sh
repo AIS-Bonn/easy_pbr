@@ -1,14 +1,11 @@
 #!/bin/bash
 unset MACOSX_DEPLOYMENT_TARGET
-${PYTHON} setup.py install;
-
+${PYTHON} setup.py install --single-version-externally-managed --record=record.txt
 
 # LIBRARY_PATH="${PREFIX}/lib"
-# INCLUDE_PATH="${PREFIX}/include"
-
 # mkdir -p build
 # cd build
-# cmake ../ -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR="${LIBRARY_PATH}"
+# cmake ../ -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=lib
 
 # make -j6
 # make install

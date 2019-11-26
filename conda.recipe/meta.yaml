@@ -1,28 +1,25 @@
-
-#following https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html
-#and https://stefan.sofa-rockers.org/2019/04/18/python-packaging-gitlab-conda/#the-package-manager-pip-or-conda
-#and then using conda press to create a python wheel
-
 package:
-  name: "easypbr"
-  version: "1.0.0"
+  name: easypbr
+  version: 1.0.0
+
+build:
+  number: 0
+  # script_env:
+    # - CC
+    # - CXX
+  # rpaths:
+    # - lib/ #we will look for dynamically loaded shared libraries like easypbr_cpp in $PREFIX/lib. a post-link.sh script will copy the shared lib there for easy finding
+    # - ./ 
+    # - lib/python3.6/site-packages
+
 
 source:
-  # url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
-  # sha256: a35704cffadbd042f931899a5564c539835fa7049d0cafff407d7ec7727d3aaa
   path: ../
-  # git_url: https://github.com/RaduAlexandru/easy_pbr
-  # git_tag: master
 
 requirements:
   build:
-    # - gcc >=7.4.0
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - python
-    - setuptools
-    # - {{ cdt('mesa-libgl-devel') }}
-      # GUI system libs needed (taken from https://github.com/AnacondaRecipes/aggregate/blob/845210c1301fa6515a66405aeaad457e3c10f1a6/qbs-feedstock/recipe/meta.yaml)
     - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - {{ cdt('libx11-devel') }}          # [linux]
     - {{ cdt('libxext-devel') }}         # [linux]
@@ -47,87 +44,61 @@ requirements:
     - {{ cdt('libxfixes') }}             # [linux]
     - {{ cdt('libxxf86vm') }}            # [linux]
 
-    # - {{ cdt('libx11') }}                # [linux]
-    # - {{ cdt('libxcb') }}                # [linux]
-    # - {{ cdt('libXfixes') }}             # [linux]
-    # - {{ cdt('libXxf86vm') }}            # [linux]
-    # - {{ cdt('libxext') }}               # [linux]
-    # - {{ cdt('libxrender') }}            # [linux]
-    # - {{ cdt('mesa-libgl') }}            # [linux]
-    # - {{ cdt('mesa-dri-drivers') }}      # [linux]
-    # - {{ cdt('libselinux') }}            # [linux]
-    # - {{ cdt('libXdamage') }}            # [linux]
-    # - {{ cdt('libXau') }}                # [linux]
-    # - xorg-libx11
-    # - xorg-xf86vidmodeproto
+    # - python 
+    - setuptools
     - cmake >=3.14.0
     # - glfw
     # - boost
     # - pcl
     # - opencv # [win]
     # - libopencv # [linux]
-    # - eigen
-  host:
+    # - eigen 
+  host: #THINGS DEFINED IN HOST REQUIREMENTS SHOULD NOT BE IN BUILD
+    - python
     - glfw
     - boost
     - pcl
     - opencv # [win]
     - libopencv # [linux]
     - eigen
+
   run:
     - python
     - glfw
-    # - boost
     - pcl
     - opencv # [win]
     - libopencv # [linux]
     - eigen
 
-# build:
-  # number: 0
-  # script: "{{ PYTHON }} -m pip install . -vv"
-  # script: "{{ PYTHON }}  ./setup.py sdist bdist_wheel -vv"
-
-build:
-  # - {{ compiler('cxx') }}
-  # already linked relative to $ORIGIN, so we need to turn
-  # off conda's relocation mechanism because it screws it up
-  # binary_relocation: false
-  #explained here https://stefan.sofa-rockers.org/2019/04/18/python-packaging-gitlab-conda/#the-package-manager-pip-or-conda
-  #and a bit here
-  missing_dso_whitelist:
-    - '*/libGL.so.1'
-    - '*/libc.so.6'
-    - '*/libgcc_s.so.1'
-    - '*/libm.so.6'
-    - '*/libpthread.so.0'
-    - '*/libstdc++.so.6'
-    - '*/ld-linux-x86-64.so.2'
-    - '*/libdl.so.2'
-  # run_exports:
-  #   strong:
-  #     - glfw
-  #     - pcl
-  #     - opencv # [win]
-  #     - libopencv # [linux]
-  #     - eigen
-
 test:
   imports:
     - easypbr
 
+# outputs:
+#   - name: easypbr_cpp
+#     script: move_files_cpp.sh
+#     # files:
+#       # - CMakeLists.txt
+#       # - build/lib.linux-x86_64-3.6/libeasypbr_cpp.so
+#       # - lib.linux-x86_64-3.6/libeasypbr_cpp.so
+#       # - libeasypbr_cpp.so
+#       # - *.*
 
-
+  # - name: easypbr_py
+#   #   script: move_files_py.sh
+#   #   # -files:
+#   #     # - build/lib.linux-x86_64-3.6/cmake_example.cpython-36m-x86_64-linux-gnu.so
+#   #   requirements:
+#   #     build:
+#   #       - easypbr_cpp
+#   #     host: 
+#   #       - easypbr_cpp
+#   #     run:
+#   #       - easypbr_cpp
+#     # test:
+#     #   imports:
+#     #     - easypbr_py
 
 about:
-  home: "https://github.com/RaduAlexandru/easy_pbr"
-  license: "GNU Lesser General Public v3 or later (LGPLv3+)"
-  license_family: LGPL
-  license_file: 
-  summary: "Astronomical source extraction and photometry library"
-  doc_url: 
-  dev_url: 
-
-extra:
-  recipe-maintainers:
-    - your-github-id-here
+  summary: An example project built with pybind11.
+  license_file: LICENSE
