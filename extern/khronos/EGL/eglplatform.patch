@@ -1,0 +1,11 @@
+--- EGL/eglplatform.h.orig	2019-10-05 00:46:09.000000000 +0100
++++ EGL/eglplatform.h	2019-11-24 21:26:14.624872137 +0000
+@@ -132,7 +132,7 @@
+ typedef Pixmap   EGLNativePixmapType;
+ typedef Window   EGLNativeWindowType;
+ 
+-#elif defined(__APPLE__)
++#elif defined(__APPLE__) || defined(__QNXNTO__)
+ 
+ typedef int   EGLNativeDisplayType;
+ typedef void *EGLNativePixmapType;

@@ -11,6 +11,15 @@ build:
     # - lib/ #we will look for dynamically loaded shared libraries like easypbr_cpp in $PREFIX/lib. a post-link.sh script will copy the shared lib there for easy finding
     # - ./ 
     # - lib/python3.6/site-packages
+  # missing_dso_whitelist:
+  #   - '*/libGL.so.1'
+  #   - '*/libc.so.6'
+  #   - '*/libgcc_s.so.1'
+  #   - '*/libm.so.6'
+  #   - '*/libpthread.so.0'
+  #   - '*/libstdc++.so.6'
+  #   - '*/ld-linux-x86-64.so.2'
+  #   - '*/libdl.so.2'
 
 
 source:
@@ -20,29 +29,29 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
-    - {{ cdt('libx11-devel') }}          # [linux]
-    - {{ cdt('libxext-devel') }}         # [linux]
-    - {{ cdt('libxrender-devel') }}	     # [linux]
-    - {{ cdt('mesa-libgl-devel') }}	     # [linux]
-    - {{ cdt('mesa-libegl-devel') }}     # [linux]
-    - {{ cdt('mesa-dri-drivers') }}	     # [linux]
-    - {{ cdt('libxau-devel') }}          # [linux]
-    - {{ cdt('alsa-lib-devel') }}        # [linux]
-    - {{ cdt('gtk2-devel') }}            # [linux]
-    - {{ cdt('gtkmm24-devel') }}         # [linux]
-    - {{ cdt('libdrm-devel') }}          # [linux]
-    - {{ cdt('libxcomposite-devel') }}   # [linux]
-    - {{ cdt('libxcursor-devel') }}	     # [linux]
-    - {{ cdt('libxi-devel') }}           # [linux]
-    - {{ cdt('libxrandr-devel') }}	     # [linux]
-    - {{ cdt('pciutils-devel') }}        # [linux]
-    - {{ cdt('libxscrnsaver-devel') }}   # [linux]
-    - {{ cdt('libxtst-devel') }}         # [linux]
-    - {{ cdt('libselinux-devel') }}	     # [linux]
-    - {{ cdt('libxdamage') }}            # [linux]
-    - {{ cdt('libxfixes') }}             # [linux]
-    - {{ cdt('libxxf86vm') }}            # [linux]
+    # - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    # - {{ cdt('libx11-devel') }}          # [linux]
+    # - {{ cdt('libxext-devel') }}         # [linux]
+    # - {{ cdt('libxrender-devel') }}	     # [linux]
+    # - {{ cdt('mesa-libgl-devel') }}	     # [linux]
+    # - {{ cdt('mesa-libegl-devel') }}     # [linux]
+    # - {{ cdt('mesa-dri-drivers') }}	     # [linux]
+    # - {{ cdt('libxau-devel') }}          # [linux]
+    # - {{ cdt('alsa-lib-devel') }}        # [linux]
+    # - {{ cdt('gtk2-devel') }}            # [linux]
+    # - {{ cdt('gtkmm24-devel') }}         # [linux]
+    # - {{ cdt('libdrm-devel') }}          # [linux]
+    # - {{ cdt('libxcomposite-devel') }}   # [linux]
+    # - {{ cdt('libxcursor-devel') }}	     # [linux]
+    # - {{ cdt('libxi-devel') }}           # [linux]
+    # - {{ cdt('libxrandr-devel') }}	     # [linux]
+    # - {{ cdt('pciutils-devel') }}        # [linux]
+    # - {{ cdt('libxscrnsaver-devel') }}   # [linux]
+    # - {{ cdt('libxtst-devel') }}         # [linux]
+    # - {{ cdt('libselinux-devel') }}	     # [linux]
+    # - {{ cdt('libxdamage') }}            # [linux]
+    # - {{ cdt('libxfixes') }}             # [linux]
+    # - {{ cdt('libxxf86vm') }}            # [linux]
 
     # - python 
     - setuptools
@@ -53,6 +62,11 @@ requirements:
     # - opencv # [win]
     # - libopencv # [linux]
     # - eigen 
+    # - {{ cdt('mesa-libgl-devel') }}  # [linux]
+    # - {{ cdt('mesa-dri-drivers') }}  # [linux]
+    # - {{ cdt('libselinux') }}  # [linux]
+    # - {{ cdt('libxdamage') }}  # [linux]
+    # - {{ cdt('libxxf86vm') }}  # [linux]
   host: #THINGS DEFINED IN HOST REQUIREMENTS SHOULD NOT BE IN BUILD
     - python
     - glfw
@@ -61,6 +75,13 @@ requirements:
     - opencv # [win]
     - libopencv # [linux]
     - eigen
+    # - xorg-libx11  # [linux]
+    # - xorg-libxau  # [linux]
+    # - xorg-libxcursor  # [linux]
+    # - xorg-libxext  # [linux]
+    # - xorg-libxfixes  # [linux]
+    # - xorg-libxft  # [linux]
+    # - xorg-libxpm  # [linux]
 
   run:
     - python
@@ -69,6 +90,12 @@ requirements:
     - opencv # [win]
     - libopencv # [linux]
     - eigen
+    # - xorg-libx11  # [linux]
+    # - xorg-libxau  # [linux]
+    # - xorg-libxcursor  # [linux]
+    # - xorg-libxext  # [linux]
+    # - xorg-libxft  # [linux]
+    # - xorg-libxpm  # [linux]
 
 test:
   imports:

@@ -164,11 +164,11 @@ bool Viewer::init_context(){
         LOG(FATAL) << "GLFW could not initialize";
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     m_window = glfwCreateWindow(window_width, window_height, "Renderer",nullptr,nullptr);
     if (!m_window){
-        LOG(FATAL) << "GLFW window creation failed";        
+        LOG(FATAL) << "GLFW window creation failed. It may be that you are requesting a too high version of opengl that is not supported by your drivers. It may happen especially if you are running mesa drivers instead of nvidia.";        
         glfwTerminate();
     }
     glfwMakeContextCurrent(m_window);

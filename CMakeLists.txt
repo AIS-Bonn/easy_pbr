@@ -153,6 +153,7 @@ FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru bette
 ###   INCLUDES   #########################################################
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/extern)
+include_directories(${PROJECT_SOURCE_DIR}/extern/khronos)
 include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
