@@ -45,7 +45,7 @@ Recorder::~Recorder(){
     }
 }
 
-void Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
+bool Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
     tex.download_to_pbo();
 
     if(tex.cur_pbo_download().storage_initialized() ){
@@ -69,6 +69,10 @@ void Recorder::record(gl::Texture2D& tex, const std::string name, const std::str
         mat_with_file.cv_mat=cv_mat;
         mat_with_file.file_path= ( fs::path(path)/name ).string();
         m_cv_mats_queue.enqueue(mat_with_file);
+
+        return true;
+    }else{
+        return false;
     }
 
     if( m_cv_mats_queue.size_approx()>100){
@@ -94,9 +98,10 @@ void Recorder::write_without_buffering(gl::Texture2D& tex, const std::string nam
 
 }
 
-void Recorder::record(std::shared_ptr<Viewer> view, const std::string name, const std::string path){
+bool Recorder::record(std::shared_ptr<Viewer> view, const std::string name, const std::string path){
     //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
-    record(view->m_final_fbo_with_gui.tex_with_name("color_gtex"), name, path);
+    bool recorded=record(view->m_final_fbo_with_gui.tex_with_name("color_gtex"), name, path);
+    return recorded;
 }
     
 
