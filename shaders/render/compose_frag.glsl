@@ -252,7 +252,22 @@ vec3 Tonemap_ACES(const vec3 x) {
     return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-
+//trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
+mat3 aces_input = mat3(
+   0.59719, 0.35458, 0.04823, // first column (not row!)
+   0.07600, 0.90834, 0.01566, // second column
+   0.02840, 0.13383, 0.83777  // third column
+);
+mat3 aces_output = mat3(
+   1.60475, -0.53108, -0.07367, // first column (not row!)
+   -0.10208, 1.10813, -0.00605, // second column
+   -0.00327, -0.07276, 1.07602  // third column
+);
+vec3 RRTAndODTFit(vec3 v){
+    vec3 a = v * (v + 0.0245786f) - 0.000090537f;
+    vec3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    return a / b;
+}
 
 void main(){
 
@@ -285,10 +300,14 @@ void main(){
                 // color=color*(brightness-bloom_threshold);
                 // color+=color*(brightness-bloom_threshold)*10;
             }
-            color = Tonemap_Reinhard(color);
+            // color = Tonemap_Reinhard(color);
             // color = Tonemap_Unreal(color);
             // color = Tonemap_FilmicALU(color);
             // color = Tonemap_ACES(color);
+            //new aces
+            color = transpose(aces_input)*color;
+            color = RRTAndODTFit(color);
+            color = transpose(aces_output)*color;
             // color=color*exposure;
             // float brightness=luminance(color);
             // if (brightness>bloom_threshold){
@@ -464,10 +483,15 @@ void main(){
 
 
 
-    color = Tonemap_Reinhard(color);
+    // color = Tonemap_Reinhard(color);
     // color = Tonemap_Unreal(color);
     // color = Tonemap_FilmicALU(color);
     // color = Tonemap_ACES(color);
+    //new aces
+    color = transpose(aces_input)*color;
+    color = RRTAndODTFit(color);
+    color = transpose(aces_output)*color;
+
 
     // HDR tonemapping
     // color = color / (color + vec3(1.0));

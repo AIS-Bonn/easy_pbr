@@ -21,7 +21,7 @@ option(CORE_WITH_HALIDE "Compile Halide" OFF)
 option(CORE_WITH_TORCH "Compile Torch" OFF)
 option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
-option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
+option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
 
 #setting a python version to 3.6 for pybind so that the bindings work in 3.6 https://github.com/pybind/pybind11/issues/748
 # set(PYTHON_VERSION 3.6 CACHE STRING "" FORCE)
