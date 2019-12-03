@@ -1592,7 +1592,9 @@ void Mesh::read_obj(const std::string file_path){
     bool has_normals, has_tex_coords, has_colors;
     has_normals=attrib.normals.size()!=0;
     has_tex_coords=attrib.texcoords.size()!=0;
-    has_colors=attrib.colors.size()!=0;
+    // has_colors=attrib.colors.size()!=0;
+    has_colors=false; //For some reason tinyobj always reads a color of 1,1,1 even though there is no coler in the obj file..
+    // VLOG(1) << "atrib colors is " << attrib.colors.size();
 
 
 
@@ -1625,14 +1627,14 @@ void Mesh::read_obj(const std::string file_path){
                 };
             }
 
-            //there is no index for the color so we use the vertex_index
-            if (has_colors){
-                vertex.color = {
-                    attrib.colors[3 * index.vertex_index + 0],
-                    attrib.colors[3 * index.vertex_index + 1],
-                    attrib.colors[3 * index.vertex_index + 2]
-                };
-            }
+            // //there is no index for the color so we use the vertex_index
+            // if (has_colors){
+            //     vertex.color = {
+            //         attrib.colors[3 * index.vertex_index + 0],
+            //         attrib.colors[3 * index.vertex_index + 1],
+            //         attrib.colors[3 * index.vertex_index + 2]
+            //     };
+            // }
 
             //push the vertex only if it's the first one we references
             if (unique_vertices.count(vertex) == 0) {
@@ -1650,7 +1652,7 @@ void Mesh::read_obj(const std::string file_path){
     V.resize(vertices.size(),3);
     if (has_normals) { NV.resize(vertices.size(),3); };
     if (has_tex_coords) { UV.resize(vertices.size(),2); };
-    if (has_colors) { C.resize(vertices.size(),2); };
+    if (has_colors) { C.resize(vertices.size(),3); };
 
     for(int i=0; i<vertices.size(); i++){
         V.row(i) = vertices[i].pos;
