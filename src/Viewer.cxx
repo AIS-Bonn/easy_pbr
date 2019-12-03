@@ -460,6 +460,7 @@ void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> fu
 }
 
 void Viewer::update(const GLuint fbo_id){
+    VLOG(1) << "seecteded" << m_gui->m_selected_mesh_idx;
     pre_draw();
     draw(fbo_id);
 
