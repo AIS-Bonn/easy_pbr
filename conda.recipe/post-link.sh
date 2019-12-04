@@ -3,9 +3,12 @@
 echo "==================POST-----------------------------------------------------------------------------" > $PREFIX/.messages.txt
 
 #copy the config and the shaders into the build prefix
-ls >> $PREFIX/.messages.txt
+# ls >> $PREFIX/.messages.txt
+cd $SRC_DIR
+find ./ -name "shadow_map_frag.glsl" >> $PREFIX/.messages.txt
 
 
+echo "==================FINISH POST-----------------------------------------------------------------------------" >> $PREFIX/.messages.txt
 
 
 # #move the libeasypbr_cpp to a place where the linker can find it, alternativelly we could have also set rpaths inside the meta.yaml
