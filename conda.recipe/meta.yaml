@@ -7,10 +7,13 @@ build:
   # script_env:
     # - CC
     # - CXX
-  # rpaths:
+  rpaths:
     # - lib/ #we will look for dynamically loaded shared libraries like easypbr_cpp in $PREFIX/lib. a post-link.sh script will copy the shared lib there for easy finding
     # - ./ 
+    - lib/python{{PY_VER}}/site-packages
+    # - lib/python{{ environ.get('PY_VER') }}/site-packages
     # - lib/python3.6/site-packages
+    # - lib/python3.7/site-packages
   # missing_dso_whitelist:
   #   - '*/libGL.so.1'
   #   - '*/libc.so.6'
@@ -20,6 +23,8 @@ build:
   #   - '*/libstdc++.so.6'
   #   - '*/ld-linux-x86-64.so.2'
   #   - '*/libdl.so.2'
+  # run_exports:
+    # - libeasypbr_cpp
 
 
 source:
@@ -53,7 +58,7 @@ requirements:
     # - {{ cdt('libxfixes') }}             # [linux]
     # - {{ cdt('libxxf86vm') }}            # [linux]
 
-    # - python 
+    # - python =3.7 
     - setuptools
     - cmake >=3.14.0
     # - glfw
@@ -61,7 +66,7 @@ requirements:
     # - pcl
     # - opencv # [win]
     # - libopencv # [linux]
-    # - eigen 
+    - eigen 
     # - {{ cdt('mesa-libgl-devel') }}  # [linux]
     # - {{ cdt('mesa-dri-drivers') }}  # [linux]
     # - {{ cdt('libselinux') }}  # [linux]
@@ -74,7 +79,7 @@ requirements:
     - pcl
     - opencv # [win]
     - libopencv # [linux]
-    - eigen
+    # - eigen
     # - xorg-libx11  # [linux]
     # - xorg-libxau  # [linux]
     # - xorg-libxcursor  # [linux]
@@ -113,7 +118,7 @@ requirements:
     - pcl
     - opencv # [win]
     - libopencv # [linux]
-    - eigen
+    # - eigen
     # - xorg-libx11  # [linux]
     # - xorg-libxau  # [linux]
     # - xorg-libxcursor  # [linux]
