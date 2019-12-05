@@ -245,22 +245,22 @@ void Viewer::switch_callbacks(GLFWwindow* window) {
 
 void Viewer::compile_shaders(){
        
-    m_draw_points_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/points_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/points_frag.glsl" ) ;
-    m_draw_lines_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/lines_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/lines_frag.glsl"  );
-    m_draw_mesh_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/mesh_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/mesh_frag.glsl"  );
-    m_draw_wireframe_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/wireframe_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/wireframe_frag.glsl"  );
-    m_draw_surfels_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/render/surfels_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/surfels_frag.glsl" , std::string(PROJECT_SOURCE_DIR)+"/shaders/render/surfels_geom.glsl" );
-    m_compose_final_quad_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/compose_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/compose_frag.glsl"  );
+    m_draw_points_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/points_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/points_frag.glsl" ) ;
+    m_draw_lines_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/lines_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/lines_frag.glsl"  );
+    m_draw_mesh_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/mesh_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/mesh_frag.glsl"  );
+    m_draw_wireframe_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/wireframe_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/wireframe_frag.glsl"  );
+    m_draw_surfels_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_frag.glsl" , std::string(PROJECT_SOURCE_DIR)+"/shaders/render/surfels_geom.glsl" );
+    m_compose_final_quad_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/compose_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/compose_frag.glsl"  );
 
-    m_ssao_ao_pass_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/ao_pass_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/ao_pass_frag.glsl" );
+    m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/ao_pass_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/ao_pass_frag.glsl" );
     // m_depth_linearize_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
-    m_depth_linearize_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_frag.glsl");
-    m_bilateral_blur_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/bilateral_blur_frag.glsl");
+    m_depth_linearize_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/depth_linearize_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/depth_linearize_frag.glsl");
+    m_bilateral_blur_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/bilateral_blur_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/bilateral_blur_frag.glsl");
 
-    m_equirectangular2cubemap_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/equirectangular2cubemap_frag.glsl");
-    m_radiance2irradiance_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/radiance2irradiance_frag.glsl");
-    m_prefilter_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/prefilter_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/prefilter_frag.glsl");
-    m_integrate_brdf_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/integrate_brdf_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/ibl/integrate_brdf_frag.glsl");
+    m_equirectangular2cubemap_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/equirectangular2cubemap_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/equirectangular2cubemap_frag.glsl");
+    m_radiance2irradiance_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/radiance2irradiance_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/radiance2irradiance_frag.glsl");
+    m_prefilter_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/prefilter_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/prefilter_frag.glsl");
+    m_integrate_brdf_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/integrate_brdf_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ibl/integrate_brdf_frag.glsl");
 }
 
 void Viewer::init_opengl(){

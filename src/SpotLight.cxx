@@ -32,7 +32,7 @@ void SpotLight::init_params(const configuru::Config& config ){
 }
 
 void SpotLight::init_opengl(){
-    m_shadow_map_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/shadow_map_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/shadow_map_frag.glsl"  );
+    m_shadow_map_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/shadow_map_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/shadow_map_frag.glsl"  );
 }
 
 void SpotLight::set_power_for_point(const Eigen::Vector3f& point, const float power){

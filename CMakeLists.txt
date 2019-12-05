@@ -276,6 +276,7 @@ pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
 # set_target_properties(easypbr PROPERTIES SKIP_BUILD_RPATH FALSE)
 set_target_properties(easypbr PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 # message("--------origin-----------$ORIGIN", ${ORIGIN})
+message("--------SHADERS_PATH-----------------------------", ${EASYPBR_SHADERS_PATH})
 if(UNIX AND NOT APPLE)
     # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/relative/path/to/supporting/library_dir")
     set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/")
@@ -307,6 +308,7 @@ target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOU
 target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
+target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${EASYPBR_SHADERS_PATH}")
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 

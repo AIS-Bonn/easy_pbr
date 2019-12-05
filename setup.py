@@ -9,6 +9,10 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 from distutils.command.install_headers import install_headers as install_headers_orig
 from setuptools import setup
+from distutils.sysconfig import get_python_inc
+
+BUILD_PATH = os.path.join(os.getcwd(), 'python', 'cpp_build')
+INSTALL_PATH = os.path.join(os.getcwd(), 'python', 'stillleben')
 
 
 class CMakeExtension(Extension):
@@ -36,7 +40,9 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable,
+                      '-GNinja'
+                      ]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -56,6 +62,13 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         # print ("build temp is ", self.build_temp)
+
+        #find out where do the header file and the shader files get copied into https://stackoverflow.com/questions/14375222/find-python-header-path-from-within-python
+        print("PRINTING-------------------------------------------------")
+        print( get_python_inc() ) #this gives the include dir
+        cmake_args+=['-DEASYPBR_SHADERS_PATH=' + get_python_inc()+"/easypbr"]
+
+
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
         # subprocess.check_call(['make', 'install'], cwd=self.build_temp)
@@ -75,8 +88,14 @@ class install_headers(install_headers_orig):
             (out, _) = self.copy_file(header, dst)
             self.outfiles.append(out)
 
+def has_any_extension(filename, extensions):
+    for each in extensions:
+        if filename.endswith(each):
+            return True
+    return False
+
 # https://stackoverflow.com/a/41031566
-def find_headers(directory, strip):
+def find_files(directory, strip, extensions):
     """
     Using glob patterns in ``package_data`` that matches a directory can
     result in setuptools trying to install that directory as a file and
@@ -85,12 +104,15 @@ def find_headers(directory, strip):
     This function walks over the contents of *directory* and returns a list
     of only filenames found. The filenames will be stripped of the *strip*
     directory part.
+
+    It only takes file that have a certain extension
     """
 
     result = []
     for root, dirs, files in os.walk(directory):
         for filename in files:
-            if filename.endswith('.h') or filename.endswith('.hpp') or filename.endswith('.cuh'):
+            # if filename.endswith('.h') or filename.endswith('.hpp') or filename.endswith('.cuh'):
+            if has_any_extension(filename, extensions):
                 # print("filename", filename)
                 filename = os.path.join(root, filename)
                 result.append(os.path.relpath(filename, strip))
@@ -123,8 +145,11 @@ setup(
     # include_package_data=True,
     # headers=['shaders/render/compose_frag.glsl', 'include/easy_pbr/LabelMngr.h'],
     # headers=['include/easy_pbr/LabelMngr.h'],
-    headers=find_headers('include/easy_pbr/',""),
+    headers=find_files('include/easy_pbr/',"", [".h", ".hpp", ".hh", "cuh" ] ) + find_files('shaders/ibl/',"", [".glsl"]) + find_files('shaders/render/',"", [".glsl"]) + find_files('shaders/ssao/',"", [".glsl"] ),
+    # headers=find_headers('shaders/ibl/',"", [".glsl"] ),
+    # headers=find_headers('shaders/render/',"", [".glsl"] ),
+    # headers=find_headers('shaders/ssao/',"", [".glsl"] ),
     # cmdclass={'install_headers': install_headers},
 )
 
-print("copied headers ", find_headers('include/easy_pbr/',""))
+print("copied headers ", find_files('include/easy_pbr/',"", [".h", ".hpp", ".hh", "cuh" ] ) )
