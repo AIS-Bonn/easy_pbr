@@ -15,6 +15,31 @@ set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in 
 # set(FETCHCONTENT_QUIET NO)
 
 
+# #making the required libraries to always be found independant of the install location https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+# # use, i.e. don't skip the full RPATH for the build tree
+# SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+# # when building, don't use the install RPATH already
+# # (but later on when installing)
+# SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+# SET(CMAKE_INSTALL_RPATH "./")
+
+# # add the automatically determined parts of the RPATH
+# # which point to directories outside the build tree to the install RPATH
+# SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+# # the RPATH to be used when installing, but only if it's not a system directory
+# LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+# IF("${isSystemDir}" STREQUAL "-1")
+#    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# ENDIF("${isSystemDir}" STREQUAL "-1")
+
+
+
+
+
 ####   GLOBAL OPTIONS   ###https://stackoverflow.com/questions/15201064/cmake-conditional-preprocessor-define-on-code
 option(CORE_WITH_VIEWER "Use a GL viewer, or if we don't have it available we will still publish to RViz" ON)
 option(CORE_WITH_HALIDE "Compile Halide" OFF)
@@ -246,6 +271,19 @@ add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGU
 
 ##pybind
 pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
+#pybind with a supporting shared library https://github.com/pybind/cmake_example/issues/11
+# set_target_properties(easypbr PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+# set_target_properties(easypbr PROPERTIES SKIP_BUILD_RPATH FALSE)
+set_target_properties(easypbr PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+# message("--------origin-----------$ORIGIN", ${ORIGIN})
+if(UNIX AND NOT APPLE)
+    # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/relative/path/to/supporting/library_dir")
+    set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/")
+elseif(APPLE)
+    # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/relative/path/to/supporting/library_dir")
+    set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/")
+endif()
+set_target_properties(easypbr PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ###   EXECUTABLE   #######################################
 add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
@@ -270,6 +308,7 @@ target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_
 target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
+
 
 #install the libraries in a default search path
 # message("INSTALLING IN " ${CMAKE_INSTALL_LIBDIR})

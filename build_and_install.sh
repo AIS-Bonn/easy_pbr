@@ -1,7 +1,11 @@
 #!/bin/bash
 
 #https://grokbase.com/t/python/distutils-sig/103351xenv/distutils-installing-header-files-with-setuptools
-python setup.py install --user --single-version-externally-managed --record=record.txt
+#this instalation works and it can run with differnt python files that call the easypbr
+#however it cannot be disinstalled with pip uninstalla and the header file are left lingering
+# python setup.py install --user --single-version-externally-managed --record=record.txt
 
 # https://stackoverflow.com/questions/50101740/install-header-only-library-with-python
-# python3 -m pip install --user ./
+#installs correclty and can also be deinstalled completely with pip uninstall
+#however it doesnt find  the libeasypbr_cpp.so so wwe might need to set some rpaths in cmake
+python3 -m pip install --user ./ -v

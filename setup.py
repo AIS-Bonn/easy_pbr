@@ -75,6 +75,31 @@ class install_headers(install_headers_orig):
             (out, _) = self.copy_file(header, dst)
             self.outfiles.append(out)
 
+# https://stackoverflow.com/a/41031566
+def find_headers(directory, strip):
+    """
+    Using glob patterns in ``package_data`` that matches a directory can
+    result in setuptools trying to install that directory as a file and
+    the installation to fail.
+
+    This function walks over the contents of *directory* and returns a list
+    of only filenames found. The filenames will be stripped of the *strip*
+    directory part.
+    """
+
+    result = []
+    for root, dirs, files in os.walk(directory):
+        for filename in files:
+            if filename.endswith('.h') or filename.endswith('.hpp') or filename.endswith('.cuh'):
+                # print("filename", filename)
+                filename = os.path.join(root, filename)
+                result.append(os.path.relpath(filename, strip))
+
+    # print("result of find_files is ", result)
+
+    return result
+    # return 'include/easy_pbr/LabelMngr.h'
+
 setup(
     name='easypbr',
     version='1.0.0',
@@ -97,6 +122,9 @@ setup(
     # },
     # include_package_data=True,
     # headers=['shaders/render/compose_frag.glsl', 'include/easy_pbr/LabelMngr.h'],
-    headers=['include/easy_pbr/LabelMngr.h'],
+    # headers=['include/easy_pbr/LabelMngr.h'],
+    headers=find_headers('include/easy_pbr/',""),
     # cmdclass={'install_headers': install_headers},
 )
+
+print("copied headers ", find_headers('include/easy_pbr/',""))
