@@ -16,6 +16,12 @@
 //c++
 #include <iostream>
 #include <iomanip> // setprecision
+// #include <experimental/filesystem>
+
+//boost
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+		
 
 //My stuff
 #include "Profiler.h"
@@ -89,11 +95,19 @@ Gui::Gui( const std::string config_file,
     float font_size=13;
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    io.Fonts->AddFontFromFileTTF(PROGGY_DIR, font_size * m_hidpi_scaling);
+    std::string proggy_font_file=std::string(DATA_DIR)+"/data/fonts/ProggyClean.ttf";
+    if ( !fs::exists(proggy_font_file) ){
+        LOG(FATAL) << "Couldn't find " << proggy_font_file;
+    }
+    io.Fonts->AddFontFromFileTTF(proggy_font_file.c_str(), font_size * m_hidpi_scaling);
     ImFontConfig config;
     config.MergeMode = true;
     const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    io.Fonts->AddFontFromFileTTF(AWESOMEFONT_DIR, 13.0f*m_hidpi_scaling, &config, icon_ranges );
+    std::string awesome_font_file=std::string(DATA_DIR)+"/data/fonts/ProggyClean.ttf";
+    if ( !fs::exists(awesome_font_file) ){
+        LOG(FATAL) << "Couldn't find " << awesome_font_file;
+    }
+    io.Fonts->AddFontFromFileTTF(awesome_font_file.c_str(), 13.0f*m_hidpi_scaling, &config, icon_ranges );
     io.Fonts->Build();
     //io.FontGlobalScale = 1.0 / pixel_ratio;
     ImGuiStyle *style = &ImGui::GetStyle();

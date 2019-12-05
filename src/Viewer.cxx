@@ -249,7 +249,7 @@ void Viewer::compile_shaders(){
     m_draw_lines_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/lines_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/lines_frag.glsl"  );
     m_draw_mesh_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/mesh_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/mesh_frag.glsl"  );
     m_draw_wireframe_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/wireframe_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/wireframe_frag.glsl"  );
-    m_draw_surfels_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_frag.glsl" , std::string(PROJECT_SOURCE_DIR)+"/shaders/render/surfels_geom.glsl" );
+    m_draw_surfels_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_frag.glsl" , std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/surfels_geom.glsl" );
     m_compose_final_quad_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/compose_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/render/compose_frag.glsl"  );
 
     m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/ao_pass_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/shaders/ssao/ao_pass_frag.glsl" );

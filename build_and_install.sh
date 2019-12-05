@@ -9,4 +9,5 @@
 #installs correclty and can also be deinstalled completely with pip uninstall
 #however it doesnt find  the libeasypbr_cpp.so so wwe might need to set some rpaths in cmake
 # python3 -m pip install --user ./ -v
-python3 -m pip install --user ./ -v
+# python3 -m pip install --progress-bar pretty -vvv --prefix=$HOME/local ./ 
+python3 -m pip install --user -v  ./ 

@@ -6,7 +6,7 @@ project(easypbr)
 include(FetchContent)
 
 ###   VARIABLES   ##############################################################
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread -Wall -O3") #we need c++17 because this solves alignment issues with eigen http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1409
 # set(PYTORCH_PATH "/opt/pytorch")
@@ -35,6 +35,18 @@ set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in 
 # IF("${isSystemDir}" STREQUAL "-1")
 #    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # ENDIF("${isSystemDir}" STREQUAL "-1")
+
+
+# ninja is cool, but suppresses color output
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+if(${CMAKE_GENERATOR} STREQUAL "Ninja")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+       add_compile_options(-fdiagnostics-color=always)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       add_compile_options(-fcolor-diagnostics)
+    endif()
+endif()
+
 
 
 
@@ -306,8 +318,9 @@ target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
 #definitions for cmake variables that are necesarry during runtime
 target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
-target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
-target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
+# target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
+# target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
+ target_compile_definitions(easypbr_cpp PRIVATE DATA_DIR="${DATA_DIR}")
 target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${EASYPBR_SHADERS_PATH}")
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
@@ -317,5 +330,18 @@ target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 # install(TARGETS easypbr DESTINATION ${CMAKE_INSTALL_LIBDIR})
 # install(TARGETS easypbr_cpp DESTINATION ${CMAKE_INSTALL_LIBDIR})
 # install(TARGETS run_easypbr DESTINATION bin)
+
+
+install(TARGETS easypbr
+    LIBRARY DESTINATION lib
+)
+install(TARGETS easypbr_cpp
+    LIBRARY DESTINATION lib
+)
+install(DIRECTORY
+    include/easy_pbr/
+    DESTINATION include/easy_pbr
+)
+
 
 
