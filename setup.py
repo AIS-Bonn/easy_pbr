@@ -7,6 +7,8 @@ import subprocess
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+from distutils.command.install_headers import install_headers as install_headers_orig
+from setuptools import setup
 
 
 class CMakeExtension(Extension):
@@ -62,6 +64,17 @@ class CMakeBuild(build_ext):
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+#install headers while retaining the structure of the tree folder https://stackoverflow.com/a/50114715
+class install_headers(install_headers_orig):
+
+    def run(self):
+        headers = self.distribution.headers or []
+        for header in headers:
+            dst = os.path.join(self.install_dir, os.path.dirname(header))
+            self.mkpath(dst)
+            (out, _) = self.copy_file(header, dst)
+            self.outfiles.append(out)
+
 setup(
     name='easypbr',
     version='1.0.0',
@@ -70,13 +83,20 @@ setup(
     description="Physically based rendering made easy",
     long_description=long_description,
     ext_modules=[CMakeExtension('easypbr')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    # cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass={ 'build_ext':CMakeBuild,
+               'install_headers': install_headers,
+    },
     zip_safe=False,
     # packages=['.'],
     # package_dir={'': '.'},
     # package_data={'': ['*.so']},
     # package_data={
-    #   'easypbr': ['*.*'],
+    #   'easypbr': ['*.txt'],
+    #   'easypbr': ['shaders/render/*.glsl'],
     # },
     # include_package_data=True,
+    # headers=['shaders/render/compose_frag.glsl', 'include/easy_pbr/LabelMngr.h'],
+    headers=['include/easy_pbr/LabelMngr.h'],
+    # cmdclass={'install_headers': install_headers},
 )
