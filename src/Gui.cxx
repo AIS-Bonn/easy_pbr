@@ -696,7 +696,7 @@ void Gui::draw_label_mngr_legend(){
 
             ImVec2 canvas_size = ImGui::GetIO().DisplaySize;
 
-            ImGuiWindowFlags window_flags = 0;
+            // ImGuiWindowFlags window_flags = 0;
             // ImVec2 size=ImVec2(canvas_size.x*0.5-260, canvas_size.y*0.11);
             ImVec2 size=ImVec2(canvas_size.x*0.5-210, canvas_size.y*0.11);
             ImGui::SetNextWindowSize(size, ImGuiCond_Always);

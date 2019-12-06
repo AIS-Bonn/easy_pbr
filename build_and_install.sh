@@ -10,4 +10,11 @@
 #however it doesnt find  the libeasypbr_cpp.so so wwe might need to set some rpaths in cmake
 # python3 -m pip install --user ./ -v
 # python3 -m pip install --progress-bar pretty -vvv --prefix=$HOME/local ./ 
-python3 -m pip install --user -v  ./ 
+
+
+
+python3 -m pip install -v  --user --editable ./ 
+#https://github.com/pypa/pip/issues/3246
+#python3 -m pip install -v --editable ./ 
+
+# python setup.py develop --user  --install-dir=./lib --build-directory=./build

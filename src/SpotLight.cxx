@@ -9,12 +9,13 @@
 #include "easy_pbr/Mesh.h"
 
 
-SpotLight::SpotLight(const configuru::Config& config)
+SpotLight::SpotLight(const configuru::Config& config):
     // m_fov_x(90),
     // m_fov_y(90),
     // m_fov(90),
     // m_near(0.01)
     // m_far(5000)
+    m_power(0)
 {
     init_params(config);
 

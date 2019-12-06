@@ -292,7 +292,7 @@ void Mesh::load_from_file(const std::string file_path){
 
         bool has_rgb=false;
         bool has_intensity=false;
-        for(int i=0; i<cloud_blob.fields.size(); i++){
+        for(size_t i=0; i<cloud_blob.fields.size(); i++){
             if(cloud_blob.fields[i].name=="rgb"){
                 has_rgb=true;
             }
@@ -598,7 +598,7 @@ void Mesh::decimate(const int nr_target_faces){
     // delete degenerate faces
     std::vector<bool> is_face_degenerate(F.rows(),false);
     double eps=1e-5;
-    for (size_t i = 0; i < F.rows(); i++) {
+    for (int i = 0; i < F.rows(); i++) {
         double dif_0= (V.row(F(i,0)) - V.row(F(i,1))).norm();
         double dif_1= (V.row(F(i,1)) - V.row(F(i,2))).norm();
         double dif_2= (V.row(F(i,2)) - V.row(F(i,0))).norm();
@@ -621,7 +621,7 @@ void Mesh::decimate(const int nr_target_faces){
         igl::connect_boundary_to_infinity(V, F, mesh_connected_to_infinity.V, mesh_connected_to_infinity.F);
         is_edge_manifold=compute_non_manifold_edges(is_face_non_manifold, is_vertex_non_manifold,  mesh_connected_to_infinity.F);
         std::vector<bool> is_vertex_non_manifold_original_mesh(V.rows());
-        for (size_t i = 0; i < V.rows(); i++) {
+        for (int i = 0; i < V.rows(); i++) {
             is_vertex_non_manifold_original_mesh[i]=is_vertex_non_manifold[i];
         }
         std::cout << "is_edge_manifold is " << is_edge_manifold << '\n';
@@ -1018,7 +1018,7 @@ void Mesh::color_connected_components(){
 
     Eigen::VectorXd colors_per_components;
     colors_per_components.resize(nr_components,3);
-    for (size_t i = 0; i < nr_components; i++) {
+    for (int i = 0; i < nr_components; i++) {
         Eigen::Vector3d color=random_color(m_rand_gen);
         colors_per_components(i,0)=color(0);
         colors_per_components(i,1)=color(1);
@@ -1035,7 +1035,7 @@ void Mesh::color_connected_components(){
     std::vector<std::vector<int>> v2fi;
     igl::vertex_triangle_adjacency(V.rows(), F, v2f, v2fi);
 
-    for (size_t i = 0; i < F.rows(); i++) {
+    for (int i = 0; i < F.rows(); i++) {
         int idx_v=F(i,0); //grab the first one, it doesn't really matter
         for (size_t f = 0; f < v2f[idx_v].size(); f++) {
             int idx_F=v2f[idx_v][f];
@@ -1047,7 +1047,7 @@ void Mesh::color_connected_components(){
 
     //assign the colors per vertex because for some reason assigning them for each face doesn't make them show...
     C.resize(V.rows(),3);
-    for (size_t i = 0; i < F.rows(); i++) {
+    for (int i = 0; i < F.rows(); i++) {
         for (size_t v = 0; v < 3; v++) {
             int idx_v=F(i,v);
             C.row(idx_v)=C_per_f.row(i);
@@ -1077,8 +1077,8 @@ void Mesh::remove_small_uv_charts(){
     }
 
     //the small components set their corresponding faces to 0
-    int min_nr_trigs=50;
-    for (size_t i = 0; i < nr_components; i++) {
+    size_t min_nr_trigs=50;
+    for (int i = 0; i < nr_components; i++) {
         if(tris_idxs_per_comp[i].size()<min_nr_trigs){
             //all the faces from this component set their respective uv coords and V coords to 0 so the animation doesn't show for them
             for (size_t f = 0; f < tris_idxs_per_comp[i].size(); f++) {
@@ -1137,7 +1137,7 @@ void Mesh::to_image(Eigen::Affine3d tf_world_vel) {
     V_alg_frame.setZero();
     // Eigen::Affine3d tf_alg_currframe=tf_currframe_alg.inverse(); //this now goes from the current frame to the algorithm frame
     Eigen::Affine3d tf_alg_world = tf_alg_vel * tf_world_vel.inverse(); //now goes from world to the velodyne frame and then from the velodyne to the algorithm frame
-    for (size_t i = 0; i < V.rows(); i++) {
+    for (int i = 0; i < V.rows(); i++) {
         if(!V.row(i).isZero()){
             V_alg_frame.row(i)=tf_alg_world.linear()*V.row(i).transpose() + tf_alg_world.translation();  //mapping from the current frame to the algorithm one
         }
@@ -1247,7 +1247,7 @@ void Mesh::restrict_around_azimuthal_angle(const float angle, const float range)
     V_alg_frame.setZero();
     // Eigen::Affine3d tf_alg_currframe=tf_currframe_alg.inverse(); //this now goes from the current frame to the algorithm frame
     Eigen::Affine3d tf_alg_world = tf_alg_vel * m_cur_pose.inverse(); //now goes from world to the velodyne frame and then from the velodyne to the algorithm frame
-    for (size_t i = 0; i < V.rows(); i++) {
+    for (int i = 0; i < V.rows(); i++) {
         if(!V.row(i).isZero()){
             V_alg_frame.row(i)=tf_alg_world.linear()*V.row(i).transpose() + tf_alg_world.translation();  //mapping from the current frame to the algorithm one
         }
@@ -1326,7 +1326,7 @@ Mesh Mesh::interpolate(const Mesh& target_mesh, const float factor){
     Mesh new_mesh;
     new_mesh.add(*this);
 
-    for (size_t i = 0; i < V.rows(); i++) {
+    for (int i = 0; i < V.rows(); i++) {
         new_mesh.V.row(i)=V.row(i).array()*(1-factor) + target_mesh.V.row(i).array()*factor;
     }
 
@@ -1436,7 +1436,7 @@ void Mesh::read_ply(const std::string file_path){
     // type casting to your own native types - Option B
     typedef Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXuc;
     typedef Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXf;
-    typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXd;
+    // typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXd;
     typedef Eigen::Matrix<unsigned,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXi;
 
     //parse data
@@ -1654,7 +1654,7 @@ void Mesh::read_obj(const std::string file_path){
     if (has_tex_coords) { UV.resize(vertices.size(),2); };
     if (has_colors) { C.resize(vertices.size(),3); };
 
-    for(int i=0; i<vertices.size(); i++){
+    for(size_t i=0; i<vertices.size(); i++){
         V.row(i) = vertices[i].pos;
         if (has_normals) { NV.row(i) = vertices[i].normal; }
         if (has_tex_coords) { UV.row(i) = vertices[i].tex_coord; }
@@ -1662,7 +1662,7 @@ void Mesh::read_obj(const std::string file_path){
     }
 
     F.resize(indices.size()/3, 3);
-    for(int i=0; i<indices.size()/3; i++){
+    for(size_t i=0; i<indices.size()/3; i++){
         F.row(i) << indices[3*i+0], indices[3*i+1], indices[3*i+2];
     }
 

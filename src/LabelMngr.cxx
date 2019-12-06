@@ -208,7 +208,7 @@ void LabelMngr::compact(const std::string label_to_remove){
     new_nr_classes=0;
     // m_idx_uncompacted2idx_compacted.resize(m_nr_classes, -1);
     m_idx_uncompacted2idx_compacted.resize(m_nr_classes, m_unlabeled_idx);
-    for(int i=0; i<m_idx2label.size(); i++){
+    for(size_t i=0; i<m_idx2label.size(); i++){
         std::string label=m_idx2label[i];
         if(label!=label_to_remove){
             new_idx2label.push_back(label);
@@ -227,7 +227,7 @@ void LabelMngr::compact(const std::string label_to_remove){
     new_frequency_per_class.resize(new_nr_classes);
     new_frequency_per_class.setZero();
     int valid_class_idx=0;
-    for(int i=0; i<m_idx2label.size(); i++){
+    for(size_t i=0; i<m_idx2label.size(); i++){
         std::string label=m_idx2label[i];
         if(label!=label_to_remove){
             new_C_per_class.row(valid_class_idx)=m_C_per_class.row(i);
@@ -278,8 +278,8 @@ void LabelMngr::reindex_into_uncompacted_labels(Eigen::MatrixXi& labels_indices)
 cv::Mat LabelMngr::apply_color_map(cv::Mat classes){
     CHECK(m_nr_classes!=-1) << "The label mngr has not been initialized yet. Please use LabelMngr.init() first.";
     cv::Mat classes_colored(classes.rows, classes.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-    for (size_t i = 0; i < classes.rows; i++) {
-        for (size_t j = 0; j < classes.cols; j++) {
+    for (int i = 0; i < classes.rows; i++) {
+        for (int j = 0; j < classes.cols; j++) {
             int label=(int)classes.at<unsigned char>(i,j);
             classes_colored.at<cv::Vec3b>(i,j)[0]=m_C_per_class(label,2)*255; //remember opencv is BGR so we put the B first
             classes_colored.at<cv::Vec3b>(i,j)[1]=m_C_per_class(label,1)*255; //remember opencv is BGR so we put the B first

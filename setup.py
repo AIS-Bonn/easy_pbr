@@ -63,17 +63,17 @@ class CMakeBuild(build_ext):
         # print ("build temp is ", self.build_temp)
 
         #find out where do the header file and the shader files get copied into https://stackoverflow.com/questions/14375222/find-python-header-path-from-within-python
-        print("PRINTING-------------------------------------------------")
-        print( get_python_inc() ) #this gives the include dir
-        print( site.USER_BASE )  # data files that are added through data_files=[] get added here for --user instaltions https://docs.python.org/3/distutils/setupscript.html
+        # print("PRINTING-------------------------------------------------")
+        # print( get_python_inc() ) #this gives the include dir
+        # print( site.USER_BASE )  # data files that are added through data_files=[] get added here for --user instaltions https://docs.python.org/3/distutils/setupscript.html
         # pkg_dir, dist = self.create_dist(headers="dummy_header")
         # dummy_install_headers=install_headers_orig(dist=dist)
         # help(install_headers_orig)
-        dummy_install_headers=install_headers_orig(self.distribution)
-        print( dummy_install_headers.install_dir ) #this gives the include dir
+        # dummy_install_headers=install_headers_orig(self.distribution)
+        # print( dummy_install_headers.install_dir ) #this gives the include dir
         # cmake_args+=['-DEASYPBR_SHADERS_PATH=' + get_python_inc()+"/easypbr"]
-        cmake_args+=['-DEASYPBR_SHADERS_PATH=' + site.USER_BASE]
-        cmake_args+=['-DDATA_DIR=' + site.USER_BASE]
+        # cmake_args+=['-DEASYPBR_SHADERS_PATH=' + site.USER_BASE]
+        # cmake_args+=['-DDATA_DIR=' + site.USER_BASE]
 
 
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
@@ -159,12 +159,12 @@ setup(
     # headers=['shaders/render/compose_frag.glsl', 'include/easy_pbr/LabelMngr.h'],
     # headers=['include/easy_pbr/LabelMngr.h'],
     # headers=find_files('include/easy_pbr/',"", [".h", ".hpp", ".hh", "cuh" ] ) + find_files('shaders/ibl/',"", [".glsl"]) + find_files('shaders/render/',"", [".glsl"]) + find_files('shaders/ssao/',"", [".glsl"] ),
-    data_files=[
-                ('shaders/ibl/', glob.glob('shaders/ibl/*.glsl') ),
-                ('shaders/render/', glob.glob('shaders/render/*.glsl') ),
-                ('shaders/ssao/', glob.glob('shaders/ssao/*.glsl') ),
-                ('data/fonts/', glob.glob('data/fonts/*.*') )
-                  ],
+    # data_files=[
+    #             ('shaders/ibl/', glob.glob('shaders/ibl/*.glsl') ),
+    #             ('shaders/render/', glob.glob('shaders/render/*.glsl') ),
+    #             ('shaders/ssao/', glob.glob('shaders/ssao/*.glsl') ),
+    #             ('data/fonts/', glob.glob('data/fonts/*.*') )
+    #               ],
     # headers=find_headers('shaders/ibl/',"", [".glsl"] ),
     # headers=find_headers('shaders/render/',"", [".glsl"] ),
     # headers=find_headers('shaders/ssao/',"", [".glsl"] ),

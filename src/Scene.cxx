@@ -161,7 +161,7 @@ void Scene::remove_meshes_starting_with_name(const std::string name_prefix){
 
     std::vector< std::shared_ptr<Mesh> > meshes_filtered;
 
-    for(int i=0; i<m_meshes.size(); i++){
+    for(size_t i=0; i<m_meshes.size(); i++){
         VLOG(1) << "checking mesh with name " << m_meshes[i]->name;
         if(! m_meshes[i]->name.find(name_prefix, 0) == 0){
             VLOG(1) << "Keeping mesh " << m_meshes[i]->name;
@@ -244,7 +244,7 @@ float Scene::get_scale(){
     //absolute minimum between all meshes
     Eigen::Vector3d min_point = min_point_per_mesh.colwise().minCoeff(); 
     Eigen::Vector3d max_point = max_point_per_mesh.colwise().maxCoeff();
-    Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
+    // Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
     // VLOG(1) << "min_point " << min_point.transpose();
     // VLOG(1) << "max_point " << max_point.transpose();

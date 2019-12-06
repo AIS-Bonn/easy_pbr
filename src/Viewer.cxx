@@ -333,6 +333,7 @@ void Viewer::init_opengl(){
     }
 
 
+
     //initialize a cubemap 
     integrate_brdf(m_brdf_lut_tex); //we leave it outside the if because when we drag some hdr map into the viewer we don't want to integrate the brdf every time
     if(m_enable_ibl){
@@ -481,7 +482,7 @@ void Viewer::pre_draw(){
         ImGui::NewFrame();
     }
 
-    for(int i=0; i<m_callbacks_pre_draw.size(); i++){
+    for(size_t i=0; i<m_callbacks_pre_draw.size(); i++){
         m_callbacks_pre_draw[i](*this);
     }
 
@@ -490,7 +491,7 @@ void Viewer::pre_draw(){
 void Viewer::post_draw(){
 
     //call any callbacks before we finish the imgui frame so the callbacks have a chance to insert some imgui code
-    for(int i=0; i<m_callbacks_post_draw.size(); i++){
+    for(size_t i=0; i<m_callbacks_post_draw.size(); i++){
         m_callbacks_post_draw[i](*this);
     }
 
@@ -557,7 +558,7 @@ void Viewer::draw(const GLuint fbo_id){
 
     TIME_START("shadow_pass");
     //loop through all the light and each mesh into their shadow maps as a depth map
-    for(int l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
+    for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
         if(m_spot_lights[l_idx]->m_create_shadow){
             m_spot_lights[l_idx]->clear_shadow_map();
 
@@ -1425,7 +1426,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
     //fill up the vector of spot lights 
     m_compose_final_quad_shader.uniform_int(m_spot_lights.size(), "nr_active_spot_lights");
-    for(int i=0; i<m_spot_lights.size(); i++){
+    for(size_t i=0; i<m_spot_lights.size(); i++){
 
         Eigen::Matrix4f V_light = m_spot_lights[i]->view_matrix();
         Eigen::Vector2f viewport_size_light;
@@ -1489,16 +1490,16 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
-cv::Mat Viewer::download_to_cv_mat(){
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
-    // int w=m_viewport_size.x()*m_subsample_factor;
-    // int h=m_viewport_size.y()*m_subsample_factor;
-    // cv::Mat cv_mat(h, w, CV_8UC4);
-    // glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, cv_mat.data);
-    // cv::Mat cv_mat_flipped;
-    // cv::flip(cv_mat, cv_mat_flipped, 0);
-    // return cv_mat_flipped;
-}
+// cv::Mat Viewer::download_to_cv_mat(){
+//     // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+//     // int w=m_viewport_size.x()*m_subsample_factor;
+//     // int h=m_viewport_size.y()*m_subsample_factor;
+//     // cv::Mat cv_mat(h, w, CV_8UC4);
+//     // glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, cv_mat.data);
+//     // cv::Mat cv_mat_flipped;
+//     // cv::flip(cv_mat, cv_mat_flipped, 0);
+//     // return cv_mat_flipped;
+// }
 
 // Eigen::Matrix4f Viewer::compute_mvp_matrix(const MeshGLSharedPtr& mesh){
 //     Eigen::Matrix4f M,V,P, MVP;
@@ -1745,7 +1746,7 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     shader.uniform_int(m_environment_cubemap_resolution, "radiance_cubemap_resolution");
 
     int mip_lvls=m_prefilter_cubemap_tex.mipmap_nr_lvls();
-    for (unsigned int mip = 0; mip < mip_lvls; ++mip){
+    for (int mip = 0; mip < mip_lvls; ++mip){
         // reisze viewport according to mip-level size.
         Eigen::Vector2f viewport_size;
         viewport_size<< m_prefilter_cubemap_resolution * std::pow(0.5, mip), m_prefilter_cubemap_resolution * std::pow(0.5, mip);
@@ -1835,7 +1836,7 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
     else{
         m_camera->mouse_released(mb,modifier);
         if(m_lights_follow_camera && m_camera==m_default_camera){
-            for(int i=0; i<m_spot_lights.size(); i++){
+            for(size_t i=0; i<m_spot_lights.size(); i++){
                 m_spot_lights[i]->mouse_released(mb,modifier);
             }
         }
@@ -1846,7 +1847,7 @@ void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
     m_camera->mouse_move(x, y, m_viewport_size );
     //only move if we are controlling the main camera and only if we rotating
     if(m_lights_follow_camera && m_camera==m_default_camera && m_camera->mouse_mode==Camera::MouseMode::Rotation){
-        for(int i=0; i<m_spot_lights.size(); i++){
+        for(size_t i=0; i<m_spot_lights.size(); i++){
             m_spot_lights[i]->mouse_move(x, y, m_viewport_size );
         }
     }

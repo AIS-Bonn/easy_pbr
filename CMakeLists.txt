@@ -320,8 +320,13 @@ target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOU
 target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 # target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 # target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
- target_compile_definitions(easypbr_cpp PRIVATE DATA_DIR="${DATA_DIR}")
-target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${EASYPBR_SHADERS_PATH}")
+
+#  target_compile_definitions(easypbr_cpp PRIVATE DATA_DIR="${DATA_DIR}")
+# target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${EASYPBR_SHADERS_PATH}")
+
+target_compile_definitions(easypbr_cpp PRIVATE DATA_DIR="${PROJECT_SOURCE_DIR}")
+target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${PROJECT_SOURCE_DIR}")
+
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
@@ -332,16 +337,16 @@ target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 # install(TARGETS run_easypbr DESTINATION bin)
 
 
-install(TARGETS easypbr
-    LIBRARY DESTINATION lib
-)
-install(TARGETS easypbr_cpp
-    LIBRARY DESTINATION lib
-)
-install(DIRECTORY
-    include/easy_pbr/
-    DESTINATION include/easy_pbr
-)
+# install(TARGETS easypbr
+#     LIBRARY DESTINATION lib
+# )
+# install(TARGETS easypbr_cpp
+#     LIBRARY DESTINATION lib
+# )
+# install(DIRECTORY
+#     include/easy_pbr/
+#     DESTINATION include/easy_pbr
+# )
 
 
 
