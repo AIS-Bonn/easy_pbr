@@ -95,7 +95,7 @@ Gui::Gui( const std::string config_file,
     float font_size=13;
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    std::string proggy_font_file=std::string(DATA_DIR)+"/data/fonts/ProggyClean.ttf";
+    std::string proggy_font_file=std::string(DATA_DIR)+"/fonts/ProggyClean.ttf";
     if ( !fs::exists(proggy_font_file) ){
         LOG(FATAL) << "Couldn't find " << proggy_font_file;
     }
@@ -103,7 +103,7 @@ Gui::Gui( const std::string config_file,
     ImFontConfig config;
     config.MergeMode = true;
     const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    std::string awesome_font_file=std::string(DATA_DIR)+"/data/fonts/ProggyClean.ttf";
+    std::string awesome_font_file=std::string(DATA_DIR)+"/fonts/ProggyClean.ttf";
     if ( !fs::exists(awesome_font_file) ){
         LOG(FATAL) << "Couldn't find " << awesome_font_file;
     }

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.6
 
-# import sys
 import os
 from easypbr  import *
 
