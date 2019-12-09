@@ -56,140 +56,36 @@ find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
 find_package(LIBIGL REQUIRED)
+find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 if(CORE_WITH_DIR_WATCHER)
     find_package(kqueue REQUIRED)
 endif()
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
-# FetchContent_Declare(
-#   imgui
-#   GIT_REPOSITORY https://github.com/ocornut/imgui
-#   GIT_TAG        v1.73
-# )
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
-# FetchContent_Declare(
-#   imguizmo
-#   GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
-#   GIT_TAG        ace44b6ddae5c9ee7e48d8e25589838ec40227fa
-# )
-# FetchContent_Declare(
-#   libigl
-#   GIT_REPOSITORY https://github.com/libigl/libigl.git
-#   GIT_TAG        v2.1.0
-# )
-# FetchContent_Declare(
-#   pybind11
-#   GIT_REPOSITORY https://github.com/pybind/pybind11.git
-#   GIT_TAG        v2.4.2
-# )
-# FetchContent_Declare(
-#   loguru
-#   GIT_REPOSITORY https://github.com/RaduAlexandru/loguru.git
-# )
-# FetchContent_Declare(
-#   configuru
-#   GIT_REPOSITORY https://github.com/RaduAlexandru/Configuru.git
-# )
-# FetchContent_Declare(
-#   better_enums
-#   GIT_REPOSITORY https://github.com/aantron/better-enums.git
-#   GIT_TAG        0.11.2
-# )
-# FetchContent_Declare(
-#   concurrent_queue
-#   GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
-#   GIT_TAG        cff1001582db67e357d5f77c31e73566003311f2
-# )
-# FetchContent_Declare(
-#   tiny_ply
-#   GIT_REPOSITORY https://github.com/ddiakopoulos/tinyply.git
-#   GIT_TAG        2.2
-# )
-# FetchContent_GetProperties(tiny_ply)
-# if(NOT tiny_ply_POPULATED)
-#   FetchContent_Populate(tiny_ply)
-# endif()
-# FetchContent_Declare(
-#   tiny_obj
-#   GIT_REPOSITORY https://github.com/syoyo/tinyobjloader
-#   GIT_TAG        v2.0.0-rc1 
-# )
-# FetchContent_GetProperties(tiny_obj)
-# if(NOT tiny_obj_POPULATED)
-#   FetchContent_Populate(tiny_obj)
-# endif()
-# FetchContent_Declare(
-#   utils
-#   GIT_REPOSITORY https://github.com/RaduAlexandru/utils.git
-# )
-# FetchContent_Declare(
-#   easy_gl
-#   GIT_REPOSITORY https://github.com/RaduAlexandru/EasyGL.git
-# )
-# # add_subdirectory( ${pybind11_SOURCE_DIR})
-# ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-# FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue  utils easy_gl)
+
+
 
 
 ###   INCLUDES   #########################################################
-set(PROJECT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include
-                        ${CMAKE_SOURCE_DIR}/extern
-                        ${CMAKE_SOURCE_DIR}/deps
-                        ${CMAKE_SOURCE_DIR}/deps/imgui
-                        ${CMAKE_SOURCE_DIR}/deps/imgui_ext
-                        ${CMAKE_SOURCE_DIR}/deps/imgui/examples/
-                        ${CMAKE_SOURCE_DIR}/deps/loguru
-                        ${CMAKE_SOURCE_DIR}/deps/configuru
-                        # ${CMAKE_SOURCE_DIR}/deps/dir_watcher
-                        ${CMAKE_SOURCE_DIR}/deps/easy_gl
-                        # ${CMAKE_SOURCE_DIR}/deps/EasyPytorch
-                        # ${CMAKE_SOURCE_DIR}/deps/EasyCuda
-                        # ${CMAKE_SOURCE_DIR}/deps/cv_lib
-                        ${CMAKE_SOURCE_DIR}/deps/configuru
-                        ${CMAKE_SOURCE_DIR}/deps/libigl/include
-                        ${CMAKE_SOURCE_DIR}/deps/better_enums
-                        ${CMAKE_SOURCE_DIR}/deps/imguizmo
-                        # ${CMAKE_SOURCE_DIR}/deps/tiny-process-library
-                        ${CMAKE_SOURCE_DIR}/deps/concurrent_queue
-                        # ${CMAKE_SOURCE_DIR}/deps/cnpy
-                        # ${CMAKE_SOURCE_DIR}/deps/json11
-                        ${CMAKE_SOURCE_DIR}/deps/pybind11/include
-                        # ${CMAKE_SOURCE_DIR}/deps/nanoflann/include
-                        # ${CMAKE_SOURCE_DIR}/deps/jitify
-                        ${CMAKE_SOURCE_DIR}/deps/tiny_ply/source
-                        ${CMAKE_SOURCE_DIR}/deps/tiny_obj
-                        ${CMAKE_SOURCE_DIR}/deps/utils/include
+set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+                        ${PROJECT_SOURCE_DIR}/extern
+                        ${PROJECT_SOURCE_DIR}/deps
+                        ${PROJECT_SOURCE_DIR}/deps/imgui
+                        ${PROJECT_SOURCE_DIR}/deps/imgui_ext
+                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
+                        ${PROJECT_SOURCE_DIR}/deps/loguru
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/libigl/include
+                        ${PROJECT_SOURCE_DIR}/deps/better_enums
+                        ${PROJECT_SOURCE_DIR}/deps/imguizmo
+                        ${PROJECT_SOURCE_DIR}/deps/concurrent_queue
+                        ${PROJECT_SOURCE_DIR}/deps/pybind11/include
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_obj
+                        ${PROJECT_SOURCE_DIR}/deps/utils/include
                         ) # Header folder
-# include_directories(${PROJECT_SOURCE_DIR}/include)
-# include_directories(${PROJECT_SOURCE_DIR}/extern)
-# include_directories(${PROJECT_SOURCE_DIR}/extern/khronos)
-# include_directories(${GLFW_INCLUDE_DIRS})
-# include_directories(${Boost_INCLUDE_DIRS})
-# include_directories(${EIGEN3_INCLUDE_DIR})
-# include_directories(${OpenCV_INCLUDE_DIR})
-# if(CORE_WITH_DIR_WATCHER)
-#     include_directories(${KQUEUE_INCLUDE_DIRS})
-# endif()
-# include_directories(${LIBIGL_INCLUDE_DIR})
-# include_directories(${pybind11_SOURCE_DIR}/include)
-# include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples )
-# include_directories(${imguizmo_SOURCE_DIR})
-# include_directories(${loguru_SOURCE_DIR})
-# include_directories(${configuru_SOURCE_DIR})
-# include_directories(${better_enums_SOURCE_DIR})
-# include_directories(${concurrent_queue_SOURCE_DIR})
-# include_directories(${tiny_ply_SOURCE_DIR}/source)
-# include_directories(${tiny_obj_SOURCE_DIR})
-# include_directories(${utils_SOURCE_DIR}/include)
-# include_directories(${easy_gl_SOURCE_DIR})
-# include_directories(${PCL_INCLUDE_DIRS})
-# include_directories(${PYTHON_INCLUDE_DIRS})
-# include_directories("/usr/include/python3.6m/")
-
-# link_directories(${PCL_LIBRARY_DIRS})
-# add_definitions(${PCL_DEFINITIONS})
-
-
 include_directories(${PROJECT_INCLUDE_DIR} )
 include_directories(${GLFW_INCLUDE_DIR})
 include_directories(${Boost_INCLUDE_DIR})
@@ -204,7 +100,6 @@ include_directories(${PCL_INCLUDE_DIRS})
 
 ###   SOURCES   #################################################################
 set(MY_SRC  
-    # ${PROJECT_SOURCE_DIR}/src/main.cxx
     ${PROJECT_SOURCE_DIR}/src/Viewer.cxx
     ${PROJECT_SOURCE_DIR}/src/Gui.cxx
     ${PROJECT_SOURCE_DIR}/src/Camera.cxx
@@ -214,10 +109,9 @@ set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
     ${PROJECT_SOURCE_DIR}/src/Scene.cxx
     ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
-    # ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx
 )
 # file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
-file(GLOB IMGUI_SRC ${CMAKE_SOURCE_DIR}/deps/imgui/*.c* ${CMAKE_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${CMAKE_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${CMAKE_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
+file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
 )
 #tinyply because libigl readPLY has a memory leak 
 set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
@@ -303,8 +197,8 @@ target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
 
 
 #definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+# target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+# target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
 # target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
 # target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
 
