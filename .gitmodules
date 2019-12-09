@@ -1,0 +1,42 @@
+[submodule "deps"]
+	path = deps
+	url = https://github.com/RaduAlexandru/imgui.git
+[submodule "deps/imgui"]
+	path = deps/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "deps/imguizmo"]
+	path = deps/imguizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "deps/libigl"]
+	path = deps/libigl
+	url = https://github.com/libigl/libigl.git
+[submodule "deps/pyind11"]
+	path = deps/pyind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "deps/loguru"]
+	path = deps/loguru
+	url = https://github.com/RaduAlexandru/loguru.git
+[submodule "deps/configuru"]
+	path = deps/configuru
+	url = https://github.com/RaduAlexandru/Configuru.git
+[submodule "deps/better_enums"]
+	path = deps/better_enums
+	url = https://github.com/aantron/better-enums.git
+[submodule "deps/concurrent_queue"]
+	path = deps/concurrent_queue
+	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "deps/tiny_ply"]
+	path = deps/tiny_ply
+	url = https://github.com/ddiakopoulos/tinyply.git
+[submodule "deps/tiny_obj"]
+	path = deps/tiny_obj
+	url = https://github.com/syoyo/tinyobjloader
+[submodule "deps/utils"]
+	path = deps/utils
+	url = https://github.com/RaduAlexandru/utils.git
+[submodule "deps/easy_gl"]
+	path = deps/easy_gl
+	url = https://github.com/RaduAlexandru/EasyGL.git
+[submodule "deps/pybind11"]
+	path = deps/pybind11
+	url = https://github.com/pybind/pybind11.git

@@ -13,7 +13,7 @@
 
 
 
-python3 -m pip install -v  --user --editable ./ 
+python3 -m pip install -v --user --editable ./ 
 #https://github.com/pypa/pip/issues/3246
 #python3 -m pip install -v --editable ./ 
 

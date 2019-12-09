@@ -1,54 +1,16 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR) # we need at least 3.11 because we use the FetchContent feature to manage dependencies and at least 3.14 because we use FetchContent_MakeAvailable
+# cmake_minimum_required(VERSION 3.14 FATAL_ERROR) # we need at least 3.11 because we use the FetchContent feature to manage dependencies and at least 3.14 because we use FetchContent_MakeAvailable
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR) # we need at least 3.11 because we use the FetchContent feature to manage dependencies and at least 3.14 because we use FetchContent_MakeAvailable
 
 project(easypbr)
 
 
-include(FetchContent)
+# include(FetchContent)
 
 ###   VARIABLES   ##############################################################
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread -Wall -O3") #we need c++17 because this solves alignment issues with eigen http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1409
-# set(PYTORCH_PATH "/opt/pytorch")
-# set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/ros/melodic/\;${PYTORCH_PATH}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -O3") #we need c++17 because this solves alignment issues with eigen http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1409
 set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in c++14 mode so we can use py:overload_cast
-# set(FETCHCONTENT_QUIET NO)
-
-
-# #making the required libraries to always be found independant of the install location https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-# # use, i.e. don't skip the full RPATH for the build tree
-# SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# # when building, don't use the install RPATH already
-# # (but later on when installing)
-# SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-# SET(CMAKE_INSTALL_RPATH "./")
-
-# # add the automatically determined parts of the RPATH
-# # which point to directories outside the build tree to the install RPATH
-# SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-
-# # the RPATH to be used when installing, but only if it's not a system directory
-# LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-# IF("${isSystemDir}" STREQUAL "-1")
-#    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# ENDIF("${isSystemDir}" STREQUAL "-1")
-
-
-# ninja is cool, but suppresses color output
-# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
-if(${CMAKE_GENERATOR} STREQUAL "Ninja")
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-       add_compile_options(-fdiagnostics-color=always)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-       add_compile_options(-fcolor-diagnostics)
-    endif()
-endif()
-
-
-
 
 
 
@@ -60,27 +22,7 @@ option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
 option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
-#setting a python version to 3.6 for pybind so that the bindings work in 3.6 https://github.com/pybind/pybind11/issues/748
-# set(PYTHON_VERSION 3.6 CACHE STRING "" FORCE)
-# unset(PYTHONINTERP_FOUND CACHE)
-# unset(PYTHON_EXECUTABLE CACHE)
-# unset(PYTHON_VERSION_STRING CACHE)
-# unset(PYTHON_VERSION_MAJOR CACHE)
-# unset(PYTHON_VERSION_MINOR CACHE)
-# unset(PYTHON_VERSION_PATCH CACHE)
-# unset(PYBIND11_INCLUDE_DIR CACHE)
-# unset(PYTHON_INCLUDE_DIRS CACHE)
-# unset(PYTHON_LIBRARIES CACHE)
-# unset(PYTHON_MODULE_PREFIX CACHE)
-# unset(PYTHON_MODULE_EXTENSION CACHE)
-# unset(PYTHON_LIBRARY CACHE)
-# set(PYBIND11_PYTHON_VERSION 3.6 CACHE STRING "" FORCE) 
-# message("PYBIND11_PYTHON_VERSION is" , ${PYBIND11_PYTHON_VERSION})
 
-
-
-
-#pybind attempt 3
 
 # libigl 
 # libigl options: choose between header only and compiled static library
@@ -113,109 +55,152 @@ find_package(GLFW REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
+find_package(LIBIGL REQUIRED)
 if(CORE_WITH_DIR_WATCHER)
     find_package(kqueue REQUIRED)
 endif()
 find_package(PCL 1.3 REQUIRED COMPONENTS common io)
-FetchContent_Declare(
-  imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui
-  GIT_TAG        v1.73
-)
+# FetchContent_Declare(
+#   imgui
+#   GIT_REPOSITORY https://github.com/ocornut/imgui
+#   GIT_TAG        v1.73
+# )
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
-FetchContent_Declare(
-  imguizmo
-  GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
-  GIT_TAG        ace44b6ddae5c9ee7e48d8e25589838ec40227fa
-)
-FetchContent_Declare(
-  libigl
-  GIT_REPOSITORY https://github.com/libigl/libigl.git
-  GIT_TAG        v2.1.0
-)
-FetchContent_Declare(
-  pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG        v2.4.2
-)
-FetchContent_Declare(
-  loguru
-  GIT_REPOSITORY https://github.com/RaduAlexandru/loguru.git
-)
-FetchContent_Declare(
-  configuru
-  GIT_REPOSITORY https://github.com/RaduAlexandru/Configuru.git
-)
-FetchContent_Declare(
-  better_enums
-  GIT_REPOSITORY https://github.com/aantron/better-enums.git
-  GIT_TAG        0.11.2
-)
-FetchContent_Declare(
-  concurrent_queue
-  GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
-  GIT_TAG        cff1001582db67e357d5f77c31e73566003311f2
-)
-FetchContent_Declare(
-  tiny_ply
-  GIT_REPOSITORY https://github.com/ddiakopoulos/tinyply.git
-  GIT_TAG        2.2
-)
-FetchContent_GetProperties(tiny_ply)
-if(NOT tiny_ply_POPULATED)
-  FetchContent_Populate(tiny_ply)
-endif()
-FetchContent_Declare(
-  tiny_obj
-  GIT_REPOSITORY https://github.com/syoyo/tinyobjloader
-  GIT_TAG        v2.0.0-rc1 
-)
-FetchContent_GetProperties(tiny_obj)
-if(NOT tiny_obj_POPULATED)
-  FetchContent_Populate(tiny_obj)
-endif()
-FetchContent_Declare(
-  utils
-  GIT_REPOSITORY https://github.com/RaduAlexandru/utils.git
-)
-FetchContent_Declare(
-  easy_gl
-  GIT_REPOSITORY https://github.com/RaduAlexandru/EasyGL.git
-)
-# add_subdirectory( ${pybind11_SOURCE_DIR})
-##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
-FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue  utils easy_gl)
+add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
+# FetchContent_Declare(
+#   imguizmo
+#   GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+#   GIT_TAG        ace44b6ddae5c9ee7e48d8e25589838ec40227fa
+# )
+# FetchContent_Declare(
+#   libigl
+#   GIT_REPOSITORY https://github.com/libigl/libigl.git
+#   GIT_TAG        v2.1.0
+# )
+# FetchContent_Declare(
+#   pybind11
+#   GIT_REPOSITORY https://github.com/pybind/pybind11.git
+#   GIT_TAG        v2.4.2
+# )
+# FetchContent_Declare(
+#   loguru
+#   GIT_REPOSITORY https://github.com/RaduAlexandru/loguru.git
+# )
+# FetchContent_Declare(
+#   configuru
+#   GIT_REPOSITORY https://github.com/RaduAlexandru/Configuru.git
+# )
+# FetchContent_Declare(
+#   better_enums
+#   GIT_REPOSITORY https://github.com/aantron/better-enums.git
+#   GIT_TAG        0.11.2
+# )
+# FetchContent_Declare(
+#   concurrent_queue
+#   GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
+#   GIT_TAG        cff1001582db67e357d5f77c31e73566003311f2
+# )
+# FetchContent_Declare(
+#   tiny_ply
+#   GIT_REPOSITORY https://github.com/ddiakopoulos/tinyply.git
+#   GIT_TAG        2.2
+# )
+# FetchContent_GetProperties(tiny_ply)
+# if(NOT tiny_ply_POPULATED)
+#   FetchContent_Populate(tiny_ply)
+# endif()
+# FetchContent_Declare(
+#   tiny_obj
+#   GIT_REPOSITORY https://github.com/syoyo/tinyobjloader
+#   GIT_TAG        v2.0.0-rc1 
+# )
+# FetchContent_GetProperties(tiny_obj)
+# if(NOT tiny_obj_POPULATED)
+#   FetchContent_Populate(tiny_obj)
+# endif()
+# FetchContent_Declare(
+#   utils
+#   GIT_REPOSITORY https://github.com/RaduAlexandru/utils.git
+# )
+# FetchContent_Declare(
+#   easy_gl
+#   GIT_REPOSITORY https://github.com/RaduAlexandru/EasyGL.git
+# )
+# # add_subdirectory( ${pybind11_SOURCE_DIR})
+# ##fetched content make availalbe. Order is important. It should go from the one with lest dependencies to the one with most. So if A depend on B, then MakeAvailable should have B first
+# FetchContent_MakeAvailable(imgui imguizmo pybind11 libigl loguru configuru better_enums concurrent_queue  utils easy_gl)
 
 
 ###   INCLUDES   #########################################################
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/extern)
-include_directories(${PROJECT_SOURCE_DIR}/extern/khronos)
-include_directories(${GLFW_INCLUDE_DIRS})
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${OpenCV_INCLUDE_DIR})
-if(CORE_WITH_DIR_WATCHER)
-    include_directories(${KQUEUE_INCLUDE_DIRS})
-endif()
-include_directories(${LIBIGL_INCLUDE_DIR})
-include_directories(${pybind11_SOURCE_DIR}/include)
-include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples )
-include_directories(${imguizmo_SOURCE_DIR})
-include_directories(${loguru_SOURCE_DIR})
-include_directories(${configuru_SOURCE_DIR})
-include_directories(${better_enums_SOURCE_DIR})
-include_directories(${concurrent_queue_SOURCE_DIR})
-include_directories(${tiny_ply_SOURCE_DIR}/source)
-include_directories(${tiny_obj_SOURCE_DIR})
-include_directories(${utils_SOURCE_DIR}/include)
-include_directories(${easy_gl_SOURCE_DIR})
-include_directories(${PCL_INCLUDE_DIRS})
+set(PROJECT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include
+                        ${CMAKE_SOURCE_DIR}/extern
+                        ${CMAKE_SOURCE_DIR}/deps
+                        ${CMAKE_SOURCE_DIR}/deps/imgui
+                        ${CMAKE_SOURCE_DIR}/deps/imgui_ext
+                        ${CMAKE_SOURCE_DIR}/deps/imgui/examples/
+                        ${CMAKE_SOURCE_DIR}/deps/loguru
+                        ${CMAKE_SOURCE_DIR}/deps/configuru
+                        # ${CMAKE_SOURCE_DIR}/deps/dir_watcher
+                        ${CMAKE_SOURCE_DIR}/deps/easy_gl
+                        # ${CMAKE_SOURCE_DIR}/deps/EasyPytorch
+                        # ${CMAKE_SOURCE_DIR}/deps/EasyCuda
+                        # ${CMAKE_SOURCE_DIR}/deps/cv_lib
+                        ${CMAKE_SOURCE_DIR}/deps/configuru
+                        ${CMAKE_SOURCE_DIR}/deps/libigl/include
+                        ${CMAKE_SOURCE_DIR}/deps/better_enums
+                        ${CMAKE_SOURCE_DIR}/deps/imguizmo
+                        # ${CMAKE_SOURCE_DIR}/deps/tiny-process-library
+                        ${CMAKE_SOURCE_DIR}/deps/concurrent_queue
+                        # ${CMAKE_SOURCE_DIR}/deps/cnpy
+                        # ${CMAKE_SOURCE_DIR}/deps/json11
+                        ${CMAKE_SOURCE_DIR}/deps/pybind11/include
+                        # ${CMAKE_SOURCE_DIR}/deps/nanoflann/include
+                        # ${CMAKE_SOURCE_DIR}/deps/jitify
+                        ${CMAKE_SOURCE_DIR}/deps/tiny_ply/source
+                        ${CMAKE_SOURCE_DIR}/deps/tiny_obj
+                        ${CMAKE_SOURCE_DIR}/deps/utils/include
+                        ) # Header folder
+# include_directories(${PROJECT_SOURCE_DIR}/include)
+# include_directories(${PROJECT_SOURCE_DIR}/extern)
+# include_directories(${PROJECT_SOURCE_DIR}/extern/khronos)
+# include_directories(${GLFW_INCLUDE_DIRS})
+# include_directories(${Boost_INCLUDE_DIRS})
+# include_directories(${EIGEN3_INCLUDE_DIR})
+# include_directories(${OpenCV_INCLUDE_DIR})
+# if(CORE_WITH_DIR_WATCHER)
+#     include_directories(${KQUEUE_INCLUDE_DIRS})
+# endif()
+# include_directories(${LIBIGL_INCLUDE_DIR})
+# include_directories(${pybind11_SOURCE_DIR}/include)
+# include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples )
+# include_directories(${imguizmo_SOURCE_DIR})
+# include_directories(${loguru_SOURCE_DIR})
+# include_directories(${configuru_SOURCE_DIR})
+# include_directories(${better_enums_SOURCE_DIR})
+# include_directories(${concurrent_queue_SOURCE_DIR})
+# include_directories(${tiny_ply_SOURCE_DIR}/source)
+# include_directories(${tiny_obj_SOURCE_DIR})
+# include_directories(${utils_SOURCE_DIR}/include)
+# include_directories(${easy_gl_SOURCE_DIR})
+# include_directories(${PCL_INCLUDE_DIRS})
 # include_directories(${PYTHON_INCLUDE_DIRS})
 # include_directories("/usr/include/python3.6m/")
 
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
+
+
+include_directories(${PROJECT_INCLUDE_DIR} )
+include_directories(${GLFW_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${LIBIGL_INCLUDE_DIR})
+include_directories(${KQUEUE_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
+
+
+
 
 ###   SOURCES   #################################################################
 set(MY_SRC  
@@ -231,9 +216,11 @@ set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
     # ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx
 )
-file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
+# file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
+file(GLOB IMGUI_SRC ${CMAKE_SOURCE_DIR}/deps/imgui/*.c* ${CMAKE_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${CMAKE_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${CMAKE_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
+)
 #tinyply because libigl readPLY has a memory leak 
-set(DEPS_SRC ${DEPS_SRC} ${tiny_ply_SOURCE_DIR}/source/tinyply.cpp)
+set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
 if(CORE_WITH_DIR_WATCHER)
     set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
 endif()
