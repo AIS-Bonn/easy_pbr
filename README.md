@@ -6,7 +6,7 @@
   <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/buburuza_crop_2.png" width="250" />  -->
   <!-- <img src="imgs/lucy_pc_crop.png" width="210" />  -->
-  <img src="imgs/bunny_pc_7_crop.png" width="250" /> 
+  <img src="imgs/bunny_pc_10_crop.png" width="250" /> 
   <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/house_crop_2.png" width="250" /> -->
   <img src="imgs/shader_ball_crop.png" width="250" />
