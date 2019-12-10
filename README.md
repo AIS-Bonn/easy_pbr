@@ -2,11 +2,31 @@
 
 <p align="middle">
   <img src="imgs/anatomy_crop_2.png" width="250" />
+  <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/buburuza_crop_2.png" width="250" />  -->
   <img src="imgs/lucy_pc_crop.png" width="210" /> 
+  <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/house_crop_2.png" width="250" /> -->
   <img src="imgs/shader_ball_crop.png" width="250" />
 </p>
+
+<figure>
+  <img src="imgs/anatomy_crop_2.png" alt="my img"/>
+  <figcaption> Your text </figcaption>
+</figure>
+
+<table align="center">
+    <tr>
+        <td align="center"><img src="imgs/shader_ball_crop.png" alt="some text" width="250" ></td>
+        <td align="center">Some other text</td>
+        <td align="center">More text</td>
+    </tr>
+    <tr>
+        <td align="center"><img src="imgs/shader_ball_crop.png" alt="some text" width="250" ></td>
+        <td align="center">Some other text 2</td>
+        <td align="center">More text 2</td>
+    </tr>
+</table>
 
 EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and fast prototyping. It abstracts away most of the complexity of rendering allowing the user to display high quality images in only a couple of lines of code. By default, EasyPBR tries to choose the parameters in order to best render a particular scene but if more control is needed, the whole rendering process is controllable through either a Python script or C++ program. EasyPBR is written in C++ and OpenGL and provides Python bindings to most of it's functionality.
 
