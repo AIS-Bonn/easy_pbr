@@ -3,12 +3,28 @@
 EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and fast prototyping. It abstracts away most of the complexity of rendering allowing the user to display high quality images in only a couple of lines of code. The whole rendering process is fully controllable through either a Python script or C++ program. EasyPBR is written in C++ and OpenGL and provides Python bindings to most of it's functionality.
 
 <!-- ![Image description](imgs/stadium.png) | ![Image description](imgs/mnt_valley_dirt.png) -->
+figure{
+   width:300px; /*container-width*/
+   overflow:hidden; /*hide bounds of image */
+   margin:0;   /*reset margin of figure tag*/
+}
+figure img{
+   display:block; /*remove inline-block spaces*/
+   width:100%; /*make image streatch*/
+   margin:-21.875% 0;
+}
 <p align="middle">
-  <img src="imgs/stadium.png" width="200" />
-  <img src="imgs/mnt_valley_dirt.png" width="200" /> 
+  <img src="imgs/stadium_crop.png" width="200" />
+  <img src="imgs/mnt_valley_dirt_crop.png" width="200" /> 
   <!-- <img src="imgs/mnt_valley_lookout.png" width="200" />  -->
-  <img src="imgs/mnt_valley_dirt_metal_blur.png" width="200" />
+  <img src="imgs/mnt_valley_dirt_metal_blur_crop.png" width="200" />
 </p>
+<p align="middle">
+  <img src="imgs/anatomy_crop.png" width="200" />
+  <img src="imgs/buburuza_crop.png" width="200" /> 
+  <img src="imgs/house_crop.png" width="200" />
+</p
+
 
 # Example
     from easypbr  import *
@@ -29,9 +45,9 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 - Eye Dome Lighting for point cloud rendering
 - Various tonemapping operators (Rheinhard, Unreal, ACES)
 - Shader hotloading 
-- Various modes of visualziation (mesh, wireframe, point cloud, surfel)
+- Various modes of visualization (mesh, wireframe, point cloud, surfel)
 - Loading of multiple meshes formats (.obj, .ply, .pcd, .off)
-- Drag and drop of meshes and hdr maps directly in the viewer
+- Drag and drop of meshes and HDR maps directly in the viewer
 - Easy extension and usage from other packages
 
 # Install 
