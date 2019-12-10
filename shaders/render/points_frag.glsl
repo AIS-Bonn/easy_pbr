@@ -56,7 +56,7 @@ void main(){
     float log_depth_val=log_depth_in;
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
-    bool points_as_circle=false;
+    bool points_as_circle=true;
     // bool points_as_circle=true;
     float u,v; //local uvs inside the point
     if(points_as_circle){
@@ -96,7 +96,7 @@ void main(){
     // normal_out = vec4(normal_cam_coords_in, 1.0);
         //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
-    normal_out=encode_normal(normal_cam_coords_in);
+    normal_out=encode_normal(normal_in);
     metalness_and_roughness_out=vec2(metalness, roughness);
     // vec3 normal = normalize(cross(dFdx(position_cam_coords_in), dFdy(position_cam_coords_in)));
     // normal_out=vec4(normal,1.0);
