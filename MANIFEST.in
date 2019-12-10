@@ -1,6 +1,0 @@
-include shaders/render/*.glsl
-include shaders/ibl/*.glsl
-include shaders/ssao/*.glsl
-include config/*.cfg
-include *.txt
-include TEST_EASYPBR.txt
