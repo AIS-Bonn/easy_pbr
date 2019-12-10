@@ -1,0 +1,67 @@
+[Header]
+ICOfile = "Circus_Backstage_thumb.jpg"
+PREVIEWfile = "Circus_Backstage_preview.jpg"
+Name = "Circus Backstage"
+Author = "Blochi"
+Location = "Long Beach"
+Comment = "Indoor movie set of a steampunk circus, dusty dressing mirror"
+GEOlat = 33.7512910000000020
+GEOlong = -118.1888120000000000
+Link = "www.hdrlabs.com"
+Date = "2010:05:05"
+Time = "14:00:00"
+Height = 1.750000
+
+[Background]
+BGfile = "Circus_Backstage_8k.jpg"
+BGmap = 1
+BGu = 0.000000
+BGv = 0.000000
+BGheight = 4096
+
+[Enviroment]
+EVfile = "Circus_Backstage_Env.hdr"
+EVmap = 1
+EVu = 0.000000
+EVv = 0.000000
+EVheight = 180
+EVmulti = 1.000000
+EVgamma = 1.800000
+
+[Reflection]
+REFfile = "Circus_Backstage_3k.hdr"
+REFmap = 1
+REFu = 0.000000
+REFv = 0.000000
+REFheight = 900
+REFmulti = 1.000000
+REFgamma = 1.800000
+
+[Light1]
+LIGHTname = "Key"
+LIGHTcolor = 250,253,255
+LIGHTmulti = 1.200000
+LIGHTu = 0.252000
+LIGHTv = 0.192000
+
+[Light2]
+LIGHTname = "Mirror1"
+LIGHTcolor = 255,233,202
+LIGHTmulti = 0.700000
+LIGHTu = 0.464000
+LIGHTv = 0.448000
+
+[Light3]
+LIGHTname = "Mirror2"
+LIGHTcolor = 255,206,153
+LIGHTmulti = 0.800000
+LIGHTu = 0.514000
+LIGHTv = 0.480000
+
+[Light4]
+LIGHTname = "Spot"
+LIGHTcolor = 255,204,176
+LIGHTmulti = 0.800000
+LIGHTu = 0.204000
+LIGHTv = 0.248000
+

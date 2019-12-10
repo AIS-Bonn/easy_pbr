@@ -1,0 +1,47 @@
+[Header]
+ICOfile = "Road_to_MonumentValley_Thumb.jpg"
+PREVIEWfile = "Road_to_MonumentValley_preview.jpg"
+Name = "Desert Highway"
+Author = "Blochi"
+Location = "Arizona"
+Comment = "Lonely desert road to Monument Valley, daylight, clear blue sky"
+GEOlat = 37.04010612525592
+GEOlong = -110.10189056396484
+Link = "http://www.hdrlabs.com/sibl/archive.html"
+Date = "2008:11:29"
+Time = "13:17:00"
+Height = 1.4
+North = 0.83
+
+[Background]
+; Tonemapping came out at -5 Hue, some color management thing
+BGfile = "Road_to_MonumentValley_8k.jpg"
+BGmap = 1
+BGu = 0.000000
+BGv = 0.000000
+BGheight = 4000
+
+[Enviroment]
+EVfile = "Road_to_MonumentValley_Env.hdr"
+EVmap = 1
+EVu = 0.000000
+EVv = 0.000000
+EVheight = 180
+EVmulti = 1.000000
+EVgamma = 1.400000
+
+[Reflection]
+REFfile = "Road_to_MonumentValley_Ref.hdr"
+REFmap = 1
+REFu = 0.000000
+REFv = 0.000000
+REFheight = 800
+REFmulti = 1.000000
+REFgamma = 1.800000
+
+[Sun]
+SUNcolor = 245,244,234
+SUNmulti = 1.200000
+SUNu = 0.280000
+SUNv = 0.364000
+

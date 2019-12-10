@@ -1,0 +1,40 @@
+[Header]
+ICOfile = "Theatre-Center_Thumb.jpg"
+PREVIEWfile = "Theatre-Center_preview.jpg"
+Name = "Theatre Center"
+Author = "Blochi"
+Location = "Hollywood"
+Comment = "Inside the Mans Chinese Theatre, very red ambient light"
+GEOlat = 34.10203281869608
+GEOlong = -118.34095001220703
+Link = "http://www.hdrlabs.com/sibl/archive.html"
+Date = "2007:03:12"
+Time = "08:07:00"
+Height = 1.55
+
+[Background]
+BGfile = "Theatre-Center_8k_TMap.jpg"
+BGmap = 1
+BGu = 0.000000
+BGv = 0.000000
+BGheight = 4000
+
+[Enviroment]
+EVfile = "Theatre-Center_Env.hdr"
+EVmap = 1
+EVu = 0.000000
+EVv = 0.000000
+EVheight = 180
+EVmulti = 1.000000
+EVgamma = 1.684211
+
+[Reflection]
+REFfile = "Theatre-Center_2k.hdr"
+REFmap = 1
+REFu = 0.000000
+REFv = 0.000000
+REFheight = 1024
+REFmulti = 1.473684
+REFgamma = 2.070175
+
+
