@@ -288,9 +288,9 @@ void main(){
             out_color = vec4(color, 1.0);
             return;
         }else if(show_environment_map){
-            vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+            // vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
+            vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
             //tonemap
             // color = color / (color + vec3(1.0));
             color=color*exposure;

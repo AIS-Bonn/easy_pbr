@@ -142,7 +142,7 @@ void Viewer::init_params(const std::string config_file){
     //ibl
     m_enable_ibl = vis_config["ibl"]["enable_ibl"];
     m_show_environment_map = vis_config["ibl"]["show_environment_map"];
-    m_environment_map_path = (fs::path(DATA_DIR) / (std::string)vis_config["ibl"]["environment_map_path"]).string();
+    m_environment_map_path = (fs::path(EASYPBR_DATA_DIR) / (std::string)vis_config["ibl"]["environment_map_path"]).string();
     m_environment_cubemap_resolution = vis_config["ibl"]["environment_cubemap_resolution"];
     m_irradiance_cubemap_resolution = vis_config["ibl"]["irradiance_cubemap_resolution"];
     m_prefilter_cubemap_resolution = vis_config["ibl"]["prefilter_cubemap_resolution"];
