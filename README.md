@@ -49,6 +49,8 @@ $ sudo apt-get install libkqueue-dev
 
 ### Build and install: 
 ```sh
+$ git clone --recursive https://github.com/RaduAlexandru/easy_pbr.git
+$ cd easy_pbr
 $ ./build_and_install.sh
 ```
 
