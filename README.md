@@ -4,10 +4,10 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 
 <!-- ![Image description](imgs/stadium.png) | ![Image description](imgs/mnt_valley_dirt.png) -->
 <p align="middle">
-  <img src="imgs/stadium.png" width="300" />
-  <img src="imgs/mnt_valley_dirt.png" width="300" /> 
+  <img src="imgs/stadium.png" width="200" />
+  <img src="imgs/mnt_valley_dirt.png" width="200" /> 
   <!-- <img src="imgs/mnt_valley_lookout.png" width="200" />  -->
-  <img src="imgs/mnt_valley_dirt_metal_blur.png" width="300" />
+  <img src="imgs/mnt_valley_dirt_metal_blur.png" width="200" />
 </p>
 
 # Example
