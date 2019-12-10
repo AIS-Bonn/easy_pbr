@@ -39,7 +39,7 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 # Install 
 ### Dependencies:
 ```sh
-$ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-all-dev libeigen3-dev libpcl-dev python3-opencv
+$ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-all-dev libeigen3-dev libpcl-dev libopencv-dev
 ```
 ### Optional dependencies: 
 Allow for shader hotloading, so changes to .glsl files are automatically recompiled and used while the program is running:
