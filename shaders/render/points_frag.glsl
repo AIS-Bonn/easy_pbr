@@ -56,7 +56,7 @@ void main(){
     float log_depth_val=log_depth_in;
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
-    bool points_as_circle=true;
+    bool points_as_circle=false;
     // bool points_as_circle=true;
     float u,v; //local uvs inside the point
     if(points_as_circle){

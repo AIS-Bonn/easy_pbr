@@ -75,6 +75,7 @@ private:
     ImGuizmo::MODE m_guizmo_mode = ImGuizmo::LOCAL;
     float m_hidpi_scaling;
     bool m_draw_main_menu;
+    ImFont* m_dragdrop_font;
 
     static std::mutex m_add_cv_mats_mutex; //adding or registering images for viewing must be thread safe
     //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context 
@@ -103,6 +104,7 @@ private:
     void draw_label_mngr_legend();
     void draw_main_menu();
     void draw_profiler();
+    void draw_drag_drop_text();
 
 
 };

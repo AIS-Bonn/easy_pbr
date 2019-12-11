@@ -12,7 +12,7 @@
   <img src="imgs/shader_ball_crop.png" width="250" />
 </p>
 
-EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and fast prototyping. It abstracts away most of the complexity of rendering allowing the user to display high quality images in only a couple of lines of code. By default, EasyPBR tries to choose the parameters in order to best render a particular scene but if more control is needed, the whole rendering process is controllable through either a Python script or C++ program. EasyPBR is written in C++ and OpenGL and provides Python bindings to most of it's functionality.
+EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and fast prototyping. It abstracts away most of the complexity of rendering allowing the user to display high quality images in only a couple of lines of code. By default, EasyPBR tries to choose parameters in order to best render a particular scene but if more control is needed, the whole rendering process is controllable through either a Python script or C++ program. EasyPBR is written in C++ and OpenGL and provides Python bindings to most of it's functionality.
 
 <!-- ![Image description](imgs/stadium.png) | ![Image description](imgs/mnt_valley_dirt.png) -->
 
@@ -45,7 +45,7 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 # Install 
 ### Dependencies:
 ```sh
-$ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-all-dev libeigen3-dev libpcl-dev libopencv-dev
+$ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-dev libeigen3-dev libpcl-dev libopencv-dev
 ```
 ### Optional dependencies: 
 Allow for shader hotloading, so changes to .glsl files are automatically recompiled and used while the program is running:

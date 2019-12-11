@@ -95,11 +95,13 @@ Gui::Gui( const std::string config_file,
     float font_size=13;
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
+    //proggy
     std::string proggy_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/ProggyClean.ttf";
     if ( !fs::exists(proggy_font_file) ){
         LOG(FATAL) << "Couldn't find " << proggy_font_file;
     }
     io.Fonts->AddFontFromFileTTF(proggy_font_file.c_str(), font_size * m_hidpi_scaling);
+    //awesomefont
     ImFontConfig config;
     config.MergeMode = true;
     const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
@@ -108,6 +110,15 @@ Gui::Gui( const std::string config_file,
         LOG(FATAL) << "Couldn't find " << awesome_font_file;
     }
     io.Fonts->AddFontFromFileTTF(awesome_font_file.c_str(), 13.0f*m_hidpi_scaling, &config, icon_ranges );
+
+    //font for displaying the drag and drop message 
+    std::string dragdrop_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Regular.ttf";
+    if ( !fs::exists(dragdrop_font_file) ){
+        LOG(FATAL) << "Couldn't find " << dragdrop_font_file;
+    }
+    m_dragdrop_font=io.Fonts->AddFontFromFileTTF(dragdrop_font_file.c_str(), 100.0f, &config);
+
+
     io.Fonts->Build();
     //io.FontGlobalScale = 1.0 / pixel_ratio;
     ImGuiStyle *style = &ImGui::GetStyle();
@@ -142,7 +153,9 @@ void Gui::update() {
     }
     draw_profiler();
 
+    draw_overlays(); //draws stuff like the text indicating the vertices coordinates on top of the vertices in the 3D world
 
+    draw_drag_drop_text(); //when the scene is empty draws the text saying to drag and drop something
 
 
 
@@ -177,7 +190,6 @@ void Gui::draw_main_menu(){
             );
     ImGui::PushItemWidth(135*m_hidpi_scaling);
 
-    draw_overlays(); //draws stuff like the text indicating the vertices coordinates on top of the vertices in the 3D world
 
   
 
@@ -750,6 +762,46 @@ void Gui::draw_label_mngr_legend(){
     
 }
 
+void Gui::draw_drag_drop_text(){
+
+    if (Scene::nr_meshes()==0){
+        ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_Always);
+        bool visible = true;
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+        ImGui::Begin("DragDrop", &visible,
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+            | ImGuiWindowFlags_NoCollapse
+            | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoInputs);
+
+
+        // Draw text slightly bigger than normal text
+        std::string text= "Drag and drop mesh file to display it";
+        Eigen::Vector3f color;
+        color << 1.0, 1.0, 1.0;
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        drawList->AddText(m_dragdrop_font, 50,
+            // ImVec2(m_view->m_viewport_size(0)/2*m_hidpi_scaling , (m_view->m_viewport_size(1) - m_view->m_viewport_size(1)/2 ) *m_hidpi_scaling ),
+            ImVec2(m_view->m_viewport_size(0)/2 - ImGui::CalcTextSize(text.c_str()).x/2 ,  m_view->m_viewport_size(1)/2  ),
+            ImGui::GetColorU32(ImVec4(
+                color(0),
+                color(1),
+                color(2),
+                1.0)),
+        &text[0], &text[0] + text.size());
+
+        ImGui::End();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+    }
+
+}
 
 void Gui::edit_transform(const MeshSharedPtr& mesh){
 
