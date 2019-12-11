@@ -13,11 +13,23 @@ from setuptools import setup
 from distutils.sysconfig import get_python_inc
 import site #section 2.7 in https://docs.python.org/3/distutils/setupscript.html
 
+# https://stackoverflow.com/a/287944
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def check_file(f):
     if not os.path.exists(f):
-        print("Could not find {}".format(f))
-        print("Did you run 'git submodule update --init --recursive'?")
+        # colored('hello', 'red')
+        # print(colored('hello', 'red'), colored('world', 'green'))
+        print(bcolors.FAIL + "Could not find {}".format(f)+bcolors.ENDC)
+        print(bcolors.FAIL + "Did you run 'git submodule update --init --recursive'?"+bcolors.ENDC)
         sys.exit(1)
 
 
