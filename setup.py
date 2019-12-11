@@ -14,6 +14,14 @@ from distutils.sysconfig import get_python_inc
 import site #section 2.7 in https://docs.python.org/3/distutils/setupscript.html
 
 
+def check_file(f):
+    if not os.path.exists(f):
+        print("Could not find {}".format(f))
+        print("Did you run 'git submodule update --init --recursive'?")
+        sys.exit(1)
+
+
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -32,6 +40,9 @@ class CMakeBuild(build_ext):
             cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
             if cmake_version < '3.1.0':
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
+
+        #check if we have all dependencies 
+        check_file(os.path.join(os.getcwd(), 'deps', 'libigl', 'CMakeLists.txt'))
 
         for ext in self.extensions:
             self.build_extension(ext)

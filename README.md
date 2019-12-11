@@ -20,11 +20,13 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 
 # Example
     from easypbr  import *
-    
-    view=Viewer.create("default_params.cfg")
-    mesh = Mesh("./data/lucy.obj")
-    Scene.show(mesh, "mesh")
-    
+
+    config_file="./config/default_params.cfg"
+
+    view=Viewer.create(config_file) #first because it needs to init context
+    lucy = Mesh("./data/lucy.obj")
+    Scene.show(lucy, "lucy")
+
     while True:
         view.update()
 

@@ -109,7 +109,14 @@ void Viewer::init_params(const std::string config_file){
 
     //read all the parameters
     // Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
-    Config cfg = configuru::parse_file(config_file, CFG);
+    std::string config_file_abs;
+    if (fs::path(config_file).is_relative()){
+        config_file_abs=(fs::path(PROJECT_SOURCE_DIR) / config_file).string();
+    }else{
+        config_file_abs=config_file;
+    }
+
+    Config cfg = configuru::parse_file(config_file_abs, CFG);
     Config vis_config=cfg["visualization"];
     //general
     m_show_gui = vis_config["show_gui"];

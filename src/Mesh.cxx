@@ -40,6 +40,10 @@
 #include "string_utils.h"
 using namespace easy_pbr::utils;
 
+//boost
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 Mesh::Mesh():
         id(0),
         m_is_dirty(true),
@@ -265,28 +269,25 @@ void Mesh::recalculate_normals(){
 
 void Mesh::load_from_file(const std::string file_path){
 
-    std::string file_ext = file_path.substr(file_path.find_last_of(".") + 1);
+    std::string file_path_abs;
+    if (fs::path(file_path).is_relative()){
+        file_path_abs=(fs::path(PROJECT_SOURCE_DIR) / file_path).string();
+    }else{
+        file_path_abs=file_path;
+    }
+
+    std::string file_ext = file_path_abs.substr(file_path_abs.find_last_of(".") + 1);
     trim(file_ext); //remove whitespaces from beggining and end
     if (file_ext == "off" || file_ext == "OFF") {
-        igl::readOFF(file_path, V, F);
+        igl::readOFF(file_path_abs, V, F);
     } else if (file_ext == "ply" || file_ext == "PLY") {
-        // igl::readPLY(file_path, V, F, NV, UV, C);
-        read_ply(file_path);
-        // read_ply(file_path, { 
-        //             {V, {"x", "y", "z"} }, 
-        //             {NV, {"x", "y", "z"} }
-        //            } );
+        read_ply(file_path_abs);
     } else if (file_ext == "obj" || file_ext == "OBJ") {
-        // igl::readOBJ(file_path, mesh.V, mesh.F);
-        // Eigen::MatrixXd CN; //corner normals
-        // Eigen::MatrixXi FTC;
-        // Eigen::MatrixXi FN;
-        // igl::readOBJ(file_path, V, UV, CN,  F, FTC, FN);
-        read_obj(file_path);
+        read_obj(file_path_abs);
     }else if (file_ext == "pcd") {
         //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
         pcl::PCLPointCloud2 cloud_blob;
-        pcl::io::loadPCDFile (file_path, cloud_blob);
+        pcl::io::loadPCDFile (file_path_abs, cloud_blob);
 
         // VLOG(1) << " read pcl cloud with header: " << cloud_blob;
 
@@ -336,7 +337,7 @@ void Mesh::load_from_file(const std::string file_path){
 
 
     }else{
-        LOG(WARNING) << "Not a known extension of mesh file: " << file_path;
+        LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
     }
 
     //set some sensible things to see 

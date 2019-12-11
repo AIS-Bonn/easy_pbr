@@ -207,6 +207,7 @@ target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
 
 target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
 target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${PROJECT_SOURCE_DIR}/shaders")
+target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
