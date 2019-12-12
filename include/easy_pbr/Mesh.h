@@ -89,6 +89,7 @@ public:
     void save_to_file(const std::string file_path);
     bool is_empty()const;
     void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
+    void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);
     Eigen::Vector3d centroid();

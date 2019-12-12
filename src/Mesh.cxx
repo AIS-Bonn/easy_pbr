@@ -256,6 +256,16 @@ void Mesh::apply_transform(Eigen::Affine3d& trans, const bool transform_points_a
     m_is_dirty=true;
 }
 
+void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
+    m_model_matrix=trans*m_model_matrix;
+
+    // update all children
+    for (size_t i = 0; i < m_child_meshes.size(); i++){
+        MeshSharedPtr child=m_child_meshes[i];
+        child->transform_model_matrix(trans);
+    }
+}
+
 void Mesh::recalculate_normals(){
     if(!F.size()){
         return; // we have no faces so there will be no normals
@@ -410,7 +420,7 @@ void Mesh::add_child(std::shared_ptr<Mesh>& mesh){
 
      
     m_child_meshes.push_back(mesh);
-    VLOG(1) << "children nr is now " <<m_child_meshes.size();
+    // VLOG(1) << "children nr is now " <<m_child_meshes.size();
 
 }
 
