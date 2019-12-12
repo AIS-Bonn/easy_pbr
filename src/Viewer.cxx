@@ -1201,6 +1201,7 @@ void Viewer::ssao_pass(){
     glViewport(0.0f , 0.0f, new_viewport_size.x(), new_viewport_size.y() );
     //deal with the textures
     m_ao_tex.allocate_or_resize(GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
+    m_ao_tex.clear();
     m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample); 
 
 
@@ -1209,6 +1210,7 @@ void Viewer::ssao_pass(){
     //LINEARIZE-------------------------
     TIME_START("depth_linearize_pass");
     m_depth_linear_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() );
+    m_depth_linear_tex.clear();
 
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_depth_linearize_shader, "position", m_fullscreen_quad->V_buf, 3) );
@@ -1256,7 +1258,11 @@ void Viewer::ssao_pass(){
     m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
     // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl"); //no need for pyramid because we only sample from depth_linear_tex which is already downsampled and has no mipmap
-    m_ssao_ao_pass_shader.bind_texture(m_depth_linear_tex,"depth_linear_tex");
+    // m_ssao_ao_pass_shader.bind_texture(m_depth_linear_tex,"depth_linear_tex");
+    //attempt 2 with depth Not linear 
+    m_ssao_ao_pass_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+    m_ssao_ao_pass_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
+    m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
    
@@ -1310,7 +1316,7 @@ void Viewer::ssao_pass(){
 
     // m_ao_blurred_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
     m_ao_blurred_tex.allocate_or_resize( GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() );
-    // m_ao_blurred_tex.clear();
+    m_ao_blurred_tex.clear();
 
 
 
