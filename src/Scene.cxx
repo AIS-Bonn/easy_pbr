@@ -55,9 +55,9 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     
 }
 
-void Scene::show(const Mesh& mesh, const std::string name){
-    show(std::make_shared<Mesh>(mesh), name);
-}
+// void Scene::show(const Mesh& mesh, const std::string name){
+//     show(std::make_shared<Mesh>(mesh), name);
+// }
 
 
 void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){

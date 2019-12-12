@@ -98,6 +98,7 @@ public:
     void create_box_ndc(); //makes a 1x1x1 vox in NDC. which has z going into the screen
     void create_grid(const int nr_segments, const float y_pos, const float scale);
     void create_floor(const float y_pos, const float scale);
+    void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.
 
     //lots of mesh ops 
     void remove_marked_vertices(const std::vector<bool>& mask, const bool keep);
@@ -155,7 +156,7 @@ public:
     VisOptions m_vis;
     bool m_force_vis_update; //sometimes we want the m_vis stored in the this MeshCore to go into the MeshGL, sometimes we don't. The default is to not propagate, setting this flag to true will force the update of m_vis inside the MeshGL
 
-    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. The vertices stored in V are already multipl ied by this matrix so no need to actually use it, it's mostly for debug purposes.
+    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
     Eigen::Affine3d m_cur_pose; //the current pose, usually in world coordinates. Tranforms the points from their sensor frame to the world coordinates. It's not used by opengl
 
     Eigen::MatrixXd V; 
@@ -181,6 +182,7 @@ public:
     std::weak_ptr<MeshGL> m_mesh_gpu; // a pointer to the gpu implementation of this mesh, needs ot be weak because the mesh already has a shared ptr to the MeshCore
     std::shared_ptr<LabelMngr> m_label_mngr;
     std::shared_ptr<RandGenerator> m_rand_gen;
+    std::vector<std::shared_ptr<Mesh>> m_child_meshes;
 
     //oher stuff that may or may not be needed depending on the application
     uint64_t t; //timestamp or scan nr which will be monotonically increasing

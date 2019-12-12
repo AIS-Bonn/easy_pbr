@@ -395,6 +395,25 @@ void Mesh::save_to_file(const std::string file_path){
 
 }
 
+void Mesh::add_child(std::shared_ptr<Mesh>& mesh){
+    //check that the mesh we want to add has a name assigned
+    if(mesh->name.empty()){
+        LOG(FATAL) << "Trying to add mesh with no name. Assign a name to it first by adding it to the Scene with Scene.add()";
+    }
+
+    //check that we don't have more children with the same name
+    for (size_t i = 0; i < m_child_meshes.size(); i++){
+        if (m_child_meshes[i]->name==mesh->name){
+            LOG(FATAL) << "Found a mesh with the same name " << mesh->name;
+        }
+    }
+
+     
+    m_child_meshes.push_back(mesh);
+    VLOG(1) << "children nr is now " <<m_child_meshes.size();
+
+}
+
 //removed the vertices that are marked and also reindexes the faces and indices to point to valid vertices
 void Mesh::remove_marked_vertices(const std::vector<bool>& mask, const bool keep){
 

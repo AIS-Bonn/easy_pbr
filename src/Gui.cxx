@@ -825,11 +825,24 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     
 
 
-    //for doubles
+    //update the model matrix with the delta
     Eigen::Matrix4f new_model_matrix;
     new_model_matrix=mesh->m_model_matrix.matrix().cast<float>();
     new_model_matrix=delta*mesh->m_model_matrix.cast<float>().matrix();    
     mesh->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
+
+    //update all children
+    VLOG(1) << "updating children " << mesh->m_child_meshes.size();
+    for (size_t i = 0; i < mesh->m_child_meshes.size(); i++){
+        MeshSharedPtr child=mesh->m_child_meshes[i];
+
+        Eigen::Matrix4f new_model_matrix;
+        new_model_matrix=child->m_model_matrix.matrix().cast<float>();
+        new_model_matrix=delta*child->m_model_matrix.cast<float>().matrix();    
+        child->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
+    }
+    
+
 
 }
 

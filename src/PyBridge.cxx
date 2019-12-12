@@ -45,7 +45,8 @@ PYBIND11_MODULE(easypbr, m) {
     //Scene
     py::class_<Scene> (m, "Scene") 
     .def(py::init<>())
-    .def_static("show",  py::overload_cast<const Mesh&, const std::string>(&Scene::show) )
+    // .def_static("show",  py::overload_cast<const Mesh&, const std::string>(&Scene::show) )
+    .def_static("show",  py::overload_cast<const std::shared_ptr<Mesh>, const std::string>(&Scene::show) )
     .def_static("get_mesh_with_name",  &Scene::get_mesh_with_name )
     .def_static("does_mesh_with_name_exist",  &Scene::does_mesh_with_name_exist)
     ;
@@ -126,6 +127,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("move_in_x", &Mesh::move_in_x )
     .def("move_in_y", &Mesh::move_in_y )
     .def("move_in_z", &Mesh::move_in_z )
+    .def("add_child", &Mesh::add_child )
     ;
 
     //Recorder
