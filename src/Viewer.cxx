@@ -1259,7 +1259,7 @@ void Viewer::ssao_pass(){
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
     // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl"); //no need for pyramid because we only sample from depth_linear_tex which is already downsampled and has no mipmap
     // m_ssao_ao_pass_shader.bind_texture(m_depth_linear_tex,"depth_linear_tex");
-    //attempt 2 with depth Not linear 
+    //attempt 2 with depth Not linear because using the linear depth seems to give wrong ssao when camera is near for some reason..
     m_ssao_ao_pass_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_ssao_ao_pass_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
