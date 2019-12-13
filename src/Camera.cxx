@@ -136,8 +136,19 @@ void Camera::orbit_y(const float angle_degrees){
 
 }
 void Camera::rotate(const Eigen::Quaternionf& q){
+    // Eigen::Vector3f lookat_in_cam_coords=view_matrix() * lookat(); //gets the lookat position which is in world and puts it in cam coords
+    // lookat_in_cam_coords=q.toRotationMatrix()*lookat_in_cam_coords;
+    //get back to world coords
+    // m_lookat=model_matrix()*lookat_in_cam_coords;
+
+    //we get here the distance to the lookat point and after rotating we should have a lookat position that is at the same distance
+    float dist=dist_to_lookat();
+
     m_model_matrix.linear()=q.toRotationMatrix()*Eigen::Affine3f(model_matrix()).linear();
-    //TODO the lookat has to rotate too
+
+    m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist); //goes in the negative z direction for an amount equal to the distance to lookat so we get a point in cam coords. Afterwards we multiply with the model matrix to get it in world coords
+
+    CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
 }
 
 
