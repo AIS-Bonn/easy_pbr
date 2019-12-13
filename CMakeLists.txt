@@ -20,7 +20,7 @@ option(CORE_WITH_HALIDE "Compile Halide" OFF)
 option(CORE_WITH_TORCH "Compile Torch" OFF)
 option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
-option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
+option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
 
 

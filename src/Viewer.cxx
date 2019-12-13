@@ -493,6 +493,9 @@ void Viewer::pre_draw(){
         ImGui::NewFrame();
     }
 
+    // VLOG(1) << "camera is " << m_camera;
+    // VLOG(1) << "camera pos is " << m_camera->position();
+
     for(size_t i=0; i<m_callbacks_pre_draw.size(); i++){
         m_callbacks_pre_draw[i](*this);
     }
@@ -1546,6 +1549,18 @@ void Viewer::create_random_samples_hemisphere(){
     }
 }
 
+void Viewer::load_environment_map(const std::string path){
+
+    m_enable_ibl=true;
+
+    read_background_img(m_background_tex, path);
+    //if it's equirectangular we convert it to cubemap because it is faster to sample
+    equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
+    radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+    prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
+
+}
+
 void Viewer::read_background_img(gl::Texture2D& tex, const std::string img_path){
     cv::Mat img=cv::imread(img_path, -1); //the -1 is so that it reads the image as floats because we might read a .hdr image which needs high precision
     CHECK(img.data) << "Could not open background image " << img_path;
@@ -1974,11 +1989,11 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
         trim(file_ext); //remove whitespaces from beggining and end
         if(file_ext=="hdr" || file_ext=="HDR"){
             //load environment map
-            m_enable_ibl=true;
-            read_background_img(m_background_tex, paths[i]);
-            equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
-            radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
-            prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
+            // read_background_img(m_background_tex, paths[i]);
+            // equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
+            // radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+            // prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
+            load_environment_map(paths[i]);
         }else{
             MeshSharedPtr mesh = Mesh::create();
             mesh->load_from_file(std::string(paths[i]));

@@ -94,6 +94,7 @@ public:
     void render_mesh_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_surfels_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     // cv::Mat download_to_cv_mat(); //downloads the last drawn framebuffer into a cv::Mat. It is however sloas it forces a stall of the pipeline. For recording the viewer look into the Recorder class
+    void load_environment_map(const std::string path);
 
 
     //rendering passes 

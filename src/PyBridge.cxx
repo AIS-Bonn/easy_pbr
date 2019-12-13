@@ -29,6 +29,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def(py::init<const std::string>())
     .def_static("create",  &Viewer::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
+    .def("load_environment_map", &Viewer::load_environment_map )
     .def_readwrite("m_camera", &Viewer::m_camera )
     ;
 
