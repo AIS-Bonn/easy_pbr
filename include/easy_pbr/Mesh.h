@@ -88,8 +88,16 @@ public:
     void load_from_file(const std::string file_path);
     void save_to_file(const std::string file_path);
     bool is_empty()const;
-    void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
-    void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
+    // void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
+    // void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
+    // void apply_transform(const Eigen::Affine3d& tf, const bool update_cpu_data, const bool transform_points_at_zero=false); //if we update the CPU data we move directly the V vertices but the model matrix does not get updates and it will stay as whatever it was set before. That means that the origin around which rotations will be applied subsequently may not lie anymore where you expected. If we have update_cpu_data to false, we only modify the model matrix therefore the model matrix 
+
+    void transform_vertices_cpu(const Eigen::Affine3d& trans, const bool transform_points_at_zero=false); //modifyed the vertices on the cpu but does not update the model matrix
+    void transform_model_matrix(const Eigen::Affine3d& trans); //just affects how the model is displayed when rendered by modifying the model matrix but does not change the vertices themselves
+    void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python
+    void rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees);
+    void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
+
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);
     Eigen::Vector3d centroid();
@@ -113,8 +121,8 @@ public:
     void rotate_90_x_axis();
     void worldGL2worldROS();
     void worldROS2worldGL();
-    void rotate_x_axis(const float degrees);
-    void rotate_y_axis(const float degrees);
+    // void rotate_x_axis(const float degrees);
+    // void rotate_y_axis(const float degrees);
     void random_subsample(const float percentage_removal); 
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();
@@ -136,9 +144,9 @@ public:
     float get_scale();
 
     //some convenience functions and also useful for calling from python using pybind
-    void move_in_x(const float amount);
-    void move_in_y(const float amount);
-    void move_in_z(const float amount);
+    // void move_in_x(const float amount);
+    // void move_in_y(const float amount);
+    // void move_in_z(const float amount);
     void random_translation(const float translation_strength);
     void random_rotation(const float rotation_strength); //applies a rotation to all axes, of maximum rotation_strength degrees
     void random_stretch(const float stretch_strength); //stretches the x,y,z axis by a random number
@@ -158,7 +166,7 @@ public:
     bool m_force_vis_update; //sometimes we want the m_vis stored in the this MeshCore to go into the MeshGL, sometimes we don't. The default is to not propagate, setting this flag to true will force the update of m_vis inside the MeshGL
 
     Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
-    Eigen::Affine3d m_cur_pose; //the current pose, usually in world coordinates. Tranforms the points from their sensor frame to the world coordinates. It's not used by opengl
+    Eigen::Affine3d m_cur_pose; //the current pose, which describest the transformation that the cpu vertices underwent in order to appear centered nicelly for the gpu. The gpu then puts the vertices into the world with the model matrix. The cur pose is not used by opengl
 
     Eigen::MatrixXd V; 
     Eigen::MatrixXi F;

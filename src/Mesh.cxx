@@ -238,7 +238,7 @@ void Mesh::assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu){
     m_mesh_gpu=mesh_gpu;
 }
 
-void Mesh::apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero){
+void Mesh::transform_vertices_cpu(const Eigen::Affine3d& trans, const bool transform_points_at_zero){
 
     m_cur_pose=trans*m_cur_pose;
 
@@ -265,6 +265,43 @@ void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
         child->transform_model_matrix(trans);
     }
 }
+
+void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
+    Eigen::Affine3d tf;
+    tf.setIdentity();
+
+    tf.translation()=translation;
+    transform_model_matrix(tf);
+}
+
+void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
+    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+
+    Eigen::Affine3d tf;
+    tf.setIdentity();
+
+    tf.linear()=q.toRotationMatrix();
+    transform_model_matrix(tf);
+}
+
+void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
+    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+
+    Eigen::Affine3d rot;
+    rot.setIdentity();
+
+    rot.linear()=q.toRotationMatrix();
+
+    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+
+    transform_model_matrix(tf);
+}
+
+
+
+
+
+
 
 void Mesh::recalculate_normals(){
     if(!F.size()){
@@ -545,7 +582,7 @@ void Mesh::rotate_90_x_axis(){
     Eigen::Matrix3d worldGL_worldROS_rot;
     worldGL_worldROS_rot = Eigen::AngleAxisd(-0.5*M_PI, Eigen::Vector3d::UnitX());
     tf_worldGL_worldROS.matrix().block<3,3>(0,0)=worldGL_worldROS_rot;
-    apply_transform(tf_worldGL_worldROS);
+    transform_vertices_cpu(tf_worldGL_worldROS);
 
     m_is_dirty=true;
 }
@@ -558,7 +595,7 @@ void Mesh::worldGL2worldROS(){
     worldGL_worldROS_rot = Eigen::AngleAxisd(-0.5*M_PI, Eigen::Vector3d::UnitX());
     tf_worldGL_worldROS.matrix().block<3,3>(0,0)=worldGL_worldROS_rot;
     Eigen::Affine3d tf_worldROS_worldGL=tf_worldGL_worldROS.inverse();
-    apply_transform(tf_worldROS_worldGL);
+    transform_vertices_cpu(tf_worldROS_worldGL);
 
     m_is_dirty=true;
 }
@@ -570,34 +607,34 @@ void Mesh::worldROS2worldGL(){
     Eigen::Matrix3d worldGL_worldROS_rot;
     worldGL_worldROS_rot = Eigen::AngleAxisd(-0.5*M_PI, Eigen::Vector3d::UnitX());
     tf_worldGL_worldROS.matrix().block<3,3>(0,0)=worldGL_worldROS_rot;
-    apply_transform(tf_worldGL_worldROS);
+    transform_vertices_cpu(tf_worldGL_worldROS);
 
     m_is_dirty=true;
 }
 
-void Mesh::rotate_x_axis(const float degrees ){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
-    Eigen::Matrix3d tf_rot;
-    float rads=degrees2radians(degrees);
-    tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitX());
-    tf.matrix().block<3,3>(0,0)=tf_rot;
-    apply_transform(tf);
+// void Mesh::rotate_x_axis(const float degrees ){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
+//     Eigen::Matrix3d tf_rot;
+//     float rads=degrees2radians(degrees);
+//     tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitX());
+//     tf.matrix().block<3,3>(0,0)=tf_rot;
+//     transform_vertices_cpu(tf);
 
-    m_is_dirty=true;
-}
+//     m_is_dirty=true;
+// }
 
-void Mesh::rotate_y_axis(const float degrees ){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
-    Eigen::Matrix3d tf_rot;
-    float rads=degrees2radians(degrees);
-    tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitY());
-    tf.matrix().block<3,3>(0,0)=tf_rot;
-    apply_transform(tf);
+// void Mesh::rotate_y_axis(const float degrees ){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
+//     Eigen::Matrix3d tf_rot;
+//     float rads=degrees2radians(degrees);
+//     tf_rot = Eigen::AngleAxisd(rads, Eigen::Vector3d::UnitY());
+//     tf.matrix().block<3,3>(0,0)=tf_rot;
+//     transform_vertices_cpu(tf);
 
-    m_is_dirty=true;
-}
+//     m_is_dirty=true;
+// }
 
 
 //subsamples the point cloud a certain nr of times by randomly dropping points. If percentage_removal is 1 then we remove all the points, if it's 0 then we keep all points
@@ -752,35 +789,35 @@ void Mesh::normalize_position(){
     tf.setIdentity();
     tf.translation()=-mid;
 
-    apply_transform(tf);
+    transform_vertices_cpu(tf);
 }
 
 
-void Mesh::move_in_x(const float amount){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
-    tf.translation().x()=amount;
-    apply_transform(tf);
-}
-void Mesh::move_in_y(const float amount){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
-    tf.translation().y()=amount;
-    apply_transform(tf);
-}
-void Mesh::move_in_z(const float amount){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
-    tf.translation().z()=amount;
-    apply_transform(tf);
-}
+// void Mesh::move_in_x(const float amount){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
+//     tf.translation().x()=amount;
+//     transform_vertices_cpu(tf);
+// }
+// void Mesh::move_in_y(const float amount){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
+//     tf.translation().y()=amount;
+//     transform_vertices_cpu(tf);
+// }
+// void Mesh::move_in_z(const float amount){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
+//     tf.translation().z()=amount;
+//     transform_vertices_cpu(tf);
+// }
 void Mesh::random_translation(const float translation_strength){
     Eigen::Affine3d tf;
     tf.setIdentity();
     tf.translation().x()=m_rand_gen->rand_float(-1.0, 1.0)*translation_strength;
     tf.translation().y()=m_rand_gen->rand_float(-1.0, 1.0)*translation_strength;
     tf.translation().z()=m_rand_gen->rand_float(-1.0, 1.0)*translation_strength;
-    apply_transform(tf);
+    transform_vertices_cpu(tf);
 }
 void Mesh::random_rotation(const float rotation_strength){
     Eigen::Quaterniond q;
@@ -795,7 +832,7 @@ void Mesh::random_rotation(const float rotation_strength){
     tf.setIdentity();
     tf.linear()=R;
 
-    apply_transform(tf);
+    transform_vertices_cpu(tf);
 
 }
 void Mesh::random_stretch(const float stretch_strength){
@@ -944,7 +981,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     Eigen::Vector3d t;
     t<< 0, y_pos, 0;
     trans.translate(t);
-    apply_transform(trans,true);
+    transform_vertices_cpu(trans,true);
  
 
     name="grid_floor";
@@ -978,7 +1015,7 @@ void Mesh::create_floor(const float y_pos, const float scale){
     Eigen::Vector3d t;
     t<< 0, y_pos, 0;
     trans.translate(t);
-    apply_transform(trans,true);
+    transform_vertices_cpu(trans,true);
  
 
     name="grid_floor";
