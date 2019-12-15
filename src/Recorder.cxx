@@ -39,6 +39,14 @@ Recorder::Recorder():
 }
 
 Recorder::~Recorder(){
+    //wait for the threads to write all the rest of the images
+    while(m_cv_mats_queue.size_approx()!=0){
+        VLOG(1) << "waiting for recording to finish";
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
     m_threads_are_running=false;
     for(size_t i = 0; i < m_writer_threads.size(); i++){
         m_writer_threads[i].join();
