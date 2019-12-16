@@ -334,7 +334,15 @@ void Mesh::load_from_file(const std::string file_path){
     }else if (file_ext == "pcd") {
         //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
         pcl::PCLPointCloud2 cloud_blob;
-        pcl::io::loadPCDFile (file_path_abs, cloud_blob);
+        Eigen::Vector4f origin = Eigen::Vector4f::Zero();
+        Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
+        pcl::PCDReader p;
+        int pcd_version;
+        p.read (file_path_abs, cloud_blob, origin, orientation, pcd_version);
+        Eigen::Affine3f cloud_pose = Eigen::Affine3f::Identity();
+        cloud_pose.linear() = orientation.toRotationMatrix();
+        cloud_pose.translation() = origin.head<3>();
+        //pcl::io::loadPCDFile (file_path_abs, cloud_blob);
 
         // VLOG(1) << " read pcl cloud with header: " << cloud_blob;
 
@@ -355,7 +363,8 @@ void Mesh::load_from_file(const std::string file_path){
             pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
             V.resize(cloud->points.size(), 3);
             for (size_t i = 0; i < cloud->points.size (); ++i){
-                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
             }
 
         }else if (has_rgb && !has_intensity){
@@ -364,12 +373,13 @@ void Mesh::load_from_file(const std::string file_path){
             V.resize(cloud->points.size(), 3);
             C.resize(cloud->points.size(), 3);
             for (size_t i = 0; i < cloud->points.size (); ++i){
-                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
                 C.row(i) << (float)cloud->points[i].r/255.0 , (float)cloud->points[i].g/255.0, (float)cloud->points[i].b/255.0;
             }
         
         }else if (has_rgb && has_intensity){
-            LOG(FATAL) << "We not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
+            LOG(FATAL) << "We do not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
 
         }else if (!has_rgb && has_intensity){
             pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
@@ -377,12 +387,12 @@ void Mesh::load_from_file(const std::string file_path){
             V.resize(cloud->points.size(), 3);
             I.resize(cloud->points.size(), 1);
             for (size_t i = 0; i < cloud->points.size (); ++i){
-                V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
                 I.row(i) << cloud->points[i].intensity;
             } 
         }
-
-
+        LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
     }

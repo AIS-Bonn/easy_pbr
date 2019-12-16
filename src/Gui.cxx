@@ -197,9 +197,15 @@ void Gui::draw_main_menu(){
     if (ImGui::CollapsingHeader("Viewer") ) {
         //combo of the data list with names for each of them
 
-
+        if ( ImGui::Button("Hide Meshes") )
+            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i)
+                m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=false;
+        ImGui::SameLine();
+        if ( ImGui::Button("Show Meshes") )
+            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i)
+                m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=true;
         if(ImGui::ListBoxHeader("Scene meshes", m_view->m_meshes_gl.size(), 6)){
-            for (int i = 0; i < (int)m_view->m_meshes_gl.size(); i++) {
+            for (int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i) {
 
                 //it's the one we have selected so we change the header color to a whiter value
                 if(i==m_selected_mesh_idx){
