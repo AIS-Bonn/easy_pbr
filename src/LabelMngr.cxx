@@ -26,7 +26,7 @@ LabelMngr::LabelMngr(const configuru::Config& config):
 }
 
 LabelMngr::LabelMngr(const std::string labels_file, const std::string color_scheme_file, const std::string frequency_file, const int unlabeled_idx ){
-    m_unlabeled_idx=m_unlabeled_idx;
+    m_unlabeled_idx=unlabeled_idx;
     read_data(labels_file ,color_scheme_file, frequency_file);
 }
 
