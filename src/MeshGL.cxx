@@ -63,6 +63,7 @@ void MeshGL::sanity_check() const{
 
 void MeshGL::upload_to_gpu(){
 
+
     // Temporary copy of the content of each VBO. need to make it float and row major
     typedef Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXf;
     typedef Eigen::Matrix<unsigned,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXi;

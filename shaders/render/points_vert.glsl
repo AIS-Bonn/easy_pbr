@@ -86,14 +86,14 @@ vec3 colorize_height(float x){
 
 void main(){
 
-    bool enable_min_max_cap=true;
-    if (position.y> max_y || position.y<min_y){
-        gl_Position = MVP*vec4(vec3(0.0), 1.0);
-        color_per_vertex_out=vec3(0.0);
-        log_depth_out=0.0;
-        normal_cam_coords_out=vec3(0);
-        return;
-    }
+    // bool enable_min_max_cap=true;
+    // if (position.y> max_y || position.y<min_y){
+        // gl_Position = MVP*vec4(vec3(0.0), 1.0);
+        // color_per_vertex_out=vec3(0.0);
+        // log_depth_out=0.0;
+        // normal_cam_coords_out=vec3(0);
+        // return;
+    // }
 
 
 
