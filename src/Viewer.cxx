@@ -572,25 +572,28 @@ void Viewer::draw(const GLuint fbo_id){
 
     TIME_START("shadow_pass");
     //loop through all the light and each mesh into their shadow maps as a depth map
-    for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
-        if(m_spot_lights[l_idx]->m_create_shadow){
-            m_spot_lights[l_idx]->clear_shadow_map();
+    if(!m_enable_edl_lighting){
+        for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
+            if(m_spot_lights[l_idx]->m_create_shadow){
+                m_spot_lights[l_idx]->clear_shadow_map();
 
-            //loop through all the meshes
-            for(size_t i=0; i<m_meshes_gl.size(); i++){
-                MeshGLSharedPtr mesh=m_meshes_gl[i];
-                if(mesh->m_core->m_vis.m_is_visible){
+                //loop through all the meshes
+                for(size_t i=0; i<m_meshes_gl.size(); i++){
+                    MeshGLSharedPtr mesh=m_meshes_gl[i];
+                    if(mesh->m_core->m_vis.m_is_visible){
 
-                    if(mesh->m_core->m_vis.m_show_mesh){
-                        m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
-                    }
-                    if(mesh->m_core->m_vis.m_show_points){
-                        m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
+                        if(mesh->m_core->m_vis.m_show_mesh){
+                            m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
+                        }
+                        if(mesh->m_core->m_vis.m_show_points){
+                            m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
+                        }
                     }
                 }
             }
         }
     }
+
     TIME_END("shadow_pass");
 
 
@@ -710,7 +713,7 @@ void Viewer::draw(const GLuint fbo_id){
         m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
     m_final_fbo_no_gui.bind_for_draw();
-    m_final_fbo_no_gui.clear();
+    // m_final_fbo_no_gui.clear();
 
     //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
