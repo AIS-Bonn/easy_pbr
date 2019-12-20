@@ -271,7 +271,16 @@ vec3 RRTAndODTFit(vec3 v){
     return a / b;
 }
 
-bool is_color_bloomed(vec3 color){
+//smoothstep but with 1st and 2nd derivatives that go more smoothly to zero
+//assumes that X is between 0.0 and 1.0
+float smootherstep( float A, float B, float X ){
+//    float t = linearstep( A, B, X );
+    float t= X;
+
+   return t * t * t * ( t * ( t * 6 - 15 ) + 10 );
+}
+
+float compute_bloom_weight(vec3 color){
     vec3 color_tonemapped;
     color_tonemapped=color*exposure;
     color_tonemapped = transpose(aces_input)*color_tonemapped;
@@ -281,11 +290,23 @@ bool is_color_bloomed(vec3 color){
 
     // float bloom_threshold=0.9;
     float brightness=luminance(color_tonemapped);
-    if (brightness>bloom_threshold){
-        return true;
-    }else{
-        return false;
+    float above_thresh=brightness-bloom_threshold;
+    float bloom_weight=0.0;
+    if(above_thresh>0.0){
+        // bloom_weight=map(above_thresh, 0.0 , 0.1, 0.0, 1.0);
+        bloom_weight=smoothstep(0.0, 0.1, above_thresh);
+        // bloom_weight=smootherstep(0.0, 0.1, above_thresh);
+        // bloom_weight=1.0;
+        // bloom_weight=above_thresh;
     }
+
+    // if (brightness>bloom_threshold){
+        // return true;
+    // }else{
+        // return false;
+    // }
+
+    return bloom_weight;
 }
 
 void main(){
@@ -306,8 +327,14 @@ void main(){
 
             out_color = vec4(color, 1.0);
 
-            if (is_color_bloomed(color)){
-                bloom_color=vec4(color,1.0);
+            // if (is_color_bloomed(color)){
+            //     bloom_color=vec4(color,1.0);
+            // }else{
+            //     bloom_color=vec4(0.0);
+            // }
+            float bloom_weight=compute_bloom_weight(color);
+            if(bloom_weight>0.0){
+                bloom_color=vec4(color, bloom_weight);
             }else{
                 bloom_color=vec4(0.0);
             }
@@ -347,8 +374,16 @@ void main(){
             // bloom_color = vec4(1.0);
             // out_color = vec4(1.0);
 
-            if (is_color_bloomed(color)){
-                bloom_color=vec4(color,1.0);
+            // if (is_color_bloomed(color)){
+                // bloom_color=vec4(color,1.0);
+            // }else{
+                // bloom_color=vec4(0.0);
+            // }
+            // float bloom_weight=compute_bloom_weight(color);
+            // bloom_color=vec4(color, bloom_weight);
+            float bloom_weight=compute_bloom_weight(color);
+            if(bloom_weight>0.0){
+                bloom_color=vec4(color, bloom_weight);
             }else{
                 bloom_color=vec4(0.0);
             }
@@ -539,8 +574,17 @@ void main(){
     out_color = vec4(color, 1.0);
 
 
-    if (is_color_bloomed(color)){
-        bloom_color=vec4(color,1.0);
+    // if (is_color_bloomed(color)){
+    //     bloom_color=vec4(color,1.0);
+    // }else{
+    //     bloom_color=vec4(0.0);
+    // }
+    // float bloom_weight=compute_bloom_weight(color);
+    // bloom_color=vec4(color, bloom_weight);
+
+    float bloom_weight=compute_bloom_weight(color);
+    if(bloom_weight>0.0){
+        bloom_color=vec4(color, bloom_weight);
     }else{
         bloom_color=vec4(0.0);
     }

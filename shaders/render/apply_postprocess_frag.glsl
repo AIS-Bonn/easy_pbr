@@ -35,8 +35,9 @@ void main(){
 
     // vec3 result = textureLod(img, uv_in, mip_map_lvl).rgb * weight[0]; // current fragment's contribution
     vec3 color = texture(composed_tex, uv_in).rgb;
-    vec3 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl).rgb;
-    color+=bloom;
+    vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
+    float bloom_weight=bloom.w;
+    color+=bloom.rgb*bloom_weight;
 
     //tonemap and gamma correct 
     color*=exposure;

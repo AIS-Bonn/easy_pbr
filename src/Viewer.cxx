@@ -87,9 +87,9 @@ Viewer::Viewer(const std::string config_file):
     m_enable_culling(false),
     m_enable_ssao(true),
     m_enable_bloom(true),
-    m_bloom_threshold(1.0),
-    m_bloom_mip_map_lvl(2),
-    m_bloom_blur_iters(2),
+    m_bloom_threshold(0.85),
+    m_bloom_mip_map_lvl(1),
+    m_bloom_blur_iters(10),
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
@@ -670,63 +670,6 @@ void Viewer::draw(const GLuint fbo_id){
     apply_postprocess();
 
 
-    
-
-
-    // // //forward render the lines, points and edges
-    // //blit the depth 
-    // TIME_START("forward_render");
-    // m_gbuffer.bind_for_read();
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id); // write to default framebuffer
-    // glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-
-    // for(size_t i=0; i<m_meshes_gl.size(); i++){
-    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
-    //     if(mesh->m_core->m_vis.m_is_visible){
-    //         // if(mesh->m_core->m_vis.m_show_points){
-    //         //     render_points(mesh);
-    //         // }
-    //         if(mesh->m_core->m_vis.m_show_lines){
-    //             render_lines(mesh);
-    //         }
-    //         if(mesh->m_core->m_vis.m_show_mesh){
-    //             // render_mesh_to_gbuffer(mesh);
-    //         }
-    //         if(mesh->m_core->m_vis.m_show_wireframe){
-    //             render_wireframe(mesh);
-    //         }
-    //     }
-    // }
-    // TIME_END("forward_render");
-
-
-
-    // TIME_START("forward_render");
-    // //blit the final texture to the back buffer https://stackoverflow.com/questions/42878216/opengl-how-to-draw-to-a-multisample-framebuffer-and-then-use-the-result-as-a-n
-    // glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    // glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_tex.fbo_id());
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    // glDrawBuffer(GL_BACK);
-    // glBlitFramebuffer(0, 0, m_final_tex.width(), m_final_tex.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
-    // //blit also the depth
-    // m_gbuffer.bind_for_read();
-    // glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-
-    // //forward render the lines and edges 
-    // for(size_t i=0; i<m_meshes_gl.size(); i++){
-    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
-    //     if(mesh->m_core->m_vis.m_is_visible){
-    //         if(mesh->m_core->m_vis.m_show_lines){
-    //             render_lines(mesh);
-    //         }
-    //         if(mesh->m_core->m_vis.m_show_wireframe){
-    //             render_wireframe(mesh);
-    //         }
-    //     }
-    // }
-    // TIME_END("forward_render");
 
 
     //attempt 3 at forward rendering 
@@ -760,13 +703,6 @@ void Viewer::draw(const GLuint fbo_id){
         }
     }
 
-
-    // //finally just blit the final fbo to the default framebuffer
-    // glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
-    // m_final_fbo.bind_for_read();
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-    // glDrawBuffer(GL_BACK);
-    // glBlitFramebuffer(0, 0, m_final_fbo.width(), m_final_fbo.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 
     //restore state
@@ -1558,7 +1494,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
 
     Eigen::Vector2i blurred_img_size;
     blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
-    // VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
+    VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
     glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
 
     m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );
