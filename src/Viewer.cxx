@@ -89,7 +89,7 @@ Viewer::Viewer(const std::string config_file):
     m_enable_bloom(true),
     m_bloom_threshold(0.85),
     m_bloom_mip_map_lvl(1),
-    m_bloom_blur_iters(10),
+    m_bloom_blur_iters(3),
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
@@ -1494,7 +1494,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
 
     Eigen::Vector2i blurred_img_size;
     blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
-    VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
+    // VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
     glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
 
     m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );

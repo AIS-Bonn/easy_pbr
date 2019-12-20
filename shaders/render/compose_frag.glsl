@@ -272,10 +272,10 @@ vec3 RRTAndODTFit(vec3 v){
 }
 
 //smoothstep but with 1st and 2nd derivatives that go more smoothly to zero
-//assumes that X is between 0.0 and 1.0
 float smootherstep( float A, float B, float X ){
 //    float t = linearstep( A, B, X );
-    float t= X;
+    // float t= X;
+    float t = map(X, A , B, 0.0, 1.0);
 
    return t * t * t * ( t * ( t * 6 - 15 ) + 10 );
 }
@@ -294,8 +294,8 @@ float compute_bloom_weight(vec3 color){
     float bloom_weight=0.0;
     if(above_thresh>0.0){
         // bloom_weight=map(above_thresh, 0.0 , 0.1, 0.0, 1.0);
-        bloom_weight=smoothstep(0.0, 0.1, above_thresh);
-        // bloom_weight=smootherstep(0.0, 0.1, above_thresh);
+        // bloom_weight=smoothstep(0.0, 0.1, above_thresh);
+        bloom_weight=smootherstep(0.0, 0.1, above_thresh);
         // bloom_weight=1.0;
         // bloom_weight=above_thresh;
     }
