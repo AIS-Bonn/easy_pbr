@@ -87,6 +87,9 @@ Viewer::Viewer(const std::string config_file):
     m_enable_culling(false),
     m_enable_ssao(true),
     m_enable_bloom(true),
+    m_bloom_threshold(1.0),
+    m_bloom_mip_map_lvl(2),
+    m_bloom_blur_iters(2),
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
@@ -661,7 +664,7 @@ void Viewer::draw(const GLuint fbo_id){
 
     //blur the bloom image if we do have it
     if (m_enable_bloom){
-        blur_img(m_composed_fbo.tex_with_name("bloom_gtex"));
+        blur_img(m_composed_fbo.tex_with_name("bloom_gtex"), m_bloom_mip_map_lvl, m_bloom_blur_iters);
     }
 
     apply_postprocess();
@@ -1469,6 +1472,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
     m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
+    m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
 
 
     //fill up the vector of spot lights 
@@ -1545,12 +1549,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
-void Viewer::blur_img(gl::Texture2D& img){
+void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_bloom_blur_iters){
 
     TIME_START("blur_img");
 
     //first mip map the image so it's faster to blur it when it's smaller
-    int mip_map_lvl=1;
     img.generate_mipmap(mip_map_lvl);
 
     Eigen::Vector2i blurred_img_size;
@@ -1575,8 +1578,8 @@ void Viewer::blur_img(gl::Texture2D& img){
     GL_C( m_blur_shader.use() );
 
 
-    int iters=2;
-    for (int i = 0; i < iters; i++){
+    // int iters=2;
+    for (int i = 0; i < m_bloom_blur_iters; i++){
 
         m_blur_shader.bind_texture(img,"img");
         m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
@@ -1635,7 +1638,7 @@ void Viewer::apply_postprocess(){
 
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("composed_gtex"),"composed_tex");
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("bloom_gtex"),"bloom_tex");
-    m_apply_postprocess_shader.uniform_int(2,"bloom_mip_map_lvl");
+    m_apply_postprocess_shader.uniform_int(m_bloom_mip_map_lvl,"bloom_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
     m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
     // draw

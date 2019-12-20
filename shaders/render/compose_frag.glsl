@@ -42,6 +42,7 @@ uniform bool enable_ibl;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 uniform float exposure;
+uniform float bloom_threshold;
 
 
 //for edl 
@@ -278,7 +279,7 @@ bool is_color_bloomed(vec3 color){
     color_tonemapped = transpose(aces_output)*color_tonemapped;
 
 
-    float bloom_threshold=0.9;
+    // float bloom_threshold=0.9;
     float brightness=luminance(color_tonemapped);
     if (brightness>bloom_threshold){
         return true;

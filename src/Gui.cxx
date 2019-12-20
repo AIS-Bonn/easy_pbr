@@ -304,6 +304,7 @@ void Gui::draw_main_menu(){
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);
         ImGui::Checkbox("Enable EDL", &m_view->m_enable_edl_lighting);
         ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
+        ImGui::Checkbox("Enable Bloom", &m_view->m_enable_bloom);
         ImGui::Checkbox("Enable IBL", &m_view->m_enable_ibl);
         ImGui::Checkbox("Show Environment", &m_view->m_show_environment_map);
 
@@ -362,7 +363,14 @@ void Gui::draw_main_menu(){
         ImGui::SliderInt("AO power", &m_view->m_ao_power, 1, 15);
         ImGui::SliderFloat("Sigma S", &m_view->m_sigma_spacial, 1, 12.0);
         ImGui::SliderFloat("Sigma D", &m_view->m_sigma_depth, 0.1, 5.0);
+    }
 
+
+    ImGui::Separator();
+    if (ImGui::CollapsingHeader("Bloom")) {
+        ImGui::SliderFloat("BloomThresh", &m_view->m_bloom_threshold, 0.0, 2.0);
+        ImGui::SliderInt("BloomMipMap", &m_view->m_bloom_mip_map_lvl, 0, 6);
+        ImGui::SliderInt("BloomBlurIters", &m_view->m_bloom_blur_iters, 0, 10);
     }
 
 

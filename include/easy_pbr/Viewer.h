@@ -167,6 +167,9 @@ public:
     bool m_enable_culling;
     bool m_enable_ssao;
     bool m_enable_bloom;
+    float m_bloom_threshold;
+    int m_bloom_mip_map_lvl;
+    int m_bloom_blur_iters;
     // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
     // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
     bool m_auto_edl;
@@ -205,7 +208,7 @@ private:
     void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance
     void prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex); //prefilter the radiance tex for various levels of roughness. Used for specular IBL
     void integrate_brdf(gl::Texture2D& brdf_lut_tex);
-    void blur_img(gl::Texture2D& img);
+    void blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_bloom_blur_iters);
     void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
 
 };
