@@ -129,9 +129,14 @@ public:
     gl::Shader m_radiance2irradiance_shader;
     gl::Shader m_prefilter_shader;
     gl::Shader m_integrate_brdf_shader;
+    gl::Shader m_blur_shader;
+    gl::Shader m_apply_postprocess_shader;
 
-    gl::GBuffer m_gbuffer;
-    gl::Texture2D m_composed_tex; //after gbuffer composing
+    gl::GBuffer m_gbuffer; //contains all the textures of a normal gbuffer. So normals, diffuse, depth etc.
+    gl::GBuffer m_composed_fbo; //contains the composed image between the foreground and background before tonemapping and gamma correction. Contains also the bright spots of the image
+    // gl::Texture2D m_composed_tex; //after gbuffer composing the foreground with the background but before tonemapping and gamme correction. Is in half float
+    // gl::Texture2D m_bloom_tex; //while composing we also write the colors corresponding to the bright areas. Is in half float
+    gl::Texture2D m_posprocessed_tex; //after adding also any post processing like bloom and tone mapping and gamma correcting. Is in RGBA8
     gl::GBuffer m_final_fbo_no_gui; //after rendering also the lines and edges but before rendering the gui
     gl::GBuffer m_final_fbo_with_gui; //after we also render the gui into it
 
@@ -139,6 +144,7 @@ public:
     gl::Texture2D m_ao_blurred_tex;
     gl::Texture2D m_rvec_tex;
     gl::Texture2D m_depth_linear_tex;
+    gl::Texture2D m_blur_tmp_tex; //stores the blurring temporary results
     gl::Texture2D m_background_tex; //in the case we want an image as the background
     gl::CubeMap m_environment_cubemap_tex; //used for image-based ligthing
     gl::CubeMap m_irradiance_cubemap_tex; //averages the radiance around the hermisphere for each direction. Used for diffuse IBL
@@ -160,6 +166,7 @@ public:
     float m_ambient_color_power;
     bool m_enable_culling;
     bool m_enable_ssao;
+    bool m_enable_bloom;
     // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
     // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
     bool m_auto_edl;
@@ -198,5 +205,7 @@ private:
     void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance
     void prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex); //prefilter the radiance tex for various levels of roughness. Used for specular IBL
     void integrate_brdf(gl::Texture2D& brdf_lut_tex);
+    void blur_img(gl::Texture2D& img);
+    void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
 
 };

@@ -7,6 +7,7 @@ layout(location=3) in vec3 world_view_ray_in;
 
 //out
 layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 bloom_color;
 
 uniform sampler2D normal_tex;
 // uniform sampler2D position_cam_coords_tex;
@@ -269,9 +270,25 @@ vec3 RRTAndODTFit(vec3 v){
     return a / b;
 }
 
+bool is_color_bloomed(vec3 color){
+    vec3 color_tonemapped;
+    color_tonemapped=color*exposure;
+    color_tonemapped = transpose(aces_input)*color_tonemapped;
+    color_tonemapped = RRTAndODTFit(color_tonemapped);
+    color_tonemapped = transpose(aces_output)*color_tonemapped;
+
+
+    float bloom_threshold=0.9;
+    float brightness=luminance(color_tonemapped);
+    if (brightness>bloom_threshold){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 void main(){
 
-    float bloom_threshold=1.0;
 
     //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
@@ -281,11 +298,19 @@ void main(){
             vec3 color = texture(background_tex, uv_in).xyz;
             //tonemap
             // color = color / (color + vec3(1.0));
-            color = Tonemap_Reinhard(color);
+            // color = Tonemap_Reinhard(color);
             // gamma correct
-            color=color*exposure;
-            color = pow(color, vec3(1.0/2.2)); 
+            // color=color*exposure;
+            // color = pow(color, vec3(1.0/2.2)); 
+
             out_color = vec4(color, 1.0);
+
+            if (is_color_bloomed(color)){
+                bloom_color=vec4(color,1.0);
+            }else{
+                bloom_color=vec4(0.0);
+            }
+
             return;
         }else if(show_environment_map){
             vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
@@ -293,32 +318,41 @@ void main(){
             // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
             //tonemap
             // color = color / (color + vec3(1.0));
-            color=color*exposure;
-            float brightness=luminance(color);
-            if (brightness>bloom_threshold){
+            // color=color*exposure;
+            // float brightness=luminance(color);
+            // if (brightness>bloom_threshold){
                 // color=vec3(1.0, 0.0, 0.0);
                 // color=color*(brightness-bloom_threshold);
                 // color+=color*(brightness-bloom_threshold)*10;
-            }
+            // }
             // color = Tonemap_Reinhard(color);
             // color = Tonemap_Unreal(color);
             // color = Tonemap_FilmicALU(color);
             // color = Tonemap_ACES(color);
             //new aces
-            color = transpose(aces_input)*color;
-            color = RRTAndODTFit(color);
-            color = transpose(aces_output)*color;
+            // color = transpose(aces_input)*color;
+            // color = RRTAndODTFit(color);
+            // color = transpose(aces_output)*color;
             // color=color*exposure;
             // float brightness=luminance(color);
             // if (brightness>bloom_threshold){
-            //     // color=vec3(1.0, 0.0, 0.0);
+            //     color=vec3(1.0, 0.0, 0.0);
             //     // color=color*(brightness-bloom_threshold);
-            //     color+=color*(brightness-bloom_threshold);
+            //     // color+=color*(brightness-bloom_threshold);
             // }
             //gamma correct
-            color = pow(color, vec3(1.0/2.2)); 
+            // color = pow(color, vec3(1.0/2.2)); 
             out_color = vec4(color, 1.0);
+            // bloom_color = vec4(1.0);
             // out_color = vec4(1.0);
+
+            if (is_color_bloomed(color)){
+                bloom_color=vec4(color,1.0);
+            }else{
+                bloom_color=vec4(0.0);
+            }
+
+
             return;
         }else{
             discard;
@@ -475,32 +509,39 @@ void main(){
     }
 
 
-    color=color*exposure;
-    // float brightness = luminance(color);
-    // if (brightness>bloom_threshold){
-    //     color=vec3(1.0, 0.0, 0.0);
-    // } 
+    // color=color*exposure;
+    // // float brightness = luminance(color);
+    // // if (brightness>bloom_threshold){
+    // //     color=vec3(1.0, 0.0, 0.0);
+    // // } 
 
 
 
-    // color = Tonemap_Reinhard(color);
-    // color = Tonemap_Unreal(color);
-    // color = Tonemap_FilmicALU(color);
-    // color = Tonemap_ACES(color);
-    //new aces
-    color = transpose(aces_input)*color;
-    color = RRTAndODTFit(color);
-    color = transpose(aces_output)*color;
+    // // color = Tonemap_Reinhard(color);
+    // // color = Tonemap_Unreal(color);
+    // // color = Tonemap_FilmicALU(color);
+    // // color = Tonemap_ACES(color);
+    // //new aces
+    // color = transpose(aces_input)*color;
+    // color = RRTAndODTFit(color);
+    // color = transpose(aces_output)*color;
 
 
     // HDR tonemapping
     // color = color / (color + vec3(1.0));
     // gamma correct
     // color=color*exposure;
-    color = pow(color, vec3(1.0/2.2)); 
+    // color = pow(color, vec3(1.0/2.2)); 
 
  
 
     out_color = vec4(color, 1.0);
+
+
+    if (is_color_bloomed(color)){
+        bloom_color=vec4(color,1.0);
+    }else{
+        bloom_color=vec4(0.0);
+    }
    
 }

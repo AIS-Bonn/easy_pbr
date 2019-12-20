@@ -116,8 +116,8 @@ Mesh Frame::backproject_depth(){
     }
 
     //puts it in camera frame 
-    VLOG(1) << " K is \n" << K;
-    VLOG(1) << " K inverse is \n" << K.cast<double>().inverse();
+    // VLOG(1) << " K is \n" << K;
+    // VLOG(1) << " K inverse is \n" << K.cast<double>().inverse();
     // V=(K.cast<double>().inverse()*V.transpose()).transpose();
     V=V*K.cast<double>().inverse().transpose(); 
     // V=V.rowwise()*D.array();

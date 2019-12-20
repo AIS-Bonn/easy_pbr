@@ -86,6 +86,7 @@ Viewer::Viewer(const std::string config_file):
     m_ambient_color_power(0.05),
     m_enable_culling(false),
     m_enable_ssao(true),
+    m_enable_bloom(true),
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
@@ -262,6 +263,8 @@ void Viewer::compile_shaders(){
     m_draw_wireframe_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/wireframe_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/wireframe_frag.glsl"  );
     m_draw_surfels_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_frag.glsl" , std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_geom.glsl" );
     m_compose_final_quad_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/compose_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/compose_frag.glsl"  );
+    m_blur_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/blur_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/blur_frag.glsl"  );
+    m_apply_postprocess_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_frag.glsl"  );
 
     m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_frag.glsl" );
     // m_depth_linearize_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
@@ -295,8 +298,16 @@ void Viewer::init_opengl(){
     GL_C( m_final_fbo_with_gui.add_depth("depth_gtex") );
     m_final_fbo_with_gui.sanity_check();
 
+
+    m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
+    m_composed_fbo.add_texture("composed_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT); 
+    m_composed_fbo.add_texture("bloom_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);  
+    m_composed_fbo.sanity_check();
+
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode_min_mag(GL_NEAREST);
+
+
 
     //cubemaps 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //to linearly filter across faces of the cube
@@ -648,6 +659,13 @@ void Viewer::draw(const GLuint fbo_id){
     //compose the final image
     compose_final_image(fbo_id);
 
+    //blur the bloom image if we do have it
+    if (m_enable_bloom){
+        blur_img(m_composed_fbo.tex_with_name("bloom_gtex"));
+    }
+
+    apply_postprocess();
+
 
     
 
@@ -717,10 +735,10 @@ void Viewer::draw(const GLuint fbo_id){
 
     //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_composed_tex.fbo_id());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_posprocessed_tex.fbo_id());
     m_final_fbo_no_gui.bind_for_draw();
     // glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_composed_tex.width(), m_composed_tex.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, m_posprocessed_tex.width(), m_posprocessed_tex.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     //blit also the depth
     m_gbuffer.bind_for_read();
     glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
@@ -1388,8 +1406,14 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     TIME_START("compose");
 
     //create a final image the same size as the framebuffer
-    m_composed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
-    m_composed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    // m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
+    // m_composed_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    // m_composed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+
+    // m_bloom_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    // m_bloom_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
+
 
     //matrices setuo
     Eigen::Matrix4f V = m_camera->view_matrix();
@@ -1499,7 +1523,15 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // VLOG(1) << "neighbours is " << neighbours;
     m_compose_final_quad_shader.uniform_v2_float(neighbours , "neighbours");
 
-    m_compose_final_quad_shader.draw_into(m_composed_tex, "out_color");
+    // m_compose_final_quad_shader.draw_into(m_composed_tex, "out_color");
+    m_composed_fbo.bind_for_draw();
+    m_compose_final_quad_shader.draw_into(m_composed_fbo,
+                                    {
+                                    // std::make_pair("position_out", "position_gtex"),
+                                    std::make_pair("out_color", "composed_gtex"),
+                                    std::make_pair("bloom_color", "bloom_gtex"),
+                                    }
+                                    ); 
 
     // draw
     m_fullscreen_quad->vao.bind(); 
@@ -1513,6 +1545,112 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
+void Viewer::blur_img(gl::Texture2D& img){
+
+    TIME_START("blur_img");
+
+    //first mip map the image so it's faster to blur it when it's smaller
+    int mip_map_lvl=1;
+    img.generate_mipmap(mip_map_lvl);
+
+    Eigen::Vector2i blurred_img_size;
+    blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
+    // VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
+    glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
+
+    m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );
+
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+
+     // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    //shader setup
+    GL_C( m_blur_shader.use() );
+
+
+    int iters=2;
+    for (int i = 0; i < iters; i++){
+
+        m_blur_shader.bind_texture(img,"img");
+        m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
+        m_blur_shader.uniform_bool(true,"horizontal");
+        m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
+        // draw
+        m_fullscreen_quad->vao.bind(); 
+        glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+        //do it in the vertical direction
+        m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
+        m_blur_shader.uniform_int(0,"mip_map_lvl");
+        m_blur_shader.uniform_bool(false,"horizontal");
+        m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+        // draw
+        m_fullscreen_quad->vao.bind(); 
+        glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    }
+    
+
+    TIME_END("blur_img");
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
+
+
+}
+
+void Viewer::apply_postprocess(){
+
+    TIME_START("apply_postprocess");
+
+    //first mip map the image so it's faster to blur it when it's smaller
+    // m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), m_posprocessed_tex.width(), blurred_img_size.y() );
+    m_posprocessed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
+    m_posprocessed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+
+     // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    //shader setup
+    GL_C( m_apply_postprocess_shader.use() );
+
+
+
+    m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("composed_gtex"),"composed_tex");
+    m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("bloom_gtex"),"bloom_tex");
+    m_apply_postprocess_shader.uniform_int(2,"bloom_mip_map_lvl");
+    m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
+    m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
+    // draw
+    m_fullscreen_quad->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+   
+
+    TIME_END("apply_postprocess");
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+
+}
 // cv::Mat Viewer::download_to_cv_mat(){
 //     // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
 //     // int w=m_viewport_size.x()*m_subsample_factor;

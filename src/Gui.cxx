@@ -487,7 +487,11 @@ void Gui::draw_main_menu(){
         show_gl_texture(m_view->m_ao_tex.tex_id(), "ao_tex", true);
         show_gl_texture(m_view->m_ao_blurred_tex.tex_id(), "ao_blurred_tex", true);
         show_gl_texture(m_view->m_brdf_lut_tex.tex_id(), "brdf_lut_tex", true);
-        show_gl_texture(m_view->m_composed_tex.tex_id(), "composed_tex", true);
+        // show_gl_texture(m_view->m_composed_tex.tex_id(), "composed_tex", true);
+        show_gl_texture(m_view->m_composed_fbo.tex_with_name("composed_gtex").tex_id(), "composed_gtex", true);
+        show_gl_texture(m_view->m_composed_fbo.tex_with_name("bloom_gtex").tex_id(), "bloom_gtex", true);
+        show_gl_texture(m_view->m_posprocessed_tex.tex_id(), "posprocessed_tex", true);
+        show_gl_texture(m_view->m_blur_tmp_tex.tex_id(), "blur_tmp_tex", true);
         show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_gtex").tex_id(), "fbo_no_gui", true);
         show_gl_texture(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex").tex_id(), "fbo_with_gui", true);
     }
