@@ -109,6 +109,7 @@ set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
     ${PROJECT_SOURCE_DIR}/src/Scene.cxx
     ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
+    ${PROJECT_SOURCE_DIR}/src/Frame.cxx
 )
 # file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
 file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp

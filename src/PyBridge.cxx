@@ -6,11 +6,13 @@
 
 //my stuff 
 #include "easy_pbr/Viewer.h"
+#include "easy_pbr/Gui.h"
 #include "easy_pbr/Mesh.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/LabelMngr.h"
 #include "easy_pbr/Recorder.h"
 #include "easy_pbr/Camera.h"
+#include "easy_pbr/Frame.h"
 #include "Profiler.h"
 
 
@@ -24,6 +26,25 @@ namespace py = pybind11;
 
 
 PYBIND11_MODULE(easypbr, m) {
+
+    py::class_<cv::Mat> (m, "Mat")
+    ;
+
+    //Frame
+    py::class_<Frame> (m, "Frame")
+    .def(py::init<>())
+    // .def_readwrite("rgb_32f", &Frame::rgb_32f) //not possible in pybind. You would need to wrap the opencv into a matrix type or soemthing like that
+    .def("create_frustum_mesh", &Frame::create_frustum_mesh, py::arg("scale_multiplier") = 1.0)
+    .def("rotate_y_axis", &Frame::rotate_y_axis )
+    .def("backproject_depth", &Frame::backproject_depth )
+    .def("assign_color", &Frame::assign_color )
+    .def_readwrite("rgb_8u", &Frame::rgb_8u )
+    .def_readwrite("rgb_32f", &Frame::rgb_32f )
+    // #ifdef WITH_TORCH
+        // .def("rgb2tensor", &Frame::rgb2tensor )
+        // .def("tensor2rgb", &Frame::tensor2rgb )
+    // #endif
+    ;
  
     //Viewer
     py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")
@@ -32,6 +53,12 @@ PYBIND11_MODULE(easypbr, m) {
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def_readwrite("m_camera", &Viewer::m_camera )
+    ;
+
+    //Gui
+    py::class_<Gui, std::shared_ptr<Gui> > (m, "Gui") 
+    // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
+    .def_static("show", &Gui::show )
     ;
 
     //Camera
@@ -51,6 +78,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("show",  py::overload_cast<const std::shared_ptr<Mesh>, const std::string>(&Scene::show) )
     .def_static("get_mesh_with_name",  &Scene::get_mesh_with_name )
     .def_static("does_mesh_with_name_exist",  &Scene::does_mesh_with_name_exist)
+    .def_static("add_mesh",  &Scene::add_mesh)
     ;
 
     //LabelMngr

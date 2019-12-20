@@ -570,7 +570,7 @@ void Gui::draw_profiler(){
     } 
 }
 
-void Gui::show(const cv::Mat& cv_mat, const std::string name){
+void Gui::show(const cv::Mat cv_mat, const std::string name){
 
     if(!cv_mat.data){
         VLOG(3) << "Showing empty image, discaring";
@@ -579,7 +579,8 @@ void Gui::show(const cv::Mat& cv_mat, const std::string name){
 
     std::lock_guard<std::mutex> lock(m_add_cv_mats_mutex);  // so that "show" can be usef from any thread
 
-    m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
+    // m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
+    m_cv_mats_map[name] = cv_mat; //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
     m_cv_mats_dirty_map[name]=true;
 
 }

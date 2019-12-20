@@ -47,7 +47,7 @@ public:
         GLFWwindow* window
        );
     void update();
-    static void show(const cv::Mat& cv_mat, const std::string name);
+    static void show(const cv::Mat cv_mat, const std::string name);
     void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
     void select_mesh_with_idx(const int idx); //set the selection fo the meshes to the one with a certain index
     void toggle_main_menu();
