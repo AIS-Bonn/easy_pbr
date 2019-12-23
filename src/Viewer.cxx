@@ -710,7 +710,6 @@ void Viewer::draw(const GLuint fbo_id){
     }
     m_final_fbo_no_gui.bind_for_draw();
     // m_final_fbo_no_gui.clear();
-
     //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_posprocessed_tex.fbo_id());
@@ -724,6 +723,7 @@ void Viewer::draw(const GLuint fbo_id){
     TIME_END("blit");
 
     //forward render the lines and edges 
+    TIME_START("forward_render");
     for(size_t i=0; i<m_meshes_gl.size(); i++){
         MeshGLSharedPtr mesh=m_meshes_gl[i];
         if(mesh->m_core->m_vis.m_is_visible){
@@ -735,6 +735,7 @@ void Viewer::draw(const GLuint fbo_id){
             }
         }
     }
+    TIME_END("forward_render");
 
 
 
@@ -1987,7 +1988,7 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
     if (action == GLFW_PRESS){
         m_camera->mouse_pressed(mb,modifier);
         if(m_lights_follow_camera && m_camera==m_default_camera){
-            for(int i=0; i<m_spot_lights.size(); i++){
+            for(size_t i=0; i<m_spot_lights.size(); i++){
                 m_spot_lights[i]->mouse_pressed(mb,modifier);
             }
         }
