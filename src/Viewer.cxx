@@ -307,6 +307,18 @@ void Viewer::init_opengl(){
     m_composed_fbo.add_texture("bloom_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);  
     m_composed_fbo.sanity_check();
 
+
+    // //DEBUG=============
+    // GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    // // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    // GL_C( m_composed_fbo.sanity_check());
+    // VLOG(1) << "INITIAT trying to clear the bloom_gtex";
+    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").clear() );
+    // VLOG(1) << "INITIAL finished clearing bloom gtex";
+
+
+
+
     //set all the normal buffer to nearest because we assume that the norm of it values can be used to recover the n.z. However doing a nearest neighbour can change the norm and therefore fuck everything up
     m_gbuffer.tex_with_name("normal_gtex").set_filter_mode_min_mag(GL_NEAREST);
 
@@ -1352,6 +1364,13 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_bloom_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
     // m_bloom_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    // GL_C( m_composed_fbo.sanity_check());
+    // VLOG(1) << "Trying to clear the bloom_gtex";
+    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").generate_mipmap(m_bloom_mip_map_lvl) );
+    GL_C( m_composed_fbo.tex_with_name("bloom_gtex").clear() );
+    // VLOG(1) << "finished clearing bloom gtex";
 
 
     //matrices setuo
@@ -1408,6 +1427,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
     m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
+    m_compose_final_quad_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
 
 
@@ -1490,7 +1510,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
     TIME_START("blur_img");
 
     //first mip map the image so it's faster to blur it when it's smaller
-    img.generate_mipmap(mip_map_lvl);
+    GL_C( img.generate_mipmap(mip_map_lvl) );
 
     Eigen::Vector2i blurred_img_size;
     blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
@@ -1498,6 +1518,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
     glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
 
     m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );
+    m_blur_tmp_tex.clear();
 
 
     //dont perform depth checking nor write into the depth buffer 
@@ -1557,6 +1578,7 @@ void Viewer::apply_postprocess(){
     m_posprocessed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
 
+
     //dont perform depth checking nor write into the depth buffer 
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
@@ -1574,8 +1596,13 @@ void Viewer::apply_postprocess(){
 
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("composed_gtex"),"composed_tex");
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("bloom_gtex"),"bloom_tex");
+    m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
+    m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    m_apply_postprocess_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_apply_postprocess_shader.uniform_int(m_bloom_mip_map_lvl,"bloom_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
+    // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
     m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
     // draw
     m_fullscreen_quad->vao.bind(); 

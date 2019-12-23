@@ -42,6 +42,7 @@ uniform bool enable_ibl;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 uniform float exposure;
+uniform bool enable_bloom;
 uniform float bloom_threshold;
 
 
@@ -332,11 +333,13 @@ void main(){
             // }else{
             //     bloom_color=vec4(0.0);
             // }
-            float bloom_weight=compute_bloom_weight(color);
-            if(bloom_weight>0.0){
-                bloom_color=vec4(color, bloom_weight);
-            }else{
-                bloom_color=vec4(0.0);
+            if(enable_bloom){
+                float bloom_weight=compute_bloom_weight(color);
+                if(bloom_weight>0.0){
+                    bloom_color=vec4(color, bloom_weight);
+                }else{
+                    bloom_color=vec4(0.0);
+                }
             }
 
             return;
@@ -381,11 +384,13 @@ void main(){
             // }
             // float bloom_weight=compute_bloom_weight(color);
             // bloom_color=vec4(color, bloom_weight);
-            float bloom_weight=compute_bloom_weight(color);
-            if(bloom_weight>0.0){
-                bloom_color=vec4(color, bloom_weight);
-            }else{
-                bloom_color=vec4(0.0);
+            if(enable_bloom){
+                float bloom_weight=compute_bloom_weight(color);
+                if(bloom_weight>0.0){
+                    bloom_color=vec4(color, bloom_weight);
+                }else{
+                    bloom_color=vec4(0.0);
+                }
             }
 
 
@@ -582,11 +587,13 @@ void main(){
     // float bloom_weight=compute_bloom_weight(color);
     // bloom_color=vec4(color, bloom_weight);
 
-    float bloom_weight=compute_bloom_weight(color);
-    if(bloom_weight>0.0){
-        bloom_color=vec4(color, bloom_weight);
-    }else{
-        bloom_color=vec4(0.0);
+    if(enable_bloom){
+        float bloom_weight=compute_bloom_weight(color);
+        if(bloom_weight>0.0){
+            bloom_color=vec4(color, bloom_weight);
+        }else{
+            bloom_color=vec4(0.0);
+        }
     }
    
 }

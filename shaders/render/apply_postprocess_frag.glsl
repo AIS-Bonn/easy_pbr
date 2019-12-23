@@ -8,9 +8,14 @@ layout(location = 0) out vec4 out_color;
 
 uniform sampler2D composed_tex;
 uniform sampler2D bloom_tex;
+uniform sampler2D depth_tex;
 
+uniform bool enable_bloom;
 uniform int bloom_mip_map_lvl;
 uniform float exposure;
+uniform vec3 background_color;
+uniform bool show_background_img;
+uniform bool show_environment_map;
 
 
 //trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
@@ -32,21 +37,42 @@ vec3 RRTAndODTFit(vec3 v){
 
 void main(){
 
+    float depth=texture(depth_tex, uv_in).x;
+
+    vec3 color;
+    if(depth==1.0){
+        // //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
+         if (show_background_img || show_environment_map){
+            color = texture(composed_tex, uv_in).rgb;
+         }else{
+            //  color=background_color;
+            discard;
+         }
+    }else{
+        //pixel is covered by mesh so we read the color it has
+        color = texture(composed_tex, uv_in).rgb;
+    }
 
     // vec3 result = textureLod(img, uv_in, mip_map_lvl).rgb * weight[0]; // current fragment's contribution
-    vec3 color = texture(composed_tex, uv_in).rgb;
-    vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
-    float bloom_weight=bloom.w;
-    color+=bloom.rgb*bloom_weight;
+    vec3 color_posprocessed=color;
+    if (enable_bloom){
+        vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
+        float bloom_weight=bloom.w;
+        color_posprocessed=color+bloom.rgb*bloom_weight;
+    }
 
-    //tonemap and gamma correct 
-    color*=exposure;
-    color = transpose(aces_input)*color;
-    color = RRTAndODTFit(color);
-    color = transpose(aces_output)*color;
-    // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    // if(color!=background_color){
+    // if(depth==1.0 && !show_background_img && !show_environment_map  ){
+        //tonemap and gamma correct 
+        color_posprocessed*=exposure;
+        color_posprocessed = transpose(aces_input)*color_posprocessed;
+        color_posprocessed = RRTAndODTFit(color_posprocessed);
+        color_posprocessed = transpose(aces_output)*color_posprocessed;
+        // gamma correct
+        color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+    // }
 
-    out_color=vec4(color,1.0);
+
+    out_color=vec4(color_posprocessed,1.0);
 
 }
