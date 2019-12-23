@@ -141,6 +141,12 @@ void Viewer::init_params(const std::string config_file){
     m_sigma_spacial = vis_config["ssao"]["ao_blur_sigma_spacial"];
     m_sigma_depth = vis_config["ssao"]["ao_blur_sigma_depth"];
 
+    //bloom
+    m_enable_bloom = vis_config["bloom"]["enable_bloom"];
+    m_bloom_threshold = vis_config["bloom"]["threshold"];
+    m_bloom_mip_map_lvl = vis_config["bloom"]["mip_map_lvl"];
+    m_bloom_blur_iters = vis_config["bloom"]["blur_iters"];
+
     //edl
     m_auto_edl= vis_config["edl"]["auto_settings"];
     m_enable_edl_lighting= vis_config["edl"]["enable_edl_lighting"];
@@ -861,7 +867,6 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     m_gbuffer.bind_for_draw();
     shader.draw_into(m_gbuffer,
                     {
-                    // std::make_pair("position_out", "position_gtex"),
                     std::make_pair("normal_out", "normal_gtex"),
                     std::make_pair("diffuse_out", "diffuse_gtex"),
                     std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
