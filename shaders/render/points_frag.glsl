@@ -19,10 +19,9 @@
 //in
 layout(location = 0) in vec3 normal_in;
 layout(location = 1) in vec3 position_cam_coords_in; //position of the vertex in the camera coordinate system (so the world coordinate is multipled by tf_cam_world or also known as the view matrix)
-layout(location = 2) in vec3 normal_cam_coords_in; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
-layout(location = 3) in vec3 color_per_vertex_in;
-layout(location = 4) in vec2 uv_in;
-layout(location = 5) in float log_depth_in;
+layout(location = 2) in vec3 color_per_vertex_in;
+layout(location = 3) in vec2 uv_in;
+// layout(location = 5) in float log_depth_in;
 
 
 //out
@@ -52,7 +51,7 @@ vec2 encode_normal(vec3 normal){
 
 void main(){
 
-    float log_depth_val=log_depth_in;
+    // float log_depth_val=log_depth_in;
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
     bool points_as_circle=false;

@@ -54,10 +54,9 @@ in int label_gt_per_vertex;
 //out
 layout(location = 0) out vec3 normal_out;
 layout(location = 1) out vec3 position_cam_coords_out; //position of the vertex in the camera coordinate system (so the world coordinate is multipled by tf_cam_world or also known as the view matrix)
-layout(location = 2) out vec3 normal_cam_coords_out; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
-layout(location = 3) out vec3 color_per_vertex_out;
-layout(location = 4) out vec2 uv_out;
-layout(location = 5) out float log_depth_out;
+// layout(location = 2) out vec3 normal_cam_coords_out; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
+layout(location = 2) out vec3 color_per_vertex_out;
+layout(location = 3) out vec2 uv_out;
 
 //uniforms
 uniform mat4 M; //model matrix which moves from an object centric frame into the world frame. If the mesh is already in the world frame, then this will be an identity
@@ -110,18 +109,15 @@ void main(){
 
    // https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
    //output also the vlog depth for eye dome lighing
-   vec4 mv_pos = MV * vec4( position, 1.0 );
-   log_depth_out = log2(-mv_pos.z);
+//    vec4 mv_pos = MV * vec4( position, 1.0 );
+//    log_depth_out = log2(-mv_pos.z);
 
 
-   //TODO normals also have to be rotated by the model matrix (at the moment it's only identity so its fine)
-   normal_out=normalize(vec3(M*vec4(normal,0.0))); //normals are not affected by translation so the homogenous component is 0
-   position_cam_coords_out= vec3(MV*(vec4(position, 1.0))); //from object to world and from world to view
-   if(has_normals){
-       normal_cam_coords_out=normalize(vec3(MV*vec4(normal, 0.0)));
-   }else{
-       normal_cam_coords_out=vec3(0);
-   }
+//TODO normals also have to be rotated by the model matrix (at the moment it's only identity so its fine)
+    position_cam_coords_out= vec3(MV*(vec4(position, 1.0))); //from object to world and from world to view
+    if(has_normals){
+        normal_out=normalize(vec3(M*vec4(normal,0.0))); //normals are not affected by translation so the homogenous component is 0
+    }
 
 //    color_per_vertex_out=color_per_vertex;
    uv_out=uv;
