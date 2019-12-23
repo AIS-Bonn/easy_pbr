@@ -165,6 +165,7 @@ public:
     Eigen::Vector3f m_ambient_color;   
     float m_ambient_color_power;
     bool m_enable_culling;
+    bool m_auto_ssao;
     bool m_enable_ssao;
     bool m_enable_bloom;
     float m_bloom_threshold;

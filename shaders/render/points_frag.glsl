@@ -30,8 +30,7 @@ layout(location = 5) in float log_depth_in;
 // layout(location = 0) out vec4 position_out; 
 layout(location = 1) out vec4 diffuse_out;
 layout(location = 3) out vec2 normal_out;
-layout(location = 4) out float log_depth_out;
-layout(location = 5) out vec2 metalness_and_roughness_out;
+layout(location = 4) out vec2 metalness_and_roughness_out;
 
 // //uniform
 uniform int color_type;
@@ -93,47 +92,8 @@ void main(){
         diffuse_out = vec4(color_per_vertex_in, 1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
-    // normal_out = vec4(normal_cam_coords_in, 1.0);
-        //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-    // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
     normal_out=encode_normal(normal_in);
     metalness_and_roughness_out=vec2(metalness, roughness);
-    // vec3 normal = normalize(cross(dFdx(position_cam_coords_in), dFdy(position_cam_coords_in)));
-    // normal_out=vec4(normal,1.0);
-    // normal_out=vec4(normal*0.5 + 0.5,1.0);
-    // normal_out=vec4(1.0);
-    // diffuse_out = vec4(normal*0.5 + 0.5,1.0);
-    // diffuse_out=vec4( dFdx(position_cam_coords_in), 1.0 );
-
-    //attempt 2 to get normals 
-    // vec3 position
-    // vec3 q0 = dFdx(position_eye.xyz);
-    // vec3 q1 = dFdy(position_eye.xyz);
-    // vec2 st0 = dFdx(textureCoord.st);
-    // vec2 st1 = dFdy(textureCoord.st);
-
-    // float Sx = ( q0.x * st1.t - q1.x * st0.t) / (st1.t * st0.s - st0.t * st1.s);
-    // float Tx = (-q0.x * st1.s + q1.x * st0.s) / (st1.t * st0.s - st0.t * st1.s);
-
-    // q0.x = st0.s * Sx + st0.t * Tx;
-    // q1.x = st1.s * Sx + st1.t * Tx;
-
-    // vec3 S = normalize( q0 * st1.t - q1 * st0.t);
-    // vec3 T = normalize(-q0 * st1.s + q1 * st0.s);
-
-    // vec3 n = texture2D(normal,textureCoord).xyz;
-    // n = smoothstep(-1,1,n);
-
-    // mat3 tbn = (mat3(S,T,n));
-
-    //for edl https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
-    // log_depth_out=log_depth_val;
-    // log_depth_out=0.1;
-
-
-    //instead of position, store depth and recover the position from the depth 
-
-
-    // position_out = vec4(position_cam_coords_in, 1.0);
+  
 }
 

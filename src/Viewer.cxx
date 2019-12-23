@@ -134,6 +134,7 @@ void Viewer::init_params(const std::string config_file){
 
 
     //ssao
+    m_auto_ssao= vis_config["ssao"]["auto_settings"];
     m_enable_ssao = vis_config["ssao"]["enable_ssao"];
     m_ssao_downsample = vis_config["ssao"]["ao_downsample"];
     m_kernel_radius = vis_config["ssao"].get_float_else_nan("kernel_radius");
@@ -416,7 +417,7 @@ void Viewer::configure_auto_params(){
             m_camera->m_fov=30 ;
         }
         if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
-            m_camera->m_near=( (centroid-m_camera->position()).norm()*0.1 ) ;
+            m_camera->m_near=( (centroid-m_camera->position()).norm()*0.01 ) ;
         }
         if (std::isnan(m_camera->m_far) ){
             m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
@@ -429,8 +430,20 @@ void Viewer::configure_auto_params(){
     }
 
     //SSAO---------------
-    if (std::isnan(m_kernel_radius) ){
-        m_kernel_radius=0.05*scale;
+    if(m_auto_ssao){
+        //enable the ssao only if all the meshes have normals
+        m_enable_ssao=false;
+        for(int i=0; i<m_scene->nr_meshes(); i++){
+            if (m_scene->get_mesh_with_idx(i)->NV.size() ){
+                m_enable_ssao=true;
+                break;
+            }
+        }
+
+        //set the settings
+        if (std::isnan(m_kernel_radius) ){
+            m_kernel_radius=0.05*scale;
+        }
     }
 
     //EDL--------
@@ -639,8 +652,8 @@ void Viewer::draw(const GLuint fbo_id){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
-    // m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
-    m_gbuffer.clear();
+    m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
+    // m_gbuffer.clear();
     TIME_END("gbuffer");
 
 
@@ -691,6 +704,7 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //attempt 3 at forward rendering 
+    TIME_START("blit");
     if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
         m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
@@ -707,6 +721,7 @@ void Viewer::draw(const GLuint fbo_id){
     m_gbuffer.bind_for_read();
     glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
     // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    TIME_END("blit");
 
     //forward render the lines and edges 
     for(size_t i=0; i<m_meshes_gl.size(); i++){
