@@ -62,6 +62,20 @@ if(CORE_WITH_DIR_WATCHER)
 endif()
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
+#try to compile with pytorch if you can 
+set(PYTORCH_PATH "/opt/pytorch")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
+find_package(Torch)
+# if(${TORCH_FOUND})
+#     # option(CORE_WITH_TORCH "Compile PyTorch" ON)
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} ") #to avoid https://github.com/pytorch/pytorch/issues/13541
+# else()
+#     # option(CORE_WITH_TORCH "Compile PyTorch" OFF)
+#     # message("TORCH WAS FOUND")
+# endif()
+# message("TORCH_FOUND is ", ${TORCH_FOUND})
+# message("CMAKE_CXX_FLAGS flags are ", ${CMAKE_CXX_FLAGS})
+# message("TORCH_CXX_FLAGS flags are ", ${TORCH_CXX_FLAGS})
 
 
 
@@ -94,6 +108,8 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${LIBIGL_INCLUDE_DIR})
 include_directories(${KQUEUE_INCLUDE_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${TORCH_INCLUDE_DIRS})
+# message("torch include dir is " ${TORCH_INCLUDE_DIRS})
 
 
 
@@ -134,7 +150,7 @@ if(CORE_WITH_HALIDE)
 else()
     message("NOT USING HALIDE")
 endif()
-if(CORE_WITH_TORCH)
+if(${TORCH_FOUND})
     message("USING TORCH")
     add_definitions(-DWITH_TORCH)
 else()
@@ -188,6 +204,9 @@ add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 set(LIBS -lpthread -ldl) #because loguru needs them
 if(CORE_WITH_DIR_WATCHER)
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
+endif()
+if(${TORCH_FOUND})
+    set(LIBS ${LIBS} ${TORCH_LIBRARIES} )
 endif()
 set(LIBS ${LIBS} Eigen3::Eigen ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 

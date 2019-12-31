@@ -5,9 +5,9 @@
 
 #include "easy_pbr/Mesh.h"
 
-// #ifdef WITH_TORCH
-    // #include "torch/torch.h"
-// #endif
+#ifdef WITH_TORCH
+    #include "torch/torch.h"
+#endif
 
 class Frame {
 public:
@@ -48,10 +48,10 @@ public:
     Mesh backproject_depth();
     Mesh assign_color(Mesh& cloud);
 
-    // #ifdef WITH_TORCH
-    //     torch::Tensor rgb2tensor();
-    //     void tensor2rgb(const torch::Tensor& tensor);
-    // #endif
+    #ifdef WITH_TORCH
+        torch::Tensor rgb2tensor();
+        void tensor2rgb(const torch::Tensor& tensor);
+    #endif
 
 
 

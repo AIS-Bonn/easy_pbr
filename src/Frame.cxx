@@ -199,19 +199,19 @@ Mesh Frame::assign_color(Mesh& cloud){
 }
 
 
-// #ifdef WITH_TORCH
-//     torch::Tensor Frame::rgb2tensor(){
-//         CHECK(rgb_32f.data) << "There is no data for the rgb_32f image. Are you sure this frame contains the image?";
+#ifdef WITH_TORCH
+    torch::Tensor Frame::rgb2tensor(){
+        CHECK(rgb_32f.data) << "There is no data for the rgb_32f image. Are you sure this frame contains the image?";
 
-//         torch::Tensor img_tensor=torch::from_blob(rgb_32f.data, {rgb_32f.rows, rgb_32f.cols, 3});
+        torch::Tensor img_tensor=torch::from_blob(rgb_32f.data, {rgb_32f.rows, rgb_32f.cols, 3});
         
-//         return img_tensor;
-//     }
-//     void Frame::tensor2rgb(const torch::Tensor& tensor){
+        return img_tensor;
+    }
+    void Frame::tensor2rgb(const torch::Tensor& tensor){
         
-//         torch::Tensor tensor_cpu=tensor.to("cpu");
+        torch::Tensor tensor_cpu=tensor.to("cpu");
 
-//         rgb_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC3 );
-//         std::memcpy( rgb_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
-//     }
-// #endif
+        rgb_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC3 );
+        std::memcpy( rgb_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
+    }
+#endif
