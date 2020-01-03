@@ -1627,7 +1627,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
             m_blur_shader.bind_texture(img,"img");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(true,"horizontal");
-            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip_map_lvl); 
+            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip); 
             // draw
             m_fullscreen_quad->vao.bind(); 
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -1637,7 +1637,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
             m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
-            m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+            m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip); 
             // draw
             m_fullscreen_quad->vao.bind(); 
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
