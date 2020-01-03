@@ -179,8 +179,8 @@ void Gui::draw_main_menu(){
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     // ImGui::Begin("Menu", nullptr, main_window_flags);
     ImGui::Begin("Menu", nullptr,
-            ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoResize
+            // ImGuiWindowFlags_NoTitleBar
+            ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoMove
             // | ImGuiWindowFlags_NoScrollbar
             // | ImGuiWindowFlags_NoScrollWithMouse

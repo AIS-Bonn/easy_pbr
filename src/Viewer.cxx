@@ -1528,55 +1528,157 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_bloom_blur_iters){
 
+    // TIME_START("blur_img");
+
+    // //first mip map the image so it's faster to blur it when it's smaller
+    // GL_C( img.generate_mipmap(mip_map_lvl) );
+
+    // Eigen::Vector2i blurred_img_size;
+    // blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
+    // // VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
+    // glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
+
+    // m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );
+    // m_blur_tmp_tex.clear();
+
+
+    // //dont perform depth checking nor write into the depth buffer 
+    // glDepthMask(false);
+    // glDisable(GL_DEPTH_TEST);
+
+    //  // Set attributes that the vao will pulll from buffers
+    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    
+    // //shader setup
+    // GL_C( m_blur_shader.use() );
+
+
+    // // int iters=2;
+    // for (int i = 0; i < m_bloom_blur_iters; i++){
+
+    //     m_blur_shader.bind_texture(img,"img");
+    //     m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
+    //     m_blur_shader.uniform_bool(true,"horizontal");
+    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
+    //     // draw
+    //     m_fullscreen_quad->vao.bind(); 
+    //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+    //     //do it in the vertical direction
+    //     m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
+    //     m_blur_shader.uniform_int(0,"mip_map_lvl");
+    //     m_blur_shader.uniform_bool(false,"horizontal");
+    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+    //     // draw
+    //     m_fullscreen_quad->vao.bind(); 
+    //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    // }
+    
+
+    // TIME_END("blur_img");
+
+    // //restore the state
+    // glDepthMask(true);
+    // glEnable(GL_DEPTH_TEST);
+    // glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
+
+
+
+
+    //attempt 2 by creating a mip map of the texture and then blurring a bit each mip map. Inspired by http://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
+
     TIME_START("blur_img");
-
-    //first mip map the image so it's faster to blur it when it's smaller
-    GL_C( img.generate_mipmap(mip_map_lvl) );
-
-    Eigen::Vector2i blurred_img_size;
-    blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip_map_lvl);
-    // VLOG(1) << "blurred_img_size" << blurred_img_size.transpose();
-    glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
-
-    m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_img_size.x(), blurred_img_size.y() );
-    m_blur_tmp_tex.clear();
-
 
     //dont perform depth checking nor write into the depth buffer 
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-
-     // Set attributes that the vao will pulll from buffers
+    
+    // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
     //shader setup
     GL_C( m_blur_shader.use() );
 
 
-    // int iters=2;
-    for (int i = 0; i < m_bloom_blur_iters; i++){
-
-        m_blur_shader.bind_texture(img,"img");
-        m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
-        m_blur_shader.uniform_bool(true,"horizontal");
-        m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
-        // draw
-        m_fullscreen_quad->vao.bind(); 
-        glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
-        //do it in the vertical direction
-        m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
-        m_blur_shader.uniform_int(0,"mip_map_lvl");
-        m_blur_shader.uniform_bool(false,"horizontal");
-        m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
-        // draw
-        m_fullscreen_quad->vao.bind(); 
-        glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    //first mip map the image containing the bright areas
+    GL_C( img.generate_mipmap(mip_map_lvl) );
+    m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), img.width(), img.height() );
+    m_blur_tmp_tex.generate_mipmap(mip_map_lvl);
+    m_blur_tmp_tex.clear();
+
+    //for each mip map level of the bright image we blur it a bit
+    for (int mip = 0; mip < mip_map_lvl; mip++){
+
+        for (int i = 0; i < m_bloom_blur_iters; i++){
+
+            Eigen::Vector2i blurred_img_size;
+            blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip);
+            glViewport(0.0f , 0.0f, blurred_img_size.x(), blurred_img_size.y() );
+
+
+            m_blur_shader.bind_texture(img,"img");
+            m_blur_shader.uniform_int(mip,"mip_map_lvl");
+            m_blur_shader.uniform_bool(true,"horizontal");
+            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip_map_lvl); 
+            // draw
+            m_fullscreen_quad->vao.bind(); 
+            glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+            //do it in the vertical direction
+            m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
+            m_blur_shader.uniform_int(mip,"mip_map_lvl");
+            m_blur_shader.uniform_bool(false,"horizontal");
+            m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+            // draw
+            m_fullscreen_quad->vao.bind(); 
+            glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+        }
+
+
     }
+    
+
+    
+
+
+
+
+
+    
+    
+
+
+    // // int iters=2;
+    // for (int i = 0; i < m_bloom_blur_iters; i++){
+
+    //     m_blur_shader.bind_texture(img,"img");
+    //     m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
+    //     m_blur_shader.uniform_bool(true,"horizontal");
+    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
+    //     // draw
+    //     m_fullscreen_quad->vao.bind(); 
+    //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+    //     //do it in the vertical direction
+    //     m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
+    //     m_blur_shader.uniform_int(0,"mip_map_lvl");
+    //     m_blur_shader.uniform_bool(false,"horizontal");
+    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+    //     // draw
+    //     m_fullscreen_quad->vao.bind(); 
+    //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+    // }
     
 
     TIME_END("blur_img");

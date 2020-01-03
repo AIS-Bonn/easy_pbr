@@ -56,9 +56,17 @@ void main(){
     // vec3 result = textureLod(img, uv_in, mip_map_lvl).rgb * weight[0]; // current fragment's contribution
     vec3 color_posprocessed=color;
     if (enable_bloom){
-        vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
-        float bloom_weight=bloom.w;
-        color_posprocessed=color+bloom.rgb*bloom_weight;
+
+        //add the bloom from all the blurred textures
+        float bloom_global_weight=0.5;
+        for (int i=0; i<bloom_mip_map_lvl; i++){
+            vec4 bloom = textureLod(bloom_tex, uv_in, i);
+            float bloom_weight=bloom.w;
+            color_posprocessed+=bloom.rgb*bloom_weight*bloom_global_weight;
+        }
+        // vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
+        // float bloom_weight=bloom.w;
+        // color_posprocessed=color+bloom.rgb*bloom_weight;
     }
 
     // if(color!=background_color){

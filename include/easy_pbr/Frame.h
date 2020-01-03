@@ -51,6 +51,7 @@ public:
     #ifdef WITH_TORCH
         torch::Tensor rgb2tensor();
         void tensor2rgb(const torch::Tensor& tensor);
+        void tensor2gray(const torch::Tensor& tensor);
     #endif
 
 

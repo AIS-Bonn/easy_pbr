@@ -284,9 +284,9 @@ float smootherstep( float A, float B, float X ){
 float compute_bloom_weight(vec3 color){
     vec3 color_tonemapped;
     color_tonemapped=color*exposure;
-    color_tonemapped = transpose(aces_input)*color_tonemapped;
-    color_tonemapped = RRTAndODTFit(color_tonemapped);
-    color_tonemapped = transpose(aces_output)*color_tonemapped;
+    // color_tonemapped = transpose(aces_input)*color_tonemapped;
+    // color_tonemapped = RRTAndODTFit(color_tonemapped);
+    // color_tonemapped = transpose(aces_output)*color_tonemapped;
 
 
     // float bloom_threshold=0.9;
@@ -296,7 +296,7 @@ float compute_bloom_weight(vec3 color){
     if(above_thresh>0.0){
         // bloom_weight=map(above_thresh, 0.0 , 0.1, 0.0, 1.0);
         // bloom_weight=smoothstep(0.0, 0.1, above_thresh);
-        bloom_weight=smootherstep(0.0, 0.1, above_thresh);
+        bloom_weight=smootherstep(0.0, 20, above_thresh);
         // bloom_weight=1.0;
         // bloom_weight=above_thresh;
     }
@@ -388,6 +388,7 @@ void main(){
                 float bloom_weight=compute_bloom_weight(color);
                 if(bloom_weight>0.0){
                     bloom_color=vec4(color, bloom_weight);
+                    // out_color=vec4(bloom_weight, 0.0, 0.0, 0.0);
                 }else{
                     bloom_color=vec4(0.0);
                 }

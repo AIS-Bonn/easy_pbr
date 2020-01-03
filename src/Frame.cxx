@@ -208,10 +208,21 @@ Mesh Frame::assign_color(Mesh& cloud){
         return img_tensor;
     }
     void Frame::tensor2rgb(const torch::Tensor& tensor){
+
+        CHECK(tensor.size(2)==3) << "We assuming that the tensor should have fromat H,W,C and the C should be 3. However the tensor has shape " << tensor.sizes();
         
         torch::Tensor tensor_cpu=tensor.to("cpu");
 
         rgb_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC3 );
         std::memcpy( rgb_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
+    }
+    void Frame::tensor2gray(const torch::Tensor& tensor){
+
+        CHECK(tensor.size(2)==1) << "We assuming that the tensor should have fromat H,W,C and the C should be 1. However the tensor has shape " << tensor.sizes();
+        
+        torch::Tensor tensor_cpu=tensor.to("cpu");
+
+        gray_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
+        std::memcpy( gray_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
     }
 #endif

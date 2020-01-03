@@ -42,9 +42,11 @@ PYBIND11_MODULE(easypbr, m) {
     .def("assign_color", &Frame::assign_color )
     .def_readwrite("rgb_8u", &Frame::rgb_8u )
     .def_readwrite("rgb_32f", &Frame::rgb_32f )
+    .def_readwrite("gray_32f", &Frame::gray_32f )
     #ifdef WITH_TORCH
         .def("rgb2tensor", &Frame::rgb2tensor )
         .def("tensor2rgb", &Frame::tensor2rgb )
+        .def("tensor2gray", &Frame::tensor2gray )
     #endif
     ;
  
