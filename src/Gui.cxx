@@ -104,12 +104,13 @@ Gui::Gui( const std::string config_file,
     //awesomefont
     ImFontConfig config;
     config.MergeMode = true;
+    // config.GlyphMinAdvanceX = -20.0f; //https://github.com/ocornut/imgui/issues/1869#issuecomment-395725056
     const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    std::string awesome_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/ProggyClean.ttf";
+    std::string awesome_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/fontawesome-webfont.ttf";
     if ( !fs::exists(awesome_font_file) ){
         LOG(FATAL) << "Couldn't find " << awesome_font_file;
     }
-    io.Fonts->AddFontFromFileTTF(awesome_font_file.c_str(), 13.0f*m_hidpi_scaling, &config, icon_ranges );
+    io.Fonts->AddFontFromFileTTF(awesome_font_file.c_str(), 17.0f*m_hidpi_scaling, &config, icon_ranges );
 
     //font for displaying the drag and drop message 
     std::string dragdrop_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Regular.ttf";
@@ -150,7 +151,21 @@ void Gui::help_marker(const char* desc){
     // ImGui::TextDisabled("(?)");
     ImGuiStyle *style = &ImGui::GetStyle();
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.34f, 0.33f, 0.39f, 1.00f) ); 
-    ImGui::Text("(?)"); 
+    // ImGui::Text("(?)"); 
+    ImVec2 pos = ImGui::GetCursorPos();
+    pos.x -= 7;
+    pos.y += 3;
+    ImGui::SetCursorPos(pos);
+    ImGui::Text(ICON_FA_QUESTION_CIRCLE); 
+        //recording
+        // ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
+        // const char* icon_recording = m_view->m_recorder->m_is_recording ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
+        // // if(ImGui::Button("Record") ){
+        // if(ImGui::Button(icon_recording, button_size) ){
+        // }
+    // ImGui::Text("%s Search", ICON_FA_SEARCH);
+
+        
     ImGui::PopStyleColor();
     if (ImGui::IsItemHovered())
     {
@@ -254,16 +269,18 @@ void Gui::draw_main_menu(){
         }
 
 
-        MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
         if(!m_view->m_scene->is_empty() ){ //if the scene is empty there will be no mesh to select
+            MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
             ImGui::InputText("Name", mesh->name );
             ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points);
             ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines);
             ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
             ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
-            ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
+            // ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
             ImGui::Checkbox("Show vert ids", &mesh->m_vis.m_show_vert_ids);
+            ImGui::SameLine(); help_marker("Shows the indexes that each vertex has within the V matrix, \n i.e. the row index");
             ImGui::Checkbox("Show vert coords", &mesh->m_vis.m_show_vert_coords);
+            ImGui::SameLine(); help_marker("Shows the coordinates in XYZ for each vertex");
             ImGui::SliderFloat("Line width", &mesh->m_vis.m_line_width, 0.6f, 5.0f);
             ImGui::SliderFloat("Point size", &mesh->m_vis.m_point_size, 1.0f, 20.0f);
 
@@ -758,7 +775,7 @@ void Gui::draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f mod
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     drawList->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.2,
         // ImVec2(pos_screen[0] , ( - pos_screen[1])),
-        ImVec2(pos_screen[0]*m_hidpi_scaling , (m_view->m_viewport_size(1) - pos_screen[1]) *m_hidpi_scaling ),
+        ImVec2(pos_screen[0], (m_view->m_viewport_size(1) - pos_screen[1]) ),
         ImGui::GetColorU32(ImVec4(
             color(0),
             color(1),
@@ -839,6 +856,7 @@ void Gui::draw_drag_drop_text(){
         bool visible = true;
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+        ImGui::PushFont(m_dragdrop_font);
         ImGui::Begin("DragDrop", &visible,
             ImGuiWindowFlags_NoTitleBar
             | ImGuiWindowFlags_NoResize
@@ -868,6 +886,7 @@ void Gui::draw_drag_drop_text(){
         ImGui::End();
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
+        ImGui::PopFont();
     }
 
 }
