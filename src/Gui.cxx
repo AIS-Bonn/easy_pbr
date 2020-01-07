@@ -255,7 +255,35 @@ void Gui::draw_main_menu(){
                 for (size_t n = 0; n < MeshColorType::_size(); n++) {
                     bool is_selected = ( current_selected == MeshColorType::_values()[n] );
                     if (ImGui::Selectable( MeshColorType::_names()[n], is_selected)){
-                        m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_color_type= MeshColorType::_values()[n]; //select this one because we clicked on it
+
+                        MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
+                        mesh->m_vis.m_color_type= MeshColorType::_values()[n]; //select this one because we clicked on it
+                        //sanity checks
+                        //color
+                        if( mesh->m_vis.m_color_type==+MeshColorType::PerVertColor && !mesh->C.size() ){
+                            LOG(WARNING) << "There is no color per vertex associated to the mesh. Please assign some data to the mesh.C matrix.";
+                        }
+                        //semannticgt and semanticpred
+                        if( (mesh->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_label_mngr  ){
+                            LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
+                        }
+                        if( mesh->m_vis.m_color_type==+MeshColorType::NormalVector && !mesh->NV.size() ){
+                            LOG(WARNING) << "There is no normal per vertex associated to the mesh. Please assign some data to the mesh.NV matrix.";
+                        }    
+                        if( mesh->m_vis.m_color_type==+MeshColorType::Intensity && !mesh->I.size() ){
+                            LOG(WARNING) << "There is no intensity per vertex associated to the mesh. Please assign some data to the mesh.I matrix.";
+                        }  
+                        //check if we actually have a texture 
+                        if( mesh->m_vis.m_color_type==+MeshColorType::Texture){
+                            std::shared_ptr<MeshGL> mesh_gl = mesh->m_mesh_gpu.lock();
+                            if(mesh_gl && !mesh_gl->m_cur_tex_ptr->storage_initialized() ){
+                                LOG(WARNING) << "There is no texture associated to the mesh. Please assign some data to mesh_gl.m_rgb_tex.";
+                            }
+                        }
+                        // if(mesh->m_mesh_gpu && !mesh->m_mesh_gpu->m_cur_tex_ptr.storage_initialized()){
+                            // LOG(WARNING) << "There is no texture associated to the mesh";
+                        // }
+
                     }
                     if (is_selected)
                         ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)

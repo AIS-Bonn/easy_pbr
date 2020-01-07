@@ -984,10 +984,10 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
 
 void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 
-    //sanity checks 
-    if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
-        LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
-    }
+    // //sanity checks 
+    // if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
+    //     LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
+    // }
 
     // bool enable_solid_color=!mesh->m_core->C.size();
 
@@ -1003,6 +1003,9 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     }
     if(mesh->m_core->C.size()){
         GL_C(mesh->vao.vertex_attribute(m_draw_mesh_shader, "color_per_vertex", mesh->C_buf, 3) );
+    }
+    if(mesh->m_core->I.size()){
+        GL_C(mesh->vao.vertex_attribute(m_draw_mesh_shader, "intensity_per_vertex", mesh->I_buf, 1) );
     }
     if(mesh->m_core->L_pred.size()){
         mesh->vao.vertex_attribute(m_draw_mesh_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
@@ -1027,6 +1030,9 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_4x4(M, "M");
     m_draw_mesh_shader.uniform_4x4(MV, "MV");
     m_draw_mesh_shader.uniform_4x4(MVP, "MVP");
+    m_draw_mesh_shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
+    m_draw_mesh_shader.uniform_float(mesh->m_core->min_y(), "min_y");
+    m_draw_mesh_shader.uniform_float(mesh->m_core->max_y(), "max_y");
     m_draw_mesh_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
     m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
@@ -1043,6 +1049,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
         m_draw_mesh_shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     }
+    m_draw_mesh_shader.uniform_bool(mesh->m_cur_tex_ptr->storage_initialized(), "has_tex");
 
     m_gbuffer.bind_for_draw();
     m_draw_mesh_shader.draw_into(m_gbuffer,

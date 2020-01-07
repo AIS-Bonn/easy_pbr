@@ -134,13 +134,13 @@ void main(){
         color_per_vertex_out=color_scheme[label_gt_per_vertex];
     }else if(color_type==5){ //normal vector
         color_per_vertex_out=(normal+1.0)/2.0;
-    }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
+    // }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
         // color_per_vertex_out=vec3(0);
-    }else if(color_type==7){ //height
+    }else if(color_type==6){ //height
         float cur_y=position.y;
         float height_normalized=map(cur_y, min_y, max_y, 0.0, 1.0);
         color_per_vertex_out=colorize_height(height_normalized);
-    }else if(color_type==8){ //intensity
+    }else if(color_type==7){ //intensity
        color_per_vertex_out=vec3(intensity_per_vertex);
     }
 }

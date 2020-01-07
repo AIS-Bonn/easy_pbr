@@ -39,7 +39,7 @@ An example of a python3 script which shows a single mesh using the configuration
 
 Alternatively, one can also start an empty viewer by using:
 
-    python3 python/empty.py
+    ./python/empty.py
 
 
 

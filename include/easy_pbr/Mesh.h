@@ -14,7 +14,7 @@
 
 
 
-BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, SSAO, Height, Intensity )
+BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity )
 
 
 class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff

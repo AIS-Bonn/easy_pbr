@@ -7,6 +7,7 @@ in vec3 color_per_vertex;
 in vec2 uv;
 in int label_pred_per_vertex;
 in int label_gt_per_vertex;
+in float intensity_per_vertex;
 in float metalness;
 in float roughness;
 
@@ -28,6 +29,21 @@ uniform int color_type;
 uniform vec3 solid_color;
 #define MAX_NR_CLASSES 255
 uniform vec3 color_scheme[MAX_NR_CLASSES];
+uniform vec3 color_scheme_height[256];
+uniform float min_y;
+uniform float max_y;
+
+float map(float value, float inMin, float inMax, float outMin, float outMax) {
+    float value_clamped=clamp(value, inMin, inMax);  //so the value doesn't get modified by the clamping, because glsl may pass this by referece
+    return outMin + (outMax - outMin) * (value_clamped - inMin) / (inMax - inMin);
+}
+
+vec3 colorize_height(float x){
+    float x_clamped=clamp(x,0.0, 1.0);
+    x_clamped*=255;
+    int x_int = int(x_clamped);
+    return color_scheme_height[x_int];
+}
 
 void main(){
 
@@ -58,7 +74,13 @@ void main(){
         color_per_vertex_out=color_scheme[label_gt_per_vertex];
     }else if(color_type==5){ //normal vector
         color_per_vertex_out=(normal+1.0)/2.0;
-    }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
+    // }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
         // color_per_vertex_out=vec3(0);
+    }else if(color_type==6){ //height
+        float cur_y=position.y;
+        float height_normalized=map(cur_y, min_y, max_y, 0.0, 1.0);
+        color_per_vertex_out=colorize_height(height_normalized);
+    }else if(color_type==7){ //intensity
+        color_per_vertex_out=vec3(intensity_per_vertex);
     }
 }
