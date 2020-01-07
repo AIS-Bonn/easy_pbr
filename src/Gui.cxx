@@ -144,6 +144,24 @@ void Gui::toggle_main_menu(){
     m_draw_main_menu^= 1;
 }
 
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see misc/fonts/README.txt)
+void Gui::help_marker(const char* desc){
+    // ImGui::TextDisabled("(?)");
+    ImGuiStyle *style = &ImGui::GetStyle();
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.34f, 0.33f, 0.39f, 1.00f) ); 
+    ImGui::Text("(?)"); 
+    ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 void Gui::update() {
     show_images();
 
@@ -156,7 +174,6 @@ void Gui::update() {
     draw_overlays(); //draws stuff like the text indicating the vertices coordinates on top of the vertices in the 3D world
 
     draw_drag_drop_text(); //when the scene is empty draws the text saying to drag and drop something
-
 
 
 
@@ -237,26 +254,26 @@ void Gui::draw_main_menu(){
         }
 
 
+        MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
         if(!m_view->m_scene->is_empty() ){ //if the scene is empty there will be no mesh to select
-            ImGui::InputText("Name", m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->name );
-            ImGui::Checkbox("Show points", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_points);
-            ImGui::Checkbox("Show lines", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_lines);
-            ImGui::Checkbox("Show mesh", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_mesh);
-            ImGui::Checkbox("Show wireframe", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_wireframe);
-            ImGui::Checkbox("Show surfels", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_surfels);
-            ImGui::Checkbox("Show vert ids", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_vert_ids);
-            ImGui::Checkbox("Show vert coords", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_show_vert_coords);
-            ImGui::SliderFloat("Line width", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_line_width, 0.6f, 5.0f);
-            ImGui::SliderFloat("Point size", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_point_size, 1.0f, 20.0f);
+            ImGui::InputText("Name", mesh->name );
+            ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points);
+            ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines);
+            ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
+            ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
+            ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
+            ImGui::Checkbox("Show vert ids", &mesh->m_vis.m_show_vert_ids);
+            ImGui::Checkbox("Show vert coords", &mesh->m_vis.m_show_vert_coords);
+            ImGui::SliderFloat("Line width", &mesh->m_vis.m_line_width, 0.6f, 5.0f);
+            ImGui::SliderFloat("Point size", &mesh->m_vis.m_point_size, 1.0f, 20.0f);
 
-            std::string current_selected_str=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_color_type._to_string();
-            MeshColorType current_selected=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_color_type;
+            std::string current_selected_str=mesh->m_vis.m_color_type._to_string();
+            MeshColorType current_selected=mesh->m_vis.m_color_type;
             if (ImGui::BeginCombo("Mesh color type", current_selected_str.c_str())) { // The second parameter is the label previewed before opening the combo.
                 for (size_t n = 0; n < MeshColorType::_size(); n++) {
                     bool is_selected = ( current_selected == MeshColorType::_values()[n] );
                     if (ImGui::Selectable( MeshColorType::_names()[n], is_selected)){
 
-                        MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
                         mesh->m_vis.m_color_type= MeshColorType::_values()[n]; //select this one because we clicked on it
                         //sanity checks
                         //color
@@ -292,7 +309,7 @@ void Gui::draw_main_menu(){
             }
             //if its texture then we cna choose the texture type 
             if( ImGui::SliderInt("texture_type", &m_mesh_tex_idx, 0, 2) ){
-                if (auto mesh_gpu =  m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_mesh_gpu.lock()) {
+                if (auto mesh_gpu =  mesh->m_mesh_gpu.lock()) {
                     if(m_mesh_tex_idx==0){
                         mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
                     }else if(m_mesh_tex_idx==1){
@@ -304,21 +321,26 @@ void Gui::draw_main_menu(){
             }
 
 
-            ImGui::ColorEdit3("Mesh color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_solid_color.data());
-            ImGui::ColorEdit3("Point color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_point_color.data());
-            ImGui::ColorEdit3("Line color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_line_color.data());
-            ImGui::ColorEdit3("Label color",m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_label_color.data());
-            ImGui::SliderFloat("Metalness", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_metalness, 0.0f, 1.0f) ;
-            ImGui::SliderFloat("Roughness", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_roughness, 0.0f, 1.0f  );
+            ImGui::ColorEdit3("Mesh color",mesh->m_vis.m_solid_color.data());
+            ImGui::ColorEdit3("Point color",mesh->m_vis.m_point_color.data());
+            ImGui::ColorEdit3("Line color",mesh->m_vis.m_line_color.data());
+            ImGui::ColorEdit3("Label color",mesh->m_vis.m_label_color.data());
+            ImGui::SliderFloat("Metalness", &mesh->m_vis.m_metalness, 0.0f, 1.0f) ;
+            ImGui::SliderFloat("Roughness", &mesh->m_vis.m_roughness, 0.0f, 1.0f  );
 
 
             //min max in y for plotting height of point clouds
-            float min_y=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y(0); //this is the real min_y of the data
-            float max_y=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y(1);
-            float min_y_plotting = m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(0); //this is the min_y that the viewer sees when plotting the mesh
-            float max_y_plotting = m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(1);
-            ImGui::SliderFloat("min_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(0), min_y, std::min(max_y, max_y_plotting) );
-            ImGui::SliderFloat("max_y", &m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_min_max_y_for_plotting(1), std::max(min_y_plotting, min_y), max_y);
+            if(mesh->m_vis.m_color_type==+MeshColorType::Height){
+                float min_y=mesh->m_min_max_y(0); //this is the real min_y of the data
+                float max_y=mesh->m_min_max_y(1);
+                float min_y_plotting = mesh->m_min_max_y_for_plotting(0); //this is the min_y that the viewer sees when plotting the mesh
+                float max_y_plotting = mesh->m_min_max_y_for_plotting(1);
+                ImGui::SliderFloat("min_y", &mesh->m_min_max_y_for_plotting(0), min_y, std::min(max_y, max_y_plotting) );
+                ImGui::SameLine(); help_marker("tooltip");
+                ImGui::SliderFloat("max_y", &mesh->m_min_max_y_for_plotting(1), std::max(min_y_plotting, min_y), max_y);
+            }
+
+
         }
        
 
