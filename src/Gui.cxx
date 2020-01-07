@@ -735,7 +735,10 @@ void Gui::draw_overlays(){
         //draw vert coords in x,y,z format
         if(mesh->m_vis.m_is_visible && mesh->m_vis.m_show_vert_coords){
             for (int i = 0; i < mesh->V.rows(); ++i){
-                std::string coord_string = "(" + std::to_string(mesh->V(i,0)) + "," + std::to_string(mesh->V(i,1)) + "," + std::to_string(mesh->V(i,2)) + ")";
+                // std::string coord_string = "(" + std::to_string(mesh->V(i,0)) + "," + std::to_string(mesh->V(i,1)) + "," + std::to_string(mesh->V(i,2)) + ")";
+                std::stringstream stream;
+                stream << std::fixed << std::setprecision(3) << "(" << mesh->V(i,0) << ", " << mesh->V(i,1) << ", " << mesh->V(i,2) << ")";
+                std::string coord_string = stream.str();
                 draw_overlay_text( mesh->V.row(i), mesh->m_model_matrix.cast<float>().matrix(), coord_string, mesh->m_vis.m_label_color );
             }
         }
