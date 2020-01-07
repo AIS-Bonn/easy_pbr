@@ -142,6 +142,7 @@ public:
     void as_uv_mesh_paralel_to_axis(const int axis, const float size_modifier);
     Mesh interpolate(const Mesh& target_mesh, const float factor);
     float get_scale();
+    void color_solid2pervert(); //makes the solid color into a per vert color by allocating a C vector. It is isefult when merging meshes of different colors.
 
     //some convenience functions and also useful for calling from python using pybind
     // void move_in_x(const float amount);

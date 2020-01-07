@@ -1435,6 +1435,15 @@ float Mesh::get_scale(){
 
 }
 
+void Mesh::color_solid2pervert(){
+    C.resize(V.rows(),3);
+
+    for(int i=0; i<V.rows(); i++){
+        C.row(i)=m_vis.m_solid_color.cast<double>();
+    }
+
+}
+
 
 float Mesh::min_y(){
     return m_min_max_y_for_plotting(0);

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.6
-
 try:
   import torch
 except ImportError:
