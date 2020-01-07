@@ -157,14 +157,6 @@ void Gui::help_marker(const char* desc){
     pos.y += 3;
     ImGui::SetCursorPos(pos);
     ImGui::Text(ICON_FA_QUESTION_CIRCLE); 
-        //recording
-        // ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
-        // const char* icon_recording = m_view->m_recorder->m_is_recording ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
-        // // if(ImGui::Button("Record") ){
-        // if(ImGui::Button(icon_recording, button_size) ){
-        // }
-    // ImGui::Text("%s Search", ICON_FA_SEARCH);
-
         
     ImGui::PopStyleColor();
     if (ImGui::IsItemHovered())
@@ -366,13 +358,18 @@ void Gui::draw_main_menu(){
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
  
 
-        ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
+        // ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
+        ImGui::SameLine(); help_marker("Hides the mesh faces that are pointing away from the viewer. Offers a mild increase in performance.");
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);
+        ImGui::SameLine(); help_marker("Screen Space Ambient Occlusion. Darkens crevices and corners in the mesh in order to better show the details. It has a mild impact on performance.");
         ImGui::Checkbox("Enable EDL", &m_view->m_enable_edl_lighting);
+        ImGui::SameLine(); help_marker("Eye Dome Lighting. Useful for rendering point clouds which are devoid of normal vectors. Darkens the pixels according to aparent change in depth of the neighbouring pixels.");
         ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
         ImGui::Checkbox("Enable Bloom", &m_view->m_enable_bloom);
+        ImGui::SameLine(); help_marker("Bleed the highly bright areas of the scene onto the adjacent pixels. High performance cost.");
         ImGui::Checkbox("Enable IBL", &m_view->m_enable_ibl);
+        ImGui::SameLine(); help_marker("Image Based Ligthing. Uses and HDR environment map to light the scene instead of just spotlights.\nProvides a good sense of inmersion and makes the object look like they belong in a certain scene.");
         ImGui::Checkbox("Show Environment", &m_view->m_show_environment_map);
 
 
