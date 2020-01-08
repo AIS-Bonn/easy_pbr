@@ -88,13 +88,15 @@ Viewer::Viewer(const std::string config_file):
     m_enable_ssao(true),
     m_enable_bloom(true),
     m_bloom_threshold(0.85),
-    m_bloom_mip_map_lvl(1),
+    m_bloom_start_mip_map_lvl(1),
+    m_bloom_max_mip_map_lvl(5),
     m_bloom_blur_iters(3),
     m_lights_follow_camera(false),
     m_environment_cubemap_resolution(512),
     m_irradiance_cubemap_resolution(32),
     m_prefilter_cubemap_resolution(128),
     m_brdf_lut_resolution(512),
+    m_environment_map_blur(0),
     m_first_draw(true)
     {
         m_camera=m_default_camera;
@@ -145,7 +147,8 @@ void Viewer::init_params(const std::string config_file){
     //bloom
     m_enable_bloom = vis_config["bloom"]["enable_bloom"];
     m_bloom_threshold = vis_config["bloom"]["threshold"];
-    m_bloom_mip_map_lvl = vis_config["bloom"]["mip_map_lvl"];
+    m_bloom_start_mip_map_lvl = vis_config["bloom"]["start_mip_map_lvl"];
+    m_bloom_max_mip_map_lvl = vis_config["bloom"]["max_mip_map_lvl"];
     m_bloom_blur_iters = vis_config["bloom"]["blur_iters"];
 
     //edl
@@ -160,6 +163,8 @@ void Viewer::init_params(const std::string config_file){
     //ibl
     m_enable_ibl = vis_config["ibl"]["enable_ibl"];
     m_show_environment_map = vis_config["ibl"]["show_environment_map"];
+    m_show_prefiltered_environment_map = vis_config["ibl"]["show_prefiltered_environment_map"];
+    m_environment_map_blur = vis_config["ibl"]["environment_map_blur"];
     m_environment_map_path = (fs::path(EASYPBR_DATA_DIR) / (std::string)vis_config["ibl"]["environment_map_path"]).string();
     m_environment_cubemap_resolution = vis_config["ibl"]["environment_cubemap_resolution"];
     m_irradiance_cubemap_resolution = vis_config["ibl"]["irradiance_cubemap_resolution"];
@@ -695,7 +700,7 @@ void Viewer::draw(const GLuint fbo_id){
 
     //blur the bloom image if we do have it
     if (m_enable_bloom){
-        blur_img(m_composed_fbo.tex_with_name("bloom_gtex"), m_bloom_mip_map_lvl, m_bloom_blur_iters);
+        blur_img(m_composed_fbo.tex_with_name("bloom_gtex"), m_bloom_start_mip_map_lvl, m_bloom_max_mip_map_lvl, m_bloom_blur_iters);
     }
 
     apply_postprocess();
@@ -1453,6 +1458,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
     m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    // VLOG(1) << "m_show_prefiltered_environment_map is " << m_show_prefiltered_environment_map;
+    m_compose_final_quad_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
+    m_compose_final_quad_shader.uniform_float(m_environment_map_blur, "environment_map_blur");
+    m_compose_final_quad_shader.uniform_int(m_prefilter_cubemap_tex.mipmap_nr_lvls(), "prefilter_nr_mipmaps");
     m_compose_final_quad_shader.uniform_bool(m_enable_ibl, "enable_ibl");
     m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
     m_compose_final_quad_shader.uniform_bool(m_enable_bloom, "enable_bloom");
@@ -1533,7 +1542,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
-void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_bloom_blur_iters){
+void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int m_bloom_blur_iters){
 
     // TIME_START("blur_img");
 
@@ -1616,13 +1625,13 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
 
 
     //first mip map the image containing the bright areas
-    GL_C( img.generate_mipmap(mip_map_lvl) );
+    GL_C( img.generate_mipmap(max_mip_map_lvl) );
     m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), img.width(), img.height() );
-    m_blur_tmp_tex.generate_mipmap(mip_map_lvl);
+    m_blur_tmp_tex.generate_mipmap(max_mip_map_lvl);
     m_blur_tmp_tex.clear();
 
     //for each mip map level of the bright image we blur it a bit
-    for (int mip = 0; mip < mip_map_lvl; mip++){
+    for (int mip = start_mip_map_lvl; mip < max_mip_map_lvl; mip++){
 
         for (int i = 0; i < m_bloom_blur_iters; i++){
 
@@ -1644,7 +1653,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_blo
             m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
-            m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip); 
+            m_blur_shader.draw_into(img, "blurred_output", mip); 
             // draw
             m_fullscreen_quad->vao.bind(); 
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -1730,7 +1739,8 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_enable_bloom, "enable_bloom");
-    m_apply_postprocess_shader.uniform_int(m_bloom_mip_map_lvl,"bloom_mip_map_lvl");
+    m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
+    m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
     // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
     m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
@@ -1879,6 +1889,12 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     
     }
 
+    //generate mip map so we cna show as background some blurred versions of it
+    cubemap_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
+    cubemap_tex.set_filter_mode_mag(GL_LINEAR);
+    cubemap_tex.generate_mipmap_full();
+
+
     // //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
@@ -2014,7 +2030,7 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     GL_C( shader.bind_texture(radiance_tex,"radiance_cubemap_tex") );
     shader.uniform_int(m_environment_cubemap_resolution, "radiance_cubemap_resolution");
 
-    int mip_lvls=m_prefilter_cubemap_tex.mipmap_nr_lvls();
+    int mip_lvls=prefilter_tex.mipmap_nr_lvls();
     for (int mip = 0; mip < mip_lvls; ++mip){
         // reisze viewport according to mip-level size.
         Eigen::Vector2f viewport_size;

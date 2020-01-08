@@ -169,7 +169,8 @@ public:
     bool m_enable_ssao;
     bool m_enable_bloom;
     float m_bloom_threshold;
-    int m_bloom_mip_map_lvl;
+    int m_bloom_start_mip_map_lvl;
+    int m_bloom_max_mip_map_lvl;
     int m_bloom_blur_iters;
     // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
     // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
@@ -181,6 +182,8 @@ public:
     std::string m_background_img_path;
     bool m_enable_ibl; //we need an environment map for ibl
     bool m_show_environment_map; //we can still use ibl without showing the environment map
+    bool m_show_prefiltered_environment_map; //show the prefiltered environment which means we can run down the mip maps and show blurred versions of it
+    float m_environment_map_blur;
     std::string m_environment_map_path;
     bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
     int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
@@ -209,7 +212,7 @@ private:
     void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance
     void prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_tex); //prefilter the radiance tex for various levels of roughness. Used for specular IBL
     void integrate_brdf(gl::Texture2D& brdf_lut_tex);
-    void blur_img(gl::Texture2D& img, const int mip_map_lvl, const int m_bloom_blur_iters);
+    void blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int m_bloom_blur_iters);
     void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
 
 };

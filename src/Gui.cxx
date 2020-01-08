@@ -373,6 +373,13 @@ void Gui::draw_main_menu(){
         ImGui::Checkbox("Enable IBL", &m_view->m_enable_ibl);
         ImGui::SameLine(); help_marker("Image Based Ligthing. Uses and HDR environment map to light the scene instead of just spotlights.\nProvides a good sense of inmersion and makes the object look like they belong in a certain scene.");
         ImGui::Checkbox("Show Environment", &m_view->m_show_environment_map);
+        // if(m_view->m_show_environment_map);
+            // ImGui::SliderFloat("environment_map_blur", &m_view->m_environment_map_blur, 0.0, m_view->m_prefilter_cubemap_tex.mipmap_nr_lvls() );
+        // }
+        ImGui::Checkbox("Show Blurry Environment", &m_view->m_show_prefiltered_environment_map);
+        if(m_view->m_show_prefiltered_environment_map){
+            ImGui::SliderFloat("environment_map_blur", &m_view->m_environment_map_blur, 0.0, m_view->m_prefilter_cubemap_tex.mipmap_nr_lvls() );
+        }
 
 
         ImGui::Separator();
@@ -428,12 +435,12 @@ void Gui::draw_main_menu(){
         if( ImGui::SliderInt("Nr. samples", &m_view->m_nr_samples, 8, 255) ){
             m_view->create_random_samples_hemisphere();
         }
-        ImGui::SameLine(); help_marker("Nr of random samples to check for occlusion around the hemisphere of each pixel. The higher the number the higher the accurayc fo the occlusion but also the slower it is to compute.");
+        ImGui::SameLine(); help_marker("Nr of random samples to check for occlusion around the hemisphere of each pixel. The higher the number the higher the accuracy of the occlusion but also the slower it is to compute.");
         ImGui::SliderInt("AO power", &m_view->m_ao_power, 1, 15);
         ImGui::SliderFloat("Sigma S", &m_view->m_sigma_spacial, 1, 12.0);
         ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in the spacial dimension and higher values yield blurrier AO.");
         ImGui::SliderFloat("Sigma D", &m_view->m_sigma_depth, 0.1, 5.0);
-        ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in depth so as to avoid blurring over dpeth discontinuities. The higher the value, the more tolerant the blurring is to depth discontinuities.");
+        ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in depth so as to avoid blurring over depth discontinuities. The higher the value, the more tolerant the blurring is to depth discontinuities.");
     }
 
 
@@ -441,7 +448,8 @@ void Gui::draw_main_menu(){
     if (ImGui::CollapsingHeader("Bloom")) {
         ImGui::SliderFloat("BloomThresh", &m_view->m_bloom_threshold, 0.0, 2.0);
         ImGui::SameLine(); help_marker("Threshold over which pixels get classified as being bright enough to be bloomed. The lower the value the more pixels are bloomed. Has no impact on performance");
-        ImGui::SliderInt("BloomMipMap", &m_view->m_bloom_mip_map_lvl, 0, 6);
+        ImGui::SliderInt("BloomStartMipMap", &m_view->m_bloom_start_mip_map_lvl, 0, 6);
+        ImGui::SliderInt("BloomMaxMipMap", &m_view->m_bloom_max_mip_map_lvl, 0, 6);
         ImGui::SameLine(); help_marker("Bloom is applied hierarchically over multiple mip map levels. We use as many mip maps as specified by this value.");
         ImGui::SliderInt("BloomBlurIters", &m_view->m_bloom_blur_iters, 0, 10);
         ImGui::SameLine(); help_marker("Bloom is applied multiple times for each mip map level. The higher the value the more spreaded the bloom is. Has a high impact on performance.");

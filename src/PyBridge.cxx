@@ -155,6 +155,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("I", &Mesh::I)
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
+    .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
     .def("rotate_model_matrix", &Mesh::rotate_model_matrix )

@@ -38,12 +38,15 @@ uniform bool enable_edl_lighting;
 uniform float edl_strength;
 uniform bool show_background_img;
 uniform bool show_environment_map;
+uniform bool show_prefiltered_environment_map;
 uniform bool enable_ibl;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 uniform float exposure;
 uniform bool enable_bloom;
 uniform float bloom_threshold;
+uniform float environment_map_blur;
+uniform int prefilter_nr_mipmaps;
 
 
 //for edl 
@@ -343,10 +346,18 @@ void main(){
             }
 
             return;
-        }else if(show_environment_map){
-            vec3 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+        }else if(show_environment_map || show_prefiltered_environment_map){
+        // }else if(show_prefiltered_environment_map){
+            vec3 color=vec3(0);
+            if(show_environment_map){
+                color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+            }else if(show_prefiltered_environment_map){
+                color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
+            }
+            // vec3 color = textureLod(irradiance_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
+            // vec3 color = textureLod(environment_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), 1.0 ).rgb;
+            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
             //tonemap
             // color = color / (color + vec3(1.0));
             // color=color*exposure;
@@ -533,8 +544,9 @@ void main(){
             vec3 diffuse      = irradiance * albedo;
 
             // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-            const float MAX_REFLECTION_LOD = 4.0;
-            vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+            // const float MAX_REFLECTION_LOD = 4.0;
+            // const float MAX_REFLECTION_LOD = ;
+            vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
             vec2 brdf  = texture(brdf_lut_tex, vec2(max(dot(N, V), 0.0), roughness)).rg;
             vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 

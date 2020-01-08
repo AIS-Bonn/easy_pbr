@@ -11,7 +11,8 @@ uniform sampler2D bloom_tex;
 uniform sampler2D depth_tex;
 
 uniform bool enable_bloom;
-uniform int bloom_mip_map_lvl;
+uniform int bloom_start_mip_map_lvl;
+uniform int bloom_max_mip_map_lvl;
 uniform float exposure;
 uniform vec3 background_color;
 uniform bool show_background_img;
@@ -60,7 +61,7 @@ void main(){
 
         //add the bloom from all the blurred textures
         float bloom_global_weight=0.5;
-        for (int i=0; i<bloom_mip_map_lvl; i++){
+        for (int i=bloom_start_mip_map_lvl; i<bloom_max_mip_map_lvl; i++){
             vec4 bloom = textureLod(bloom_tex, uv_in, i);
             float bloom_weight=bloom.w;
             color_posprocessed+=bloom.rgb*bloom_weight*bloom_global_weight;
