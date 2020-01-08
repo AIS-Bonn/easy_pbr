@@ -1522,7 +1522,7 @@ void Mesh::read_ply(const std::string file_path){
     // type casting to your own native types - Option B
     typedef Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXuc;
     typedef Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXf;
-    // typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXd;
+    typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXd;
     typedef Eigen::Matrix<unsigned,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXi;
 
     //parse data
@@ -1530,11 +1530,17 @@ void Mesh::read_ply(const std::string file_path){
     if (vertices->t == tinyply::Type::FLOAT32) {
         Eigen::Map<RowMatrixXf> mf( (float*)vertices->buffer.get(), vertices->count, 3);
         V=mf.cast<double>();
-    }else{ LOG(FATAL) <<" vertex parsing other than float not implemented yet"; }
+    }else if(vertices->t == tinyply::Type::FLOAT64){
+        Eigen::Map<RowMatrixXd> mf( (double*)vertices->buffer.get(), vertices->count, 3);
+        V=mf.cast<double>();
+    }else{ LOG(FATAL) <<" vertex parsing other than float and double not implemented yet"; }
     //normals
     if (has_vertex_normals) {
         if (normals->t == tinyply::Type::FLOAT32) {
             Eigen::Map<RowMatrixXf> mf( (float*)normals->buffer.get(), normals->count, 3);
+            NV=mf.cast<double>();
+        }else if(normals->t == tinyply::Type::FLOAT64){
+            Eigen::Map<RowMatrixXd> mf( (double*)normals->buffer.get(), vertices->count, 3);
             NV=mf.cast<double>();
         }else{ LOG(FATAL) <<"normals parsing other than float not implemented yet"; }
     }
@@ -1551,6 +1557,7 @@ void Mesh::read_ply(const std::string file_path){
             Eigen::Map<RowMatrixXuc> mf( (unsigned char*)color->buffer.get(), color->count, 3);
             C=mf.cast<double>();
             C=C.array()/255.0;
+            // C=C.array();
         }else if (color->t == tinyply::Type::FLOAT32) {
             Eigen::Map<RowMatrixXf> mf( (float*)color->buffer.get(), color->count, 3);
             C=mf.cast<double>();

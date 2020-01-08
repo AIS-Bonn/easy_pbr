@@ -73,7 +73,7 @@ void main(){
     }else if(color_type==4){ //semantic gt
         color_per_vertex_out=color_scheme[label_gt_per_vertex];
     }else if(color_type==5){ //normal vector
-        color_per_vertex_out=(normal+1.0)/2.0;
+        color_per_vertex_out=(normal_out+1.0)/2.0;
     // }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
         // color_per_vertex_out=vec3(0);
     }else if(color_type==6){ //height

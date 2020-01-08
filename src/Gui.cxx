@@ -365,7 +365,9 @@ void Gui::draw_main_menu(){
         ImGui::SameLine(); help_marker("Screen Space Ambient Occlusion. Darkens crevices and corners in the mesh in order to better show the details. It has a mild impact on performance.");
         ImGui::Checkbox("Enable EDL", &m_view->m_enable_edl_lighting);
         ImGui::SameLine(); help_marker("Eye Dome Lighting. Useful for rendering point clouds which are devoid of normal vectors. Darkens the pixels according to aparent change in depth of the neighbouring pixels.");
-        ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
+        if(m_view->m_enable_edl_lighting){
+            ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
+        }
         ImGui::Checkbox("Enable Bloom", &m_view->m_enable_bloom);
         ImGui::SameLine(); help_marker("Bleed the highly bright areas of the scene onto the adjacent pixels. High performance cost.");
         ImGui::Checkbox("Enable IBL", &m_view->m_enable_ibl);
@@ -420,21 +422,29 @@ void Gui::draw_main_menu(){
     ImGui::Separator();
     if (ImGui::CollapsingHeader("SSAO")) {
         ImGui::SliderInt("Downsample", &m_view->m_ssao_downsample, 0, 5);
+        ImGui::SameLine(); help_marker("Calculates the Screen Space Ambient Occlusion at a lower resolution dicated by the downsample factor. The higher the downsample factor the faster but also the blockier the ambient occlusion is.");
         ImGui::SliderFloat("Radius", &m_view->m_kernel_radius, 0.1, 100.0);
+        ImGui::SameLine(); help_marker("Radius of the hemishpere around which to check for occlusions for each pixel. Higher values causes the occlusion to affect greater areas and lower value concentrates the samples on small details. Too high of a radius negativelly affects performance.");
         if( ImGui::SliderInt("Nr. samples", &m_view->m_nr_samples, 8, 255) ){
             m_view->create_random_samples_hemisphere();
         }
+        ImGui::SameLine(); help_marker("Nr of random samples to check for occlusion around the hemisphere of each pixel. The higher the number the higher the accurayc fo the occlusion but also the slower it is to compute.");
         ImGui::SliderInt("AO power", &m_view->m_ao_power, 1, 15);
         ImGui::SliderFloat("Sigma S", &m_view->m_sigma_spacial, 1, 12.0);
+        ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in the spacial dimension and higher values yield blurrier AO.");
         ImGui::SliderFloat("Sigma D", &m_view->m_sigma_depth, 0.1, 5.0);
+        ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in depth so as to avoid blurring over dpeth discontinuities. The higher the value, the more tolerant the blurring is to depth discontinuities.");
     }
 
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Bloom")) {
         ImGui::SliderFloat("BloomThresh", &m_view->m_bloom_threshold, 0.0, 2.0);
+        ImGui::SameLine(); help_marker("Threshold over which pixels get classified as being bright enough to be bloomed. The lower the value the more pixels are bloomed. Has no impact on performance");
         ImGui::SliderInt("BloomMipMap", &m_view->m_bloom_mip_map_lvl, 0, 6);
+        ImGui::SameLine(); help_marker("Bloom is applied hierarchically over multiple mip map levels. We use as many mip maps as specified by this value.");
         ImGui::SliderInt("BloomBlurIters", &m_view->m_bloom_blur_iters, 0, 10);
+        ImGui::SameLine(); help_marker("Bloom is applied multiple times for each mip map level. The higher the value the more spreaded the bloom is. Has a high impact on performance.");
     }
 
 
@@ -541,6 +551,7 @@ void Gui::draw_main_menu(){
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Profiler")) {
         ImGui::Checkbox("Profile gpu", &Profiler_ns::m_profile_gpu);
+        ImGui::SameLine(); help_marker("The profiler by default measures time spent in CPU functions. Enabling GPU profiling causes calls to OpenGL to be blocking and therefore the profiler will now also measure the time spent in GPU functions. Enabling GPU profiling slows down the whole application.");
         if (ImGui::Button("Print profiling stats")){
             Profiler_ns::Profiler::print_all_stats();
         }
