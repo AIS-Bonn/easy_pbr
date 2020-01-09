@@ -318,6 +318,7 @@ void main(){
 
     //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
+    vec3 color=vec3(0);
     if(depth==1.0){
         // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
         if (show_background_img){
@@ -347,13 +348,18 @@ void main(){
 
             return;
         }else if(show_environment_map || show_prefiltered_environment_map){
+        // }else if(show_environment_map){
         // }else if(show_prefiltered_environment_map){
-            vec3 color=vec3(0);
+            vec3 color=vec3(1);
             if(show_environment_map){
                 color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
             }else if(show_prefiltered_environment_map){
                 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
             }
+
+            //debug
+
+
             // vec3 color = textureLod(irradiance_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
             // vec3 color = textureLod(environment_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
             // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
@@ -412,154 +418,166 @@ void main(){
         }
 
         discard;
-    }
-    vec3 albedo=pow( texture(diffuse_tex, uv_in).xyz, vec3(2.2) );
 
-    // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
-    vec3 color=vec3(0);
-    if(enable_edl_lighting){
-        // float depth = texture(log_depth_tex, uv_in).x;
-        depth=linear_depth(depth);
-        depth=log2(depth);
-        if(depth!=1.0){ //if we have a depth of 1.0 it means for this pixels we haven't stored anything. Storing something in this texture is only done for points
-            depth = (depth == 1.0) ? 0.0 : depth;
-            float res = response(depth);
-            // float edl_strength=16.0;
-            float shade = exp(-res * 300.0 * edl_strength);
-            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
-            color = albedo* shade * ao;
-        }
+
+        //attempt 2 
+        // if(show_prefiltered_environment_map){
+            // color=vec3(0.0, 1.0, 0.0);
+        // }else{
+            // color=vec3(1.0, 0.0, 0.0);
+        // }
+
+        //attempt 3
+        // color=vec3(1.0, 0.0, 0.0);
     }else{
-        //PBR-----------
+        //this pixel is covering a mesh
+        vec3 albedo=pow( texture(diffuse_tex, uv_in).xyz, vec3(2.2) );
 
-        vec3 N= decode_normal(texture(normal_tex, uv_in).xy ); 
-        vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
-        vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
-        vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
-        vec3 R = reflect(-V, N); 
-        float metalness=texture(metalness_and_roughness_tex, uv_in).x;
-        float roughness=texture(metalness_and_roughness_tex, uv_in).y;
-        float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
-
-
-
-        // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-        // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-        vec3 F0 = vec3(0.04); 
-        F0 = mix(F0, albedo, metalness);
-
-        // reflectance equation
-        vec3 Lo = vec3(0.0);
-        for(int i = 0; i < nr_active_spot_lights; ++i) 
-        {
-
-            
-            //check if the current fragment in in the fov of the light by pojecting from world back into the light
-            vec4 pos_light_space=spot_lights[i].VP * vec4(P_w, 1.0);
-            // perform perspective divide https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
-            vec3 proj_in_light = pos_light_space.xyz / pos_light_space.w;
-            // transform to [0,1] range because the proj_in_light is now in normalized device coordinates [-1,1] and we want it in [0,1] https://community.khronos.org/t/shadow-mapping-bias-before-the-w-divide/63877/6
-            proj_in_light = proj_in_light * 0.5 + 0.5;
-            //check if we are outside the image or behind it
-            if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
-                // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
+        // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
+        if(enable_edl_lighting){
+            // float depth = texture(log_depth_tex, uv_in).x;
+            depth=linear_depth(depth);
+            depth=log2(depth);
+            if(depth!=1.0){ //if we have a depth of 1.0 it means for this pixels we haven't stored anything. Storing something in this texture is only done for points
+                depth = (depth == 1.0) ? 0.0 : depth;
+                float res = response(depth);
+                // float edl_strength=16.0;
+                float shade = exp(-res * 300.0 * edl_strength);
+                float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+                color = albedo* shade * ao;
             }
+        }else{
+            //PBR-----------
 
-            // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
-            ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
-            // ivec2 shadow_map_size=ivec2(1024);
-            float xOffset = 1.0/shadow_map_size.x;
-            float yOffset = 1.0/shadow_map_size.y;
-            float Factor = 0.0;
-            for (int y = -1 ; y <= 1 ; y++) {
-                for (int x = -1 ; x <= 1 ; x++) {
-                    vec2 Offsets = vec2(x * xOffset, y * yOffset);
-                    vec2 UV = proj_in_light.xy + Offsets;
-                    float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
-                    float current_depth = proj_in_light.z;  
-                    float epsilon = 0.0001;
-                    if (closest_depth + epsilon < current_depth){
-                        continue; //in shadow
-                    }else{
-                        Factor+=1.0;
+            vec3 N= decode_normal(texture(normal_tex, uv_in).xy ); 
+            vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
+            vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
+            vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
+            vec3 R = reflect(-V, N); 
+            float metalness=texture(metalness_and_roughness_tex, uv_in).x;
+            float roughness=texture(metalness_and_roughness_tex, uv_in).y;
+            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+
+
+
+            // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+            // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+            vec3 F0 = vec3(0.04); 
+            F0 = mix(F0, albedo, metalness);
+
+            // reflectance equation
+            vec3 Lo = vec3(0.0);
+            for(int i = 0; i < nr_active_spot_lights; ++i) 
+            {
+
+                
+                //check if the current fragment in in the fov of the light by pojecting from world back into the light
+                vec4 pos_light_space=spot_lights[i].VP * vec4(P_w, 1.0);
+                // perform perspective divide https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+                vec3 proj_in_light = pos_light_space.xyz / pos_light_space.w;
+                // transform to [0,1] range because the proj_in_light is now in normalized device coordinates [-1,1] and we want it in [0,1] https://community.khronos.org/t/shadow-mapping-bias-before-the-w-divide/63877/6
+                proj_in_light = proj_in_light * 0.5 + 0.5;
+                //check if we are outside the image or behind it
+                if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
+                    // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
+                }
+
+                // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
+                ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
+                // ivec2 shadow_map_size=ivec2(1024);
+                float xOffset = 1.0/shadow_map_size.x;
+                float yOffset = 1.0/shadow_map_size.y;
+                float Factor = 0.0;
+                for (int y = -1 ; y <= 1 ; y++) {
+                    for (int x = -1 ; x <= 1 ; x++) {
+                        vec2 Offsets = vec2(x * xOffset, y * yOffset);
+                        vec2 UV = proj_in_light.xy + Offsets;
+                        float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
+                        float current_depth = proj_in_light.z;  
+                        float epsilon = 0.0001;
+                        if (closest_depth + epsilon < current_depth){
+                            continue; //in shadow
+                        }else{
+                            Factor+=1.0;
+                        }
                     }
                 }
+                Factor=( (Factor / 18.0)*2.0);
+
+
+                // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+                // float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
+                // float current_depth = proj_in_light.z;  
+                // float epsilon = 0.0001;
+                // if (closest_depth + epsilon < current_depth){
+                //     continue;
+                // }
+                
+
+                // calculate per-light radiance
+                vec3 L = normalize(spot_lights[i].pos - P_w);
+                vec3 H = normalize(V + L);
+                float distance = length(spot_lights[i].pos - P_w);
+                float attenuation = 1.0 / (distance * distance);
+                vec3 radiance = spot_lights[i].color *spot_lights[i].power * attenuation;
+
+                // Cook-Torrance BRDF
+                float NDF = DistributionGGX(N, H, roughness);   
+                float G   = GeometrySmith(N, V, L, roughness);      
+                vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+                
+                vec3 nominator    = NDF * G * F; 
+                float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+                
+                // kS is equal to Fresnel
+                vec3 kS = F;
+                // for energy conservation, the diffuse and specular light can't
+                // be above 1.0 (unless the surface emits light); to preserve this
+                // relationship the diffuse component (kD) should equal 1.0 - kS.
+                vec3 kD = vec3(1.0) - kS;
+                // multiply kD by the inverse metalness such that only non-metals 
+                // have diffuse lighting, or a linear blend if partly metal (pure metals
+                // have no diffuse light).
+                kD *= 1.0 - metalness;	  
+
+                // scale light by NdotL
+                float NdotL = max(dot(N, L), 0.0);        
+
+                // add to outgoing radiance Lo
+                Lo += (kD * albedo / PI + specular) * radiance * NdotL * Factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+                // Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+
+            }   
+            
+            // ambient lighting (we now use IBL as the ambient term)
+            vec3 ambient=vec3(0.0);
+            if (enable_ibl){
+                vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+                vec3 kS = F; 
+                vec3 kD = 1.0 - kS;
+                kD *= 1.0 - metalness;	  
+                vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
+                vec3 diffuse      = irradiance * albedo;
+
+                // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+                // const float MAX_REFLECTION_LOD = 4.0;
+                // const float MAX_REFLECTION_LOD = ;
+                vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
+                vec2 brdf  = texture(brdf_lut_tex, vec2(max(dot(N, V), 0.0), roughness)).rg;
+                vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+
+                // ambient = (kD * diffuse) * ao;
+                ambient = (kD * diffuse + specular) * ao;
+            }else{
+                ambient = vec3(ambient_color_power) * ambient_color * ao;
             }
-            Factor=( (Factor / 18.0)*2.0);
-
-
-            // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
-            // float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
-            // float current_depth = proj_in_light.z;  
-            // float epsilon = 0.0001;
-            // if (closest_depth + epsilon < current_depth){
-            //     continue;
-            // }
-            
-
-            // calculate per-light radiance
-            vec3 L = normalize(spot_lights[i].pos - P_w);
-            vec3 H = normalize(V + L);
-            float distance = length(spot_lights[i].pos - P_w);
-            float attenuation = 1.0 / (distance * distance);
-            vec3 radiance = spot_lights[i].color *spot_lights[i].power * attenuation;
-
-            // Cook-Torrance BRDF
-            float NDF = DistributionGGX(N, H, roughness);   
-            float G   = GeometrySmith(N, V, L, roughness);      
-            vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-            
-            vec3 nominator    = NDF * G * F; 
-            float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-            vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
-            
-            // kS is equal to Fresnel
-            vec3 kS = F;
-            // for energy conservation, the diffuse and specular light can't
-            // be above 1.0 (unless the surface emits light); to preserve this
-            // relationship the diffuse component (kD) should equal 1.0 - kS.
-            vec3 kD = vec3(1.0) - kS;
-            // multiply kD by the inverse metalness such that only non-metals 
-            // have diffuse lighting, or a linear blend if partly metal (pure metals
-            // have no diffuse light).
-            kD *= 1.0 - metalness;	  
-
-            // scale light by NdotL
-            float NdotL = max(dot(N, L), 0.0);        
-
-            // add to outgoing radiance Lo
-            Lo += (kD * albedo / PI + specular) * radiance * NdotL * Factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-            // Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-
-        }   
         
-        // ambient lighting (we now use IBL as the ambient term)
-        vec3 ambient=vec3(0.0);
-        if (enable_ibl){
-            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
-            vec3 kS = F; 
-            vec3 kD = 1.0 - kS;
-            kD *= 1.0 - metalness;	  
-            vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
-            vec3 diffuse      = irradiance * albedo;
 
-            // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-            // const float MAX_REFLECTION_LOD = 4.0;
-            // const float MAX_REFLECTION_LOD = ;
-            vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
-            vec2 brdf  = texture(brdf_lut_tex, vec2(max(dot(N, V), 0.0), roughness)).rg;
-            vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+            color = ambient + Lo;
 
-
-            // ambient = (kD * diffuse) * ao;
-            ambient = (kD * diffuse + specular) * ao;
-        }else{
-            ambient = vec3(ambient_color_power) * ambient_color * ao;
         }
-       
-
-        color = ambient + Lo;
-
     }
 
 
@@ -587,7 +605,11 @@ void main(){
     // color=color*exposure;
     // color = pow(color, vec3(1.0/2.2)); 
 
- 
+    // if(show_prefiltered_environment_map){
+    //     color=vec3(0.0, 1.0, 0.0);
+    // }else{
+    //     color=vec3(1.0, 0.0, 0.0);
+    // }
 
     out_color = vec4(color, 1.0);
 

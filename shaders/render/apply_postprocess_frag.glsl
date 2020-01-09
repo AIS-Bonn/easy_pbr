@@ -36,6 +36,34 @@ vec3 RRTAndODTFit(vec3 v){
     return a / b;
 }
 
+//from google filament renderer https://github.com/google/filament/blob/master/shaders/src/tone_mapping.fs
+float luminance(const vec3 linear) {
+    return dot(linear, vec3(0.2126, 0.7152, 0.0722));
+}
+vec3 Tonemap_Linear(const vec3 x) {
+    return x;
+}
+
+vec3 Tonemap_Reinhard(const vec3 x) {
+    // Reinhard et al. 2002, "Photographic Tone Reproduction for Digital Images", Eq. 3
+    return x / (1.0 + luminance(x));
+}
+
+vec3 Tonemap_Unreal(const vec3 x) {
+    // Unreal, Documentation: "Color Grading"
+    // Adapted to be close to Tonemap_ACES, with similar range
+    // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
+    return x / (x + 0.155) * 1.019;
+}
+
+vec3 Tonemap_FilmicALU(const vec3 x) {
+    // Hable 2010, "Filmic Tonemapping Operators"
+    // Based on Duiker's curve, optimized by Hejl and Burgess-Dawson
+    // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
+    vec3 c = max(vec3(0.0), x - 0.004);
+    return (c * (c * 6.2 + 0.5)) / (c * (c * 6.2 + 1.7) + 0.06);
+}
+
 void main(){
 
     float depth=texture(depth_tex, uv_in).x;
@@ -79,11 +107,29 @@ void main(){
     // if(depth==1.0 && !show_background_img && !show_environment_map  ){
         //tonemap and gamma correct 
         color_posprocessed*=exposure;
-        color_posprocessed = transpose(aces_input)*color_posprocessed;
-        color_posprocessed = RRTAndODTFit(color_posprocessed);
-        color_posprocessed = transpose(aces_output)*color_posprocessed;
+        int tonemap_type=4;
+        if (tonemap_type==0){//linear
+            //do nothing
+            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+        }else if (tonemap_type==1){//reinhardt
+            color_posprocessed=Tonemap_Reinhard(color_posprocessed);
+            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+        }else if (tonemap_type==2){//Unreal
+            color_posprocessed=Tonemap_Unreal(color_posprocessed);
+        }else if (tonemap_type==3){ //filmicALU
+            color_posprocessed=Tonemap_FilmicALU(color_posprocessed);
+        }else if (tonemap_type==4){ //ACES
+            color_posprocessed = transpose(aces_input)*color_posprocessed;
+            color_posprocessed = RRTAndODTFit(color_posprocessed);
+            color_posprocessed = transpose(aces_output)*color_posprocessed;
+            // gamma correct
+            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+        }
+        // color_posprocessed = transpose(aces_input)*color_posprocessed;
+        // color_posprocessed = RRTAndODTFit(color_posprocessed);
+        // color_posprocessed = transpose(aces_output)*color_posprocessed;
         // gamma correct
-        color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+        // color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
     // }
 
 
