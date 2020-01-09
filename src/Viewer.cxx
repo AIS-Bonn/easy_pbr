@@ -2109,6 +2109,16 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 }
 
 
+void Viewer::set_position(const int i){
+    // VLOG(1) << "C++ position is " << m_spot_lights[0]->position().transpose();
+    Eigen::Vector3f pos;
+    pos << 19.6983, 41.4829, -79.7799;
+    m_spot_lights[i]->set_position(pos);
+}
+void Viewer::check_position(const int i){
+    VLOG(1) << "C++ position is " << m_spot_lights[i]->position().transpose();
+}
+
 void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier){
     Camera::MouseButton mb;
 

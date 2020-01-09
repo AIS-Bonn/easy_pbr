@@ -58,6 +58,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
+    .def("set_position", &Viewer::set_position )
+    .def("check_position", &Viewer::check_position )
     .def_readwrite("m_camera", &Viewer::m_camera )
     ;
 
@@ -84,7 +86,7 @@ PYBIND11_MODULE(easypbr, m) {
     ;
 
     //Spotlight
-    py::class_<SpotLight, Camera, std::shared_ptr<SpotLight> > (m, "SpotLight")
+    py::class_<SpotLight,  std::shared_ptr<SpotLight>,  Camera> (m, "SpotLight")
     // .def(py::init<const std::string>())
     .def_readwrite("m_power", &SpotLight::m_power )
     ;
