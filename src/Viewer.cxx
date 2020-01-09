@@ -1504,6 +1504,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
             std::string sampler_shadow_map_name =  uniform_name +"["+std::to_string(i)+"]"+".shadow_map";
             m_compose_final_quad_shader.bind_texture(m_spot_lights[i]->get_shadow_map_ref(), sampler_shadow_map_name );
         }
+
+        //color
+        std::string uniform_create_shadow_name = uniform_name +"["+std::to_string(i)+"]"+".create_shadow";
+        GLint uniform_create_shadow_loc=m_compose_final_quad_shader.get_uniform_location(uniform_create_shadow_name);
+        glUniform1i(uniform_create_shadow_loc, m_spot_lights[i]->m_create_shadow);
     }
 
 
@@ -1778,6 +1783,10 @@ void Viewer::apply_postprocess(){
 //     return MVP;
 // }
 
+std::shared_ptr<SpotLight> Viewer::spotlight_with_idx(const int i){
+    CHECK(i<m_spot_lights.size()) << "Indexing the spotlight array out of bounds";
+    return m_spot_lights[i];
+}
 
 void Viewer::create_random_samples_hemisphere(){
     m_random_samples.resize(m_nr_samples,3);

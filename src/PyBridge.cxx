@@ -14,6 +14,7 @@
 #include "easy_pbr/LabelMngr.h"
 #include "easy_pbr/Recorder.h"
 #include "easy_pbr/Camera.h"
+#include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Frame.h"
 #include "Profiler.h"
 
@@ -56,6 +57,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("create",  &Viewer::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
+    .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     .def_readwrite("m_camera", &Viewer::m_camera )
     ;
 
@@ -65,14 +67,26 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("show", &Gui::show )
     ;
 
+
+
     //Camera
     py::class_<Camera, std::shared_ptr<Camera>> (m, "Camera")
     .def(py::init<>())
+    .def("position", &Camera::position )
+    .def("set_position", &Camera::set_position )
     .def("set_lookat", &Camera::set_lookat )
     .def("push_away", &Camera::push_away )
     .def("push_away_by_dist", &Camera::push_away_by_dist )
     .def("orbit_y", &Camera::orbit_y )
     .def("from_string", &Camera::from_string )
+    .def_readwrite("m_near", &SpotLight::m_near )
+    .def_readwrite("m_far", &SpotLight::m_far )
+    ;
+
+    //Spotlight
+    py::class_<SpotLight, Camera, std::shared_ptr<SpotLight> > (m, "SpotLight")
+    // .def(py::init<const std::string>())
+    .def_readwrite("m_power", &SpotLight::m_power )
     ;
 
     //Scene

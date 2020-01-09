@@ -83,10 +83,14 @@ void Camera::set_lookat(const Eigen::Vector3f& lookat){
     recalculate_orientation();
 }
 void Camera::set_position(const Eigen::Vector3f& pos){
+    // VLOG(1) << "Setting position to " << pos.transpose();
+    // VLOG(1) << "C++ modifying object with pointer " << this;
     m_model_matrix.translation()=pos;
+    // VLOG(1) << "Before recaulculating orientation the pos is " << position().transpose();
 
     //setting a new position means rotating the cam so that it still looks at the lookat point
     recalculate_orientation();
+    // VLOG(1) << "AFTER recaulculating orientation the pos is " << position().transpose();
 }
 void Camera::set_up(const Eigen::Vector3f& up){
     m_up=up;

@@ -60,6 +60,7 @@ struct SpotLight {
     float power; // how much strenght does the light have
     mat4 VP; //projects world coordinates into the light 
     sampler2D shadow_map;
+    bool create_shadow;
 };
 uniform SpotLight spot_lights[8];
 // uniform Light omni_lights[8]; //At the moment I drop support for omni light at least partially until I have a class that can draw shadow maps into a omni light
@@ -482,27 +483,33 @@ void main(){
                     // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
                 }
 
-                // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
-                ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
-                // ivec2 shadow_map_size=ivec2(1024);
-                float xOffset = 1.0/shadow_map_size.x;
-                float yOffset = 1.0/shadow_map_size.y;
+
                 float Factor = 0.0;
-                for (int y = -1 ; y <= 1 ; y++) {
-                    for (int x = -1 ; x <= 1 ; x++) {
-                        vec2 Offsets = vec2(x * xOffset, y * yOffset);
-                        vec2 UV = proj_in_light.xy + Offsets;
-                        float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
-                        float current_depth = proj_in_light.z;  
-                        float epsilon = 0.0001;
-                        if (closest_depth + epsilon < current_depth){
-                            continue; //in shadow
-                        }else{
-                            Factor+=1.0;
+                if(spot_lights[i].create_shadow){
+                    // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
+                    ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
+                    // ivec2 shadow_map_size=ivec2(1024);
+                    float xOffset = 1.0/shadow_map_size.x;
+                    float yOffset = 1.0/shadow_map_size.y;
+                    for (int y = -1 ; y <= 1 ; y++) {
+                        for (int x = -1 ; x <= 1 ; x++) {
+                            vec2 Offsets = vec2(x * xOffset, y * yOffset);
+                            vec2 UV = proj_in_light.xy + Offsets;
+                            float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
+                            float current_depth = proj_in_light.z;  
+                            float epsilon = 0.0001;
+                            if (closest_depth + epsilon < current_depth){
+                                continue; //in shadow
+                            }else{
+                                Factor+=1.0;
+                            }
                         }
                     }
+                    Factor=( (Factor / 18.0)*2.0);
+                }else{
+                    //does not create shadow so we just add color
+                    Factor=1.0;
                 }
-                Factor=( (Factor / 18.0)*2.0);
 
 
                 // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
