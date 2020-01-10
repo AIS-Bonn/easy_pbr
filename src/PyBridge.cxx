@@ -91,6 +91,7 @@ PYBIND11_MODULE(easypbr, m) {
     // py::class_<SpotLight, Camera, std::shared_ptr<Camera> > (m, "SpotLight")
     // .def(py::init<const std::string>())
     .def_readwrite("m_power", &SpotLight::m_power )
+    .def_readwrite("m_color", &SpotLight::m_color )
     ;
 
     //Scene
