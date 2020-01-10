@@ -72,7 +72,7 @@ struct VisOptions{
 
 class Mesh : public std::enable_shared_from_this<Mesh>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     template <class ...Args>
     static std::shared_ptr<Mesh> create( Args&& ...args ){
         return std::shared_ptr<Mesh>( new Mesh(std::forward<Args>(args)...) );

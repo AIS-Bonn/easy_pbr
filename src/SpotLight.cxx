@@ -150,3 +150,7 @@ bool SpotLight::has_shadow_map(){
 gl::Texture2D& SpotLight::get_shadow_map_ref(){
     return m_shadow_map_fbo.tex_with_name("shadow_map_depth");
 }
+
+void SpotLight::print_ptr(){
+    VLOG(1) << "Spotlight this is " << this;
+}

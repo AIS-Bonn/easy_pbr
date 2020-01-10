@@ -13,12 +13,17 @@
 #define CONFIGURU_IMPLICIT_CONVERSIONS 1
 #include <configuru.hpp>
 
+//to his the fact that it is inheriting from Camera and both inherit from enabled_shared_from https://www.codeproject.com/Articles/286304/Solution-for-multiple-enable-shared-from-this-in-i
+#include "shared_ptr/EnableSharedFromThis.h"
+#include "shared_ptr/SmartPtrBuilder.h"
+
 class MeshGL;
 
-class SpotLight : public std::enable_shared_from_this<SpotLight>, public Camera
+// class SpotLight : public std::enable_shared_from_this<SpotLight>, public Camera
+class SpotLight : public Camera, public Generic::EnableSharedFromThis< SpotLight >
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     SpotLight(const configuru::Config& config);
 
     // void render_to_shadow_map(const MeshCore& mesh);
@@ -30,6 +35,8 @@ public:
     int shadow_map_resolution();
     bool has_shadow_map();
     gl::Texture2D& get_shadow_map_ref();
+
+    void print_ptr();
 
     float m_power;
     Eigen::Vector3f m_color; 

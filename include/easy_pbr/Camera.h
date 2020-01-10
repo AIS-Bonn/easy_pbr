@@ -4,11 +4,16 @@
 
 #include <Eigen/Geometry>
 
+//to his the fact that Spotlight derives this and both inherit from enabled_shared_from https://www.codeproject.com/Articles/286304/Solution-for-multiple-enable-shared-from-this-in-i
+#include "shared_ptr/EnableSharedFromThis.h"
+#include "shared_ptr/SmartPtrBuilder.h"
 
-class Camera : public std::enable_shared_from_this<Camera>
+
+// class Camera : public std::enable_shared_from_this<Camera>
+class Camera : public Generic::EnableSharedFromThis< Camera >
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // UI Enumerations 
     enum class MouseButton {Left, Middle, Right};
     enum class MouseMode { None, Rotation, Zoom, Pan, Translation} mouse_mode;

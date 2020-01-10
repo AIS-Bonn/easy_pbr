@@ -11,7 +11,7 @@
 
 class Frame {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Frame();
 
     int width=-1;

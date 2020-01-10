@@ -25,7 +25,7 @@ class MeshGL;
 
 class MeshGL {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
     template <class ...Args>
     static std::shared_ptr<MeshGL> create( Args&& ...args ){

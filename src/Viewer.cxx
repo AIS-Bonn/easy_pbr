@@ -175,7 +175,8 @@ void Viewer::init_params(const std::string config_file){
     int nr_spot_lights=vis_config["lights"]["nr_spot_lights"];
     for(int i=0; i<nr_spot_lights; i++){   
         Config light_cfg=vis_config["lights"]["spot_light_"+std::to_string(i)];
-        std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
+        // std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
+        std::shared_ptr<SpotLight> light=  Generic::SmartPtrBuilder::CreateSharedPtr< SpotLight, Camera >(new SpotLight(light_cfg));
         m_spot_lights.push_back(light);
     }
 
@@ -1783,9 +1784,14 @@ void Viewer::apply_postprocess(){
 //     return MVP;
 // }
 
-std::shared_ptr<SpotLight> Viewer::spotlight_with_idx(const int i){
-    CHECK(i<m_spot_lights.size()) << "Indexing the spotlight array out of bounds";
-    return m_spot_lights[i];
+std::shared_ptr<SpotLight> Viewer::spotlight_with_idx(const int idx){
+    CHECK(idx<m_spot_lights.size()) << "Indexing the spotlight array out of bounds";
+
+    // for(int i=0; i<m_spot_lights.size(); i++){
+    //     VLOG(1) << "light at idx" << i << " has ptr " << m_spot_lights[i];
+    // }
+
+    return m_spot_lights[idx];
 }
 
 void Viewer::create_random_samples_hemisphere(){
@@ -2109,14 +2115,22 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 }
 
 
-void Viewer::set_position(const int i){
+void Viewer::print_pointers(){
+    for(int i=0; i<m_spot_lights.size(); i++){
+        VLOG(1) << "light at idx" << i << " has ptr " << m_spot_lights[i].get();
+        m_spot_lights[i]->print_ptr();
+    }
+}
+
+void Viewer::set_position(const int i, Eigen::Vector3f& pos){
     // VLOG(1) << "C++ position is " << m_spot_lights[0]->position().transpose();
-    Eigen::Vector3f pos;
-    pos << 19.6983, 41.4829, -79.7799;
+    // Eigen::Vector3f pos;
+    // pos << 19.6983, 41.4829, -79.779
+    VLOG(1)<<"C++ is settig position of object " << m_spot_lights[i].get();
     m_spot_lights[i]->set_position(pos);
 }
 void Viewer::check_position(const int i){
-    VLOG(1) << "C++ position is " << m_spot_lights[i]->position().transpose();
+    VLOG(1) << "C++ object with ptr "  <<m_spot_lights[i]<< "has position " << m_spot_lights[i]->position().transpose();
 }
 
 void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier){

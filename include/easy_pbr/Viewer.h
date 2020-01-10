@@ -40,7 +40,7 @@ class Viewer;
 
 class Viewer: public std::enable_shared_from_this<Viewer> {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     //https://stackoverflow.com/questions/29881107/creating-objects-only-as-shared-pointers-through-a-base-class-create-method
     template <class ...Args>
     static std::shared_ptr<Viewer> create( Args&& ...args ){
@@ -98,7 +98,8 @@ public:
     void load_environment_map(const std::string path);
 
     //for debuggin
-    void set_position(const int i);
+    void print_pointers();
+    void set_position(const int i, Eigen::Vector3f&);
     void check_position(const int i);
 
 
