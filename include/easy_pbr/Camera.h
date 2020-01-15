@@ -8,6 +8,8 @@
 #include "shared_ptr/EnableSharedFromThis.h"
 #include "shared_ptr/SmartPtrBuilder.h"
 
+class RandGenerator;
+
 
 // class Camera : public std::enable_shared_from_this<Camera>
 class Camera : public Generic::EnableSharedFromThis< Camera >
@@ -50,6 +52,7 @@ public:
     void rotate(const Eigen::Quaternionf& q); //rotates around the central camera position by a quaternion q
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
+    Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera
 
 
     //writing the current camera pose to string so we can use it later
@@ -65,7 +68,7 @@ public:
     void wheel_event();
 
     float m_exposure;
-    float m_fov;
+    float m_fov; //fov in the x direction
     float m_near;
     float m_far;
     bool m_is_initialized; //the camera start in a somewhat default position. Initializing it means putting the camera in position in which you see the scene. This can be done with from_string or can be done by the viewer automatically when the first update is done. If you used from_string then the viewer doesnt need to do anything
@@ -83,10 +86,11 @@ private:
     Eigen::Vector3f m_prev_translation; //translation of the camera at the previous timestmap
     Eigen::Quaternionf m_prev_rotation; // rotation fo the camera at the previous timestep
     bool m_prev_mouse_pos_valid;
+    std::shared_ptr<RandGenerator> m_rand_gen;
 
 
     void recalculate_orientation();
-    Eigen::Matrix4f compute_projection_matrix(const float fov, const float aspect, const float znear, const float zfar);
+    Eigen::Matrix4f compute_projection_matrix(const float fov_x, const float aspect, const float znear, const float zfar);
     Eigen::Quaternionf two_axis_rotation(const Eigen::Vector2f viewport_size, const float speed, const Eigen::Vector2f prev_mouse, const Eigen::Vector2f current_mouse);
 };
 

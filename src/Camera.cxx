@@ -12,6 +12,7 @@
 #include <iostream>
 
 #include "string_utils.h"
+#include "RandGenerator.h"
 
 using namespace easy_pbr::utils;
 
@@ -23,7 +24,8 @@ Camera::Camera():
     m_far(5000),
     m_is_mouse_down(false),
     m_prev_mouse_pos_valid(false),
-    m_is_initialized(false)
+    m_is_initialized(false),
+    m_rand_gen(new RandGenerator())
 {
 
     m_model_matrix.setIdentity();
@@ -72,6 +74,32 @@ Eigen::Matrix3f Camera::cam_axes(){
 
     return cam_axes;
 }
+
+// float Camera::fov_y(){
+//     // return m_fov;
+
+//     float fov_y=fov_x/aspect;
+//     VLOG(1) << "fov_x is " << fov_x << " fov_y is " << fov_y << " aspect is " << aspect;
+
+
+//     double degree2radians = M_PI / 180.0; //switching to radians because std::tan takes radians
+//     double f = 1.0 / tan(degree2radians * fov_y / 2.0);
+//     double znear_minus_zfar = znear - zfar;
+
+//     P(0,0)=f/aspect;
+//     P(1,1)=f
+
+
+//     proj_matrix=
+//     Eigen::Matrix4f
+// }
+// float Camera::fov_x(){
+//     return m_fov;
+// }
+// float Camera::aspect_ratio(){
+
+// }
+
 
 
 
@@ -160,14 +188,19 @@ void Camera::rotate(const Eigen::Quaternionf& q){
 
 
 //computations
-Eigen::Matrix4f Camera::compute_projection_matrix(const float fov, const float aspect, const float znear, const float zfar){
+Eigen::Matrix4f Camera::compute_projection_matrix(const float fov_x, const float aspect, const float znear, const float zfar){
     //https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml
 
     Eigen::Matrix4f P;
     P.setConstant(0.0);
 
+    //glu perspective needs the vertical fov and not the usual horizontal one
+    float fov_y=fov_x/aspect;
+    // VLOG(1) << "fov_x is " << fov_x << " fov_y is " << fov_y << " aspect is " << aspect;
+
+
     double degree2radians = M_PI / 180.0; //switching to radians because std::tan takes radians
-    double f = 1.0 / tan(degree2radians * fov / 2.0);
+    double f = 1.0 / tan(degree2radians * fov_y / 2.0);
     double znear_minus_zfar = znear - zfar;
 
     P(0,0)=f/aspect;
@@ -322,6 +355,32 @@ Eigen::Vector3f Camera::unproject(const Eigen::Vector3f win, const Eigen::Matrix
 
     return scene;
 
+}
+
+Eigen::Vector3f Camera::random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y){
+    //the viewport grid of pixels from which we can sample from
+
+    // Eigen::Matrix4f P=proj_matrix(viewport_size); 
+    int rand_x=m_rand_gen->rand_int(restrict_x, viewport_size.x()-restrict_x);
+    int rand_y=m_rand_gen->rand_int(restrict_y, viewport_size.y()-restrict_y);
+    // VLOG(1) << "viewport size is " << viewport_size << "x and y random is " << rand_x << " " <<rand_y;
+
+    //unproject that pixel
+    Eigen::Vector3f pixel;
+    pixel << rand_x, rand_y, 1.0;
+
+    Eigen::Vector3f point;
+    Eigen::Matrix4f V=view_matrix();
+    Eigen::Matrix4f P=proj_matrix(viewport_size);
+    point=unproject(pixel, V, P, viewport_size);
+    // VLOG(1) << "point_ is " << point;
+
+    //get a normalized direction which is negated because the camera is looking in the negative z
+    Eigen::Vector3f dir=point.normalized();
+
+    // VLOG(1) << "dir is " << dir;
+
+    return dir;
 }
 
 void Camera::print(){
