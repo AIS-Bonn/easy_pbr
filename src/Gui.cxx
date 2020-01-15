@@ -126,6 +126,8 @@ Gui::Gui( const std::string config_file,
     style->ScaleAllSizes(m_hidpi_scaling);
 
 
+    m_curve_points[0].x = -1;
+
 }
 
 void Gui::init_params(const std::string config_file){
@@ -568,6 +570,9 @@ void Gui::draw_main_menu(){
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Debug")) {
         ImGui::Checkbox("Show debug textures", &m_show_debug_textures);
+        if (ImGui::Curve("Das editor", ImVec2(600, 200), 10, m_curve_points)){
+            // curve changed
+        }
     }
     if(m_show_debug_textures){
         show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").tex_id(), "diffuse_gtex", true);

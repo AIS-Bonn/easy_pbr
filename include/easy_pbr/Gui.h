@@ -93,6 +93,9 @@ private:
     float m_subsample_factor;
     int m_decimate_nr_target_faces;
 
+    //debug stuff 
+    ImVec2 m_curve_points[10];
+
 
 
     void init_params(const std::string config_file);

@@ -658,8 +658,8 @@ void Viewer::draw(const GLuint fbo_id){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
-    m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
-    // m_gbuffer.clear();
+    // m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
+    m_gbuffer.clear();
     TIME_END("gbuffer");
 
 
