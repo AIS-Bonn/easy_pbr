@@ -75,19 +75,9 @@ $ cd easy_pbr
 $ make
 ```
 
-<!-- https://github.com/markedjs/marked/issues/266#issuecomment-26334838 -->
-<style>
-table:nth-of-type(1) {
-    display:table;
-    width:100%;
-}
-table:nth-of-type(1) th:nth-of-type(2) {
-    width:80%;
-}
-</style>
 
 ## Applications
 
 | Name  | Description |
 | ------------- | ------------- |
-| [Deferred Physically based rendering](http://kosua20.github.io/Rendu/html/group___deferred_rendering.html) | ![PBR demo preview](imgs/pbr.png) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. |
+| [Deferred Physically based rendering] | ![PBR demo preview](imgs/pbr.png) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. |
