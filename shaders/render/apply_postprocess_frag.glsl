@@ -17,6 +17,7 @@ uniform float exposure;
 uniform vec3 background_color;
 uniform bool show_background_img;
 uniform bool show_environment_map;
+uniform bool show_prefiltered_environment_map;
 
 
 //trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
@@ -71,7 +72,7 @@ void main(){
     vec3 color;
     if(depth==1.0){
         // //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
-         if (show_background_img || show_environment_map){
+         if (show_background_img || show_environment_map || show_prefiltered_environment_map){
             color = texture(composed_tex, uv_in).rgb;
          }else{
             //  color=background_color;

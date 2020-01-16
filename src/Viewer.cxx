@@ -1744,6 +1744,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
     m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    m_apply_postprocess_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");

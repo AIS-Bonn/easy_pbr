@@ -587,47 +587,12 @@ void main(){
         }
     }
 
-
-    // color=color*exposure;
-    // // float brightness = luminance(color);
-    // // if (brightness>bloom_threshold){
-    // //     color=vec3(1.0, 0.0, 0.0);
-    // // } 
-
-
-
-    // // color = Tonemap_Reinhard(color);
-    // // color = Tonemap_Unreal(color);
-    // // color = Tonemap_FilmicALU(color);
-    // // color = Tonemap_ACES(color);
-    // //new aces
-    // color = transpose(aces_input)*color;
-    // color = RRTAndODTFit(color);
-    // color = transpose(aces_output)*color;
-
-
-    // HDR tonemapping
-    // color = color / (color + vec3(1.0));
-    // gamma correct
-    // color=color*exposure;
-    // color = pow(color, vec3(1.0/2.2)); 
-
-    // if(show_prefiltered_environment_map){
-    //     color=vec3(0.0, 1.0, 0.0);
-    // }else{
+    // if(depth==0.0){
     //     color=vec3(1.0, 0.0, 0.0);
-    // }
-
-    out_color = vec4(color, 1.0);
-
-
-    // if (is_color_bloomed(color)){
-    //     bloom_color=vec4(color,1.0);
     // }else{
-    //     bloom_color=vec4(0.0);
+    //     color=vec3(0.0, 1.0, 0.0);
     // }
-    // float bloom_weight=compute_bloom_weight(color);
-    // bloom_color=vec4(color, bloom_weight);
+
 
     if(enable_bloom){
         float bloom_weight=compute_bloom_weight(color);
@@ -637,5 +602,9 @@ void main(){
             bloom_color=vec4(0.0);
         }
     }
+
+    out_color = vec4(color, 1.0);
+
+
    
 }

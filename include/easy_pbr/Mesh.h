@@ -97,6 +97,7 @@ public:
     void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python
     void rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees);
     void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
+    void rotate_model_matrix_local(const Eigen::Quaterniond& q);
 
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);

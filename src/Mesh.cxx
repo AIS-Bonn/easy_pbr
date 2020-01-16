@@ -297,6 +297,20 @@ void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float an
     transform_model_matrix(tf);
 }
 
+void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
+    Eigen::Affine3d rot;
+    rot.setIdentity();
+
+    rot.linear()=q.toRotationMatrix();
+
+    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+
+    transform_model_matrix(tf);
+}
+
+
+
+
 
 
 
