@@ -1406,12 +1406,15 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_bloom_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
     // m_bloom_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    m_composed_fbo.clear();
+    // GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 1.0) );
     // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
     // GL_C( m_composed_fbo.sanity_check());
     // VLOG(1) << "Trying to clear the bloom_gtex";
     // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").generate_mipmap(m_bloom_mip_map_lvl) );
-    GL_C( m_composed_fbo.tex_with_name("bloom_gtex").clear() );
+    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").clear() );
+    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
+    // VLOG(1) <<  m_composed_fbo.tex_with_name("bloom_gtex").mipmap_nr_levels_allocated();
     // VLOG(1) << "finished clearing bloom gtex";
 
 
@@ -1757,7 +1760,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
-    // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
+    m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
     m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
     // draw
     m_fullscreen_quad->vao.bind(); 

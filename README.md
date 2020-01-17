@@ -76,7 +76,9 @@ $ make
 ```
 
 
-## Applications
+## Examples
+
+Various examples can be found in the ./examples folder. A short description of each one is given here. The various effects are achived through a combination of different .cfg file configurations and different setting established in the python file.
 
 | Name  | Description |
 | ------------- | ------------- |

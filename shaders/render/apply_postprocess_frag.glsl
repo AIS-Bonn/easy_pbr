@@ -75,8 +75,8 @@ void main(){
          if (show_background_img || show_environment_map || show_prefiltered_environment_map){
             color = texture(composed_tex, uv_in).rgb;
          }else{
-            //  color=background_color;
-            discard;
+             color=background_color;
+            // discard;
          }
     }else{
         //pixel is covered by mesh so we read the color it has
