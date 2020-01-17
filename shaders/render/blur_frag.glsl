@@ -17,18 +17,23 @@ void main(){
     // blurred_output=vec4(1.0);
 
     //https://learnopengl.com/Advanced-Lighting/Bloom
-    vec2 tex_offset = 1.0 / textureSize(img, mip_map_lvl); // gets size of single texel
+    ivec2 tex_size= textureSize(img, mip_map_lvl);
+    vec2 tex_offset = 1.0 / tex_size; // gets size of single texel
     vec4 result = textureLod(img, uv_in, mip_map_lvl) * weight[0]; // current fragment's contribution
     if(horizontal){
         for(int i = 1; i < 5; ++i){
-            result += textureLod(img, uv_in + vec2(tex_offset.x * i, 0.0), mip_map_lvl) * weight[i];
-            result += textureLod(img, uv_in - vec2(tex_offset.x * i, 0.0), mip_map_lvl) * weight[i];
+            // result += textureLod(img, uv_in + vec2(tex_offset.x * i, 0.0), mip_map_lvl) * weight[i];
+            // result += textureLod(img, uv_in - vec2(tex_offset.x * i, 0.0), mip_map_lvl) * weight[i];
+            result += texelFetch(img, ivec2(uv_in*tex_size + ivec2(i, 0)), mip_map_lvl) * weight[i];
+            result += texelFetch(img, ivec2(uv_in*tex_size - ivec2(i, 0)), mip_map_lvl) * weight[i];
         }
     }
     else{
         for(int i = 1; i < 5; ++i){
-            result += textureLod(img, uv_in + vec2(0.0, tex_offset.y * i), mip_map_lvl) * weight[i];
-            result += textureLod(img, uv_in - vec2(0.0, tex_offset.y * i), mip_map_lvl) * weight[i];
+            // result += textureLod(img, uv_in + vec2(0.0, tex_offset.y * i), mip_map_lvl) * weight[i];
+            // result += textureLod(img, uv_in - vec2(0.0, tex_offset.y * i), mip_map_lvl) * weight[i];
+            result += texelFetch(img, ivec2(uv_in*tex_size + ivec2(0, i)), mip_map_lvl) * weight[i];
+            result += texelFetch(img, ivec2(uv_in*tex_size - ivec2(0, i)), mip_map_lvl) * weight[i];
         }
     }
 

@@ -303,32 +303,20 @@ void Viewer::init_opengl(){
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     m_gbuffer.sanity_check();
 
-    //initialize the final fbo
-    GL_C( m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo_no_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_final_fbo_no_gui.add_depth("depth_gtex") );
-    m_final_fbo_no_gui.sanity_check();
-    //initilize the final_fbo which also has the gui
-    GL_C( m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo_with_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_final_fbo_with_gui.add_depth("depth_gtex") );
-    m_final_fbo_with_gui.sanity_check();
-
-
+    //we compose the gbuffer into this fbo, together with a bloom texture for storing the birght areas
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
     m_composed_fbo.add_texture("composed_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT); 
     m_composed_fbo.add_texture("bloom_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);  
     m_composed_fbo.sanity_check();
 
-
-    // //DEBUG=============
-    // GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
-    // // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
-    // GL_C( m_composed_fbo.sanity_check());
-    // VLOG(1) << "INITIAT trying to clear the bloom_gtex";
-    // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").clear() );
-    // VLOG(1) << "INITIAL finished clearing bloom gtex";
-
+    //initialize the final fbo
+    GL_C( m_final_fbo_no_gui.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo_no_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    m_final_fbo_no_gui.sanity_check();
+    //initilize the final_fbo which also has the gui
+    GL_C( m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( m_final_fbo_with_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    m_final_fbo_with_gui.sanity_check();
 
 
 
@@ -666,7 +654,6 @@ void Viewer::draw(const GLuint fbo_id){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
-    // m_gbuffer.clear_depth();  //the viewer can work when we clear only the depth but for any post processing is nice to have the whole framebuffer clean
     m_gbuffer.clear();
     TIME_END("gbuffer");
 
@@ -1405,8 +1392,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
     // m_bloom_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
     // m_bloom_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    TIME_START("clearing_compose");
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
     m_composed_fbo.clear();
+    TIME_END("clearing_compose");
     // GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 1.0) );
     // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
     // GL_C( m_composed_fbo.sanity_check());
@@ -1642,10 +1631,17 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
 
 
     //first mip map the image containing the bright areas
+
     GL_C( img.generate_mipmap(max_mip_map_lvl) );
-    m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), img.width(), img.height() );
-    m_blur_tmp_tex.generate_mipmap(max_mip_map_lvl);
-    m_blur_tmp_tex.clear();
+    //the blurred tmp only needs to start allocating from start_mip_map_lvl because we dont blur any map that is bigger
+    int max_mip_map_lvl_tmp_buffer=max_mip_map_lvl-start_mip_map_lvl;
+    Eigen::Vector2i blurred_tmp_start_size=calculate_mipmap_size(img.width(), img.height(), start_mip_map_lvl);
+    m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), blurred_tmp_start_size.x(), blurred_tmp_start_size.y() );
+    //allocate a mip map
+    if(m_blur_tmp_tex.mipmap_nr_levels_allocated()!=max_mip_map_lvl_tmp_buffer){
+        m_blur_tmp_tex.generate_mipmap(max_mip_map_lvl_tmp_buffer);
+    }
+    m_blur_tmp_tex.clear(); //clear also the mip maps
 
     //for each mip map level of the bright image we blur it a bit
     for (int mip = start_mip_map_lvl; mip < max_mip_map_lvl; mip++){
@@ -1660,7 +1656,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
             m_blur_shader.bind_texture(img,"img");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(true,"horizontal");
-            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip); 
+            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl); 
             // draw
             m_fullscreen_quad->vao.bind(); 
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -1668,7 +1664,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
 
             //do it in the vertical direction
             m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
-            m_blur_shader.uniform_int(mip,"mip_map_lvl");
+            m_blur_shader.uniform_int(mip-start_mip_map_lvl,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
             m_blur_shader.draw_into(img, "blurred_output", mip); 
             // draw
@@ -1731,7 +1727,7 @@ void Viewer::apply_postprocess(){
     //first mip map the image so it's faster to blur it when it's smaller
     // m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), m_posprocessed_tex.width(), blurred_img_size.y() );
     m_posprocessed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
-    m_posprocessed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    // m_posprocessed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
 
 
