@@ -34,6 +34,11 @@ vec2 encode_normal(vec3 normal){
     if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
         return vec2(0);
     }
+    //in the rare case in which we have a normal like (0, 0, 1) then normalize the xy will not work so we add a small epsilon
+    if(normal.xy==vec2(0)){
+        normal.x+=0.001;
+        normal=normalize(normal);
+    }
     vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
     return normal_encoded;
 }

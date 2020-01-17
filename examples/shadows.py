@@ -9,11 +9,10 @@ from easypbr  import *
 config_file="./config/shadows.cfg"
 
 view=Viewer.create(config_file) 
-view.m_camera.from_string("  3.44715  0.838918 -0.254881 -0.142631  0.712764  0.151788 0.669765   0.448066  -0.501703 -0.0681618 90 0.00761097 7.61097")
+view.m_camera.from_string(" 2.86746     1.01 0.697562 -0.211693  0.574033  0.156736 0.775312  0.428064 -0.494944 -0.046783 90 0.00761097 7.61097")
 
 mesh=Mesh("./data/3d_scene.obj")
 mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0]
-mesh.rotate_model_matrix_local([0.0, 1.0, 0.0], 10.0) #rotate around the y axis 10 degrees
 Scene.show(mesh,"mesh")
 
 #hide the gird floor
