@@ -80,5 +80,6 @@ $ make
 
 | Name  | Description |
 | ------------- | ------------- |
-| Deferred Physically based rendering | ![PBR demo preview](imgs/pbr.png) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. |
-| Shadows and Ambient Occlusion | ![Shadows and Ambient Occlusion](imgs/shadows2.jpg)  |
+| Deferred Physically based rendering | ![PBR demo preview](imgs/pbr_multiscatter.png) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. <br /> Run with [./examples/pbr.py](./examples/pbr.py) |
+| Shadows and Ambient Occlusion | ![Shadows and Ambient Occlusion](imgs/shadows2.jpg) <br /> Run with [./examples/shadows.py](./examples/shadows.py) |
+<!-- | Bloom | ![Bloom](imgs/bloom.png)  | -->

@@ -458,13 +458,17 @@ void main(){
             float metalness=texture(metalness_and_roughness_tex, uv_in).x;
             float roughness=texture(metalness_and_roughness_tex, uv_in).y;
             float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+            float NdotV = max(dot(N, V), 0.0);
 
 
 
             // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
             // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-            vec3 F0 = vec3(0.04); 
-            F0 = mix(F0, albedo, metalness);
+            // vec3 F0 = vec3(0.04); 
+            // F0 = mix(F0, albedo, metalness);
+
+            // Dielectrics have a constant low coeff, metals use the baseColor (ie reflections are tinted).
+            vec3 F0 = mix(vec3(0.08), albedo, metalness);
 
             // reflectance equation
             vec3 Lo = vec3(0.0);
@@ -560,23 +564,46 @@ void main(){
             // ambient lighting (we now use IBL as the ambient term)
             vec3 ambient=vec3(0.0);
             if (enable_ibl){
-                vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
-                vec3 kS = F; 
-                vec3 kD = 1.0 - kS;
-                kD *= 1.0 - metalness;	  
+                // vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+                // Adjust Fresnel absed on roughness.
+                vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
+                vec3 Fs = F0 + Fr * pow(1.0 - NdotV, 5.0);
+                // vec3 kS = F; 
+                // vec3 kD = 1.0 - kS;
+                // kD *= 1.0 - metalness;	  
                 vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
-                vec3 diffuse      = irradiance * albedo;
+                // vec3 radiance = radiance(N, V, roughness);
+                vec3 radiance = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
+                // vec3 diffuse      = irradiance * albedo;
 
                 // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
                 // const float MAX_REFLECTION_LOD = 4.0;
                 // const float MAX_REFLECTION_LOD = ;
-                vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
-                vec2 brdf  = texture(brdf_lut_tex, vec2(max(dot(N, V), 0.0), roughness)).rg;
-                vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+                // vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
+                // Specular single scattering contribution (preintegrated).
+                vec2 brdf  = texture(brdf_lut_tex, vec2(NdotV, roughness)).rg;
+                // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+                vec3 specular = (brdf.x * Fs + brdf.y);
 
 
                 // ambient = (kD * diffuse) * ao;
-                ambient = (kD * diffuse + specular) * ao;
+                // ambient = (kD * diffuse + specular) * ao;
+
+                // Account for multiple scattering.
+                // Based on A Multiple-Scattering Microfacet Model for Real-Time Image-based Lighting, C. J. Fdez-Agüera, JCGT, 2019.
+                float scatter = (1.0 - (brdf.x + brdf.y));
+                vec3 Favg = F0 + (1.0 - F0) / 21.0;
+                vec3 multi = scatter * specular * Favg / (1.0 - Favg * scatter);
+                // Diffuse contribution. Metallic materials have no diffuse contribution.
+                vec3 single = (1.0 - metalness) * albedo * (1.0 - F0);
+                vec3 diffuse = single * (1.0 - specular - multi) + multi;
+                
+                // fragColor = ao * (diffuse * irradiance + specular * radiance);
+                ambient=ao * (diffuse * irradiance + specular * radiance);
+
+
+
+
             }else{
                 ambient = vec3(ambient_color_power) * ambient_color * ao;
             }
