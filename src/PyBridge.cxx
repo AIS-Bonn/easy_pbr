@@ -54,7 +54,7 @@ PYBIND11_MODULE(easypbr, m) {
     //Viewer
     py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")
     // .def(py::init<const std::string>())
-    .def_static("create",  &Viewer::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
+    .def_static("create",  &Viewer::create<const std::string>, py::arg("config_file") = DEFAULT_CONFIG ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )

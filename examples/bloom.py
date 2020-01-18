@@ -9,6 +9,7 @@ from easypbr  import *
 config_file="./config/bloom.cfg"
 
 view=Viewer.create(config_file) 
+# view=Viewer.create() 
 view.m_camera.from_string(" 0.113911 -0.307625   8.70148   -0.030921  0.00654196 0.000202454 0.9995         0 -0.846572         0 70 0.213054 213.054")
 
 mesh=Mesh("./data/head.obj")

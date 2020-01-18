@@ -100,7 +100,8 @@ Viewer::Viewer(const std::string config_file):
     m_first_draw(true)
     {
         m_camera=m_default_camera;
-        init_params(config_file);
+        init_params(config_file); //tries to get the configurations and if not present it will get them from the default cfg
+
         compile_shaders(); 
         init_opengl();                     
         m_gui=std::make_shared<Gui>(config_file, this, m_window); //needs to be initialized here because here we have done a gladloadgl
@@ -122,63 +123,148 @@ void Viewer::init_params(const std::string config_file){
         config_file_abs=config_file;
     }
 
+    //get all the default configs and all it's sections
+    Config default_cfg = configuru::parse_file(std::string(DEFAULT_CONFIG), CFG);
+    Config default_vis_cfg=default_cfg["visualization"];
+    Config default_cam_cfg=default_cfg["visualization"]["cam"];
+    Config default_ssao_cfg=default_cfg["visualization"]["ssao"];
+    Config default_bloom_cfg=default_cfg["visualization"]["bloom"];
+    Config default_edl_cfg=default_cfg["visualization"]["edl"];
+    Config default_bg_cfg=default_cfg["visualization"]["background"];
+    Config default_ibl_cfg=default_cfg["visualization"]["ibl"];
+    Config default_lights_cfg=default_cfg["visualization"]["lights"];
+
+    //get the current config and if the section is not available, fallback to the default one
     Config cfg = configuru::parse_file(config_file_abs, CFG);
-    Config vis_config=cfg["visualization"];
-    //general
-    m_show_gui = vis_config["show_gui"];
-    m_subsample_factor = vis_config["subsample_factor"];
-    m_enable_culling = vis_config["enable_culling"];
+    Config vis_cfg=cfg.get_or("visualization", default_cfg);
+    Config cam_cfg=vis_cfg.get_or("cam",default_vis_cfg);
+    Config ssao_cfg=vis_cfg.get_or("ssao",default_vis_cfg);
+    Config bloom_cfg=vis_cfg.get_or("bloom",default_vis_cfg);
+    Config edl_cfg=vis_cfg.get_or("edl",default_vis_cfg);
+    Config bg_cfg=vis_cfg.get_or("background",default_vis_cfg);
+    Config ibl_cfg=vis_cfg.get_or("ibl",default_vis_cfg);
+    Config lights_cfg=vis_cfg.get_or("lights",default_vis_cfg);
+
+    // //general
+    // m_show_gui = vis_config.get_or("show_gui", default_vis_config);
+    // m_subsample_factor = vis_config.get_or("subsample_factor", default_vis_config);
+    // m_enable_culling = vis_config.get_or("enable_culling", default_vis_config);
+    // //cam
+    // // m_camera->m_fov=vis_config["cam"].get_float_else_nan("fov")  ;
+    // // m_camera->m_fov=vis_config["cam"].get_float_else_default_else_nan("fov", default_cam_config)  ;
+    // m_camera->m_fov=vis_config.get_float_else_default_else_nan("visualization/fov", default_cam_config)  ;
+    // m_camera->m_near=vis_config["cam"].get_float_else_nan("near")  ;
+    // m_camera->m_far=vis_config["cam"].get_float_else_nan("far");
+    // m_camera->m_exposure=vis_config["cam"].get_float_else_nan("exposure");
+
+
+    // //ssao
+    // m_auto_ssao= vis_config["ssao"]["auto_settings"];
+    // m_enable_ssao = vis_config["ssao"]["enable_ssao"];
+    // m_ssao_downsample = vis_config["ssao"]["ao_downsample"];
+    // m_kernel_radius = vis_config["ssao"].get_float_else_nan("kernel_radius");
+    // m_ao_power = vis_config["ssao"]["ao_power"];
+    // m_sigma_spacial = vis_config["ssao"]["ao_blur_sigma_spacial"];
+    // m_sigma_depth = vis_config["ssao"]["ao_blur_sigma_depth"];
+
+    // //bloom
+    // m_enable_bloom = vis_config["bloom"]["enable_bloom"];
+    // m_bloom_threshold = vis_config["bloom"]["threshold"];
+    // m_bloom_start_mip_map_lvl = vis_config["bloom"]["start_mip_map_lvl"];
+    // m_bloom_max_mip_map_lvl = vis_config["bloom"]["max_mip_map_lvl"];
+    // m_bloom_blur_iters = vis_config["bloom"]["blur_iters"];
+
+    // //edl
+    // m_auto_edl= vis_config["edl"]["auto_settings"];
+    // m_enable_edl_lighting= vis_config["edl"]["enable_edl_lighting"];
+    // m_edl_strength = vis_config["edl"]["edl_strength"];
+
+    // //background
+    // m_show_background_img = vis_config["background"]["show_background_img"];
+    // m_background_img_path = (std::string)vis_config["background"]["background_img_path"];
+
+    // //ibl
+    // m_enable_ibl = vis_config["ibl"]["enable_ibl"];
+    // m_show_environment_map = vis_config["ibl"]["show_environment_map"];
+    // m_show_prefiltered_environment_map = vis_config["ibl"]["show_prefiltered_environment_map"];
+    // m_environment_map_blur = vis_config["ibl"]["environment_map_blur"];
+    // m_environment_map_path = (fs::path(EASYPBR_DATA_DIR) / (std::string)vis_config["ibl"]["environment_map_path"]).string();
+    // m_environment_cubemap_resolution = vis_config["ibl"]["environment_cubemap_resolution"];
+    // m_irradiance_cubemap_resolution = vis_config["ibl"]["irradiance_cubemap_resolution"];
+    // m_prefilter_cubemap_resolution = vis_config["ibl"]["prefilter_cubemap_resolution"];
+    // m_brdf_lut_resolution = vis_config["ibl"]["brdf_lut_resolution"];
+
+    // //create the spot lights
+    // int nr_spot_lights=vis_config["lights"]["nr_spot_lights"];
+    // for(int i=0; i<nr_spot_lights; i++){   
+    //     Config light_cfg=vis_config["lights"]["spot_light_"+std::to_string(i)];
+    //     // std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
+    //     std::shared_ptr<SpotLight> light=  Generic::SmartPtrBuilder::CreateSharedPtr< SpotLight, Camera >(new SpotLight(light_cfg));
+    //     m_spot_lights.push_back(light);
+    // }
+
+
+
+    //attempt 2
+
+    // general
+    m_show_gui = vis_cfg.get_or("show_gui", default_vis_cfg);
+    m_subsample_factor = vis_cfg.get_or("subsample_factor", default_vis_cfg);
+    m_enable_culling = vis_cfg.get_or("enable_culling", default_vis_cfg);
+
     //cam
-    m_camera->m_fov=vis_config["cam"].get_float_else_nan("fov")  ;
-    m_camera->m_near=vis_config["cam"].get_float_else_nan("near")  ;
-    m_camera->m_far=vis_config["cam"].get_float_else_nan("far");
-    m_camera->m_exposure=vis_config["cam"].get_float_else_nan("exposure");
+    m_camera->m_fov=cam_cfg.get_float_else_default_else_nan("fov", default_cam_cfg)  ;
+    m_camera->m_near=cam_cfg.get_float_else_default_else_nan("near",default_cam_cfg);
+    m_camera->m_far=cam_cfg.get_float_else_default_else_nan("far",default_cam_cfg);
+    m_camera->m_exposure=cam_cfg.get_float_else_default_else_nan("exposure",default_cam_cfg);
 
 
-    //ssao
-    m_auto_ssao= vis_config["ssao"]["auto_settings"];
-    m_enable_ssao = vis_config["ssao"]["enable_ssao"];
-    m_ssao_downsample = vis_config["ssao"]["ao_downsample"];
-    m_kernel_radius = vis_config["ssao"].get_float_else_nan("kernel_radius");
-    m_ao_power = vis_config["ssao"]["ao_power"];
-    m_sigma_spacial = vis_config["ssao"]["ao_blur_sigma_spacial"];
-    m_sigma_depth = vis_config["ssao"]["ao_blur_sigma_depth"];
+    // //ssao
+    m_auto_ssao= ssao_cfg.get_or("auto_settings", default_ssao_cfg);
+    m_enable_ssao = ssao_cfg.get_or("enable_ssao", default_ssao_cfg);
+    m_ssao_downsample = ssao_cfg.get_or("ao_downsample", default_ssao_cfg);
+    m_kernel_radius = ssao_cfg.get_float_else_default_else_nan("kernel_radius", default_ssao_cfg);
+    m_ao_power = ssao_cfg.get_or("ao_power", default_ssao_cfg);
+    m_sigma_spacial = ssao_cfg.get_or("ao_blur_sigma_spacial", default_ssao_cfg);
+    m_sigma_depth = ssao_cfg.get_or("ao_blur_sigma_depth", default_ssao_cfg);
 
-    //bloom
-    m_enable_bloom = vis_config["bloom"]["enable_bloom"];
-    m_bloom_threshold = vis_config["bloom"]["threshold"];
-    m_bloom_start_mip_map_lvl = vis_config["bloom"]["start_mip_map_lvl"];
-    m_bloom_max_mip_map_lvl = vis_config["bloom"]["max_mip_map_lvl"];
-    m_bloom_blur_iters = vis_config["bloom"]["blur_iters"];
+    // //bloom
+    m_enable_bloom = bloom_cfg.get_or("enable_bloom", default_bloom_cfg);
+    m_bloom_threshold = bloom_cfg.get_or("threshold", default_bloom_cfg);
+    m_bloom_start_mip_map_lvl = bloom_cfg.get_or("start_mip_map_lvl", default_bloom_cfg);
+    m_bloom_max_mip_map_lvl = bloom_cfg.get_or("max_mip_map_lvl", default_bloom_cfg);
+    m_bloom_blur_iters = bloom_cfg.get_or("blur_iters", default_bloom_cfg);
 
-    //edl
-    m_auto_edl= vis_config["edl"]["auto_settings"];
-    m_enable_edl_lighting= vis_config["edl"]["enable_edl_lighting"];
-    m_edl_strength = vis_config["edl"]["edl_strength"];
+    // //edl
+    m_auto_edl= edl_cfg.get_or("auto_settings", default_edl_cfg);
+    m_enable_edl_lighting= edl_cfg.get_or("enable_edl_lighting", default_edl_cfg);
+    m_edl_strength = edl_cfg.get_or("edl_strength", default_edl_cfg);
 
-    //background
-    m_show_background_img = vis_config["background"]["show_background_img"];
-    m_background_img_path = (std::string)vis_config["background"]["background_img_path"];
+    // //background
+    m_show_background_img = bg_cfg.get_or("show_background_img", default_bg_cfg);
+    m_background_img_path = (std::string)bg_cfg.get_or("background_img_path", default_bg_cfg);
 
-    //ibl
-    m_enable_ibl = vis_config["ibl"]["enable_ibl"];
-    m_show_environment_map = vis_config["ibl"]["show_environment_map"];
-    m_show_prefiltered_environment_map = vis_config["ibl"]["show_prefiltered_environment_map"];
-    m_environment_map_blur = vis_config["ibl"]["environment_map_blur"];
-    m_environment_map_path = (fs::path(EASYPBR_DATA_DIR) / (std::string)vis_config["ibl"]["environment_map_path"]).string();
-    m_environment_cubemap_resolution = vis_config["ibl"]["environment_cubemap_resolution"];
-    m_irradiance_cubemap_resolution = vis_config["ibl"]["irradiance_cubemap_resolution"];
-    m_prefilter_cubemap_resolution = vis_config["ibl"]["prefilter_cubemap_resolution"];
-    m_brdf_lut_resolution = vis_config["ibl"]["brdf_lut_resolution"];
+    // //ibl
+    m_enable_ibl = ibl_cfg.get_or("enable_ibl", default_ibl_cfg);
+    m_show_environment_map = ibl_cfg.get_or("show_environment_map", default_ibl_cfg);
+    m_show_prefiltered_environment_map = ibl_cfg.get_or("show_prefiltered_environment_map", default_ibl_cfg);
+    m_environment_map_blur = ibl_cfg.get_or("environment_map_blur", default_ibl_cfg);
+    m_environment_map_path = (fs::path(EASYPBR_DATA_DIR) / (std::string)ibl_cfg.get_or("environment_map_path", default_ibl_cfg) ).string();
+    m_environment_cubemap_resolution = ibl_cfg.get_or("environment_cubemap_resolution", default_ibl_cfg);
+    m_irradiance_cubemap_resolution = ibl_cfg.get_or("irradiance_cubemap_resolution", default_ibl_cfg);
+    m_prefilter_cubemap_resolution = ibl_cfg.get_or("prefilter_cubemap_resolution", default_ibl_cfg);
+    m_brdf_lut_resolution = ibl_cfg.get_or("brdf_lut_resolution", default_ibl_cfg);
 
     //create the spot lights
-    int nr_spot_lights=vis_config["lights"]["nr_spot_lights"];
+    int nr_spot_lights = lights_cfg.get_or("nr_spot_lights", default_lights_cfg);
     for(int i=0; i<nr_spot_lights; i++){   
-        Config light_cfg=vis_config["lights"]["spot_light_"+std::to_string(i)];
-        // std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
+        Config light_cfg=lights_cfg.get_or("spot_light_"+std::to_string(i), default_lights_cfg);
         std::shared_ptr<SpotLight> light=  Generic::SmartPtrBuilder::CreateSharedPtr< SpotLight, Camera >(new SpotLight(light_cfg));
         m_spot_lights.push_back(light);
     }
+
+
+
 
 }
 

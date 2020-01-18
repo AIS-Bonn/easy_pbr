@@ -204,7 +204,7 @@ public:
     bool m_first_draw;
 
 private:
-    Viewer(const std::string config_file); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
+    Viewer(const std::string config_file=std::string(DEFAULT_CONFIG) ); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();
 
 

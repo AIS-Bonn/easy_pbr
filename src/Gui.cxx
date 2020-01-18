@@ -133,9 +133,13 @@ Gui::Gui( const std::string config_file,
 void Gui::init_params(const std::string config_file){
     //read all the parameters
     // Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
+    Config default_cfg = configuru::parse_file(std::string(DEFAULT_CONFIG), CFG);
+    Config default_core_cfg=default_cfg["core"];
+
     Config cfg = configuru::parse_file(config_file, CFG);
-    Config core_config=cfg["core"];
-    bool is_hidpi = core_config["hidpi"];
+    Config core_cfg=cfg.get_or("core", default_cfg);
+
+    bool is_hidpi = core_cfg.get_or("hidpi", default_core_cfg);
     m_hidpi_scaling= is_hidpi ? 2.0 : 1.0;
 }
 
