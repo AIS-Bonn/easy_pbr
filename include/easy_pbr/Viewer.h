@@ -33,6 +33,7 @@ class Gui;
 class Recorder;
 class RandGenerator;
 class SpotLight;
+class Timer;
 class GLFWwindow;
 
 //in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
@@ -121,6 +122,7 @@ public:
     void glfw_drop(GLFWwindow* window, int count, const char** paths);
 
     ColorMngr m_colormngr;
+    std::shared_ptr<Timer> m_timer;
 
     gl::Shader m_draw_points_shader;
     gl::Shader m_draw_lines_shader;

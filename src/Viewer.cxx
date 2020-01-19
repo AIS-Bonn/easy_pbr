@@ -68,6 +68,7 @@ Viewer::Viewer(const std::string config_file):
     m_default_camera(new Camera),
     m_recorder(new Recorder()),
     m_rand_gen(new RandGenerator()),
+    m_timer(new Timer()),
     m_viewport_size(1920, 1080),
     m_background_color(21.0/255.0, 21.0/255.0, 21.0/255.0),
     m_draw_points_shader("draw_points"),
@@ -99,6 +100,7 @@ Viewer::Viewer(const std::string config_file):
     m_environment_map_blur(0),
     m_first_draw(true)
     {
+        // m_timer->start();
         m_camera=m_default_camera;
         init_params(config_file); //tries to get the configurations and if not present it will get them from the default cfg
 
@@ -786,28 +788,18 @@ void Viewer::draw(const GLuint fbo_id){
         blur_img(m_composed_fbo.tex_with_name("bloom_gtex"), m_bloom_start_mip_map_lvl, m_bloom_max_mip_map_lvl, m_bloom_blur_iters);
     }
 
-    apply_postprocess();
+    apply_postprocess(); //read the composed_fbo and writes into m_final_fbo_no_gui
 
 
 
 
     //attempt 3 at forward rendering 
     TIME_START("blit");
-    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
-        m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
-    }
-    m_final_fbo_no_gui.bind_for_draw();
-    // m_final_fbo_no_gui.clear();
-    //blit the rgb from the composed_tex adn the depth from the gbuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_posprocessed_tex.fbo_id());
-    m_final_fbo_no_gui.bind_for_draw();
-    // glDrawBuffer(GL_BACK);
-    glBlitFramebuffer(0, 0, m_posprocessed_tex.width(), m_posprocessed_tex.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    //blit also the depth
+    //blit the depth from the gbuffer to the final_fbo_no_gui so that we can forward render stuff into it
     m_gbuffer.bind_for_read();
-    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    // glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    m_final_fbo_no_gui.bind_for_draw();
+    glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
     TIME_END("blit");
 
     //forward render the lines and edges 
@@ -1813,8 +1805,11 @@ void Viewer::apply_postprocess(){
 
     //first mip map the image so it's faster to blur it when it's smaller
     // m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), m_posprocessed_tex.width(), blurred_img_size.y() );
-    m_posprocessed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
+    // m_posprocessed_tex.allocate_or_resize(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, m_gbuffer.width(), m_gbuffer.height() );
     // m_posprocessed_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
+        m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
+    }
 
 
 
@@ -1844,7 +1839,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
     m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
-    m_apply_postprocess_shader.draw_into(m_posprocessed_tex, "out_color"); 
+    m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_gtex"), "out_color"); 
     // draw
     m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
