@@ -122,7 +122,11 @@ public:
     void glfw_drop(GLFWwindow* window, int count, const char** paths);
 
     ColorMngr m_colormngr;
+    
+    //timing for having fuzzy time updates at 30fps https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75
     std::shared_ptr<Timer> m_timer;
+    double m_old_time;
+    double m_accumulator_time;
 
     gl::Shader m_draw_points_shader;
     gl::Shader m_draw_lines_shader;
@@ -144,7 +148,7 @@ public:
     gl::GBuffer m_composed_fbo; //contains the composed image between the foreground and background before tonemapping and gamma correction. Contains also the bright spots of the image
     // gl::Texture2D m_composed_tex; //after gbuffer composing the foreground with the background but before tonemapping and gamme correction. Is in half float
     // gl::Texture2D m_bloom_tex; //while composing we also write the colors corresponding to the bright areas. Is in half float
-    gl::Texture2D m_posprocessed_tex; //after adding also any post processing like bloom and tone mapping and gamma correcting. Is in RGBA8
+    // gl::Texture2D m_posprocessed_tex; //after adding also any post processing like bloom and tone mapping and gamma correcting. Is in RGBA8
     gl::GBuffer m_final_fbo_no_gui; //after rendering also the lines and edges but before rendering the gui
     gl::GBuffer m_final_fbo_with_gui; //after we also render the gui into it
 

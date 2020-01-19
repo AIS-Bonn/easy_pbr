@@ -101,6 +101,7 @@ Viewer::Viewer(const std::string config_file):
     m_first_draw(true)
     {
         // m_timer->start();
+        // m_old_time=m_timer->elapsed_ms();
         m_camera=m_default_camera;
         init_params(config_file); //tries to get the configurations and if not present it will get them from the default cfg
 
@@ -609,6 +610,48 @@ void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> fu
 }
 
 void Viewer::update(const GLuint fbo_id){
+    // //make some fuzzy timer updates like in https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75 
+    // // if(!m_timer->is_running() && !m_first_draw){ // we do not start the timer on the first draw because the first frame always takes the longest
+    // if(!m_timer->is_running()){ // we do not start the timer on the first draw because the first frame always takes the longest
+    //     m_timer->start();
+    //     m_old_time=m_timer->elapsed_s();
+    //     m_accumulator_time=0;
+    // }
+
+    // double current_time=m_timer->elapsed_s();
+    // double delta_time = current_time-m_old_time;
+    // m_old_time = current_time;
+    // m_accumulator_time += delta_time;    
+    // if(m_accumulator_time>8.0/60.0) m_accumulator_time=8.0/60.0; //cam the maximum accumulator time so that it doeesnt become arbitartly large and make the code spend all the time in the internal while loop
+
+
+    // while(m_accumulator_time > 1.0/32.0){
+    //     // update()
+    //     // VLOG(1) << m_accumulator_time;
+    //     // VLOG(1) << "render";
+
+    //     pre_draw();
+    //     draw(fbo_id);
+
+    //     if(m_show_gui){
+    //         m_gui->update();
+    //     }
+
+    //     post_draw();
+    //     switch_callbacks(m_window);
+
+
+    //     m_accumulator_time -= 1.0/30.0;
+    //     if(m_accumulator_time < 0) m_accumulator_time = 0;
+
+    //     // //debug
+    //     // if(m_accumulator_time>300){
+    //     //     m_accumulator_time=0;
+    //     // }
+    // }
+
+
+
     pre_draw();
     draw(fbo_id);
 
