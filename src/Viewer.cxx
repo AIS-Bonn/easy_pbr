@@ -398,6 +398,7 @@ void Viewer::init_opengl(){
     //initialize the final fbo
     GL_C( m_final_fbo_no_gui.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
     GL_C( m_final_fbo_no_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_no_gui.add_depth("depth_gtex") ); //we need a depth for this one too because in this buffer we do all the forward rendering of lines and things like that
     m_final_fbo_no_gui.sanity_check();
     //initilize the final_fbo which also has the gui
     GL_C( m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
