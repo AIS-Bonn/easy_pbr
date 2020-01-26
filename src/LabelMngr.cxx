@@ -251,11 +251,25 @@ void LabelMngr::reindex_into_compacted_labels(Eigen::MatrixXi& labels_indices){
     CHECK(m_nr_classes!=-1) << "The label mngr has not been initialized yet. Please use LabelMngr.init() first.";
     CHECK(!m_idx_uncompacted2idx_compacted.empty()) << "This function can be used only after we used label_mngr->compact(). This will create a mapping between the uncompacted and compacted labels. At the moment the mapping is not created";
 
+    bool found_idx_putside_of_range=false;
+    int nr_indexes_outside_of_range=0;
+
     for(int i=0; i<labels_indices.rows(); i++){
         int initial_idx=labels_indices(i);
-        int reindexed_idx=m_idx_uncompacted2idx_compacted[initial_idx];
-        CHECK(reindexed_idx!=-1) << "Why is it reindexing into a -1? Something went wrong with the creation of the m_idx_uncompacted2idx_compacted. The error happened when trying to map the initial_label_idx of " << initial_idx <<" . The label_mngr has unlabeled_idx set to " << m_unlabeled_idx;
-        labels_indices(i)=reindexed_idx;
+        if(initial_idx>m_idx_uncompacted2idx_compacted.size()){
+            found_idx_putside_of_range=true;
+            nr_indexes_outside_of_range++;
+            labels_indices(i)=m_unlabeled_idx;
+        }else{
+            int reindexed_idx=m_idx_uncompacted2idx_compacted[initial_idx];
+            CHECK(reindexed_idx!=-1) << "Why is it reindexing into a -1? Something went wrong with the creation of the m_idx_uncompacted2idx_compacted. The error happened when trying to map the initial_label_idx of " << initial_idx <<" . The label_mngr has unlabeled_idx set to " << m_unlabeled_idx;
+            labels_indices(i)=reindexed_idx;
+        }
+    }
+
+
+    if(found_idx_putside_of_range){
+        LOG(WARNING) << "Found " << nr_indexes_outside_of_range << "point witch a lable idx outside of the range of m_nr_classes so we set them to unlabeled";
     }
 
 }
