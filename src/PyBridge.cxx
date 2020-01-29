@@ -186,6 +186,8 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("move_in_y", &Mesh::move_in_y )
     // .def("move_in_z", &Mesh::move_in_z )
     .def("add_child", &Mesh::add_child )
+    .def("radius_search", &Mesh::radius_search )
+    .def_readwrite("m_disk_path", &Mesh::m_disk_path)
     ;
 
     //Recorder

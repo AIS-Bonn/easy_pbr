@@ -99,6 +99,7 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
                         ${PROJECT_SOURCE_DIR}/deps/tiny_obj
                         ${PROJECT_SOURCE_DIR}/deps/utils/include
+                        ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
                         ) # Header folder
 include_directories(${PROJECT_INCLUDE_DIR} )
 include_directories(${GLFW_INCLUDE_DIR})

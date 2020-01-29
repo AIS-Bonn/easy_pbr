@@ -145,6 +145,9 @@ public:
     float get_scale();
     void color_solid2pervert(); //makes the solid color into a per vert color by allocating a C vector. It is isefult when merging meshes of different colors.
 
+    //nanoflann options for querying points in a certain radius or querying neighbiurs
+    int radius_search(const Eigen::Vector3d& query_point, const double radius); //returns touples of (index in V of the point, distance to it)
+
     //some convenience functions and also useful for calling from python using pybind
     // void move_in_x(const float amount);
     // void move_in_y(const float amount);
@@ -203,6 +206,7 @@ public:
     float m_view_direction; //direction in which the points have been removed from the velodyne cloud so that it can be unwrapped easier into 2D
     Eigen::Vector2f m_min_max_y; //the min and the max coordinate in y direction. useful for plotting color based on height
     Eigen::Vector2f m_min_max_y_for_plotting; //sometimes we want the min and max to be a bit different (controlable through the gui)
+    std::string m_disk_path; //path that from disk that was used to load this mesh
 
 
     //identification

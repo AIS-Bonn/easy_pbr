@@ -40,3 +40,6 @@
 [submodule "deps/pybind11"]
 	path = deps/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "deps/nanoflann"]
+	path = deps/nanoflann
+	url = https://github.com/jlblancoc/nanoflann.git

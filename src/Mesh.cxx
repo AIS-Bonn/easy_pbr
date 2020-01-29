@@ -33,6 +33,8 @@
 #include <pcl/point_types.h>
 // #include <sensor_msgs/PointCloud2.h>
 
+#include "nanoflann.hpp"
+
 #include "RandGenerator.h"
 #include "ColorMngr.h"
 #include "numerical_utils.h"
@@ -426,6 +428,8 @@ void Mesh::load_from_file(const std::string file_path){
     m_min_max_y_for_plotting=m_min_max_y;
 
     m_is_dirty=true;
+
+    m_disk_path=file_path_abs;
 
 }
 
@@ -1465,6 +1469,52 @@ float Mesh::min_y(){
 float Mesh::max_y(){
     return m_min_max_y_for_plotting(1);
 }
+
+
+// std::vector<std::pair<long int,double> > Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius){
+int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius){
+    //follows https://github.com/jlblancoc/nanoflann/blob/master/examples/matrix_example.cpp
+    // typedef nanoflann::KDTreeEigenMatrixAdaptor<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> my_kd_tree_t;
+
+
+    // my_kd_tree_t mat_index(3, std::cref(V), 10 /* max leaf */);
+    // mat_index.index->buildIndex();
+
+    // std::vector<std::pair<long int,double> >   ret_matches;
+    // nanoflann::SearchParams params;
+    // //params.sorted = false;
+
+    // std::vector<double> query_pt(3);
+
+    // const size_t nr_matches = mat_index.index->radiusSearch(query_point.data(), radius, ret_matches, params);
+
+    // VLOG(1)<< "Found nr of matches: " << nr_matches;
+
+
+
+
+
+    //brute force 
+    int nr_matches_brute=0;
+    for(int i=0; i<V.rows(); i++){
+        Eigen::Vector3d p = Eigen::Vector3d(V.row(i));
+        double dist = (p-query_point).norm();
+        if(dist<radius){
+            nr_matches_brute++;
+        }
+    }
+    // VLOG(1)<< "Found nr of matches brute: " << nr_matches_brute;
+
+
+
+
+    return nr_matches_brute;
+
+    // return ret_matches;
+}
+
+
+
 
 
 //we use this read_ply instead of the one from Libigl because it has a ton of memory leaks and undefined behaviours https://github.com/libigl/libigl/issues/919
