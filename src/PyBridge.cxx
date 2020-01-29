@@ -174,6 +174,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("I", &Mesh::I)
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
+    .def_readwrite("m_disk_path", &Mesh::m_disk_path)
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
@@ -187,7 +188,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("move_in_z", &Mesh::move_in_z )
     .def("add_child", &Mesh::add_child )
     .def("radius_search", &Mesh::radius_search )
-    .def_readwrite("m_disk_path", &Mesh::m_disk_path)
+    .def("color_from_label_indices", &Mesh::color_from_label_indices )
     ;
 
     //Recorder
