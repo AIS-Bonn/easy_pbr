@@ -70,7 +70,8 @@ Viewer::Viewer(const std::string config_file):
     m_rand_gen(new RandGenerator()),
     m_timer(new Timer()),
     m_viewport_size(1920, 1080),
-    m_background_color(21.0/255.0, 21.0/255.0, 21.0/255.0),
+    m_background_color(0.2, 0.2, 0.2),
+    // m_background_color(21.0/255.0, 21.0/255.0, 21.0/255.0),
     m_draw_points_shader("draw_points"),
     m_draw_lines_shader("draw_lines"),
     m_draw_mesh_shader("draw_mesh"),
@@ -1853,6 +1854,8 @@ void Viewer::apply_postprocess(){
     if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
         m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
+    m_final_fbo_no_gui.clear_depth();
+    m_final_fbo_no_gui.tex_with_name("color_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
 
 
