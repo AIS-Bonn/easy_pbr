@@ -70,13 +70,19 @@ void main(){
     float depth=texture(depth_tex, uv_in).x;
 
     vec3 color;
+    // float alpha=1.0;
+    bool pixel_covered_by_mesh=true;
     if(depth==1.0){
+        pixel_covered_by_mesh=false;
         // //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
          if (show_background_img || show_environment_map || show_prefiltered_environment_map){
             color = texture(composed_tex, uv_in).rgb;
          }else{
             //  color=background_color;
-            discard;
+
+            // //if it's not covered by a mesh we might still need to color this pixel with the bloom texture so we just accumulate on top of a color of zero
+            color=vec3(0.0); 
+
          }
     }else{
         //pixel is covered by mesh so we read the color it has
@@ -95,9 +101,6 @@ void main(){
             float bloom_weight=bloom.w;
             color_posprocessed+=bloom.rgb*bloom_weight*bloom_global_weight;
         }
-        // vec4 bloom = textureLod(bloom_tex, uv_in, bloom_mip_map_lvl);
-        // float bloom_weight=bloom.w;
-        // color_posprocessed=color+bloom.rgb*bloom_weight;
 
         //DEBUG show just one bloom tex
         // vec4 bloom = textureLod(bloom_tex, uv_in, 5);
@@ -133,7 +136,29 @@ void main(){
         // color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
     // }
 
+    //the alpha of the pixel will be 1 if it's covered by mesh, and depeneding on how strong the bloom is we will have a decaying weight
+    float color_weight=1.0;
+    if(pixel_covered_by_mesh){
+        color_weight=1.0;
+    }else{
+        //pixel is not covered by mesh therefore
+        if (!enable_bloom){
+            color_weight=0.0;
+        }else{ //we have bloom
+            color_weight=clamp(luminance(color_posprocessed),0.0, 1.0);
+            color_weight=smoothstep(0.0, 1.0, color_weight);
+        }
+    }
 
-    out_color=vec4(color_posprocessed,1.0);
+    //linear interpolation betweek the background and the color+bloom. We do this so that we can have transparency for the bloom part in case we want to save the viewer as a png and then change the background
+    vec3 color_and_bloom_weighted= clamp(color_posprocessed*color_weight, vec3(0.0), vec3(1.0));
+    vec3 background_weighted=clamp( background_color*(1.0 - color_weight) , vec3(0.0), vec3(1.0));
+    vec3 color_posprocessed_mixed = color_and_bloom_weighted+background_weighted;
+    // vec3 color_posprocessed_mixed = color_and_bloom_weighted;
+    // vec3 color_posprocessed_mixed = background_weighted;
+    // color_posprocessed_mixed=vec3(color_weight);
+
+    out_color=vec4(color_posprocessed_mixed, color_weight);
+    // out_color=vec4(color_posprocessed, color_weight);
 
 }
