@@ -138,7 +138,7 @@ void main(){
 
     //the alpha of the pixel will be 1 if it's covered by mesh, and depeneding on how strong the bloom is we will have a decaying weight
     float color_weight=1.0;
-    if(pixel_covered_by_mesh){
+    if(pixel_covered_by_mesh||show_background_img || show_environment_map || show_prefiltered_environment_map){
         color_weight=1.0;
     }else{
         //pixel is not covered by mesh therefore
