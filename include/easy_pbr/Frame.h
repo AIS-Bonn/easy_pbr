@@ -47,11 +47,17 @@ public:
     void rotate_y_axis(const float rads );
     Mesh backproject_depth();
     Mesh assign_color(Mesh& cloud);
+    std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
+
+    //getters that are nice to have for python bindings
+    Eigen::Vector3f pos_in_world();
 
     #ifdef WITH_TORCH
         torch::Tensor rgb2tensor();
+        torch::Tensor depth2tensor();
         void tensor2rgb(const torch::Tensor& tensor);
         void tensor2gray(const torch::Tensor& tensor);
+        void tensor2depth(const torch::Tensor& tensor);
     #endif
 
 

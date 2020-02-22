@@ -198,12 +198,57 @@ Mesh Frame::assign_color(Mesh& cloud){
 
 }
 
+std::shared_ptr<Mesh> Frame::pixel_world_direction(){
+    CHECK(width>0) <<"Width of this frame was not assigned";
+    CHECK(height>0) <<"Height of this frame was not assigned";
+
+    MeshSharedPtr directions_mesh=Mesh::create();
+    directions_mesh->V.resize(width*height, 3);
+
+    int idx_insert=0;
+    for(int y=0; y<height; y++){
+        for(int x=0; x<width; x++){
+            Eigen::Vector3f point_screen;
+            point_screen << x,y,1.0;
+
+            Eigen::Vector3f point_cam_coords;
+            point_cam_coords=K.inverse()*point_screen;
+
+            Eigen::Vector3f point_world_coords;
+            point_world_coords=tf_cam_world.inverse()*point_cam_coords;
+
+            Eigen::Vector3f dir=(point_world_coords-tf_cam_world.inverse().translation()).normalized();
+
+            // directions_mesh->V.row(idx_insert)= point_world_coords.cast<double>();
+            directions_mesh->V.row(idx_insert)= dir.cast<double>();
+
+            idx_insert++;
+        
+        }
+    }
+
+    directions_mesh->m_vis.m_show_points=true;
+
+    return directions_mesh;
+
+}
+
+Eigen::Vector3f Frame::pos_in_world(){
+    return tf_cam_world.inverse().translation();
+}
 
 #ifdef WITH_TORCH
     torch::Tensor Frame::rgb2tensor(){
         CHECK(rgb_32f.data) << "There is no data for the rgb_32f image. Are you sure this frame contains the image?";
 
         torch::Tensor img_tensor=torch::from_blob(rgb_32f.data, {rgb_32f.rows, rgb_32f.cols, 3});
+        
+        return img_tensor;
+    }
+    torch::Tensor Frame::depth2tensor(){
+        CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains the image?";
+
+        torch::Tensor img_tensor=torch::from_blob(depth.data, {depth.rows, depth.cols, 1});
         
         return img_tensor;
     }
@@ -224,5 +269,14 @@ Mesh Frame::assign_color(Mesh& cloud){
 
         gray_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
         std::memcpy( gray_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
+    }
+    void Frame::tensor2depth(const torch::Tensor& tensor){
+
+        CHECK(tensor.size(2)==1) << "We assuming that the tensor should have fromat H,W,C and the C should be 3. However the tensor has shape " << tensor.sizes();
+        
+        torch::Tensor tensor_cpu=tensor.to("cpu");
+
+        depth=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
+        std::memcpy( depth.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
     }
 #endif

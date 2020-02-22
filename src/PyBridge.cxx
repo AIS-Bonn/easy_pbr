@@ -41,13 +41,20 @@ PYBIND11_MODULE(easypbr, m) {
     .def("rotate_y_axis", &Frame::rotate_y_axis )
     .def("backproject_depth", &Frame::backproject_depth )
     .def("assign_color", &Frame::assign_color )
+    .def("pixel_world_direction", &Frame::pixel_world_direction )
+    .def("pos_in_world", &Frame::pos_in_world )
+    .def_readwrite("width", &Frame::width )
+    .def_readwrite("height", &Frame::height )
     .def_readwrite("rgb_8u", &Frame::rgb_8u )
     .def_readwrite("rgb_32f", &Frame::rgb_32f )
     .def_readwrite("gray_32f", &Frame::gray_32f )
+    .def_readwrite("depth", &Frame::depth )
     #ifdef WITH_TORCH
         .def("rgb2tensor", &Frame::rgb2tensor )
+        .def("depth2tensor", &Frame::depth2tensor )
         .def("tensor2rgb", &Frame::tensor2rgb )
         .def("tensor2gray", &Frame::tensor2gray )
+        .def("tensor2depth", &Frame::tensor2depth )
     #endif
     ;
  

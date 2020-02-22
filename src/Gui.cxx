@@ -426,6 +426,26 @@ void Gui::draw_main_menu(){
         if (ImGui::Button("Flip normals")){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
         }
+
+        if (ImGui::Button("Merge all meshes")){
+            //go through every mesh, apply the model matrix transform to the cpu vertices and then set the model matrix to identity, 
+            //afterards recrusivelly run .add() on the first mesh with all the others
+
+            MeshSharedPtr mesh_merged= Mesh::create();
+
+            for(int i=0; i<Scene::nr_meshes(); i++){
+                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
+                if(mesh->name!="grid_floor"){
+                    mesh->transform_vertices_cpu(mesh->m_model_matrix);
+                    mesh->m_model_matrix.setIdentity();
+                    mesh_merged->add(*mesh);
+                }
+            }
+
+            Scene::show(mesh_merged, "merged");
+
+            // m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
+        }
         
 
     }
