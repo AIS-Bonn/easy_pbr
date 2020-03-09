@@ -187,6 +187,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
     .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
     .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
+    .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
     // .def("rotate_x_axis", &Mesh::rotate_x_axis )
     // .def("rotate_y_axis", &Mesh::rotate_y_axis )
     .def("random_subsample", &Mesh::random_subsample )

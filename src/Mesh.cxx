@@ -310,7 +310,10 @@ void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
     transform_model_matrix(tf);
 }
 
-
+void Mesh::apply_model_matrix_to_cpu(){
+    transform_vertices_cpu(m_model_matrix);
+    m_model_matrix.setIdentity();
+}
 
 
 

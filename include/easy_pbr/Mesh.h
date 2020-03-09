@@ -98,6 +98,7 @@ public:
     void rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees);
     void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
     void rotate_model_matrix_local(const Eigen::Quaterniond& q);
+    void apply_model_matrix_to_cpu();
 
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);
