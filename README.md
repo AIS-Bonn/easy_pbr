@@ -41,6 +41,28 @@ Alternatively, one can also start an empty viewer by using:
 
     ./python/empty.py
 
+One can also define their own mesh by filling up the vertices and faces vector: 
+
+    view=Viewer.create() #a viewer with no argument reads by default the parameters from "./config/default_params.cfg"
+
+    mesh=Mesh() #create an empty mesh
+    #fill up the vertices of the mesh as a matrix of Nx3
+    mesh.V=[ 
+        [0,0,0],
+        [0,1,0],
+        [1,0,0],
+        [1.5,1.5,-1]
+    ]
+    #fill up the faces as a Nx3 matrix of integers which point into mesh.V
+    mesh.F=[
+        [0,2,1],
+        [1,2,3]
+    ]
+    mesh.m_vis.m_show_wireframe=True
+
+    Scene.show(mesh,"mesh")
+    while True:
+        view.update()
 
 
 # Features
