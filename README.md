@@ -20,7 +20,7 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 
 # Example
 
-An example of a python3 script which shows a single mesh using the configuration stored in config/default_params.cfg:
+An example of a python3 script which shows a single mesh using the default viewing parameters:
 
     try:
         import torch
@@ -37,7 +37,7 @@ An example of a python3 script which shows a single mesh using the configuration
     while True:
         view.update()
 
-Alternatively, one can also start an empty viewer by using:
+Alternatively, one can also start an empty viewer and dragging and dropping meshes on it:
 
     ./python/empty.py
 
