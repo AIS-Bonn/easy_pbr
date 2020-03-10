@@ -133,13 +133,23 @@ Gui::Gui( const std::string config_file,
 void Gui::init_params(const std::string config_file){
     //read all the parameters
     // Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
+
+    std::string config_file_abs;
+    if (fs::path(config_file).is_relative()){
+        config_file_abs=fs::canonical(fs::path(PROJECT_SOURCE_DIR) / config_file).string();
+    }else{
+        config_file_abs=config_file;
+    }
+
+    //get all the default configs and all it's sections
     Config default_cfg = configuru::parse_file(std::string(DEFAULT_CONFIG), CFG);
     Config default_core_cfg=default_cfg["core"];
 
-    Config cfg = configuru::parse_file(config_file, CFG);
+    //get the current config and if the section is not available, fallback to the default on
+    Config cfg = configuru::parse_file(config_file_abs, CFG);
     Config core_cfg=cfg.get_or("core", default_cfg);
-
     bool is_hidpi = core_cfg.get_or("hidpi", default_core_cfg);
+
     m_hidpi_scaling= is_hidpi ? 2.0 : 1.0;
 }
 
