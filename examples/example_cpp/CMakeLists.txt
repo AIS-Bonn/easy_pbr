@@ -25,6 +25,7 @@ set(CMAKE_CXX_STANDARD 17) #needed also by the pybind so it can build itself in 
 
 ######   PACKAGES   ############################################################
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(OpenCV REQUIRED)
 find_package(EasyPBR REQUIRED)
 add_subdirectory(${EASYPBR_SRC_PATH}/deps/pybind11  [EXCLUDE_FROM_ALL])
@@ -38,6 +39,7 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps/json/include
                         ) # Header folder
 include_directories(${PROJECT_INCLUDE_DIR} )
+include_directories(${Boost_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${EASYPBR_INCLUDE_DIR})
 
@@ -92,7 +94,7 @@ add_executable(run_easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 
 ###   LIBS   ###############################################
-set(LIBS ${LIBS} ${EASYPBR_LIBRARY} ${OpenCV_LIBS})
+set(LIBS ${LIBS} ${EASYPBR_LIBRARY} ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 
 
 target_link_libraries(all_libs ${LIBS} )
@@ -103,4 +105,5 @@ target_link_libraries(run_easypbr_wrapper PRIVATE all_libs  )
 #definitions for cmake variables that are necesarry during runtime
 target_compile_definitions(all_libs PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 target_compile_definitions(all_libs PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+target_compile_definitions(run_easypbr_wrapper PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 
