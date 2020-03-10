@@ -755,6 +755,8 @@ void Gui::show_gl_texture(const int tex_id, const std::string window_name, const
         return;
     }
     ImGuiWindowFlags window_flags = 0;
+    ImGui::SetNextWindowPos(ImVec2(400,400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(512,512), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), nullptr, window_flags);
     if(flip){ //framebuffer in gpu are stored upside down  for some reson
         ImGui::Image((ImTextureID)(uintptr_t)tex_id, ImGui::GetContentRegionAvail(), ImVec2(0,1), ImVec2(1,0) );  //the double cast is needed to avoid compiler warning for casting int to void  https://stackoverflow.com/a/30106751
