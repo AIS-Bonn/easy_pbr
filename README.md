@@ -62,6 +62,8 @@ One can also define their own mesh by filling up the vertices and faces vector:
     while True:
         view.update()
 
+An example of using EasyPBR from an external C++ application can be seen in [./examples/example_cpp](./examples/example_cpp)
+
 
 # Features
 - Deferred rendering 
