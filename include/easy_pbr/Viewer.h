@@ -111,6 +111,10 @@ public:
     //other
     void create_random_samples_hemisphere();
 
+    //getters 
+    gl::Texture2D& rendered_tex_no_gui();
+    gl::Texture2D& rendered_tex_with_gui();
+
     // Callbacks
     void set_callbacks();
     void glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier);

@@ -1951,6 +1951,13 @@ void Viewer::create_random_samples_hemisphere(){
     }
 }
 
+gl::Texture2D& Viewer::rendered_tex_no_gui(){
+    return m_final_fbo_no_gui.tex_with_name("color_gtex");
+}
+gl::Texture2D& Viewer::rendered_tex_with_gui(){
+    return m_final_fbo_with_gui.tex_with_name("color_gtex");
+}
+
 void Viewer::load_environment_map(const std::string path){
 
     m_enable_ibl=true;
