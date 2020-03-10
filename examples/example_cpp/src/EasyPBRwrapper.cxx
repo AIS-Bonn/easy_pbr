@@ -139,9 +139,8 @@ void EasyPBRwrapper::pre_draw_colorize_mesh(Viewer& view){
 }
 
 void EasyPBRwrapper::post_draw(Viewer& view){
-
     //get the final render as a opencv mat
-    cv::Mat mat = view.m_final_fbo_no_gui.tex_with_name("color_gtex").download_to_cv_mat();
+    cv::Mat mat = view.rendered_tex_no_gui().download_to_cv_mat();
 
     //the opencv mat can now be written to disk or even rendered in the GUI as a texture
     cv::flip(mat, mat, 0);
