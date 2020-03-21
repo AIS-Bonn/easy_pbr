@@ -69,6 +69,12 @@ struct VisOptions{
 
 };
 
+//when uploading texture from cpu we want a way to say that this is dirty
+struct CvMatCpu {
+    cv::Mat mat;
+    bool is_dirty=true;
+};
+
 
 class Mesh : public std::enable_shared_from_this<Mesh>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
@@ -162,6 +168,11 @@ public:
     float min_y();
     float max_y();
 
+    //set textures for pbr 
+    void set_diffuse_tex(const std::string file_path);
+    void set_metalness_tex(const std::string file_path);
+    void set_roughness_tex(const std::string file_path);
+    void set_normals_tex(const std::string file_path);
 
 
     friend std::ostream &operator<<(std::ostream&, const Mesh& m);
@@ -192,7 +203,11 @@ public:
     int m_seg_label_pred; // for classification we will have a lable for the whole cloud
     int m_seg_label_gt;
 
-    cv::Mat m_rgb_tex_cpu;
+    // cv::Mat m_rgb_tex_cpu;
+    CvMatCpu m_diffuse_mat;
+    CvMatCpu m_metalness_mat;
+    CvMatCpu m_roughness_mat;
+    CvMatCpu m_normals_mat;
 
     std::weak_ptr<MeshGL> m_mesh_gpu; // a pointer to the gpu implementation of this mesh, needs ot be weak because the mesh already has a shared ptr to the MeshCore
     std::shared_ptr<LabelMngr> m_label_mngr;

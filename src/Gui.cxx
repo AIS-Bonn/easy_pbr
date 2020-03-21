@@ -318,8 +318,8 @@ void Gui::draw_main_menu(){
                         //check if we actually have a texture 
                         if( mesh->m_vis.m_color_type==+MeshColorType::Texture){
                             std::shared_ptr<MeshGL> mesh_gl = mesh->m_mesh_gpu.lock();
-                            if(mesh_gl && !mesh_gl->m_cur_tex_ptr->storage_initialized() ){
-                                LOG(WARNING) << "There is no texture associated to the mesh. Please assign some data to mesh_gl.m_rgb_tex.";
+                            if(mesh_gl && !mesh_gl->m_diffuse_tex.storage_initialized() ){
+                                LOG(WARNING) << "There is no texture associated to the mesh. Please assign some texture by using set_diffuse_tex()";
                             }
                         }
                         // if(mesh->m_mesh_gpu && !mesh->m_mesh_gpu->m_cur_tex_ptr.storage_initialized()){
@@ -332,18 +332,18 @@ void Gui::draw_main_menu(){
                 }
                 ImGui::EndCombo();
             }
-            //if its texture then we cna choose the texture type 
-            if( ImGui::SliderInt("texture_type", &m_mesh_tex_idx, 0, 2) ){
-                if (auto mesh_gpu =  mesh->m_mesh_gpu.lock()) {
-                    if(m_mesh_tex_idx==0){
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
-                    }else if(m_mesh_tex_idx==1){
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
-                    }else if(m_mesh_tex_idx==2){
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
-                    }
-                }
-            }
+            // //if its texture then we cna choose the texture type 
+            // if( ImGui::SliderInt("texture_type", &m_mesh_tex_idx, 0, 2) ){
+            //     if (auto mesh_gpu =  mesh->m_mesh_gpu.lock()) {
+            //         if(m_mesh_tex_idx==0){
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
+            //         }else if(m_mesh_tex_idx==1){
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
+            //         }else if(m_mesh_tex_idx==2){
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
+            //         }
+            //     }
+            // }
 
 
             ImGui::ColorEdit3("Mesh color",mesh->m_vis.m_solid_color.data());
@@ -604,9 +604,9 @@ void Gui::draw_main_menu(){
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Debug")) {
         ImGui::Checkbox("Show debug textures", &m_show_debug_textures);
-        if (ImGui::Curve("Das editor", ImVec2(600, 200), 10, m_curve_points)){
+        // if (ImGui::Curve("Das editor", ImVec2(600, 200), 10, m_curve_points)){
             // curve changed
-        }
+        // }
     }
     if(m_show_debug_textures){
         show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").tex_id(), "diffuse_gtex", true);

@@ -999,9 +999,11 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->m_label_mngr){
         shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
-    if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
-        shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
-    }
+
+    //pbr textures
+    // if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
+    //     shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
+    // }
 
 
     m_gbuffer.bind_for_draw();
@@ -1170,10 +1172,16 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     // m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_specular_color , "specular_color");
     // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
     // m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_shininess , "shininess");
-    if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
-        m_draw_mesh_shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
-    }
-    m_draw_mesh_shader.uniform_bool(mesh->m_cur_tex_ptr->storage_initialized(), "has_tex");
+
+    //pbr textures
+    if(mesh->m_diffuse_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
+    if(mesh->m_metalness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
+    if(mesh->m_roughness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_roughness_tex, "roughness_tex");   }
+    if(mesh->m_normals_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
+    m_draw_mesh_shader.uniform_bool(mesh->m_diffuse_tex.storage_initialized(), "has_diffuse_tex");
+    m_draw_mesh_shader.uniform_bool(mesh->m_metalness_tex.storage_initialized(), "has_metalness_tex");
+    m_draw_mesh_shader.uniform_bool(mesh->m_roughness_tex.storage_initialized(), "has_roughness_tex");
+    m_draw_mesh_shader.uniform_bool(mesh->m_normals_tex.storage_initialized(), "has_normals_tex");
 
     m_gbuffer.bind_for_draw();
     m_draw_mesh_shader.draw_into(m_gbuffer,
@@ -2332,33 +2340,33 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
 
     if (action == GLFW_PRESS){
         switch(key){
-            case '1':{
-                VLOG(1) << "pressed 1";
-                if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
-                        m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        // m_light_factor=0.0; 
-                }
-                break;
-            }
-            case '2':{
-                VLOG(1) << "pressed 2";
-                if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
-                        m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        // m_light_factor=0.0; 
-                }
-                break;
-            }
-            case '3':{
-                VLOG(1) << "pressed 3";
-                if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
-                        mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
-                        m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-                        // m_light_factor=0.0; 
-                }
-                break;
-            }
+            // case '1':{
+            //     VLOG(1) << "pressed 1";
+            //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
+            //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
+            //             // m_light_factor=0.0; 
+            //     }
+            //     break;
+            // }
+            // case '2':{
+            //     VLOG(1) << "pressed 2";
+            //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
+            //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
+            //             // m_light_factor=0.0; 
+            //     }
+            //     break;
+            // }
+            // case '3':{
+            //     VLOG(1) << "pressed 3";
+            //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
+            //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
+            //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
+            //             // m_light_factor=0.0; 
+            //     }
+            //     break;
+            // }
             case GLFW_KEY_H :{
                 VLOG(1) << "toggled the main menu. Press h again for toggling";
                 m_gui->toggle_main_menu();

@@ -19,10 +19,10 @@ MeshGL::MeshGL():
     UV_buf("UV_buf"),
     V_tangent_u_buf("V_tangent_u_buf"),
     V_lenght_v_buf("V_lenght_v_buf"),
-    m_rgb_tex(new gl::Texture2D("rgb_tex")),
-    m_thermal_tex(new gl::Texture2D("thermal_tex")),
-    m_thermal_colored_tex(new gl::Texture2D("thermal_colored_tex")),
-    m_cur_tex_ptr(m_rgb_tex),
+    // m_rgb_tex(new gl::Texture2D("rgb_tex")),
+    // m_thermal_tex(new gl::Texture2D("thermal_tex")),
+    // m_thermal_colored_tex(new gl::Texture2D("thermal_colored_tex")),
+    // m_cur_tex_ptr(m_rgb_tex),
     m_core(new Mesh)
     {   
 
@@ -112,8 +112,26 @@ void MeshGL::upload_to_gpu(){
     L_gt_buf.upload_data(L_gt_i.size()*sizeof(unsigned), L_gt_i.data(), GL_DYNAMIC_DRAW); 
     I_buf.upload_data(I_f.size()*sizeof(float), I_f.data(), GL_DYNAMIC_DRAW); 
 
-    if(m_core->m_rgb_tex_cpu.data){
-        GL_C(m_rgb_tex->upload_from_cv_mat(m_core->m_rgb_tex_cpu) );
+    // if(m_core->m_rgb_tex_cpu.data){
+        // GL_C(m_rgb_tex->upload_from_cv_mat(m_core->m_rgb_tex_cpu) );
+    // }
+
+    //pbr textures
+    if (m_core->m_diffuse_mat.mat.data && m_core->m_diffuse_mat.is_dirty){
+        m_core->m_diffuse_mat.is_dirty=false;
+        GL_C(m_diffuse_tex.upload_from_cv_mat(m_core->m_diffuse_mat.mat) );
+    }
+    if (m_core->m_metalness_mat.mat.data && m_core->m_metalness_mat.is_dirty){
+        m_core->m_metalness_mat.is_dirty=false;
+        GL_C(m_metalness_tex.upload_from_cv_mat(m_core->m_metalness_mat.mat) );
+    }
+    if (m_core->m_roughness_mat.mat.data && m_core->m_roughness_mat.is_dirty){
+        m_core->m_roughness_mat.is_dirty=false;
+        GL_C(m_roughness_tex.upload_from_cv_mat(m_core->m_roughness_mat.mat) );
+    }
+    if (m_core->m_normals_mat.mat.data && m_core->m_normals_mat.is_dirty){
+        m_core->m_normals_mat.is_dirty=false;
+        GL_C(m_normals_tex.upload_from_cv_mat(m_core->m_normals_mat.mat) );
     }
 
     m_core->m_is_dirty=false;

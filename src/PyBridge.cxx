@@ -197,6 +197,10 @@ PYBIND11_MODULE(easypbr, m) {
     .def("add_child", &Mesh::add_child )
     .def("radius_search", &Mesh::radius_search )
     .def("color_from_label_indices", &Mesh::color_from_label_indices )
+    .def("set_diffuse_tex", &Mesh::set_diffuse_tex )
+    .def("set_metalness_tex", &Mesh::set_metalness_tex )
+    .def("set_roughness_tex", &Mesh::set_roughness_tex )
+    .def("set_normals_tex", &Mesh::set_normals_tex )
     ;
 
     //Recorder

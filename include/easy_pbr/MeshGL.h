@@ -60,10 +60,16 @@ public:
     gl::Buf I_buf;
 
     //we store the textures then as shared ptr so we can have a weak ptr that selects the one we sho
-    std::shared_ptr<gl::Texture2D> m_rgb_tex; 
-    std::shared_ptr<gl::Texture2D> m_thermal_tex; 
-    std::shared_ptr<gl::Texture2D> m_thermal_colored_tex; 
-    std::shared_ptr<gl::Texture2D> m_cur_tex_ptr; //points to the texture that is currently being displayed
+    // std::shared_ptr<gl::Texture2D> m_rgb_tex; 
+    // std::shared_ptr<gl::Texture2D> m_thermal_tex; 
+    // std::shared_ptr<gl::Texture2D> m_thermal_colored_tex; 
+    // std::shared_ptr<gl::Texture2D> m_cur_tex_ptr; //points to the texture that is currently being displayed
+
+    //texture used for PBR
+    gl::Texture2D m_diffuse_tex;
+    gl::Texture2D m_metalness_tex;
+    gl::Texture2D m_roughness_tex;
+    gl::Texture2D m_normals_tex;
 
     std::shared_ptr<Mesh> m_core;
 private:

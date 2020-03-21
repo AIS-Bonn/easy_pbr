@@ -22,8 +22,14 @@ layout(location = 5) out int mesh_id_out;
 
 // //uniform
 uniform int color_type;
-uniform sampler2D tex; //the rgb tex that is used for coloring
-uniform bool has_tex; //If the texture tex actually exists and can be sampled from
+uniform sampler2D diffuse_tex; 
+uniform sampler2D metalness_tex; 
+uniform sampler2D roughness_tex; 
+uniform sampler2D normals_tex; 
+uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
@@ -75,8 +81,8 @@ void main(){
 
 
     if(color_type==2){ //TEXTURE
-        if(has_tex){
-            vec4 tex_color=texture(tex, uv_in);
+        if(has_diffuse_tex){
+            vec4 tex_color=texture(diffuse_tex, uv_in);
             // the texture sampling may mix the pixel with the background which has alpha of zero so it makes the color darker and also dimmer, if we renomalize we make it brighter again
             if(tex_color.w!=0 ){
                 tex_color/=tex_color.w;

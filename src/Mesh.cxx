@@ -91,7 +91,15 @@ Mesh Mesh::clone(){
     cloned.I=I;
     cloned.m_seg_label_pred=m_seg_label_pred;
     cloned.m_seg_label_gt=m_seg_label_gt;
-    cloned.m_rgb_tex_cpu=m_rgb_tex_cpu.clone();
+    // cloned.m_rgb_tex_cpu=m_rgb_tex_cpu.clone();
+    cloned.m_diffuse_mat.mat=m_diffuse_mat.mat.clone();
+    cloned.m_metalness_mat.mat=m_metalness_mat.mat.clone();
+    cloned.m_roughness_mat.mat=m_roughness_mat.mat.clone();
+    cloned.m_normals_mat.mat=m_normals_mat.mat.clone();
+    cloned.m_diffuse_mat.is_dirty=true;
+    cloned.m_metalness_mat.is_dirty=true;
+    cloned.m_roughness_mat.is_dirty=true;
+    cloned.m_normals_mat.is_dirty=true;
     cloned.m_label_mngr=m_label_mngr; //this is just a shallow copy!
     cloned.t=t;
     cloned.id=id;
@@ -1514,6 +1522,25 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
     return nr_matches_brute;
 
     // return ret_matches;
+}
+
+
+void Mesh::set_diffuse_tex(const std::string file_path){
+    cv::Mat mat = cv::imread(file_path);
+    cv::flip(mat, m_diffuse_mat.mat, 0);
+    m_diffuse_mat.is_dirty=true;
+}
+void Mesh::set_metalness_tex(const std::string file_path){
+    m_metalness_mat.mat = cv::imread(file_path);
+    m_metalness_mat.is_dirty=true;
+}
+void Mesh::set_roughness_tex(const std::string file_path){
+    m_roughness_mat.mat = cv::imread(file_path);
+    m_roughness_mat.is_dirty=true;
+}
+void Mesh::set_normals_tex(const std::string file_path){
+    m_normals_mat.mat = cv::imread(file_path);
+    m_normals_mat.is_dirty=true;
 }
 
 
