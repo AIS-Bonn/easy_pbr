@@ -1531,15 +1531,18 @@ void Mesh::set_diffuse_tex(const std::string file_path){
     m_diffuse_mat.is_dirty=true;
 }
 void Mesh::set_metalness_tex(const std::string file_path){
-    m_metalness_mat.mat = cv::imread(file_path);
+    cv::Mat mat = cv::imread(file_path);
+    cv::flip(mat, m_metalness_mat.mat, 0);
     m_metalness_mat.is_dirty=true;
 }
 void Mesh::set_roughness_tex(const std::string file_path){
-    m_roughness_mat.mat = cv::imread(file_path);
+    cv::Mat mat = cv::imread(file_path);
+    cv::flip(mat, m_roughness_mat.mat, 0);
     m_roughness_mat.is_dirty=true;
 }
 void Mesh::set_normals_tex(const std::string file_path){
-    m_normals_mat.mat = cv::imread(file_path);
+    cv::Mat mat = cv::imread(file_path);
+    cv::flip(mat, m_normals_mat.mat, 0);
     m_normals_mat.is_dirty=true;
 }
 

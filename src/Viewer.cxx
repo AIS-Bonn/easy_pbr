@@ -1177,11 +1177,11 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_diffuse_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
     if(mesh->m_metalness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
     if(mesh->m_roughness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_roughness_tex, "roughness_tex");   }
-    if(mesh->m_normals_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
+    // if(mesh->m_normals_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
     m_draw_mesh_shader.uniform_bool(mesh->m_diffuse_tex.storage_initialized(), "has_diffuse_tex");
     m_draw_mesh_shader.uniform_bool(mesh->m_metalness_tex.storage_initialized(), "has_metalness_tex");
     m_draw_mesh_shader.uniform_bool(mesh->m_roughness_tex.storage_initialized(), "has_roughness_tex");
-    m_draw_mesh_shader.uniform_bool(mesh->m_normals_tex.storage_initialized(), "has_normals_tex");
+    // m_draw_mesh_shader.uniform_bool(mesh->m_normals_tex.storage_initialized(), "has_normals_tex");
 
     m_gbuffer.bind_for_draw();
     m_draw_mesh_shader.draw_into(m_gbuffer,

@@ -29,7 +29,7 @@ uniform sampler2D normals_tex;
 uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
-uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
+// uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
@@ -79,30 +79,49 @@ void main(){
     //     discard;
     // }
 
+    float metalness_out=metalness;
+    float roughness_out=roughness;
+    vec3 normal_to_encode=normal_in;
+
 
     if(color_type==2){ //TEXTURE
         if(has_diffuse_tex){
             vec4 tex_color=texture(diffuse_tex, uv_in);
             // the texture sampling may mix the pixel with the background which has alpha of zero so it makes the color darker and also dimmer, if we renomalize we make it brighter again
-            if(tex_color.w!=0 ){
-                tex_color/=tex_color.w;
-            }
+            // if(tex_color.w!=0 ){
+                // tex_color/=tex_color.w;
+            // }
             diffuse_out = vec3(tex_color.xyz);
         }else{
             diffuse_out=vec3(0);
         }
+
+        if (has_metalness_tex){
+            metalness_out=texture(metalness_tex, uv_in).x;
+        }
+        if (has_roughness_tex){
+            roughness_out=texture(roughness_tex, uv_in).x;
+        }
+        // if (has_normals_tex){
+        //     //nothing happens because its not implemented yey
+        //     metalness_out*=1;
+        //     // roughness_out=texture(roughness_tex, uv_in).x;
+        //     // normal_to_encode+=texture(normals_tex, uv_in).xyz;
+        //     // normal_to_encode=normalize(normal_to_encode);
+        // }
+        
     }else{
         diffuse_out = color_per_vertex_in; //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
-    metalness_and_roughness_out=vec2(metalness, roughness);
+    metalness_and_roughness_out=vec2(metalness_out, roughness_out);
     // metalness_and_roughness_out=vec2(0.5, 0.5);
 
     // normal_out = vec4(normal_cam_coords_in, 1.0);
 
     //output normals as done in cryengine 3 presentation "a bit more defferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     // normal_out = normalize(normal_cam_coords_in.xy) * sqrt(normal_cam_coords_in.z*0.5+0.5);
-    normal_out=encode_normal(normal_in);
+    normal_out=encode_normal(normal_to_encode);
 
     mesh_id_out=mesh_id;
 

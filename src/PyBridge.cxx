@@ -200,7 +200,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_diffuse_tex", &Mesh::set_diffuse_tex )
     .def("set_metalness_tex", &Mesh::set_metalness_tex )
     .def("set_roughness_tex", &Mesh::set_roughness_tex )
-    .def("set_normals_tex", &Mesh::set_normals_tex )
+    // .def("set_normals_tex", &Mesh::set_normals_tex )
     ;
 
     //Recorder

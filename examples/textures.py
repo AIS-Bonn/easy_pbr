@@ -13,6 +13,13 @@ view=Viewer.create(config_file)
 
 mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/Trades_cart/aspose_traders_cart.obj")
 mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/pbr/Trades_cart/Traders_cart_mat_Base_Color.png")
+mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/pbr/Trades_cart/Traders_cart_mat_Metallic.png")
+mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/pbr/Trades_cart/Traders_cart_mat_Roughness.png")
+
+# mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/Regency/aspose_Regency_low_optimized.obj")
+# mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Diffuse.png")
+# mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Specular.png")
+# mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Glossiness.png")
 mesh.m_vis.set_color_texture()
 # mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0]
 Scene.show(mesh,"mesh")
