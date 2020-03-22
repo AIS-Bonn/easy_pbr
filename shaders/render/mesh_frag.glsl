@@ -103,11 +103,10 @@ void main(){
             roughness_out=texture(roughness_tex, uv_in).x;
         }
         // if (has_normals_tex){
-        //     //nothing happens because its not implemented yey
-        //     metalness_out*=1;
-        //     // roughness_out=texture(roughness_tex, uv_in).x;
-        //     // normal_to_encode+=texture(normals_tex, uv_in).xyz;
-        //     // normal_to_encode=normalize(normal_to_encode);
+            //nothing happens because its not implemented yey
+            // vec3 normal_deviation=texture(normals_tex, uv_in).xyz - vec3(0.5);
+            // normal_to_encode+=normal_deviation;
+            // normal_to_encode=normalize(normal_to_encode);
         // }
         
     }else{

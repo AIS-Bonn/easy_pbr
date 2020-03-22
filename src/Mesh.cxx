@@ -13,6 +13,7 @@
 #include "igl/per_face_normals.h"
 #include "igl/per_vertex_normals.h"
 #include "igl/readOFF.h"
+#include "igl/readSTL.h"
 // #include "igl/readOBJ.h" //DO NOT USE! The reader is kinda poop and in some formats of obj it just doesnt read the faces
 // #include "igl/readPLY.h" // DO NOT USE! At the moment libigl readPLY has a memory leak https://github.com/libigl/libigl/issues/919
 #include "tinyply.h"
@@ -358,6 +359,8 @@ void Mesh::load_from_file(const std::string file_path){
         read_ply(file_path_abs);
     } else if (file_ext == "obj" || file_ext == "OBJ") {
         read_obj(file_path_abs);
+    } else if (file_ext == "stl" || file_ext == "STL") {
+        igl::readSTL(file_path_abs, V, F, NV);
     }else if (file_ext == "pcd") {
         //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
         pcl::PCLPointCloud2 cloud_blob;
