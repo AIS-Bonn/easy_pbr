@@ -4,9 +4,13 @@
 layout(location=1) in vec2 uv_in;
 
 //out
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec3 normal_out;
+layout(location = 1) out vec3 metalness_and_roughness_out;
+layout(location = 2) out float depth_out;
 
 uniform sampler2D normals_encoded_tex;
+uniform sampler2D metalness_and_roughness_tex;
+uniform sampler2D depth_tex;
 
 
 //decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
@@ -24,12 +28,20 @@ vec3 decode_normal(vec2 normal){
 
 void main(){
 
+    //normal
     vec2 normal_encoded=texture(normals_encoded_tex, uv_in).xy;
-
     vec3 normal_decoded=decode_normal(normal_encoded); 
     normal_decoded= (normal_decoded+1.0)*0.5;
+    vec2 metalnes_and_roughness=texture(metalness_and_roughness_tex, uv_in).xy;
+    float depth = texture(depth_tex, uv_in).x;
 
+    normal_out = normal_decoded;
+    metalness_and_roughness_out = vec3(metalnes_and_roughness, 0.0);
+    depth_out = depth;
 
-    out_color=vec4(normal_decoded, 0.0);
+    //debug just put ones
+    // normal_out = vec3(1.0);
+    // metalness_and_roughness_out = vec3(1.0);
+    // depth_out = 1.0;
 
 }

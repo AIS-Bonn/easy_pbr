@@ -383,7 +383,7 @@ void Viewer::compile_shaders(){
     m_integrate_brdf_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_frag.glsl");
 
     //debugging shaders 
-    m_decode_normals_debugging.compile( std::string(EASYPBR_SHADERS_PATH)+"/debug/normals_decode_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/debug/normals_decode_frag.glsl"  );
+    m_decode_gbuffer_debugging.compile( std::string(EASYPBR_SHADERS_PATH)+"/debug/decode_gbuffer_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/debug/decode_gbuffer_frag.glsl"  );
 }
 
 void Viewer::init_opengl(){
@@ -2293,10 +2293,23 @@ void Viewer::check_position(const int i){
 
 void Viewer::write_gbuffer_to_folder(){
     //read the normals and dencode them for writing to file
-    gl::Texture2D normals_deencoded_debugging; 
-    normals_deencoded_debugging.allocate_or_resize(GL_RGB32F, GL_RGB, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
+    // gl::Texture2D normals_deencoded_debugging; 
+    // gl::Texture2D metalness_roughness_triple_channel_debugging; //metalness and roughness are stored as a RG but Opencv Cannot write rg so we make a rgb texture
+    // gl::Texture2D depth_float_debugging;  //the depth is type depth component
+    // normals_deencoded_debugging.allocate_or_resize(GL_RGB32F, GL_RGB, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
+    // metalness_roughness_triple_channel_debugging.allocate_or_resize(GL_RGB32F, GL_RGB, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
+    // depth_float_debugging.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
 
-    gl::Shader& shader =m_decode_normals_debugging;
+    gl::GBuffer debug_gbuffer;
+    GL_C( debug_gbuffer.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
+    GL_C( debug_gbuffer.add_texture("normals_debug_gtex", GL_RGB32F, GL_RGB, GL_FLOAT) ); 
+    GL_C( debug_gbuffer.add_texture("metalness_and_roughness_debug_gtex", GL_RGB32F, GL_RGB, GL_FLOAT) ); //metalness and roughness are stored as a RG but Opencv Cannot write rg so we make a rgb texture
+    GL_C( debug_gbuffer.add_texture("depth_debug_gtex", GL_R32F, GL_RED, GL_FLOAT) ); //the depth is stored as depth_component which cannot be easily convertible to opencv so we record it here as R32F
+    debug_gbuffer.sanity_check();
+
+
+    glViewport(0.0f , 0.0f, m_gbuffer.width(), m_gbuffer.height() );
+    gl::Shader& shader =m_decode_gbuffer_debugging;
 
     //dont perform depth checking nor write into the depth buffer 
     glDepthMask(false);
@@ -2310,7 +2323,16 @@ void Viewer::write_gbuffer_to_folder(){
     //shader setup
     GL_C( shader.use() );
     shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"), "normals_encoded_tex");
-    shader.draw_into(normals_deencoded_debugging, "out_color"); 
+    shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"), "metalness_and_roughness_tex");
+    shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
+    debug_gbuffer.bind_for_draw();
+    shader.draw_into(debug_gbuffer,
+                    {
+                    std::make_pair("normal_out", "normals_debug_gtex"),
+                    std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_debug_gtex"),
+                    std::make_pair("depth_out", "depth_debug_gtex"),
+                    }
+                    ); //makes the shaders draw into the buffers we defines in the gbuffer
     // draw
     m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -2320,16 +2342,30 @@ void Viewer::write_gbuffer_to_folder(){
     glEnable(GL_DEPTH_TEST);
 
 
+
+
+    // glFinish();
     //get all the textures as cv::mats 
     cv::Mat mat, normal_mat, diffuse_mat, depth_mat, metalness_and_roughness_mat, ao_blurred_mat;
-    mat=normals_deencoded_debugging.download_to_cv_mat();
+    //normal
+    mat=debug_gbuffer.tex_with_name("normals_debug_gtex").download_to_cv_mat();
     cv::flip(mat, normal_mat, 0);
+    cv::cvtColor(normal_mat, normal_mat, cv::COLOR_BGR2RGB);
+    normal_mat*=255;
+    //diffuse
     mat=m_gbuffer.tex_with_name("diffuse_gtex").download_to_cv_mat();
     cv::flip(mat, diffuse_mat, 0);
     cv::cvtColor(diffuse_mat, diffuse_mat, cv::COLOR_BGR2RGB);
-    // cv::Mat depth_mat=m_gbuffer.tex_with_name("depth_gtex").download_to_cv_mat();
-    // mat=m_gbuffer.tex_with_name("metalness_and_roughness_gtex").download_to_cv_mat();
-    // cv::flip(mat, metalness_and_roughness_mat, 0);
+    //depth
+    mat=debug_gbuffer.tex_with_name("depth_debug_gtex").download_to_cv_mat();
+    cv::flip(mat, depth_mat, 0);
+    depth_mat*=255;
+    //metalness_and_roughness
+    mat=debug_gbuffer.tex_with_name("metalness_and_roughness_debug_gtex").download_to_cv_mat();
+    cv::flip(mat, metalness_and_roughness_mat, 0);
+    cv::cvtColor(metalness_and_roughness_mat, metalness_and_roughness_mat, cv::COLOR_BGR2RGB);
+    metalness_and_roughness_mat*=255;
+    //ao
     mat=m_ao_blurred_tex.download_to_cv_mat();
     cv::flip(mat, ao_blurred_mat, 0);
 
@@ -2338,7 +2374,8 @@ void Viewer::write_gbuffer_to_folder(){
     VLOG(1) << "Writing debug images in " << path;
     cv::imwrite( (path/"./g_normal.png").string(), normal_mat );
     cv::imwrite( (path/"./g_diffuse.png").string(), diffuse_mat );
-    // cv::imwrite( (path/"./g_metalness_and_roughness.png").string(), metalness_and_roughness_mat );
+    cv::imwrite( (path/"./depth.png").string(), depth_mat );
+    cv::imwrite( (path/"./g_metalness_and_roughness.png").string(), metalness_and_roughness_mat );
     cv::imwrite( (path/"./ao_blurred.png").string(), ao_blurred_mat );
 
 }
