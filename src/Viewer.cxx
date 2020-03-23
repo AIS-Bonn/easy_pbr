@@ -381,6 +381,9 @@ void Viewer::compile_shaders(){
     m_radiance2irradiance_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/radiance2irradiance_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/radiance2irradiance_frag.glsl");
     m_prefilter_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/prefilter_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/prefilter_frag.glsl");
     m_integrate_brdf_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_frag.glsl");
+
+    //debugging shaders 
+    m_decode_normals_debugging.compile( std::string(EASYPBR_SHADERS_PATH)+"/debug/normals_decode_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/debug/normals_decode_frag.glsl"  );
 }
 
 void Viewer::init_opengl(){
@@ -2286,6 +2289,58 @@ void Viewer::set_position(const int i, Eigen::Vector3f& pos){
 }
 void Viewer::check_position(const int i){
     VLOG(1) << "C++ object with ptr "  <<m_spot_lights[i]<< "has position " << m_spot_lights[i]->position().transpose();
+}
+
+void Viewer::write_gbuffer_to_folder(){
+    //read the normals and dencode them for writing to file
+    gl::Texture2D normals_deencoded_debugging; 
+    normals_deencoded_debugging.allocate_or_resize(GL_RGB32F, GL_RGB, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
+
+    gl::Shader& shader =m_decode_normals_debugging;
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+
+     // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    //shader setup
+    GL_C( shader.use() );
+    shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"), "normals_encoded_tex");
+    shader.draw_into(normals_deencoded_debugging, "out_color"); 
+    // draw
+    m_fullscreen_quad->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+
+
+    //get all the textures as cv::mats 
+    cv::Mat mat, normal_mat, diffuse_mat, depth_mat, metalness_and_roughness_mat, ao_blurred_mat;
+    mat=normals_deencoded_debugging.download_to_cv_mat();
+    cv::flip(mat, normal_mat, 0);
+    mat=m_gbuffer.tex_with_name("diffuse_gtex").download_to_cv_mat();
+    cv::flip(mat, diffuse_mat, 0);
+    cv::cvtColor(diffuse_mat, diffuse_mat, cv::COLOR_BGR2RGB);
+    // cv::Mat depth_mat=m_gbuffer.tex_with_name("depth_gtex").download_to_cv_mat();
+    // mat=m_gbuffer.tex_with_name("metalness_and_roughness_gtex").download_to_cv_mat();
+    // cv::flip(mat, metalness_and_roughness_mat, 0);
+    mat=m_ao_blurred_tex.download_to_cv_mat();
+    cv::flip(mat, ao_blurred_mat, 0);
+
+    fs::path path = "./debug";
+    fs::create_directories(path);
+    VLOG(1) << "Writing debug images in " << path;
+    cv::imwrite( (path/"./g_normal.png").string(), normal_mat );
+    cv::imwrite( (path/"./g_diffuse.png").string(), diffuse_mat );
+    // cv::imwrite( (path/"./g_metalness_and_roughness.png").string(), metalness_and_roughness_mat );
+    cv::imwrite( (path/"./ao_blurred.png").string(), ao_blurred_mat );
+
 }
 
 void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int modifier){

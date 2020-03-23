@@ -607,6 +607,9 @@ void Gui::draw_main_menu(){
         // if (ImGui::Curve("Das editor", ImVec2(600, 200), 10, m_curve_points)){
             // curve changed
         // }
+        if (ImGui::Button("Write gbuffer to folder")){
+            m_view->write_gbuffer_to_folder();
+        }
     }
     if(m_show_debug_textures){
         show_gl_texture(m_view->m_gbuffer.tex_with_name("diffuse_gtex").tex_id(), "diffuse_gtex", true);

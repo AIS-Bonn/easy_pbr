@@ -102,6 +102,7 @@ public:
     void print_pointers();
     void set_position(const int i, Eigen::Vector3f&);
     void check_position(const int i);
+    void write_gbuffer_to_folder();
 
 
     //rendering passes 
@@ -147,6 +148,7 @@ public:
     gl::Shader m_integrate_brdf_shader;
     gl::Shader m_blur_shader;
     gl::Shader m_apply_postprocess_shader;
+    gl::Shader m_decode_normals_debugging;
 
     gl::GBuffer m_gbuffer; //contains all the textures of a normal gbuffer. So normals, diffuse, depth etc.
     gl::GBuffer m_composed_fbo; //contains the composed image between the foreground and background before tonemapping and gamma correction. Contains also the bright spots of the image
