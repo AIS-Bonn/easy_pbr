@@ -21,10 +21,10 @@ view.m_camera.from_string("63.0951 90.6802 182.917  -0.12626  0.163956 0.0211642
 # mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Specular.png")
 # mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Glossiness.png")
 
-mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/lantern/lantern_obj.obj")
-mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/pbr/lantern/textures/lantern_Base_Color.jpg")
-mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/pbr/lantern/textures/lantern_Metallic.jpg")
-mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/pbr/lantern/textures/lantern_Roughness.jpg")
+mesh=Mesh("./data/textured/lantern/lantern_obj.obj")
+mesh.set_diffuse_tex("./data/textured/lantern/textures/lantern_Base_Color.jpg")
+mesh.set_metalness_tex("./data/textured/lantern/textures/lantern_Metallic.jpg")
+mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
 
 # mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/gas_cylinder/uploads_files_2108533_Gas.obj")
 # mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/pbr/gas_cylinder/uploads_files_2108533_map/lambert3SG_Base_Color.png")

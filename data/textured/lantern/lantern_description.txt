@@ -1,0 +1,23 @@
+Old rustic lantern model with PBR compatible materials.
+
+Poly Count   - 12329
+Tris Count      -24634 
+
+Verts Count -  12889 
+
+Renderer   -   Maya Hardware 2.0
+
+
+Files included = Autodesk FBX,  Maya 2016 - Binary .mb and OBJ 
+
+Texture resolution = JPG 2048x2048.
+Total  6 Images - JPG.
+Maps: base color, metallic, normal, roughness,ambient occlusion and opacity maps.
+
+Textured in Substance painter,Photoshop and Zbrush.
+
+License:- For Personal and Non Commercial Use
+
+--------------------------------------
+
+Animated Heaven- Designs of Eternity
