@@ -23,6 +23,7 @@ uniform int nr_samples;
 uniform vec3 random_samples[MAX_NR_SAMPLES];
 uniform float kernel_radius;
 uniform int pyr_lvl;
+uniform bool using_fat_gbuffer;
 
 
 float linear_depth(float depth_sample){
@@ -65,7 +66,11 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 decode_normal(vec3 normal){
-    return normalize(normal * 2.0 - 1.0);
+    if(using_fat_gbuffer){
+        return normalize(normal);
+    }else{
+        return normalize(normal * 2.0 - 1.0);
+    }
 }
 
 

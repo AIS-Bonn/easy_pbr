@@ -47,6 +47,7 @@ uniform bool enable_bloom;
 uniform float bloom_threshold;
 uniform float environment_map_blur;
 uniform int prefilter_nr_mipmaps;
+uniform bool using_fat_gbuffer;
 
 
 //for edl 
@@ -98,7 +99,11 @@ float linear_depth(float depth_sample){
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 decode_normal(vec3 normal){
-    return normalize(normal * 2.0 - 1.0);
+    if(using_fat_gbuffer){
+        return normalize(normal);
+    }else{
+        return normalize(normal * 2.0 - 1.0);
+    }
 }
 
 //  //decode normals as done by david bernard in https://hub.jmonkeyengine.org/t/solved-strange-shining-problem/32962/4 and https://github.com/davidB/jme3_ext_deferred/blob/master/src/main/resources/ShaderLib/DeferredUtils.glsllib

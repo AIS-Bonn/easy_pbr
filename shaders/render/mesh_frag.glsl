@@ -34,6 +34,7 @@ uniform bool has_roughness_tex; //If the texture tex actually exists and can be 
 uniform float metalness;
 uniform float roughness;
 uniform int mesh_id;
+uniform bool using_fat_gbuffer;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 // vec2 encode_normal(vec3 normal){
@@ -51,7 +52,11 @@ uniform int mesh_id;
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 encode_normal(vec3 normal){
-    return normal * 0.5 + 0.5;
+    if(using_fat_gbuffer){
+        return normal;
+    }else{
+        return normal * 0.5 + 0.5;
+    }
 }
 
 

@@ -239,4 +239,6 @@ private:
     void blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int m_bloom_blur_iters);
     void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
 
+    bool m_using_fat_gbuffer; //surfel splatting starts requires to use a gbuffer with half floats, this makes is so that there is no need for encoding an decoding normals, we can just sum them
+
 };

@@ -17,6 +17,7 @@ layout(location = 2) out vec3 normal_out;
 layout(location = 3) out vec2 metalness_and_roughness_out;
 
 // //uniform
+uniform bool using_fat_gbuffer;
 uniform vec3 solid_color;
 uniform bool enable_solid_color; // whether to use solid color or color per vertex
 uniform vec3 specular_color;
@@ -42,7 +43,11 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 encode_normal(vec3 normal){
-    return normal * 0.5 + 0.5;
+    if(using_fat_gbuffer){
+        return normal;
+    }else{
+        return normal * 0.5 + 0.5;
+    }
 }
 
 

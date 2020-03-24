@@ -99,6 +99,7 @@ Viewer::Viewer(const std::string config_file):
     m_prefilter_cubemap_resolution(128),
     m_brdf_lut_resolution(512),
     m_environment_map_blur(0),
+    m_using_fat_gbuffer(false),
     m_enable_multichannel_view(false),
     m_multichannel_interline_separation(0.12), // 20% of the screen's width separation between the lines
     m_multichannel_line_width(10),
@@ -998,6 +999,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     shader.uniform_4x4(M, "M");
     shader.uniform_4x4(MV, "MV");
     shader.uniform_4x4(MVP, "MVP");
+    shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
     shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
@@ -1165,6 +1167,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_4x4(M, "M");
     m_draw_mesh_shader.uniform_4x4(MV, "MV");
     m_draw_mesh_shader.uniform_4x4(MVP, "MVP");
+    m_draw_mesh_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_draw_mesh_shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
     m_draw_mesh_shader.uniform_float(mesh->m_core->min_y(), "min_y");
     m_draw_mesh_shader.uniform_float(mesh->m_core->max_y(), "max_y");
@@ -1222,10 +1225,12 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     if (m_gbuffer.tex_with_name("diffuse_gtex").internal_format()!=GL_RGBA16F){
         LOG(WARNING) << "Switching to diffuse_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
         m_gbuffer.tex_with_name("diffuse_gtex").allocate_storage(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+        m_using_fat_gbuffer=true;
     }
     if (m_gbuffer.tex_with_name("normal_gtex").internal_format()!=GL_RGB16F){
         LOG(WARNING) << "Switching to normal_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
         m_gbuffer.tex_with_name("normal_gtex").allocate_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+        m_using_fat_gbuffer=true;
     }
     
 
@@ -1296,6 +1301,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_surfels_shader.uniform_4x4(M, "M");
     m_draw_surfels_shader.uniform_4x4(MV, "MV");
     m_draw_surfels_shader.uniform_4x4(MVP, "MVP");
+    m_draw_surfels_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_draw_surfels_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     m_draw_surfels_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
     m_draw_surfels_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
@@ -1415,6 +1421,7 @@ void Viewer::ssao_pass(){
     GL_C( m_ssao_ao_pass_shader.uniform_4x4(P, "P") );
     m_ssao_ao_pass_shader.uniform_4x4(P_inv, "P_inv");
     m_ssao_ao_pass_shader.uniform_3x3(V_rot, "V_rot");
+    m_ssao_ao_pass_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
     m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
@@ -1603,6 +1610,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
     m_compose_final_quad_shader.uniform_4x4(V_inv, "V_inv");
     m_compose_final_quad_shader.uniform_3x3(V_inv_rot, "V_inv_rot");
+    m_compose_final_quad_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_compose_final_quad_shader.uniform_v3_float(m_camera->position(), "eye_pos");
     m_compose_final_quad_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_compose_final_quad_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
@@ -1923,6 +1931,7 @@ void Viewer::apply_postprocess(){
         m_apply_postprocess_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
     }
 
+    m_apply_postprocess_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");

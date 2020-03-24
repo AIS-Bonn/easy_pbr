@@ -28,6 +28,7 @@ uniform float multichannel_interline_separation;
 uniform float multichannel_line_width;
 uniform float multichannel_line_angle;
 uniform float multichannel_start_x;
+uniform bool using_fat_gbuffer;
 
 
 //trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
@@ -89,7 +90,11 @@ vec3 Tonemap_FilmicALU(const vec3 x) {
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 decode_normal(vec3 normal){
-    return normalize(normal * 2.0 - 1.0);
+    if (using_fat_gbuffer){
+        return normalize(normal);
+    }else{
+        return normalize(normal * 2.0 - 1.0);
+    }
 }
 
 void main(){
