@@ -85,17 +85,22 @@ float linear_depth(float depth_sample){
 }
 
 //decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec3 decode_normal(vec2 normal){
-    //comment this out because the if condition actually costs us 1ms per frame. And it's not relevant usually as for point cloud which dont have normals we will use only EDL
-    // if(!has_normals ){ //if we got a normal that is zero like the one we would get from a point cloud without normals, then we just output a zero to indicate no lighting needs to be done
-        // return vec3(0);
-    // }
-    vec3 normal_decoded;
-    normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
-    normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
-    return normal_decoded;
+// vec3 decode_normal(vec2 normal){
+//     //comment this out because the if condition actually costs us 1ms per frame. And it's not relevant usually as for point cloud which dont have normals we will use only EDL
+//     // if(!has_normals ){ //if we got a normal that is zero like the one we would get from a point cloud without normals, then we just output a zero to indicate no lighting needs to be done
+//         // return vec3(0);
+//     // }
+//     vec3 normal_decoded;
+//     normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
+//     normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
+//     return normal_decoded;
+// }
 
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 decode_normal(vec3 normal){
+    return normalize(normal * 2.0 - 1.0);
 }
+
 //  //decode normals as done by david bernard in https://hub.jmonkeyengine.org/t/solved-strange-shining-problem/32962/4 and https://github.com/davidB/jme3_ext_deferred/blob/master/src/main/resources/ShaderLib/DeferredUtils.glsllib
 //  // return +/- 1
 // vec2 signNotZero(vec2 v) {
@@ -450,7 +455,7 @@ void main(){
         }else{
             //PBR-----------
 
-            vec3 N= decode_normal(texture(normal_tex, uv_in).xy ); 
+            vec3 N= decode_normal(texture(normal_tex, uv_in).xyz ); 
             vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
             vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
             vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera

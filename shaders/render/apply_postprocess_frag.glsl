@@ -76,16 +76,20 @@ vec3 Tonemap_FilmicALU(const vec3 x) {
 }
 
 //decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec3 decode_normal(vec2 normal){
-    //comment this out because the if condition actually costs us 1ms per frame. And it's not relevant usually as for point cloud which dont have normals we will use only EDL
-    // if(!has_normals ){ //if we got a normal that is zero like the one we would get from a point cloud without normals, then we just output a zero to indicate no lighting needs to be done
-        // return vec3(0);
-    // }
-    vec3 normal_decoded;
-    normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
-    normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
-    return normal_decoded;
+// vec3 decode_normal(vec2 normal){
+//     //comment this out because the if condition actually costs us 1ms per frame. And it's not relevant usually as for point cloud which dont have normals we will use only EDL
+//     // if(!has_normals ){ //if we got a normal that is zero like the one we would get from a point cloud without normals, then we just output a zero to indicate no lighting needs to be done
+//         // return vec3(0);
+//     // }
+//     vec3 normal_decoded;
+//     normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
+//     normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
+//     return normal_decoded;
+// }
 
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 decode_normal(vec3 normal){
+    return normalize(normal * 2.0 - 1.0);
 }
 
 void main(){
@@ -205,7 +209,7 @@ void main(){
             if(nr_channel_wrapped==0){ //final_color
                 final_color=color_posprocessed_mixed;
             }else if (nr_channel_wrapped==1){ //ao
-                final_color=(decode_normal(texture(normal_tex, uv_in).xy ) +1.0)*0.5;
+                final_color=(decode_normal(texture(normal_tex, uv_in).xyz ) +1.0)*0.5;
             }else if(nr_channel_wrapped==2){ //normal
                 final_color=vec3( texture(ao_tex, uv_in).x  );
             }else if(nr_channel_wrapped==3){ //diffuse
@@ -221,7 +225,7 @@ void main(){
         //if the pixel is close to the line then we just color it white
         float module = mod(pos_screen.x, line_separation_pixels);
         if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
-            final_color = vec3(1.0);
+            final_color = vec3(0.1);
             color_weight=1.0;
         }
 

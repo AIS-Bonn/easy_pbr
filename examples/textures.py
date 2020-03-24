@@ -85,10 +85,10 @@ view=Viewer.create(config_file)
 # mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/office_bot/officebot_original/textures/Roughness2.tga.png")
 
 # #steampunk robot works! it may be the best one because the head is at the top
-# mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/source/585a765e1ea54ef0a0ecc7196cd1b814.obj")
-# mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_color.tga.png")
-# mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_metalness.tga.png")
-# mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_rough.tga.png")
+mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/source/585a765e1ea54ef0a0ecc7196cd1b814.obj")
+mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_color.tga.png")
+mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_metalness.tga.png")
+mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/robot_steampunk/robot-steampunk-3d-coat-45-pbr_original/textures/robot_steampunk_rough.tga.png")
 
 #works bake_my_skan lion but looks kinda shitty becaose no normal mapping
 # mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/bake_my_skan/bakemyscan.obj")
@@ -129,10 +129,10 @@ view=Viewer.create(config_file)
 #TODOOOO the simple helmet 
 
 
-mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/source/RobotHeadsLite.obj")
-mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Base_Color.png")
-mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=B.png")
-mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=G.png")
+# mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/source/RobotHeadsLite.obj")
+# mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Base_Color.png")
+# mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=B.png")
+# mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=G.png")
 
 
 

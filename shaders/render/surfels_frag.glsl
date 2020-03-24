@@ -28,13 +28,18 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
     return outMin + (outMax - outMin) * (value_clamped - inMin) / (inMax - inMin);
 }
 
-//encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec2 encode_normal(vec3 normal){
-    if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
-        return vec2(0);
-    }
-    vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
-    return normal_encoded;
+// //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+// vec2 encode_normal(vec3 normal){
+//     if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
+//         return vec2(0);
+//     }
+//     vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
+//     return normal_encoded;
+// }
+
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 encode_normal(vec3 normal){
+    return normal * 0.5 + 0.5;
 }
 
 
@@ -52,7 +57,7 @@ void main(){
         float surface_confidence=map(local_r, 0.0, 1.0, 1.0, 0.01); //decreasing confidence from the middle to the edge of the surfel
 
         diffuse_out = vec4(color_per_vertex_in*surface_confidence, surface_confidence );
-        normal_out = vec4(  encode_normal( normal_eye_in ), 1.0, 1.0);
+        normal_out = vec4(  encode_normal( normal_eye_in ), 1.0);
         // normal_out = vec4(  encode_normal( normal_eye_in*surface_confidence ), 1.0, 1.0);
         // position_out = vec4(position_eye_in*surface_confidence, 1.0);
     }

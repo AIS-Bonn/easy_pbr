@@ -15,7 +15,7 @@ layout(location = 5) in vec3 position_world_in;
 layout(location = 0) out vec4 position_out; 
 layout(location = 1) out vec3 diffuse_out;
 // layout(location = 3) out vec4 normal_out;
-layout(location = 3) out vec2 normal_out;
+layout(location = 3) out vec3 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
 layout(location = 5) out int mesh_id_out;
 
@@ -36,18 +36,24 @@ uniform float roughness;
 uniform int mesh_id;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec2 encode_normal(vec3 normal){
-    if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
-        return vec2(0);
-    }
-    //in the rare case in which we have a normal like (0, 0, 1) then normalize the xy will not work so we add a small epsilon
-    if(normal.xy==vec2(0)){
-        normal.x+=0.001;
-        normal=normalize(normal);
-    }
-    vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
-    return normal_encoded;
+// vec2 encode_normal(vec3 normal){
+//     if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
+//         return vec2(0);
+//     }
+//     //in the rare case in which we have a normal like (0, 0, 1) then normalize the xy will not work so we add a small epsilon
+//     if(normal.xy==vec2(0)){
+//         normal.x+=0.001;
+//         normal=normalize(normal);
+//     }
+//     vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
+//     return normal_encoded;
+// }
+
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 encode_normal(vec3 normal){
+    return normal * 0.5 + 0.5;
 }
+
 
 //  //encode normals as done by david bernard in https://hub.jmonkeyengine.org/t/solved-strange-shining-problem/32962/4 and https://github.com/davidB/jme3_ext_deferred/blob/master/src/main/resources/ShaderLib/DeferredUtils.glsllib
 //  // return +/- 1

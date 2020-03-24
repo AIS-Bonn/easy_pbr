@@ -395,7 +395,8 @@ void Viewer::init_opengl(){
     // //initialize the g buffer with some textures 
     GL_C( m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
     GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+    // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+    GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );  
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
     GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) ); 
     GL_C( m_gbuffer.add_depth("depth_gtex") );

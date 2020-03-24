@@ -54,13 +54,18 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
     return outMin + (outMax - outMin) * (value_clamped - inMin) / (inMax - inMin);
 }
 
-//decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec3 decode_normal(vec2 normal){
-    vec3 normal_decoded;
-    normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
-    normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
-    normal_decoded=normalize(normal_decoded);
-    return normal_decoded;
+// //decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+// vec3 decode_normal(vec2 normal){
+//     vec3 normal_decoded;
+//     normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
+//     normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
+//     normal_decoded=normalize(normal_decoded);
+//     return normal_decoded;
+// }
+
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 decode_normal(vec3 normal){
+    return normalize(normal * 2.0 - 1.0);
 }
 
 
@@ -79,8 +84,8 @@ void main() {
     }
 
 
-    vec2 normal_encoded=texture(normal_tex, uv_in).xy;
-    if(normal_encoded==vec2(0)){ //we have something like a point cloud without normals. so we just it to everything visible
+    vec3 normal_encoded=texture(normal_tex, uv_in).xyz;
+    if(normal_encoded==vec3(0)){ //we have something like a point cloud without normals. so we just it to everything visible
         ao_out=vec4(1.0);
         return;
     }

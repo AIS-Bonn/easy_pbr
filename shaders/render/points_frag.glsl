@@ -28,7 +28,7 @@ layout(location = 3) in vec2 uv_in;
 //the locations are irrelevant because the link between the frag output and the texture is established at runtime by the shader function draw_into(). They just have to be different locations for each output
 // layout(location = 0) out vec4 position_out; 
 layout(location = 1) out vec4 diffuse_out;
-layout(location = 3) out vec2 normal_out;
+layout(location = 3) out vec3 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
 
 // //uniform
@@ -40,12 +40,17 @@ uniform float metalness;
 uniform float roughness;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-vec2 encode_normal(vec3 normal){
-    if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
-        return vec2(0);
-    }
-    vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
-    return normal_encoded;
+// vec2 encode_normal(vec3 normal){
+//     if(normal==vec3(0)){ //we got a non existant normal, like if you have a point cloud without normals so we just output a zero
+//         return vec2(0);
+//     }
+//     vec2 normal_encoded = normalize(normal.xy) * sqrt(normal.z*0.5+0.5);
+//     return normal_encoded;
+// }
+
+//encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+vec3 encode_normal(vec3 normal){
+    return normal * 0.5 + 0.5;
 }
 
 

@@ -39,7 +39,8 @@ struct VisOptions{
     float m_point_size=4.0;
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering
     MeshColorType m_color_type=MeshColorType::Solid;
-    Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0); 
+    // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0); 
+    Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0); 
     Eigen::Vector3f m_line_color = Eigen::Vector3f(1.0, 0.0, 0.0);   //used for lines and wireframes
     Eigen::Vector3f m_solid_color = Eigen::Vector3f(1.0, 206.0/255.0, 143.0/255.0);
     Eigen::Vector3f m_label_color = Eigen::Vector3f(1.0, 160.0/255.0, 0.0);
