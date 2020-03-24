@@ -1395,6 +1395,50 @@ void Mesh::restrict_around_azimuthal_angle(const float angle, const float range)
 
 }
 
+
+void Mesh::compute_tangents(const float tangent_length){
+    //Fills up the V_tangent_u and the V_lenght_v given a mesh with normals. The tangent and bitangent will be normalized to 1 unless a r
+    CHECK(NV.size()) << "We expect a mesh with normals but thise one has none. Please use recalculate_normals() first";
+    CHECK(NV.rows()==V.rows()) << "We expect that evey point has a normal vector however we have V.rows " << V.rows() << " and NV.rows " << NV.rows();
+
+    //in order to get the tangent and bitanget from a series of normal vectors, we do a cross product between a template vector and the normal, this will get us the tangent. Afterward, another cross product between normalized tangent and normals gives us the bitangent.
+
+    V_tangent_u.resize(V.rows(),3);
+    V_length_v.resize(V.rows(),1);
+
+    Eigen::Matrix3d basis;
+    basis.setIdentity();
+    int cur_template_idx=0;
+
+    for (int i = 0; i < NV.rows(); i++){
+        Eigen::Vector3d n = NV.row(i);
+
+        //if the normal and the vector we are going to do the cross product with are almost the same then we won't get a tangent
+        float diff=0.0;
+        float eps=0.001;
+        Eigen::Vector3d vec;
+        do {
+            vec = basis.col(cur_template_idx);
+            diff = (n-vec).norm();
+            if(diff<eps){
+                cur_template_idx +=1;
+                cur_template_idx=cur_template_idx%3;
+            }
+        } while (diff<eps);
+
+        //cross product to get the tangent 
+
+        Eigen::Vector3d tangent = n.cross(vec).normalized();
+        V_tangent_u.row(i) = tangent*tangent_length;
+        V_length_v(i,0) = tangent_length;
+
+
+    }
+    
+
+
+}
+
 void Mesh::as_uv_mesh_paralel_to_axis(const int axis, const float size_modifier){
 
     CHECK(V.rows()==UV.rows()) << "Showing the UVs require to have the same number of uvs as vertices. V.rows is " << V.rows() << " UV.rows is " << UV.rows();

@@ -227,6 +227,14 @@ float Scene::get_scale(){
        return 1.0; 
     }
 
+    if(m_meshes.size()==1){
+        if(m_meshes[0]->V.rows()==1){
+            //degenerate case in which we have only one mesh with only one vertex. So no way of computing the scale of that
+            LOG(WARNING) << "You are in a degenerate case in which you have only one mesh with only one vertex in you scene. So we can't computer the scale of your scene. If you can't see anything on the screen, try to have at least two vertices in your scene";
+            return 1.0;
+        }
+    }
+
 
     Eigen::MatrixXd min_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 
     Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 

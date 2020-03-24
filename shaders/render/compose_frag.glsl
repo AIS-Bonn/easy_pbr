@@ -437,7 +437,11 @@ void main(){
         // color=vec3(1.0, 0.0, 0.0);
     }else{
         //this pixel is covering a mesh
-        vec3 albedo=pow( texture(diffuse_tex, uv_in).xyz, vec3(2.2) );
+        vec4 color_with_weight = texture(diffuse_tex, uv_in);
+        if (color_with_weight.w!=0.0){ //normalize it in case we are doing some surfel splatting
+            color_with_weight.xyz/=color_with_weight.w;
+        }
+        vec3 albedo=pow( color_with_weight.xyz, vec3(2.2) );
 
         // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
         if(enable_edl_lighting){

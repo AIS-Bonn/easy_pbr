@@ -12,12 +12,13 @@ layout(location = 4) in vec3 color_per_vertex_in[];
 
 //out
 layout(location=0) out vec3 position_eye_out;
-layout(location=1) out vec3 normal_eye_out;
+layout(location=1) out vec3 normal_out;
 layout(location=2) out vec2 tex_coord;
 layout(location=3) out vec3 color_per_vertex_out;
 
 
 //uniforms
+uniform mat4 M;
 uniform mat4 MV; //project only into camera coordinate, but doesnt project onto the screen
 uniform mat4 MVP;
 
@@ -33,52 +34,46 @@ void main()
     // vec3 v=normalize(cross(v_normal_in[0], u));
 
     //attempt 2 by getting the u and v directly
-    vec3 u= tangent_u_in[0];
-    vec3 v=  cross(v_normal_in[0], normalize(u) ) * length_v_in[0];  
-    float r_u=length(u); //radius in the u direction of the tangent
-    float r_v=length(v); 
+    vec3 u= tangent_u_in[0]; //this is ALREADY scaled by the length
+    vec3 v=  cross(v_normal_in[0], normalize(u) ) * length_v_in[0];  // this is also already scaled by the length
 
 
 
     vec3 pos_quad_corner;
 
 
-    pos_quad_corner=v_pos_in[0] + u*r_u;
+    pos_quad_corner=v_pos_in[0] + u;
     tex_coord = vec2(-1.0, -1.0);
     gl_Position = MVP * vec4(pos_quad_corner ,1.0);
     position_eye_out = vec3 (MV * vec4 (pos_quad_corner , 1.0));
-    normal_eye_out = vec3 (MV * vec4 (v_normal_in[0], 0.0));
-    normal_eye_out = normalize(normal_eye_out);
+    normal_out=normalize(vec3(M*vec4(v_normal_in[0],0.0)));
     color_per_vertex_out=color_per_vertex_in[0];
     EmitVertex();
 
 
-    pos_quad_corner=v_pos_in[0] + v*r_v;
+    pos_quad_corner=v_pos_in[0] + v;
     tex_coord = vec2(1.0, -1.0);
     gl_Position = MVP * vec4(pos_quad_corner ,1.0);
     position_eye_out = vec3 (MV * vec4 (pos_quad_corner , 1.0));
-    normal_eye_out = vec3 (MV * vec4 (v_normal_in[0], 0.0));
-    normal_eye_out = normalize(normal_eye_out);
+    normal_out=normalize(vec3(M*vec4(v_normal_in[0],0.0)));
     color_per_vertex_out=color_per_vertex_in[0];
     EmitVertex();
 
 
-    pos_quad_corner=v_pos_in[0] - v*r_v;
+    pos_quad_corner=v_pos_in[0] - v;
     tex_coord = vec2(-1.0, 1.0);
     gl_Position = MVP * vec4(pos_quad_corner ,1.0);
     position_eye_out = vec3 (MV * vec4 (pos_quad_corner , 1.0));
-    normal_eye_out = vec3 (MV * vec4 (v_normal_in[0], 0.0));
-    normal_eye_out = normalize(normal_eye_out);
+    normal_out=normalize(vec3(M*vec4(v_normal_in[0],0.0)));
     color_per_vertex_out=color_per_vertex_in[0];
     EmitVertex();
 
 
-    pos_quad_corner=v_pos_in[0] - u*r_u;
+    pos_quad_corner=v_pos_in[0] - u;
     tex_coord = vec2(1.0, 1.0);
     gl_Position = MVP * vec4(pos_quad_corner ,1.0);
     position_eye_out = vec3 (MV * vec4 (pos_quad_corner , 1.0));
-    normal_eye_out = vec3 (MV * vec4 (v_normal_in[0], 0.0));
-    normal_eye_out = normalize(normal_eye_out);
+    normal_out=normalize(vec3(M*vec4(v_normal_in[0],0.0)));
     color_per_vertex_out=color_per_vertex_in[0];
     EmitVertex();
     EndPrimitive();

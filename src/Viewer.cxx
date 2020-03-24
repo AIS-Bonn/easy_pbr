@@ -1217,116 +1217,133 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 }
 void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
+
+    //if we are rendering surfels, we need to switch the gbuffer to diffuse: GL_RGBA16F and normal normal: GL_RGB16F
+    if (m_gbuffer.tex_with_name("diffuse_gtex").internal_format()!=GL_RGBA16F){
+        LOG(WARNING) << "Switching to diffuse_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
+        m_gbuffer.tex_with_name("diffuse_gtex").allocate_storage(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    }
+    if (m_gbuffer.tex_with_name("normal_gtex").internal_format()!=GL_RGB16F){
+        LOG(WARNING) << "Switching to normal_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
+        m_gbuffer.tex_with_name("normal_gtex").allocate_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    }
+    
+
+
     //we disable surfel rendering for the moment because I changed the gbuffer diffuse texture from Half float to RGBA8 because it's a lot faster. This however means that the color accumulation cannot happen anymore in that render target. Also I didn't modify the surfel shader to output the encoded normals as per the CryEngine3 pipeline. Due to all these reasons I will disable for now the surfel rendering
     // LOG(FATAL) << "Surfel rendering disabled because we disabled the accumulation of color into the render target. this makes the rest of the program way faster. Also we would need to modify the surfel fragment shader to output encoded normals";
 
-    // //sanity checks 
-    // CHECK(mesh->m_core->V.rows()==mesh->m_core->V_tangent_u.rows() ) << "Mesh does not have tangent for each vertex. We cannot render surfels without the tangent" << mesh->m_core->V.rows() << " " << mesh->m_core->V_tangent_u.rows();
-    // CHECK(mesh->m_core->V.rows()==mesh->m_core->V_length_v.rows() ) << "Mesh does not have lenght_u for each vertex. We cannot render surfels without the V_lenght_u" << mesh->m_core->V.rows() << " " << mesh->m_core->V_length_v.rows();
-    // if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
-    //     LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
-    // }
+    //sanity checks 
+    CHECK(mesh->m_core->V.rows()==mesh->m_core->V_tangent_u.rows() ) << "Mesh does not have tangent for each vertex. We cannot render surfels without the tangent" << mesh->m_core->V.rows() << " " << mesh->m_core->V_tangent_u.rows();
+    CHECK(mesh->m_core->V.rows()==mesh->m_core->V_length_v.rows() ) << "Mesh does not have lenght_u for each vertex. We cannot render surfels without the V_lenght_u" << mesh->m_core->V.rows() << " " << mesh->m_core->V_length_v.rows();
+    if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
+        LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
+    }
 
-    // // bool enable_solid_color=!mesh->m_core->C.size();
+    // bool enable_solid_color=!mesh->m_core->C.size();
 
-    //  // Set attributes that the vao will pulll from buffers
-    // if(mesh->m_core->V.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "position", mesh->V_buf, 3);
-    // }
-    // if(mesh->m_core->NV.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "normal", mesh->NV_buf, 3);
-    // }
-    // if(mesh->m_core->V_tangent_u.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "tangent_u", mesh->V_tangent_u_buf, 3);
-    // }
-    // if(mesh->m_core->V_length_v.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "lenght_v", mesh->V_lenght_v_buf, 1);
-    // }
-    // if(mesh->m_core->C.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "color_per_vertex", mesh->C_buf, 3);
-    // }
-    // if(mesh->m_core->L_pred.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    // } 
-    // if(mesh->m_core->L_gt.size()){
-    //     mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
-    // }
+     // Set attributes that the vao will pulll from buffers
+    if(mesh->m_core->V.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "position", mesh->V_buf, 3);
+    }
+    if(mesh->m_core->NV.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "normal", mesh->NV_buf, 3);
+    }
+    if(mesh->m_core->V_tangent_u.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "tangent_u", mesh->V_tangent_u_buf, 3);
+    }
+    if(mesh->m_core->V_length_v.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "lenght_v", mesh->V_lenght_v_buf, 1);
+    }
+    if(mesh->m_core->C.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "color_per_vertex", mesh->C_buf, 3);
+    }
+    if(mesh->m_core->L_pred.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
+    } 
+    if(mesh->m_core->L_gt.size()){
+        mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
+    }
 
-    // //matrices setuo
-    // Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
-    // Eigen::Matrix4f V = m_camera->view_matrix();
-    // Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
-    // Eigen::Matrix4f MV = V*M;
-    // Eigen::Matrix4f MVP = P*V*M;
+    //matrices setuo
+    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f V = m_camera->view_matrix();
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f MV = V*M;
+    Eigen::Matrix4f MVP = P*V*M;
 
     // if(m_enable_surfel_splatting){
-    //     glEnable(GL_BLEND);
-    //     glBlendFunc(GL_ONE,GL_ONE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE,GL_ONE);
     // }
-    // //params
-    // // glDisable(GL_DEPTH_TEST);
-    // // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
-    // // glBlendFunc(GL_SRC_ALPHA_SATURATE,GL_DST_ALPHA);
-    // // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
-    // // glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    // // glBlendEquation(GL_MAX);
-    // // glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_SRC_ALPHA);
-    // // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
-    // // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
+    //params
+    // glDisable(GL_DEPTH_TEST);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA_SATURATE,GL_DST_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    // glBlendEquation(GL_MAX);
+    // glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
+    // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
  
-    // //shader setup
-    // if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
-    //     m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
-    // }
-    // m_draw_surfels_shader.use();
-    // m_draw_surfels_shader.uniform_4x4(MV, "MV");
-    // m_draw_surfels_shader.uniform_4x4(MVP, "MVP");
-    // m_draw_surfels_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
-    // m_draw_surfels_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
-    // if(mesh->m_core->m_label_mngr){
-    //     m_draw_surfels_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
-    // }
-    // // m_draw_surfels_shader.uniform_bool( enable_solid_color , "enable_solid_color");
-    // // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
-    // // m_draw_surfels_shader.uniform_v3_float(m_specular_color , "specular_color");
-    // // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
-    // // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
+    //shader setup
+    if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
+        m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
+    }
+    m_draw_surfels_shader.use();
+    m_draw_surfels_shader.uniform_4x4(M, "M");
+    m_draw_surfels_shader.uniform_4x4(MV, "MV");
+    m_draw_surfels_shader.uniform_4x4(MVP, "MVP");
+    m_draw_surfels_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
+    m_draw_surfels_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
+    m_draw_surfels_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
+    m_draw_surfels_shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
+    if(mesh->m_core->m_label_mngr){
+        m_draw_surfels_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
+    }
+    // m_draw_surfels_shader.uniform_bool( enable_solid_color , "enable_solid_color");
+    // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
+    // m_draw_surfels_shader.uniform_v3_float(m_specular_color , "specular_color");
+    // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
+    // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
 
 
 
-    // //draw only into depth map
-    // m_draw_surfels_shader.uniform_bool(true , "enable_visibility_test");
-    // m_draw_surfels_shader.draw_into( m_gbuffer,{} );
-    // mesh->vao.bind(); 
-    // glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
+    //draw only into depth map
+    m_draw_surfels_shader.uniform_bool(true , "enable_visibility_test");
+    m_draw_surfels_shader.draw_into( m_gbuffer,{} );
+    mesh->vao.bind(); 
+    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
 
-    // //now draw into the gbuffer only the ones that pass the visibility test
-    // glDepthMask(false); //don't write to depth buffer but do perform the checking
-    // // glEnable( GL_POLYGON_OFFSET_FILL );
-    // // glPolygonOffset(m_surfel_blend_dist, m_surfel_blend_dist2); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
-    // m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
-    // m_gbuffer.bind_for_draw();
-    // m_draw_surfels_shader.draw_into(m_gbuffer,
-    //                                 {
-    //                                 // std::make_pair("position_out", "position_gtex"),
-    //                                 std::make_pair("normal_out", "normal_gtex"),
-    //                                 std::make_pair("diffuse_out", "diffuse_and_weight_gtex"),
-    //                                 // std::make_pair("specular_out", "specular_gtex"),
-    //                                 // std::make_pair("shininess_out", "shininess_gtex")
-    //                                 }
-    //                                 );
-    // mesh->vao.bind(); 
-    // glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
+    //now draw into the gbuffer only the ones that pass the visibility test
+    glDepthMask(false); //don't write to depth buffer but do perform the checking
+    glEnable( GL_POLYGON_OFFSET_FILL );
+    glPolygonOffset(-50.0, 0.0); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
+    m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
+    m_gbuffer.bind_for_draw();
+    m_draw_surfels_shader.draw_into(m_gbuffer,
+                                    {
+                                    // std::make_pair("position_out", "position_gtex"),
+                                    std::make_pair("normal_out", "normal_gtex"),
+                                    std::make_pair("diffuse_out", "diffuse_gtex"),
+                                    std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
+                                    // std::make_pair("specular_out", "specular_gtex"),
+                                    // std::make_pair("shininess_out", "shininess_gtex")
+                                    }
+                                    );
+    mesh->vao.bind(); 
+    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
 
-    // GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
-    // glDisable(GL_BLEND);
-    // glDisable( GL_POLYGON_OFFSET_FILL );
-    // glDepthMask(true);
+    GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
+    glDisable(GL_BLEND);
+    glDisable( GL_POLYGON_OFFSET_FILL );
+    glDepthMask(true);
 
 
 }

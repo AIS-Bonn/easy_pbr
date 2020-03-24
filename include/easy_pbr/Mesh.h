@@ -148,6 +148,7 @@ public:
     void to_3D();   //from a matrix with 2 columns creates one with 3 columns (requiered to go from the delaunay triangulation into a 3d mesh representable in libigl)
     void to_2D(); //from a matrix V with 3 columns, it discards te last one and creates one with 2 columns (in order for an image to be passed to the triangle library)
     void restrict_around_azimuthal_angle(const float angle, const float range); //for an organized point cloud, sets to zero the points that are not around a certain azimuthal angle when viewed from the algorithm frame
+    void compute_tangents(const float tagent_length=1.0);
     void as_uv_mesh_paralel_to_axis(const int axis, const float size_modifier);
     Mesh interpolate(const Mesh& target_mesh, const float factor);
     float get_scale();

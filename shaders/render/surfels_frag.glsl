@@ -2,7 +2,7 @@
 
 //in
 layout(location = 0) in vec3 position_eye_in;
-layout(location = 1) in vec3 normal_eye_in; 
+layout(location = 1) in vec3 normal_in; 
 layout(location = 2) in vec2 tex_coord_in; 
 layout(location = 3) in vec3 color_per_vertex_in; 
 
@@ -13,13 +13,16 @@ layout(location = 3) in vec3 color_per_vertex_in;
 layout(location = 1) out vec4 diffuse_out;
 // layout(location = 3) out vec4 specular_out;
 // layout(location = 4) out vec4 shininess_out;
-layout(location = 2) out vec4 normal_out;
+layout(location = 2) out vec3 normal_out;
+layout(location = 3) out vec2 metalness_and_roughness_out;
 
 // //uniform
 uniform vec3 solid_color;
 uniform bool enable_solid_color; // whether to use solid color or color per vertex
 uniform vec3 specular_color;
 uniform float shininess;
+uniform float metalness;
+uniform float roughness;
 uniform bool enable_visibility_test;
 
 
@@ -57,7 +60,8 @@ void main(){
         float surface_confidence=map(local_r, 0.0, 1.0, 1.0, 0.01); //decreasing confidence from the middle to the edge of the surfel
 
         diffuse_out = vec4(color_per_vertex_in*surface_confidence, surface_confidence );
-        normal_out = vec4(  encode_normal( normal_eye_in ), 1.0);
+        normal_out = encode_normal( normal_in );
+        metalness_and_roughness_out=vec2(metalness, roughness);
         // normal_out = vec4(  encode_normal( normal_eye_in*surface_confidence ), 1.0, 1.0);
         // position_out = vec4(position_eye_in*surface_confidence, 1.0);
     }

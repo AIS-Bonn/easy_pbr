@@ -284,7 +284,7 @@ void Gui::draw_main_menu(){
             ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines);
             ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
             ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
-            // ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
+            ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
             ImGui::Checkbox("Show vert ids", &mesh->m_vis.m_show_vert_ids);
             ImGui::SameLine(); help_marker("Shows the indexes that each vertex has within the V matrix, \n i.e. the row index");
             ImGui::Checkbox("Show vert coords", &mesh->m_vis.m_show_vert_coords);
