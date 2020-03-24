@@ -99,7 +99,7 @@ Viewer::Viewer(const std::string config_file):
     m_prefilter_cubemap_resolution(128),
     m_brdf_lut_resolution(512),
     m_environment_map_blur(0),
-    m_enable_multichannel_view(true),
+    m_enable_multichannel_view(false),
     m_multichannel_interline_separation(0.12), // 20% of the screen's width separation between the lines
     m_multichannel_line_width(10),
     m_multichannel_line_angle(31),
@@ -1901,7 +1901,9 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
     m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"),"metalness_and_roughness_tex");
-    m_apply_postprocess_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
+    if(m_ao_blurred_tex.storage_initialized()){
+        m_apply_postprocess_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
+    }
 
     m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");

@@ -9,8 +9,8 @@ from easypbr  import *
 config_file="./config/textures.cfg"
 
 view=Viewer.create(config_file) 
-view.m_camera.from_string("63.0951 90.6802 182.917  -0.12626  0.163956 0.0211642 0.978125       0 39.8803       0 90 4.48741 4487.41") #good for lantern for teaser
-view.m_camera.from_string("-133.712 -20.6861  135.918  0.141761 -0.374432 0.0580412 0.914516       0 39.8803       0 90 4.48741 4487.41") #good for lantern for doing the multiview
+# view.m_camera.from_string("63.0951 90.6802 182.917  -0.12626  0.163956 0.0211642 0.978125       0 39.8803       0 90 4.48741 4487.41") #good for lantern for teaser
+# view.m_camera.from_string("-133.712 -20.6861  135.918  0.141761 -0.374432 0.0580412 0.914516       0 39.8803       0 90 4.48741 4487.41") #good for lantern for doing the multiview
 # view.m_camera.from_string("395.752 211.099 474.265 -0.0836636   0.293068  0.0257533 0.952076  53.1894  103.206 -29.4465 90 24.7119 24711.9") #good for la chasse
 
 # mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/Trades_cart/aspose_traders_cart.obj")
@@ -24,10 +24,10 @@ view.m_camera.from_string("-133.712 -20.6861  135.918  0.141761 -0.374432 0.0580
 # mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/pbr/Regency/Regency_low_my_Divani_Chester_nuovi_regency_mat_Glossiness.png")
 
 #work
-mesh=Mesh("./data/textured/lantern/lantern_obj.obj")
-mesh.set_diffuse_tex("./data/textured/lantern/textures/lantern_Base_Color.jpg")
-mesh.set_metalness_tex("./data/textured/lantern/textures/lantern_Metallic.jpg")
-mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
+# mesh=Mesh("./data/textured/lantern/lantern_obj.obj")
+# mesh.set_diffuse_tex("./data/textured/lantern/textures/lantern_Base_Color.jpg")
+# mesh.set_metalness_tex("./data/textured/lantern/textures/lantern_Metallic.jpg")
+# mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
 
 # mesh=Mesh("/media/rosu/Data/data/3d_objs/pbr/gas_cylinder/uploads_files_2108533_Gas.obj")
 # mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/pbr/gas_cylinder/uploads_files_2108533_map/lambert3SG_Base_Color.png")
@@ -129,7 +129,10 @@ mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
 #TODOOOO the simple helmet 
 
 
-
+mesh=Mesh("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/source/RobotHeadsLite.obj")
+mesh.set_diffuse_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Base_Color.png")
+mesh.set_metalness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=B.png")
+mesh.set_roughness_tex("/media/rosu/Data/data/3d_objs/sketchfab/hardhead/hardhead_original/textures/UVW_Metallic-UVW_Roughness@channels=G.png")
 
 
 
