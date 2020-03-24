@@ -491,6 +491,15 @@ void Gui::draw_main_menu(){
         ImGui::SameLine(); help_marker("Bloom is applied multiple times for each mip map level. The higher the value the more spreaded the bloom is. Has a high impact on performance.");
     }
 
+    ImGui::Separator();
+    if (ImGui::CollapsingHeader("MultiChannel")) {
+        ImGui::Checkbox("Enable multichannel view", &m_view->m_enable_multichannel_view);
+        ImGui::SliderFloat("interline_separation", &m_view->m_multichannel_interline_separation, 0.0, 1.0);
+        ImGui::SliderFloat("line_width", &m_view->m_multichannel_line_width, 0.0, 30.0);
+        ImGui::SliderFloat("line_angle", &m_view->m_multichannel_line_angle, -90.0, 90.0);
+        ImGui::SliderFloat("start_x", &m_view->m_multichannel_start_x, -2000.0, 2000.0);
+    }
+
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Camera")) {

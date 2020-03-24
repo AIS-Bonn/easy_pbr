@@ -208,6 +208,12 @@ public:
     int m_irradiance_cubemap_resolution;
     int m_prefilter_cubemap_resolution;
     int m_brdf_lut_resolution;
+    //params for multi-channel view
+    bool m_enable_multichannel_view;
+    float m_multichannel_interline_separation; //separation between the lines of different channels. Is a percentage of the screen's width
+    float m_multichannel_line_width; //we also draw a white line in between the channels, the width is indicated by this
+    float m_multichannel_line_angle; // angle between the lines separating the channels It starts at 0 which means the lines are vertical and goes to 90 when the lines are horizontal
+    float m_multichannel_start_x; //the start of the first line, defalt is 0 which means it start on the left
 
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 

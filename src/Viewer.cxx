@@ -99,6 +99,11 @@ Viewer::Viewer(const std::string config_file):
     m_prefilter_cubemap_resolution(128),
     m_brdf_lut_resolution(512),
     m_environment_map_blur(0),
+    m_enable_multichannel_view(true),
+    m_multichannel_interline_separation(0.12), // 20% of the screen's width separation between the lines
+    m_multichannel_line_width(10),
+    m_multichannel_line_angle(31),
+    m_multichannel_start_x(1500),
     m_first_draw(true)
     {
         // m_timer->start();
@@ -1868,6 +1873,8 @@ void Viewer::apply_postprocess(){
     m_final_fbo_no_gui.clear_depth();
     // m_final_fbo_no_gui.tex_with_name("color_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
+    Eigen::Vector2f size_final_image;
+    size_final_image << m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height();
 
 
     //dont perform depth checking nor write into the depth buffer 
@@ -1891,6 +1898,11 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("composed_gtex"),"composed_tex");
     m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("bloom_gtex"),"bloom_tex");
     m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
+    m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
+    m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
+    m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"),"metalness_and_roughness_tex");
+    m_apply_postprocess_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
+
     m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
@@ -1899,6 +1911,12 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
     m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
+    m_apply_postprocess_shader.uniform_bool(m_enable_multichannel_view, "enable_multichannel_view");
+    m_apply_postprocess_shader.uniform_v2_float(size_final_image, "size_final_image");
+    m_apply_postprocess_shader.uniform_float(m_multichannel_interline_separation, "multichannel_interline_separation");
+    m_apply_postprocess_shader.uniform_float(m_multichannel_line_width, "multichannel_line_width");
+    m_apply_postprocess_shader.uniform_float(m_multichannel_line_angle, "multichannel_line_angle");
+    m_apply_postprocess_shader.uniform_float(m_multichannel_start_x, "multichannel_start_x");
     m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_gtex"), "out_color"); 
     // draw
     m_fullscreen_quad->vao.bind(); 

@@ -9,6 +9,10 @@ layout(location = 0) out vec4 out_color;
 uniform sampler2D composed_tex;
 uniform sampler2D bloom_tex;
 uniform sampler2D depth_tex;
+uniform sampler2D normal_tex;
+uniform sampler2D diffuse_tex;
+uniform sampler2D metalness_and_roughness_tex;
+uniform sampler2D ao_tex;
 
 uniform bool enable_bloom;
 uniform int bloom_start_mip_map_lvl;
@@ -18,6 +22,12 @@ uniform vec3 background_color;
 uniform bool show_background_img;
 uniform bool show_environment_map;
 uniform bool show_prefiltered_environment_map;
+uniform bool enable_multichannel_view;
+uniform vec2 size_final_image;
+uniform float multichannel_interline_separation;
+uniform float multichannel_line_width;
+uniform float multichannel_line_angle;
+uniform float multichannel_start_x;
 
 
 //trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
@@ -63,6 +73,19 @@ vec3 Tonemap_FilmicALU(const vec3 x) {
     // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
     vec3 c = max(vec3(0.0), x - 0.004);
     return (c * (c * 6.2 + 0.5)) / (c * (c * 6.2 + 1.7) + 0.06);
+}
+
+//decode a normal stored in RG texture as explained in the CryEngine 3 talk "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
+vec3 decode_normal(vec2 normal){
+    //comment this out because the if condition actually costs us 1ms per frame. And it's not relevant usually as for point cloud which dont have normals we will use only EDL
+    // if(!has_normals ){ //if we got a normal that is zero like the one we would get from a point cloud without normals, then we just output a zero to indicate no lighting needs to be done
+        // return vec3(0);
+    // }
+    vec3 normal_decoded;
+    normal_decoded.z=dot(normal.xy, normal.xy)*2-1;
+    normal_decoded.xy=normalize(normal.xy)*sqrt(1-normal_decoded.z*normal_decoded.z);
+    return normal_decoded;
+
 }
 
 void main(){
@@ -158,7 +181,65 @@ void main(){
     // vec3 color_posprocessed_mixed = background_weighted;
     // color_posprocessed_mixed=vec3(color_weight);
 
-    out_color=vec4(color_posprocessed_mixed, color_weight);
+    vec3 final_color= color_posprocessed_mixed; 
+
+    //if we have enabled the multichannel_view, we need to change the final color
+    if (enable_multichannel_view ){
+        int max_channels=5;
+
+        // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
+        float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
+        vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
+        //displace the position on screen in x direction to simulate that the lines are actually skewed
+        float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
+        float tan_angle=tan(line_angle_radians);
+        float displacement_x=tan_angle*(size_final_image.y-pos_screen.y);
+        pos_screen.x+=displacement_x-multichannel_start_x;
+
+        int nr_channel = int(floor(pos_screen.x/ line_separation_pixels));
+        // int nr_channel_wrapped=int(mod(float(nr_channel),max_channels)); //if above channel 5, then wrap back to 0
+        int nr_channel_wrapped=nr_channel;
+
+        if(pixel_covered_by_mesh){
+            //depending on the channel we put the normal, or the ao, or the diffuse, or the metalness, or the rougghness
+            if(nr_channel_wrapped==0){ //final_color
+                final_color=color_posprocessed_mixed;
+            }else if (nr_channel_wrapped==1){ //ao
+                final_color=(decode_normal(texture(normal_tex, uv_in).xy ) +1.0)*0.5;
+            }else if(nr_channel_wrapped==2){ //normal
+                final_color=vec3( texture(ao_tex, uv_in).x  );
+            }else if(nr_channel_wrapped==3){ //diffuse
+                final_color=texture(diffuse_tex, uv_in).xyz;
+            }else if(nr_channel_wrapped==4){ //metalness and roughness
+                final_color=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
+            }else{
+                // final_color=vec3(0.0);
+                final_color=color_posprocessed_mixed;
+            }
+        }
+
+        //if the pixel is close to the line then we just color it white
+        float module = mod(pos_screen.x, line_separation_pixels);
+        if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
+            final_color = vec3(1.0);
+            color_weight=1.0;
+        }
+
+        // final_color = vec3(nr_channel/5.0);
+        // final_color = vec3(module/500);
+    }
+
+ 
+
+
+
+
+
+
+
+
+
+    out_color=vec4(final_color, color_weight);
     // out_color=vec4(color_posprocessed, color_weight);
 
 }
