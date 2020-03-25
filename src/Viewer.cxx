@@ -1330,7 +1330,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     //now draw into the gbuffer only the ones that pass the visibility test
     glDepthMask(false); //don't write to depth buffer but do perform the checking
     glEnable( GL_POLYGON_OFFSET_FILL );
-    glPolygonOffset(-50.0, 0.0); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
+    glPolygonOffset(-10, 0.0); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
     m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
     m_gbuffer.bind_for_draw();
     m_draw_surfels_shader.draw_into(m_gbuffer,
@@ -1940,7 +1940,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
-    m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
+    // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
     m_apply_postprocess_shader.uniform_bool(m_enable_multichannel_view, "enable_multichannel_view");
     m_apply_postprocess_shader.uniform_v2_float(size_final_image, "size_final_image");
     m_apply_postprocess_shader.uniform_float(m_multichannel_interline_separation, "multichannel_interline_separation");
@@ -1968,9 +1968,9 @@ void Viewer::apply_postprocess(){
     GL_C( m_blend_bg_shader.use() );
 
     m_blend_bg_shader.bind_texture(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"),"color_with_transparency_tex");
-    m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
-    m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
-    m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
+    // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    // m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    // m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
     m_blend_bg_shader.uniform_v3_float(m_background_color, "background_color");
     m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color"); 
     // // draw

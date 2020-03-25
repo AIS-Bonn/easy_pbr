@@ -18,7 +18,7 @@ uniform bool enable_bloom;
 uniform int bloom_start_mip_map_lvl;
 uniform int bloom_max_mip_map_lvl;
 uniform float exposure;
-uniform vec3 background_color;
+// uniform vec3 background_color;
 uniform bool show_background_img;
 uniform bool show_environment_map;
 uniform bool show_prefiltered_environment_map;
@@ -221,53 +221,53 @@ void main(){
     // // vec3 final_color= color_posprocessed_mixed; 
     // vec3 final_color= color_posprocessed; 
 
-    // //if we have enabled the multichannel_view, we need to change the final color
-    // if (enable_multichannel_view ){
-    //     int max_channels=5;
+    //if we have enabled the multichannel_view, we need to change the final color
+    if (enable_multichannel_view ){
+        int max_channels=5;
 
-    //     // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
-    //     float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
-    //     vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
-    //     //displace the position on screen in x direction to simulate that the lines are actually skewed
-    //     float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
-    //     float tan_angle=tan(line_angle_radians);
-    //     float displacement_x=tan_angle*(size_final_image.y-pos_screen.y);
-    //     pos_screen.x+=displacement_x-multichannel_start_x;
+        // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
+        float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
+        vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
+        //displace the position on screen in x direction to simulate that the lines are actually skewed
+        float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
+        float tan_angle=tan(line_angle_radians);
+        float displacement_x=tan_angle*(size_final_image.y-pos_screen.y);
+        pos_screen.x+=displacement_x-multichannel_start_x;
 
-    //     int nr_channel = int(floor(pos_screen.x/ line_separation_pixels));
-    //     // int nr_channel_wrapped=int(mod(float(nr_channel),max_channels)); //if above channel 5, then wrap back to 0
-    //     int nr_channel_wrapped=nr_channel;
+        int nr_channel = int(floor(pos_screen.x/ line_separation_pixels));
+        // int nr_channel_wrapped=int(mod(float(nr_channel),max_channels)); //if above channel 5, then wrap back to 0
+        int nr_channel_wrapped=nr_channel;
 
-    //     if(pixel_covered_by_mesh){
-    //         //depending on the channel we put the normal, or the ao, or the diffuse, or the metalness, or the rougghness
-    //         if(nr_channel_wrapped==0){ //final_color
-    //             // final_color=color_posprocessed_mixed;
-    //         }else if (nr_channel_wrapped==1){ //ao
-    //             final_color=(decode_normal(texture(normal_tex, uv_in).xyz ) +1.0)*0.5;
-    //         }else if(nr_channel_wrapped==2){ //normal
-    //             final_color=vec3( texture(ao_tex, uv_in).x  );
-    //         }else if(nr_channel_wrapped==3){ //diffuse
-    //             final_color=texture(diffuse_tex, uv_in).xyz;
-    //         }else if(nr_channel_wrapped==4){ //metalness and roughness
-    //             final_color=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
-    //         }else{
+        if(pixel_covered_by_mesh){
+            //depending on the channel we put the normal, or the ao, or the diffuse, or the metalness, or the rougghness
+            if(nr_channel_wrapped==0){ //final_color
+                // final_color=color_posprocessed_mixed;
+            }else if (nr_channel_wrapped==1){ //ao
+                color_pure=(decode_normal(texture(normal_tex, uv_in).xyz ) +1.0)*0.5;
+            }else if(nr_channel_wrapped==2){ //normal
+                color_pure=vec3( texture(ao_tex, uv_in).x  );
+            }else if(nr_channel_wrapped==3){ //diffuse
+                color_pure=texture(diffuse_tex, uv_in).xyz;
+            }else if(nr_channel_wrapped==4){ //metalness and roughness
+                color_pure=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
+            }else{
 
-    //             //color stays as the final one
-    //             // final_color=vec3(0.0);
-    //             // final_color=color_posprocessed_mixed;
-    //         }
-    //     }
+                //color stays as the final one
+                // final_color=vec3(0.0);
+                // final_color=color_posprocessed_mixed;
+            }
+        }
 
-    //     //if the pixel is close to the line then we just color it white
-    //     float module = mod(pos_screen.x, line_separation_pixels);
-    //     if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
-    //         final_color = vec3(0.1);
-    //         color_weight=1.0;
-    //     }
+        //if the pixel is close to the line then we just color it white
+        float module = mod(pos_screen.x, line_separation_pixels);
+        if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
+            color_pure = vec3(0.1);
+            clamped_weight=1.0;
+        }
 
-    //     // final_color = vec3(nr_channel/5.0);
-    //     // final_color = vec3(module/500);
-    // }
+        // final_color = vec3(nr_channel/5.0);
+        // final_color = vec3(module/500);
+    }
 
  
 
