@@ -27,9 +27,20 @@ uniform float roughness;
 uniform bool enable_visibility_test;
 
 
+
+
 float map(float value, float inMin, float inMax, float outMin, float outMax) {
     float value_clamped=clamp(value, inMin, inMax); //so the value doesn't get modified by the clamping, because glsl may pass this by referece
     return outMin + (outMax - outMin) * (value_clamped - inMin) / (inMax - inMin);
+}
+
+//smoothstep but with 1st and 2nd derivatives that go more smoothly to zero
+float smootherstep( float A, float B, float X ){
+//    float t = linearstep( A, B, X );
+    // float t= X;
+    float t = map(X, A , B, 0.0, 1.0);
+
+   return t * t * t * ( t * ( t * 6 - 15 ) + 10 );
 }
 
 // //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
@@ -62,7 +73,8 @@ void main(){
 
     //if we enable the visibility test then we just render into the depth, and nothing else. then in the second pass we render only the surfels that are visible
     if(!enable_visibility_test){
-        float surface_confidence=map(local_r, 0.0, 1.0, 1.0, 0.01); //decreasing confidence from the middle to the edge of the surfel
+        // float surface_confidence=map(local_r, 0.0, 1.0, 1.0, 0.01); //decreasing confidence from the middle to the edge of the surfel
+        float surface_confidence=smootherstep(0.0, 1.0,  1.0-local_r); //decreasing confidence from the middle to the edge of the surfel
 
         diffuse_out = vec4(color_per_vertex_in*surface_confidence, surface_confidence );
         normal_out = encode_normal( normal_in );

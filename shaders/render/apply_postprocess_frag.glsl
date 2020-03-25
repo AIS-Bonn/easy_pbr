@@ -97,146 +97,169 @@ vec3 decode_normal(vec3 normal){
     }
 }
 
+float map(float value, float inMin, float inMax, float outMin, float outMax) {
+    float value_clamped=clamp(value, inMin, inMax); //so the value doesn't get modified by the clamping, because glsl may pass this by referece
+    return outMin + (outMax - outMin) * (value_clamped - inMin) / (inMax - inMin);
+}
+
+//smoothstep but with 1st and 2nd derivatives that go more smoothly to zero
+float smootherstep( float A, float B, float X ){
+//    float t = linearstep( A, B, X );
+    // float t= X;
+    float t = map(X, A , B, 0.0, 1.0);
+
+   return t * t * t * ( t * ( t * 6 - 15 ) + 10 );
+}
+
+
+
 void main(){
 
     float depth=texture(depth_tex, uv_in).x;
 
-    vec3 color;
-    // float alpha=1.0;
+    vec4 color=vec4(0);
     bool pixel_covered_by_mesh=true;
     if(depth==1.0){
         pixel_covered_by_mesh=false;
-        // //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
-         if (show_background_img || show_environment_map || show_prefiltered_environment_map){
-            color = texture(composed_tex, uv_in).rgb;
-         }else{
-            //  color=background_color;
-
-            // //if it's not covered by a mesh we might still need to color this pixel with the bloom texture so we just accumulate on top of a color of zero
-            color=vec3(0.0); 
-
+        if (show_background_img || show_environment_map || show_prefiltered_environment_map){// //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
+            color.xyz = texture(composed_tex, uv_in).rgb;
+            color.w=1.0;
+        }else{ //if it's not covered by a mesh we might still need to color this pixel with the bloom texture so we just accumulate on top of a color of zero
+            color=vec4(0.0); 
          }
-    }else{
-        //pixel is covered by mesh so we read the color it has
-        color = texture(composed_tex, uv_in).rgb;
+    }else{ //pixel is covered by mesh so we read the color it has
+        color.xyz = texture(composed_tex, uv_in).rgb;
+        color.w=1.0;
     }
 
-    // vec3 result = textureLod(img, uv_in, mip_map_lvl).rgb * weight[0]; // current fragment's contribution
-    vec3 color_posprocessed=color;
-    // vec3 color_posprocessed=vec3(0.0);
-    if (enable_bloom){
-
-        //add the bloom from all the blurred textures
-        float bloom_global_weight=0.5;
+    if (enable_bloom){ //add the bloom from all the blurred textures
+        float bloom_global_weight=1.0;
         for (int i=bloom_start_mip_map_lvl; i<bloom_max_mip_map_lvl; i++){
             vec4 bloom = textureLod(bloom_tex, uv_in, i);
             float bloom_weight=bloom.w;
-            color_posprocessed+=bloom.rgb*bloom_weight*bloom_global_weight;
+            color.xyz+=bloom.rgb;
+            color.w+=bloom_weight*bloom_global_weight;
         }
-
-        //DEBUG show just one bloom tex
-        // vec4 bloom = textureLod(bloom_tex, uv_in, 5);
-        // color_posprocessed=bloom.rgb;
     }
 
-    // if(color!=background_color){
-    // if(depth==1.0 && !show_background_img && !show_environment_map  ){
-        //tonemap and gamma correct 
-        color_posprocessed*=exposure;
-        int tonemap_type=4;
-        if (tonemap_type==0){//linear
-            //do nothing
-            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
-        }else if (tonemap_type==1){//reinhardt
-            color_posprocessed=Tonemap_Reinhard(color_posprocessed);
-            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
-        }else if (tonemap_type==2){//Unreal
-            color_posprocessed=Tonemap_Unreal(color_posprocessed);
-        }else if (tonemap_type==3){ //filmicALU
-            color_posprocessed=Tonemap_FilmicALU(color_posprocessed);
-        }else if (tonemap_type==4){ //ACES
-            color_posprocessed = transpose(aces_input)*color_posprocessed;
-            color_posprocessed = RRTAndODTFit(color_posprocessed);
-            color_posprocessed = transpose(aces_output)*color_posprocessed;
-            // gamma correct
-            color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
-        }
-        // color_posprocessed = transpose(aces_input)*color_posprocessed;
-        // color_posprocessed = RRTAndODTFit(color_posprocessed);
-        // color_posprocessed = transpose(aces_output)*color_posprocessed;
+    //see the weight as a color 
+    // color.xyz=vec3(color.w);
+    // color.xyz=textureLod(bloom_tex, uv_in, 4).rgb;
+    // color.xyz=vec3(textureLod(bloom_tex, uv_in, 5).w);
+    // color.xyz=vec3(luminance(color.xyz));
+
+
+    // exposure and tonemap
+    color.xyz*=exposure;
+    int tonemap_type=4;
+    if (tonemap_type==0){//linear
+        //do nothing
+        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+    }else if (tonemap_type==1){//reinhardt
+        color.xyz=Tonemap_Reinhard(color.xyz);
+        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+    }else if (tonemap_type==2){//Unreal
+        color.xyz=Tonemap_Unreal(color.xyz);
+    }else if (tonemap_type==3){ //filmicALU
+        color.xyz=Tonemap_FilmicALU(color.xyz);
+    }else if (tonemap_type==4){ //ACES
+        color.xyz = transpose(aces_input)*color.xyz;
+        color.xyz = RRTAndODTFit(color.xyz);
+        color.xyz = transpose(aces_output)*color.xyz;
         // gamma correct
-        // color_posprocessed = pow(color_posprocessed, vec3(1.0/2.2)); 
+        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+    }
+
+    if(!pixel_covered_by_mesh){
+        float lum = clamp(luminance(color.xyz), 0.0, 1.0);
+        color.w=lum;
+    }
+
+    //debug
+    // color.xyz=vec3(color.w);
+    // vec3 color_pure=color.xyz;
+    // float clamped_weight=color.w;
+
+    //we want to have a pure color and let the alpha do the weithing between the background and the foreground
+    float clamped_weight=clamp(color.w, 0.0, 1.0);
+    vec3 color_pure=color.xyz;
+    if(clamped_weight!=0){
+        color_pure.xyz/=clamped_weight;
+    }
+
+    // float lum = smootherstep(0.0, 1.2, luminance(color.xyz));
+    clamped_weight=smootherstep(0.0, 1.0, clamped_weight);
+
+    // //the alpha of the pixel will be 1 if it's covered by mesh, and depeneding on how strong the bloom is we will have a decaying weight
+    // float color_weight=1.0;
+    // if(pixel_covered_by_mesh||show_background_img || show_environment_map || show_prefiltered_environment_map){
+    //     color_weight=1.0;
+    //     // color_weight=texture(diffuse_tex, uv_in).w;
+    // }else{
+    //     //pixel is not covered by mesh therefore
+    //     if (!enable_bloom){
+    //         color_weight=0.0;
+    //     }else{ //we have bloom
+    //         color_weight=clamp(luminance(color_posprocessed),0.0, 1.0);
+    //         color_weight=smoothstep(0.0, 1.0, color_weight);
+    //     }
     // }
 
-    //the alpha of the pixel will be 1 if it's covered by mesh, and depeneding on how strong the bloom is we will have a decaying weight
-    float color_weight=1.0;
-    if(pixel_covered_by_mesh||show_background_img || show_environment_map || show_prefiltered_environment_map){
-        color_weight=1.0;
-    }else{
-        //pixel is not covered by mesh therefore
-        if (!enable_bloom){
-            color_weight=0.0;
-        }else{ //we have bloom
-            color_weight=clamp(luminance(color_posprocessed),0.0, 1.0);
-            color_weight=smoothstep(0.0, 1.0, color_weight);
-        }
-    }
+    // //linear interpolation betweek the background and the color+bloom. We do this so that we can have transparency for the bloom part in case we want to save the viewer as a png and then change the background
+    // // vec3 color_and_bloom_weighted= clamp(color_posprocessed*color_weight, vec3(0.0), vec3(1.0));
+    // // vec3 background_weighted=clamp( background_color*(1.0 - color_weight) , vec3(0.0), vec3(1.0));
+    // // vec3 color_posprocessed_mixed = color_and_bloom_weighted+background_weighted;
 
-    //linear interpolation betweek the background and the color+bloom. We do this so that we can have transparency for the bloom part in case we want to save the viewer as a png and then change the background
-    vec3 color_and_bloom_weighted= clamp(color_posprocessed*color_weight, vec3(0.0), vec3(1.0));
-    vec3 background_weighted=clamp( background_color*(1.0 - color_weight) , vec3(0.0), vec3(1.0));
-    vec3 color_posprocessed_mixed = color_and_bloom_weighted+background_weighted;
-    // vec3 color_posprocessed_mixed = color_and_bloom_weighted;
-    // vec3 color_posprocessed_mixed = background_weighted;
-    // color_posprocessed_mixed=vec3(color_weight);
+    // // vec3 final_color= color_posprocessed_mixed; 
+    // vec3 final_color= color_posprocessed; 
 
-    vec3 final_color= color_posprocessed_mixed; 
+    // //if we have enabled the multichannel_view, we need to change the final color
+    // if (enable_multichannel_view ){
+    //     int max_channels=5;
 
-    //if we have enabled the multichannel_view, we need to change the final color
-    if (enable_multichannel_view ){
-        int max_channels=5;
+    //     // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
+    //     float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
+    //     vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
+    //     //displace the position on screen in x direction to simulate that the lines are actually skewed
+    //     float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
+    //     float tan_angle=tan(line_angle_radians);
+    //     float displacement_x=tan_angle*(size_final_image.y-pos_screen.y);
+    //     pos_screen.x+=displacement_x-multichannel_start_x;
 
-        // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
-        float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
-        vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
-        //displace the position on screen in x direction to simulate that the lines are actually skewed
-        float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
-        float tan_angle=tan(line_angle_radians);
-        float displacement_x=tan_angle*(size_final_image.y-pos_screen.y);
-        pos_screen.x+=displacement_x-multichannel_start_x;
+    //     int nr_channel = int(floor(pos_screen.x/ line_separation_pixels));
+    //     // int nr_channel_wrapped=int(mod(float(nr_channel),max_channels)); //if above channel 5, then wrap back to 0
+    //     int nr_channel_wrapped=nr_channel;
 
-        int nr_channel = int(floor(pos_screen.x/ line_separation_pixels));
-        // int nr_channel_wrapped=int(mod(float(nr_channel),max_channels)); //if above channel 5, then wrap back to 0
-        int nr_channel_wrapped=nr_channel;
+    //     if(pixel_covered_by_mesh){
+    //         //depending on the channel we put the normal, or the ao, or the diffuse, or the metalness, or the rougghness
+    //         if(nr_channel_wrapped==0){ //final_color
+    //             // final_color=color_posprocessed_mixed;
+    //         }else if (nr_channel_wrapped==1){ //ao
+    //             final_color=(decode_normal(texture(normal_tex, uv_in).xyz ) +1.0)*0.5;
+    //         }else if(nr_channel_wrapped==2){ //normal
+    //             final_color=vec3( texture(ao_tex, uv_in).x  );
+    //         }else if(nr_channel_wrapped==3){ //diffuse
+    //             final_color=texture(diffuse_tex, uv_in).xyz;
+    //         }else if(nr_channel_wrapped==4){ //metalness and roughness
+    //             final_color=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
+    //         }else{
 
-        if(pixel_covered_by_mesh){
-            //depending on the channel we put the normal, or the ao, or the diffuse, or the metalness, or the rougghness
-            if(nr_channel_wrapped==0){ //final_color
-                final_color=color_posprocessed_mixed;
-            }else if (nr_channel_wrapped==1){ //ao
-                final_color=(decode_normal(texture(normal_tex, uv_in).xyz ) +1.0)*0.5;
-            }else if(nr_channel_wrapped==2){ //normal
-                final_color=vec3( texture(ao_tex, uv_in).x  );
-            }else if(nr_channel_wrapped==3){ //diffuse
-                final_color=texture(diffuse_tex, uv_in).xyz;
-            }else if(nr_channel_wrapped==4){ //metalness and roughness
-                final_color=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
-            }else{
-                // final_color=vec3(0.0);
-                final_color=color_posprocessed_mixed;
-            }
-        }
+    //             //color stays as the final one
+    //             // final_color=vec3(0.0);
+    //             // final_color=color_posprocessed_mixed;
+    //         }
+    //     }
 
-        //if the pixel is close to the line then we just color it white
-        float module = mod(pos_screen.x, line_separation_pixels);
-        if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
-            final_color = vec3(0.1);
-            color_weight=1.0;
-        }
+    //     //if the pixel is close to the line then we just color it white
+    //     float module = mod(pos_screen.x, line_separation_pixels);
+    //     if(module<multichannel_line_width && nr_channel>0 && nr_channel<=max_channels){
+    //         final_color = vec3(0.1);
+    //         color_weight=1.0;
+    //     }
 
-        // final_color = vec3(nr_channel/5.0);
-        // final_color = vec3(module/500);
-    }
+    //     // final_color = vec3(nr_channel/5.0);
+    //     // final_color = vec3(module/500);
+    // }
 
  
 
@@ -248,7 +271,7 @@ void main(){
 
 
 
-    out_color=vec4(final_color, color_weight);
+    out_color=vec4(color_pure, clamped_weight);
     // out_color=vec4(color_posprocessed, color_weight);
 
 }

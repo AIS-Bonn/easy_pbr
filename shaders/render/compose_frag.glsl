@@ -310,7 +310,7 @@ float compute_bloom_weight(vec3 color){
     if(above_thresh>0.0){
         // bloom_weight=map(above_thresh, 0.0 , 0.1, 0.0, 1.0);
         // bloom_weight=smoothstep(0.0, 0.1, above_thresh);
-        bloom_weight=smootherstep(0.0, 20, above_thresh);
+        bloom_weight=smootherstep(0.0, 1.2, above_thresh);
         // bloom_weight=1.0;
         // bloom_weight=above_thresh;
     }

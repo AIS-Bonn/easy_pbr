@@ -1897,7 +1897,7 @@ void Viewer::apply_postprocess(){
         m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
     }
     m_final_fbo_no_gui.clear_depth();
-    // m_final_fbo_no_gui.tex_with_name("color_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+    m_final_fbo_no_gui.tex_with_name("color_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
 
     Eigen::Vector2f size_final_image;
     size_final_image << m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height();
@@ -1906,8 +1906,8 @@ void Viewer::apply_postprocess(){
     //dont perform depth checking nor write into the depth buffer 
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE);  
 
      // Set attributes that the vao will pulll from buffers
@@ -1958,7 +1958,7 @@ void Viewer::apply_postprocess(){
     //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
-    // glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
 }
 // cv::Mat Viewer::download_to_cv_mat(){
