@@ -13,7 +13,7 @@ layout(location = 5) in vec3 position_world_in;
 //out
 //the locations are irrelevant because the link between the frag output and the texture is established at runtime by the shader function draw_into(). They just have to be different locations for each output
 layout(location = 0) out vec4 position_out; 
-layout(location = 1) out vec3 diffuse_out;
+layout(location = 1) out vec4 diffuse_out;
 // layout(location = 3) out vec4 normal_out;
 layout(location = 3) out vec3 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
@@ -102,9 +102,9 @@ void main(){
             // if(tex_color.w!=0 ){
                 // tex_color/=tex_color.w;
             // }
-            diffuse_out = vec3(tex_color.xyz);
+            diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
         }else{
-            diffuse_out=vec3(0);
+            diffuse_out=vec4( vec3(0.0), 1.0 );
         }
 
         if (has_metalness_tex){
@@ -121,7 +121,7 @@ void main(){
         // }
         
     }else{
-        diffuse_out = color_per_vertex_in; //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
+        diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
     metalness_and_roughness_out=vec2(metalness_out, roughness_out);

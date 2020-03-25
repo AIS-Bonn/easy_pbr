@@ -1226,18 +1226,23 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 }
 void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
-
-    //if we are rendering surfels, we need to switch the gbuffer to diffuse: GL_RGBA16F and normal normal: GL_RGB16F
-    if (m_gbuffer.tex_with_name("diffuse_gtex").internal_format()!=GL_RGBA16F){
-        LOG(WARNING) << "Switching to diffuse_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
-        m_gbuffer.tex_with_name("diffuse_gtex").allocate_storage(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    if (!m_using_fat_gbuffer){
+        LOG(WARNING) << "Switching to surfel rendering mode so now the gbuffer will have half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
         m_using_fat_gbuffer=true;
+    }
+
+    // if we are rendering surfels, we need to switch the gbuffer to diffuse: GL_RGBA16F and normal normal: GL_RGB16F
+    if (m_gbuffer.tex_with_name("diffuse_gtex").internal_format()!=GL_RGBA16F){
+        m_gbuffer.tex_with_name("diffuse_gtex").allocate_storage(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
     }
     if (m_gbuffer.tex_with_name("normal_gtex").internal_format()!=GL_RGB16F){
-        LOG(WARNING) << "Switching to normal_texture in the gbuffer with half floats so that surfel accumulation can happen. This is necessary for surfel showing but will make the rendering a bit slower.";
         m_gbuffer.tex_with_name("normal_gtex").allocate_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
-        m_using_fat_gbuffer=true;
     }
+    if (m_gbuffer.tex_with_name("metalness_and_roughness_gtex").internal_format()!=GL_RG16F){
+        m_gbuffer.tex_with_name("metalness_and_roughness_gtex").allocate_storage(GL_RG16F, GL_RG, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
+    }
+
+
     
 
 

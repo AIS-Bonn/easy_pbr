@@ -477,6 +477,12 @@ void main(){
             vec3 R = reflect(-V, N); 
             float metalness=texture(metalness_and_roughness_tex, uv_in).x;
             float roughness=texture(metalness_and_roughness_tex, uv_in).y;
+            if(using_fat_gbuffer){ //if we are acumulating contributions, we need to normalize the metalness and roughness too
+                if(color_with_weight.w!=0.0){
+                    metalness/=color_with_weight.w;
+                    roughness/=color_with_weight.w;
+                }
+            }
             float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
             float NdotV = max(dot(N, V), 0.0);
 

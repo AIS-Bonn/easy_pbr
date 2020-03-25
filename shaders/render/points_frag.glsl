@@ -100,7 +100,7 @@ void main(){
         if(tex_color.w!=0 ){
             tex_color/=tex_color.w;
         }
-        diffuse_out = vec4(tex_color);
+        diffuse_out = vec4(tex_color.rgb, 1.0);
     }else{
         diffuse_out = vec4(color_per_vertex_in, 1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
