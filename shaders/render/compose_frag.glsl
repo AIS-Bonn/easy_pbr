@@ -330,6 +330,7 @@ void main(){
     //PBR again========= https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/1.1.pbr.fs
     float depth=texture(depth_tex, uv_in).x;
     vec3 color=vec3(0);
+    float pixel_weight=1.0;
     if(depth==1.0){
         // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
         if (show_background_img){
@@ -443,6 +444,7 @@ void main(){
     }else{
         //this pixel is covering a mesh
         vec4 color_with_weight = texture(diffuse_tex, uv_in);
+        pixel_weight=color_with_weight.w;
         if (color_with_weight.w!=0.0){ //normalize it in case we are doing some surfel splatting
             color_with_weight.xyz/=color_with_weight.w;
         }
@@ -644,7 +646,7 @@ void main(){
         }
     }
 
-    out_color = vec4(color, 1.0);
+    out_color = vec4(color, pixel_weight);
 
 
    

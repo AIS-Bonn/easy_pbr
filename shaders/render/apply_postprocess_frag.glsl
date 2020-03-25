@@ -122,14 +122,12 @@ void main(){
     if(depth==1.0){
         pixel_covered_by_mesh=false;
         if (show_background_img || show_environment_map || show_prefiltered_environment_map){// //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
-            color.xyz = texture(composed_tex, uv_in).rgb;
-            color.w=1.0;
+            color = texture(composed_tex, uv_in);
         }else{ //if it's not covered by a mesh we might still need to color this pixel with the bloom texture so we just accumulate on top of a color of zero
             color=vec4(0.0); 
          }
     }else{ //pixel is covered by mesh so we read the color it has
-        color.xyz = texture(composed_tex, uv_in).rgb;
-        color.w=1.0;
+        color = texture(composed_tex, uv_in);
     }
 
     if (enable_bloom){ //add the bloom from all the blurred textures
@@ -183,8 +181,9 @@ void main(){
     //we want to have a pure color and let the alpha do the weithing between the background and the foreground
     float clamped_weight=clamp(color.w, 0.0, 1.0);
     vec3 color_pure=color.xyz;
-    if (!pixel_covered_by_mesh){
+    if (!pixel_covered_by_mesh){ //if the pixel is covered by the mes we just output the weight which is 1.0 and the color. However if the pixel is NOT covered then we need to get the pure color and the weight separetlly and let the subsequent blender to the fusing with the bg
         if ( show_background_img || show_environment_map || show_prefiltered_environment_map ){
+
             clamped_weight=1.0;
         }else{
             if(clamped_weight!=0){
