@@ -973,6 +973,8 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->NV.size()){
         mesh->vao.vertex_attribute(shader, "normal", mesh->NV_buf, 3);
         shader.uniform_bool(true, "has_normals");
+    }else{
+        shader.uniform_bool(false, "has_normals");
     }
     if(mesh->m_core->C.size()){
         GL_C(mesh->vao.vertex_attribute(shader, "color_per_vertex", mesh->C_buf, 3) );

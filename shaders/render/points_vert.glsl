@@ -117,6 +117,8 @@ void main(){
     position_cam_coords_out= vec3(MV*(vec4(position, 1.0))); //from object to world and from world to view
     if(has_normals){
         normal_out=normalize(vec3(M*vec4(normal,0.0))); //normals are not affected by translation so the homogenous component is 0
+    }else{
+        normal_out=vec3(0,0,0);
     }
 
 //    color_per_vertex_out=color_per_vertex;

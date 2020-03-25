@@ -99,6 +99,10 @@ float linear_depth(float depth_sample){
 
 //encode as xyz https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec3 decode_normal(vec3 normal){
+    if (normal==vec3(0)){
+        return normal;
+    }
+
     if(using_fat_gbuffer){
         return normalize(normal);
     }else{
@@ -449,9 +453,10 @@ void main(){
             color_with_weight.xyz/=color_with_weight.w;
         }
         vec3 albedo=pow( color_with_weight.xyz, vec3(2.2) );
+        vec3 N= decode_normal(texture(normal_tex, uv_in).xyz ); 
 
         // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
-        if(enable_edl_lighting){
+        if(enable_edl_lighting  || N==vec3(0)){ //if we have no normal we may be in a point cloud with no normals and then we can just do edl, no IBL is possible
             // float depth = texture(log_depth_tex, uv_in).x;
             depth=linear_depth(depth);
             depth=log2(depth);
@@ -466,7 +471,6 @@ void main(){
         }else{
             //PBR-----------
 
-            vec3 N= decode_normal(texture(normal_tex, uv_in).xyz ); 
             vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
             vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
             vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
