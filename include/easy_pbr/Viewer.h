@@ -149,6 +149,7 @@ public:
     gl::Shader m_blur_shader;
     gl::Shader m_apply_postprocess_shader;
     gl::Shader m_decode_gbuffer_debugging;
+    gl::Shader m_blend_bg_shader;;
 
     gl::GBuffer m_gbuffer; //contains all the textures of a normal gbuffer. So normals, diffuse, depth etc.
     gl::GBuffer m_composed_fbo; //contains the composed image between the foreground and background before tonemapping and gamma correction. Contains also the bright spots of the image

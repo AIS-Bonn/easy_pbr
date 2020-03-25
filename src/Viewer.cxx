@@ -377,6 +377,7 @@ void Viewer::compile_shaders(){
     m_compose_final_quad_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/compose_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/compose_frag.glsl"  );
     m_blur_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/blur_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/blur_frag.glsl"  );
     m_apply_postprocess_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_frag.glsl"  );
+    m_blend_bg_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/blend_bg_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/blend_bg_frag.glsl"  );
 
     m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_frag.glsl" );
     // m_depth_linearize_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
@@ -411,7 +412,8 @@ void Viewer::init_opengl(){
 
     //initialize the final fbo
     GL_C( m_final_fbo_no_gui.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo_no_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_no_gui.add_texture("color_with_transparency_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_no_gui.add_texture("color_without_transparency_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
     GL_C( m_final_fbo_no_gui.add_depth("depth_gtex") ); //we need a depth for this one too because in this buffer we do all the forward rendering of lines and things like that
     m_final_fbo_no_gui.sanity_check();
     //initilize the final_fbo which also has the gui
@@ -704,7 +706,7 @@ void Viewer::post_draw(){
     if(m_viewport_size.x()!=m_final_fbo_with_gui.width() || m_viewport_size.y()!=m_final_fbo_with_gui.height()){
         m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() );
     }
-    m_final_fbo_no_gui.bind_for_read();
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex").fbo_id() );
     m_final_fbo_with_gui.bind_for_draw();
     glBlitFramebuffer(0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), 0, 0, m_final_fbo_with_gui.width(),  m_final_fbo_with_gui.height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
@@ -1065,7 +1067,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.draw_into(m_final_fbo_no_gui,
                                     {
                                     // std::make_pair("position_out", "position_gtex"),
-                                    std::make_pair("out_color", "color_gtex"),
+                                    std::make_pair("out_color", "color_without_transparency_gtex"),
                                     }
                                     ); //makes the shaders draw into the buffers we defines in the gbuffer
 
@@ -1945,7 +1947,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_width, "multichannel_line_width");
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_angle, "multichannel_line_angle");
     m_apply_postprocess_shader.uniform_float(m_multichannel_start_x, "multichannel_start_x");
-    m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_gtex"), "out_color"); 
+    m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), "out_color"); 
     // draw
     m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
@@ -1953,51 +1955,27 @@ void Viewer::apply_postprocess(){
    
 
     TIME_END("apply_postprocess");
-
-
     //BLEND BACKGROUND -------------------------------------------------------------------------------------------------------------------
     //blend the pure color texture that we just rendered with the bg using the alpha. This is in order to deal with bloom and translucent thing corretly and still have a saved copy of the texture with transparency
     TIME_START("blend_bg");
 
-     // Set attributes that the vao will pulll from buffers
-    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
-    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
-    // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
+    //  Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
     
     // //shader setup
-    // GL_C( m_blend_bg_shader.use() );
+    GL_C( m_blend_bg_shader.use() );
 
-    // m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("composed_gtex"),"composed_tex");
-    // m_apply_postprocess_shader.bind_texture(m_composed_fbo.tex_with_name("bloom_gtex"),"bloom_tex");
-    // m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
-    // m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
-    // m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("diffuse_gtex"),"diffuse_tex");
-    // m_apply_postprocess_shader.bind_texture(m_gbuffer.tex_with_name("metalness_and_roughness_gtex"),"metalness_and_roughness_tex");
-    // if(m_ao_blurred_tex.storage_initialized()){
-    //     m_apply_postprocess_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
-    // }
-
-    // m_apply_postprocess_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
-    // m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
-    // m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
-    // m_apply_postprocess_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
-    // m_apply_postprocess_shader.uniform_bool(m_enable_bloom, "enable_bloom");
-    // m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
-    // m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
-    // m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
-    // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
-    // m_apply_postprocess_shader.uniform_bool(m_enable_multichannel_view, "enable_multichannel_view");
-    // m_apply_postprocess_shader.uniform_v2_float(size_final_image, "size_final_image");
-    // m_apply_postprocess_shader.uniform_float(m_multichannel_interline_separation, "multichannel_interline_separation");
-    // m_apply_postprocess_shader.uniform_float(m_multichannel_line_width, "multichannel_line_width");
-    // m_apply_postprocess_shader.uniform_float(m_multichannel_line_angle, "multichannel_line_angle");
-    // m_apply_postprocess_shader.uniform_float(m_multichannel_start_x, "multichannel_start_x");
-    // m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_gtex"), "out_color"); 
+    m_blend_bg_shader.bind_texture(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"),"color_with_transparency_tex");
+    m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
+    m_blend_bg_shader.uniform_v3_float(m_background_color, "background_color");
+    m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color"); 
     // // draw
-    // m_fullscreen_quad->vao.bind(); 
-    // glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-
+    m_fullscreen_quad->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
     TIME_END("blend_bg");
 

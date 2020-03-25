@@ -78,7 +78,8 @@ Gui::Gui( const std::string config_file,
         m_decimate_nr_target_faces(100),
         m_recording_path("./recordings/"),
         m_snapshot_name("img.png"),
-        m_record_gui(false)
+        m_record_gui(false),
+        m_record_with_transparency(true)
          {
     m_view = view;
 
@@ -585,10 +586,15 @@ void Gui::draw_main_menu(){
             if(m_record_gui){
                 m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
             }else{
-                m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+                if (m_record_with_transparency){
+                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), m_snapshot_name, m_recording_path);
+                }else{
+                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), m_snapshot_name, m_recording_path);
+                }
             }
         }
         ImGui::Checkbox("Record GUI", &m_record_gui);
+        ImGui::Checkbox("Record with transparency", &m_record_with_transparency);
         // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
 
         // //recording
