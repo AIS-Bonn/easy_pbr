@@ -368,6 +368,9 @@ void Gui::draw_main_menu(){
 
 
         }
+
+        ImGui::SliderFloat("surfel_blend_factor", &m_view->m_surfel_blend_factor, -300, 300 );
+        ImGui::SliderFloat("surfel_blend_scale", &m_view->m_surfel_blend_scale, -300, 300 );
        
 
         ImGui::ColorEdit3("BG color",m_view->m_background_color.data());

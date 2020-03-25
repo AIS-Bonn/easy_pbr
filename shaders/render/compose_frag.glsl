@@ -448,7 +448,8 @@ void main(){
     }else{
         //this pixel is covering a mesh
         vec4 color_with_weight = texture(diffuse_tex, uv_in);
-        pixel_weight=clamp(color_with_weight.w, 0.0, 1.0);
+        // pixel_weight=clamp(color_with_weight.w, 0.0, 1.0);
+        pixel_weight=color_with_weight.w;
         if (color_with_weight.w!=0.0){ //normalize it in case we are doing some surfel splatting
             color_with_weight.xyz/=color_with_weight.w;
         }

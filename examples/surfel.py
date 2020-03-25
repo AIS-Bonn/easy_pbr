@@ -9,13 +9,18 @@ from easypbr  import *
 config_file="./config/surfel.cfg"
 
 view=Viewer.create(config_file) 
-view.m_camera.from_string("-4.46597 0.988445  5.19445 -0.0671241  -0.346759 -0.0248882 0.935217 0 0 0 30 0.286421 286.421")
+# view.m_camera.from_string("-4.46597 0.988445  5.19445 -0.0671241  -0.346759 -0.0248882 0.935217 0 0 0 30 0.286421 286.421") ##good for one surfel 
+# view.m_camera.from_string("0.353818  0.45987 0.869124 -0.180417  0.194124 0.0363479 0.963558  -0.023013  0.0821874 -0.0281476 30 0.286421 286.421") #good for the overall bunny view
+# view.m_camera.from_string("0.0228205  0.127752  0.127978 -0.162326  0.190028 0.0318747 0.967741 -0.0375605  0.0726339 -0.0198439 30 0.049 444.531") #good for the closeup
+view.m_camera.from_string("0.0146411  0.120286  0.107954 -0.162326  0.190028 0.0318747 0.967741 -0.0375605  0.0726339 -0.0198439 30 0.049 444.531") #good for the closeup but closer
 
 #bunny 
 mesh=Mesh("/media/rosu/Data/phd/c_ws/src/easy_pbr/data/bunny.ply")
+# mesh=Mesh("/media/rosu/Data/phd/c_ws/src/easy_pbr/data/dragon.obj")
 mesh.recalculate_normals()
-mesh.compute_tangents(0.003)
-# mesh.compute_tangents(0.001)
+# mesh.compute_tangents(0.003)
+# mesh.compute_tangents(0.3)
+mesh.compute_tangents(0.001)
 mesh.m_vis.m_show_surfels=True
 mesh.m_vis.m_show_mesh=False
 Scene.show(mesh,"mesh")

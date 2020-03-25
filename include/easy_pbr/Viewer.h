@@ -209,6 +209,8 @@ public:
     int m_irradiance_cubemap_resolution;
     int m_prefilter_cubemap_resolution;
     int m_brdf_lut_resolution;
+    float m_surfel_blend_factor;
+    float m_surfel_blend_scale;
     //params for multi-channel view
     bool m_enable_multichannel_view;
     float m_multichannel_interline_separation; //separation between the lines of different channels. Is a percentage of the screen's width

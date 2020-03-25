@@ -100,6 +100,8 @@ Viewer::Viewer(const std::string config_file):
     m_brdf_lut_resolution(512),
     m_environment_map_blur(0),
     m_using_fat_gbuffer(false),
+    m_surfel_blend_factor(-10.0),
+    m_surfel_blend_scale(0.0),
     m_enable_multichannel_view(false),
     m_multichannel_interline_separation(0.12), // 20% of the screen's width separation between the lines
     m_multichannel_line_width(10),
@@ -1107,7 +1109,7 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
     //openglsetup
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
-    glPolygonOffset(0.0, -5.0);
+    glPolygonOffset(-2.0, -10.0);
     // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
     glLineWidth( mesh->m_core->m_vis.m_line_width );
 
@@ -1339,7 +1341,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     //now draw into the gbuffer only the ones that pass the visibility test
     glDepthMask(false); //don't write to depth buffer but do perform the checking
     glEnable( GL_POLYGON_OFFSET_FILL );
-    glPolygonOffset(-10, 0.0); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
+    glPolygonOffset(m_surfel_blend_factor, m_surfel_blend_factor); //offset the depth in the depth buffer a bit further so we can render surfels that are even a bit overlapping
     m_draw_surfels_shader.uniform_bool(false , "enable_visibility_test");
     m_gbuffer.bind_for_draw();
     m_draw_surfels_shader.draw_into(m_gbuffer,
