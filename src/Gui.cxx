@@ -640,7 +640,8 @@ void Gui::draw_main_menu(){
         show_gl_texture(m_view->m_composed_fbo.tex_with_name("bloom_gtex").tex_id(), "bloom_gtex", true);
         // show_gl_texture(m_view->m_posprocessed_tex.tex_id(), "posprocessed_tex", true);
         show_gl_texture(m_view->m_blur_tmp_tex.tex_id(), "blur_tmp_tex", true);
-        show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_gtex").tex_id(), "fbo_no_gui", true);
+        show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex").tex_id(), "fbo_no_transparency_no_gui", true);
+        show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex").tex_id(), "fbo_with_transparency_no_gui", true);
         show_gl_texture(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex").tex_id(), "fbo_with_gui", true);
     }
  

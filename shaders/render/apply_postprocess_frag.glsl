@@ -183,12 +183,21 @@ void main(){
     //we want to have a pure color and let the alpha do the weithing between the background and the foreground
     float clamped_weight=clamp(color.w, 0.0, 1.0);
     vec3 color_pure=color.xyz;
-    if(clamped_weight!=0){
-        color_pure.xyz/=clamped_weight;
+    if (!pixel_covered_by_mesh){
+        if ( show_background_img || show_environment_map || show_prefiltered_environment_map ){
+            clamped_weight=1.0;
+        }else{
+            if(clamped_weight!=0){
+                color_pure.xyz/=clamped_weight;
+            }
+            // float lum = smootherstep(0.0, 1.2, luminance(color.xyz));
+            clamped_weight=smootherstep(0.0, 1.0, clamped_weight);
+        }
     }
 
-    // float lum = smootherstep(0.0, 1.2, luminance(color.xyz));
-    clamped_weight=smootherstep(0.0, 1.0, clamped_weight);
+
+
+
 
     // //the alpha of the pixel will be 1 if it's covered by mesh, and depeneding on how strong the bloom is we will have a decaying weight
     // float color_weight=1.0;
