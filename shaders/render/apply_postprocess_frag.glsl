@@ -177,6 +177,9 @@ void main(){
     // color.xyz=vec3(color.w);
     // vec3 color_pure=color.xyz;
     // float clamped_weight=color.w;
+    //debug
+    // out_color=vec4(color.w);
+    // return;
 
     //we want to have a pure color and let the alpha do the weithing between the background and the foreground
     float clamped_weight=clamp(color.w, 0.0, 1.0);

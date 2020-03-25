@@ -873,6 +873,8 @@ void Viewer::draw(const GLuint fbo_id){
     }
     TIME_END("forward_render");
 
+    blend_bg();
+
 
 
     //restore state
@@ -1069,7 +1071,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.draw_into(m_final_fbo_no_gui,
                                     {
                                     // std::make_pair("position_out", "position_gtex"),
-                                    std::make_pair("out_color", "color_without_transparency_gtex"),
+                                    std::make_pair("out_color", "color_with_transparency_gtex"),
                                     }
                                     ); //makes the shaders draw into the buffers we defines in the gbuffer
 
@@ -1959,7 +1961,55 @@ void Viewer::apply_postprocess(){
     TIME_END("apply_postprocess");
     //BLEND BACKGROUND -------------------------------------------------------------------------------------------------------------------
     //blend the pure color texture that we just rendered with the bg using the alpha. This is in order to deal with bloom and translucent thing corretly and still have a saved copy of the texture with transparency
+
+
+
+    // TIME_START("blend_bg");
+
+    // //  Set attributes that the vao will pulll from buffers
+    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+    
+    // // //shader setup
+    // GL_C( m_blend_bg_shader.use() );
+
+    // m_blend_bg_shader.bind_texture(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"),"color_with_transparency_tex");
+    // // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    // // m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
+    // // m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
+    // m_blend_bg_shader.uniform_v3_float(m_background_color, "background_color");
+    // m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color"); 
+    // // // draw
+    // m_fullscreen_quad->vao.bind(); 
+    // glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+    // TIME_END("blend_bg");
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+    // glDisable(GL_BLEND);
+
+}
+
+void Viewer::blend_bg(){
+
     TIME_START("blend_bg");
+
+    if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
+        m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
+    }
+    // m_final_fbo_no_gui.clear_depth();
+    // m_final_fbo_no_gui.tex_with_name("color_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
+
+    Eigen::Vector2f size_final_image;
+    size_final_image << m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height();
+
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
 
     //  Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
@@ -1979,12 +2029,11 @@ void Viewer::apply_postprocess(){
     m_fullscreen_quad->vao.bind(); 
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
-    TIME_END("blend_bg");
-
     //restore the state
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
-    // glDisable(GL_BLEND);
+
+    TIME_END("blend_bg");
 
 }
 // cv::Mat Viewer::download_to_cv_mat(){
