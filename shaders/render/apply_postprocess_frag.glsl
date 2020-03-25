@@ -250,9 +250,17 @@ void main(){
             }else if(nr_channel_wrapped==2){ //normal
                 color_pure=vec3( texture(ao_tex, uv_in).x  );
             }else if(nr_channel_wrapped==3){ //diffuse
-                color_pure=texture(diffuse_tex, uv_in).xyz;
+                vec4 color_with_weight=texture(diffuse_tex, uv_in);
+                if (color_with_weight.w!=0.0){ //normalize it in case we are doing some surfel splatting
+                    color_pure.xyz=color_with_weight.rgb/color_with_weight.w;
+                }
             }else if(nr_channel_wrapped==4){ //metalness and roughness
-                color_pure=vec3( texture(metalness_and_roughness_tex, uv_in).xy, 0.0  );
+                vec2 metalness_roughness=texture(metalness_and_roughness_tex, uv_in).xy;
+                float weight = texture(diffuse_tex, uv_in).w;
+                if (weight!=0.0){ //normalize it in case we are doing some surfel splatting
+                    metalness_roughness/=weight;
+                }
+                color_pure=vec3(metalness_roughness, 0.0);
             }else{
 
                 //color stays as the final one

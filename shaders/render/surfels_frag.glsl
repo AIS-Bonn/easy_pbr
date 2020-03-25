@@ -78,7 +78,7 @@ void main(){
 
         diffuse_out = vec4(color_per_vertex_in*surface_confidence, surface_confidence );
         normal_out = encode_normal( normal_in );
-        metalness_and_roughness_out=vec2(metalness, roughness);
+        metalness_and_roughness_out=vec2(metalness, roughness)*surface_confidence;
         // normal_out = vec4(  encode_normal( normal_eye_in*surface_confidence ), 1.0, 1.0);
         // position_out = vec4(position_eye_in*surface_confidence, 1.0);
     }
