@@ -1685,7 +1685,9 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         //color
         std::string uniform_create_shadow_name = uniform_name +"["+std::to_string(i)+"]"+".create_shadow";
         GLint uniform_create_shadow_loc=m_compose_final_quad_shader.get_uniform_location(uniform_create_shadow_name);
-        glUniform1i(uniform_create_shadow_loc, m_spot_lights[i]->m_create_shadow);
+        //check both if the spotlight creates a shadow AND if the shadow map is actually initialized. It may happen that you have a scene full of surfel meshes which do not project into the light and therefore they will never initialize their shadow maps
+        bool creates_shadow=m_spot_lights[i]->m_create_shadow && m_spot_lights[i]->has_shadow_map();
+        glUniform1i(uniform_create_shadow_loc, creates_shadow);
     }
 
 
