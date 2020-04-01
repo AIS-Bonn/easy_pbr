@@ -113,7 +113,7 @@ public:
     void create_random_samples_hemisphere();
 
     //getters 
-    gl::Texture2D& rendered_tex_no_gui();
+    gl::Texture2D& rendered_tex_no_gui(const bool with_transparency);
     gl::Texture2D& rendered_tex_with_gui();
 
     // Callbacks

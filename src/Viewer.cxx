@@ -2093,8 +2093,12 @@ void Viewer::create_random_samples_hemisphere(){
     }
 }
 
-gl::Texture2D& Viewer::rendered_tex_no_gui(){
-    return m_final_fbo_no_gui.tex_with_name("color_gtex");
+gl::Texture2D& Viewer::rendered_tex_no_gui(const bool with_transparency){
+    if (with_transparency){
+        return m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex");
+    }else{
+        return m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex");
+    }
 }
 gl::Texture2D& Viewer::rendered_tex_with_gui(){
     return m_final_fbo_with_gui.tex_with_name("color_gtex");

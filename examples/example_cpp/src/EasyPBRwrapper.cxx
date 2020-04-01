@@ -140,12 +140,12 @@ void EasyPBRwrapper::pre_draw_colorize_mesh(Viewer& view){
 
 void EasyPBRwrapper::post_draw(Viewer& view){
     //get the final render as a opencv mat
-    cv::Mat mat = view.rendered_tex_no_gui().download_to_cv_mat();
+    // cv::Mat mat = view.rendered_tex_no_gui(false).download_to_cv_mat();
 
-    //the opencv mat can now be written to disk or even rendered in the GUI as a texture
-    cv::flip(mat, mat, 0);
-    cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
-    Gui::show(mat, "mat");
+    // //the opencv mat can now be written to disk or even rendered in the GUI as a texture
+    // cv::flip(mat, mat, 0);
+    // cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
+    // Gui::show(mat, "mat");
 
     m_iter++;
 }
