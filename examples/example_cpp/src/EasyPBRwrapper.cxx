@@ -147,6 +147,16 @@ void EasyPBRwrapper::post_draw(Viewer& view){
     // cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
     // Gui::show(mat, "mat");
 
+    //draw some gui elements 
+    ImGuiWindowFlags window_flags = 0;
+    ImGui::Begin("WrapperGui", nullptr, window_flags);
+
+    if (ImGui::Button("My new button")){
+        VLOG(1) << "Clicked button";
+    }
+
+    ImGui::End();
+
     m_iter++;
 }
 
