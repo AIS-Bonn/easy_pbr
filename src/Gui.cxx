@@ -113,12 +113,17 @@ Gui::Gui( const std::string config_file,
     }
     io.Fonts->AddFontFromFileTTF(awesome_font_file.c_str(), 17.0f*m_hidpi_scaling, &config, icon_ranges );
 
-    //font for displaying the drag and drop message 
-    std::string dragdrop_font_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Regular.ttf";
-    if ( !fs::exists(dragdrop_font_file) ){
-        LOG(FATAL) << "Couldn't find " << dragdrop_font_file;
-    }
-    m_dragdrop_font=io.Fonts->AddFontFromFileTTF(dragdrop_font_file.c_str(), 100.0f, &config);
+    //robot regular
+    std::string roboto_regular_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Regular.ttf";
+    CHECK(fs::exists(roboto_regular_file)) << "Couldn't find " << roboto_regular_file;
+    m_roboto_regular=io.Fonts->AddFontFromFileTTF(roboto_regular_file.c_str(), 16.0f*m_hidpi_scaling);
+    CHECK(m_roboto_regular!=nullptr) << "The font could not be loaded";
+
+    //robot bold
+    std::string roboto_bold_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Bold.ttf";
+    CHECK(fs::exists(roboto_bold_file)) << "Couldn't find " << roboto_bold_file;
+    m_roboto_bold=io.Fonts->AddFontFromFileTTF(roboto_bold_file.c_str(), 16.0f*m_hidpi_scaling);
+    CHECK(m_roboto_bold!=nullptr) << "The font could not be loaded";
 
 
     io.Fonts->Build();
@@ -280,15 +285,49 @@ void Gui::draw_main_menu(){
 
                 ImGui::PopStyleColor(2);
 
-                // //if we hover over a mesh, we display a tooltip with the information about it
-                // if (ImGui::IsItemHovered()){
-                //     std::string info="info";
-                //     ImGui::BeginTooltip();
-                //     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                //     ImGui::TextUnformatted(info.c_str());
-                //     ImGui::PopTextWrapPos();
-                //     ImGui::EndTooltip();
-                // }
+                //if we hover over a mesh, we display a tooltip with the information about it
+                if (ImGui::IsItemHovered()){
+                    std::string info="info";
+                    ImVec2 tooltip_position;
+                    tooltip_position.x = 310*m_hidpi_scaling;
+                    tooltip_position.y = 0;
+                    ImGui::SetNextWindowPos(tooltip_position);
+                    // ImGui::SetNextWindowSize(ImVec2(150*m_hidpi_scaling, 200), ImGuiCond_Always);
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    // ImGui::TextUnformatted(info.c_str());
+
+                    auto &m = m_view->m_meshes_gl[i]->m_core;
+
+                    ImGui::PushFont(m_roboto_regular);
+                    // ImGui::Text(m->name.c_str());
+                    // if (m->V.size()){
+                    if(!m->V.size()){
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
+                        ImGui::PushFont(m_roboto_bold);
+                    }
+                    ImGui::Text(  ( m->V.size()? ( "V:" + std::to_string(m->V.rows()) + " x " + std::to_string(m->V.cols()))  : "V: empty"  ).c_str()  );
+                    if(!m->V.size()){
+                        ImGui::PopStyleColor();
+                        ImGui::PopFont();
+                    }
+                    ImGui::Text(  ( m->F.size()? ( "F:" + std::to_string(m->F.rows()) + " x " + std::to_string(m->F.cols()))  : "F: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->E.size()? ( "E:" + std::to_string(m->E.rows()) + " x " + std::to_string(m->E.cols()))  : "E: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->C.size()? ( "C:" + std::to_string(m->C.rows()) + " x " + std::to_string(m->C.cols()))  : "C: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->D.size()? ( "D:" + std::to_string(m->D.rows()) + " x " + std::to_string(m->D.cols()))  : "D: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->NV.size()? ( "NV:" + std::to_string(m->NV.rows()) + " x " + std::to_string(m->NV.cols()))  : "NV: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->NF.size()? ( "NF:" + std::to_string(m->NF.rows()) + " x " + std::to_string(m->NF.cols()))  : "NF: empty"  ).c_str()  );
+                    ImGui::Text(  ( m->UV.size()? ( "UV:" + std::to_string(m->UV.rows()) + " x " + std::to_string(m->UV.cols()))  : "UV: empty"  ).c_str()  );
+
+
+                    // }
+                    // ImGui::PushFont(m_roboto_bold);
+                    // ImGui::Text("Hello!");
+                    ImGui::PopFont();
+
+                    ImGui::PopTextWrapPos();
+                    ImGui::EndTooltip();
+                }
 
 
             }
@@ -956,7 +995,7 @@ void Gui::draw_drag_drop_text(){
         bool visible = true;
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-        ImGui::PushFont(m_dragdrop_font);
+        // ImGui::PushFont(m_dragdrop_font);
         ImGui::Begin("DragDrop", &visible,
             ImGuiWindowFlags_NoTitleBar
             | ImGuiWindowFlags_NoResize
@@ -973,7 +1012,7 @@ void Gui::draw_drag_drop_text(){
         Eigen::Vector3f color;
         color << 1.0, 1.0, 1.0;
         ImDrawList* drawList = ImGui::GetWindowDrawList();
-        drawList->AddText(m_dragdrop_font, 50,
+        drawList->AddText(NULL, 50.0,
             // ImVec2(m_view->m_viewport_size(0)/2*m_hidpi_scaling , (m_view->m_viewport_size(1) - m_view->m_viewport_size(1)/2 ) *m_hidpi_scaling ),
             ImVec2(m_view->m_viewport_size(0)/2 - ImGui::CalcTextSize(text.c_str()).x/2 ,  m_view->m_viewport_size(1)/2  ),
             ImGui::GetColorU32(ImVec4(
@@ -986,7 +1025,7 @@ void Gui::draw_drag_drop_text(){
         ImGui::End();
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
-        ImGui::PopFont();
+        // ImGui::PopFont();
     }
 
 }
