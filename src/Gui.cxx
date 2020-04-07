@@ -255,12 +255,19 @@ void Gui::draw_main_menu(){
                     ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
                 }
 
-                //visibility changes the text color from green to red
-                if(m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible){
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.7f, 0.1f, 1.00f));  //green text
+
+                //if the mesh is empty we display it in grey
+                if(m_view->m_meshes_gl[i]->m_core->is_empty() ){
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.00f));  //gray text
                 }else{
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
+                    //visibility changes the text color from green to red
+                    if(m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible){
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.7f, 0.1f, 1.00f));  //green text
+                    }else{
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
+                    }
                 }
+
 
 
 
@@ -271,8 +278,19 @@ void Gui::draw_main_menu(){
                     m_selected_mesh_idx=i;
                 }
 
-
                 ImGui::PopStyleColor(2);
+
+                // //if we hover over a mesh, we display a tooltip with the information about it
+                // if (ImGui::IsItemHovered()){
+                //     std::string info="info";
+                //     ImGui::BeginTooltip();
+                //     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                //     ImGui::TextUnformatted(info.c_str());
+                //     ImGui::PopTextWrapPos();
+                //     ImGui::EndTooltip();
+                // }
+
+
             }
             ImGui::ListBoxFooter();
         }

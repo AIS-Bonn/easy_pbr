@@ -774,7 +774,7 @@ void Viewer::draw(const GLuint fbo_id){
                 //loop through all the meshes
                 for(size_t i=0; i<m_meshes_gl.size(); i++){
                     MeshGLSharedPtr mesh=m_meshes_gl[i];
-                    if(mesh->m_core->m_vis.m_is_visible){
+                    if(mesh->m_core->m_vis.m_is_visible && !mesh->m_core->is_empty() ){
 
                         if(mesh->m_core->m_vis.m_show_mesh){
                             m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
@@ -810,7 +810,7 @@ void Viewer::draw(const GLuint fbo_id){
     //render every mesh into the gbuffer
     for(size_t i=0; i<m_meshes_gl.size(); i++){
         MeshGLSharedPtr mesh=m_meshes_gl[i];
-        if(mesh->m_core->m_vis.m_is_visible){
+        if(mesh->m_core->m_vis.m_is_visible && !mesh->m_core->is_empty() ){
             if(mesh->m_core->m_vis.m_show_mesh){
                 render_mesh_to_gbuffer(mesh);
             }
