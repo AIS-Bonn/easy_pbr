@@ -5,7 +5,7 @@ endif()
 
 #get the path of site packages which is where easypbr got installed https://stackoverflow.com/a/31384782 and https://stackoverflow.com/a/40006251
 execute_process(
-  COMMAND "python3 " -c "if True:
+  COMMAND "python3" -c "if True:
     import sys
     print( next(p for p in sys.path if 'site-packages' in p))"
   OUTPUT_VARIABLE PYTHON_SITE
