@@ -12,17 +12,19 @@
 //better enums
 #include <enum.h>
 
+namespace radu { namespace utils { 
+    class RandGenerator; 
+    }}
 
+namespace easy_pbr{
 
 BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity )
 
 
 class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff
 class LabelMngr;
-class RandGenerator;
-
-
 class Mesh;
+
 
 struct VisOptions{
      //visualization params (it's nice to have here so that the various algorithms that run in different threads can set them)
@@ -213,7 +215,7 @@ public:
 
     std::weak_ptr<MeshGL> m_mesh_gpu; // a pointer to the gpu implementation of this mesh, needs ot be weak because the mesh already has a shared ptr to the MeshCore
     std::shared_ptr<LabelMngr> m_label_mngr;
-    std::shared_ptr<RandGenerator> m_rand_gen;
+    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
     std::vector<std::shared_ptr<Mesh>> m_child_meshes;
 
     //oher stuff that may or may not be needed depending on the application
@@ -250,3 +252,5 @@ private:
 
 typedef std::shared_ptr<Mesh> MeshSharedPtr;
 
+
+} //namespace easy_pbr

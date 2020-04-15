@@ -23,20 +23,16 @@
 #include "Texture2D.h"
 
 
-//forward declarations
 class GLFWwindow;
 class ImGuiContext;
 
+namespace easy_pbr{
+
+//forward declarations
 class DataLoaderPNG;
 class Viewer;
 class Mesh;
 class MeshGL;
-class Texturer;
-class FireDetector;
-class Mesher;
-class LatticeCPU_test;
-class LatticeGPU_test;
-class BallDetector;
 
 
 
@@ -114,3 +110,5 @@ private:
 
 
 };
+
+} //namespace easy_pbr

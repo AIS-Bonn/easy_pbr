@@ -24,6 +24,14 @@
 // #include <pybind11/pybind11.h>
 // #include <pybind11/stl.h>
 // #include <pybind11/eigen.h>
+class GLFWwindow;
+
+namespace radu { namespace utils { 
+    class RandGenerator; 
+    class Timer; 
+    }}
+
+namespace easy_pbr{
 
 
 class Scene;
@@ -31,10 +39,7 @@ class MeshGL;
 class Camera;
 class Gui;
 class Recorder;
-class RandGenerator;
 class SpotLight;
-class Timer;
-class GLFWwindow;
 
 //in order to dissalow building on the stack and having only ptrs https://stackoverflow.com/a/17135547
 class Viewer;
@@ -63,7 +68,7 @@ public:
     std::shared_ptr<Camera> m_camera; //just a point to either the default camera or one of the point light so that we render the view from the point of view of the light
     std::shared_ptr<Gui> m_gui;
     std::shared_ptr<Recorder> m_recorder;
-    std::shared_ptr<RandGenerator> m_rand_gen;
+    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
     std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
 
 
@@ -126,10 +131,10 @@ public:
     void glfw_resize(GLFWwindow* window, int width, int height);
     void glfw_drop(GLFWwindow* window, int count, const char** paths);
 
-    ColorMngr m_colormngr;
+    radu::utils::ColorMngr m_colormngr;
     
     //timing for having fuzzy time updates at 30fps https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75
-    std::shared_ptr<Timer> m_timer;
+    std::shared_ptr<radu::utils::Timer> m_timer;
     double m_old_time;
     double m_accumulator_time;
 
@@ -246,3 +251,5 @@ private:
     bool m_using_fat_gbuffer; //surfel splatting starts requires to use a gbuffer with half floats, this makes is so that there is no need for encoding an decoding normals, we can just sum them
 
 };
+
+} //namespace easy_pbr

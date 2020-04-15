@@ -9,6 +9,8 @@
     #include "torch/torch.h"
 #endif
 
+namespace easy_pbr{
+
 class Frame {
 public:
     // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,3 +65,5 @@ public:
 
 
 };
+
+} //namespace easy_pbr

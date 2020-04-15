@@ -34,6 +34,9 @@ using namespace configuru;
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+using namespace easy_pbr;
+using namespace radu::utils;
+
 // SyntheticGenerator::SyntheticGenerator(const std::string& config_file):
 EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared_ptr<Viewer>& view):
     #ifdef WITH_DIR_WATCHER 

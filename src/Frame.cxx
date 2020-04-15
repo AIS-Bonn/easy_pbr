@@ -6,6 +6,7 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
+namespace easy_pbr {
 
 Frame::Frame()
         {
@@ -280,3 +281,5 @@ Eigen::Vector3f Frame::pos_in_world(){
         std::memcpy( depth.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
     }
 #endif
+
+} //namespace easy_pbr

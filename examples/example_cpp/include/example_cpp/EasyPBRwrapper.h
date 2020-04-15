@@ -22,10 +22,14 @@
 #include "Shader.h"
 
 
+namespace radu { namespace utils { 
+    class RandGenerator; 
+    }}
+
+namespace easy_pbr{
 
 //forward declarations
 class Viewer;
-class RandGenerator;
 class MeshGL;
 class Mesh;
 
@@ -49,7 +53,7 @@ private:
     // SyntheticGenerator(const std::string& config_file);
 
     std::shared_ptr<Viewer> m_view;
-    std::shared_ptr<RandGenerator> m_rand_gen;
+    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
 
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
     int m_iter;
@@ -80,3 +84,5 @@ private:
     void post_draw(Viewer& view);
 
 };
+
+}//namespace easy_pbr

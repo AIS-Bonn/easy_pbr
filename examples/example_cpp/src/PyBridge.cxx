@@ -16,7 +16,7 @@
 namespace py = pybind11;
 
 
-
+namespace easy_pbr{
 
 PYBIND11_MODULE(easypbr_wrapper, m) {
  
@@ -27,3 +27,5 @@ PYBIND11_MODULE(easypbr_wrapper, m) {
 
 
 }
+
+}//namespace easy_pbr

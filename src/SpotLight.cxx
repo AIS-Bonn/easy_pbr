@@ -8,6 +8,7 @@
 #include "easy_pbr/MeshGL.h"
 #include "easy_pbr/Mesh.h"
 
+namespace easy_pbr{
 
 SpotLight::SpotLight(const configuru::Config& config):
     // m_fov_x(90),
@@ -154,3 +155,5 @@ gl::Texture2D& SpotLight::get_shadow_map_ref(){
 void SpotLight::print_ptr(){
     VLOG(1) << "Spotlight this is " << this;
 }
+
+} //namespace easy_pbr

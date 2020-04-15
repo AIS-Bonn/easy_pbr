@@ -14,8 +14,9 @@
 #include "string_utils.h"
 #include "RandGenerator.h"
 
-using namespace easy_pbr::utils;
+using namespace radu::utils;
 
+namespace easy_pbr {
 
 Camera::Camera():
     m_exposure(1.0),
@@ -421,5 +422,6 @@ void Camera::from_string(const std::string pose){
     m_is_initialized=true;
 }
 
+} //namespace easy_pbr
 
 

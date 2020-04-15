@@ -26,7 +26,7 @@
 namespace py = pybind11;
 
 
-
+namespace easy_pbr{
 
 PYBIND11_MODULE(easypbr, m) {
 
@@ -212,16 +212,18 @@ PYBIND11_MODULE(easypbr, m) {
     ;
 
     //Profiler
-    py::class_<Profiler_ns::Profiler> (m, "Profiler") 
-    .def_static("is_profiling_gpu", &Profiler_ns::is_profiling_gpu )
+    py::class_<radu::utils::Profiler_ns::Profiler> (m, "Profiler") 
+    .def_static("is_profiling_gpu", &radu::utils::Profiler_ns::is_profiling_gpu )
     .def_static("start",  []( std::string name ) { TIME_START(name); })
     // .def_static("start_and_sync_cuda",  []( std::string name ) { TIME_START(name); })
     .def_static("end",  []( std::string name ) { TIME_END(name); })
     // .def_static("end_and_sync_cuda",  []( std::string name ) { Profiler_ns::sync_cuda(name);  TIME_END(name); })
     .def_static("pause",  []( std::string name ) { TIME_PAUSE(name); })
-    .def_static("print_all_stats", &Profiler_ns::Profiler::print_all_stats)
+    .def_static("print_all_stats", &radu::utils::Profiler_ns::Profiler::print_all_stats)
     // .def_static("scope",  []( std::string name ) { TIME_SCOPE(name); }) //DOESNT work because scoping in python doesnt work like that. Rather the scope will die as soon as this function is finished
     ;
 
 
 }
+
+} //namespace easy_pbr

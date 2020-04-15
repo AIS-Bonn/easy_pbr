@@ -44,7 +44,7 @@ namespace fs = boost::filesystem;
 // // Include glfw3.h after our OpenGL definitions
 // #include <GLFW/glfw3.h>
 
-using namespace easy_pbr::utils;
+using namespace radu::utils;
 
 
 //configuru
@@ -52,6 +52,9 @@ using namespace easy_pbr::utils;
 #define CONFIGURU_IMPLICIT_CONVERSIONS 1
 #include <configuru.hpp>
 using namespace configuru;
+
+
+namespace easy_pbr{
 
 //redeclared things here so we can use them from this file even though they are static
 std::unordered_map<std::string, cv::Mat>  Gui::m_cv_mats_map;
@@ -1135,3 +1138,5 @@ void Gui::init_style() {
     style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
     style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 }
+
+} //namespace easy_pbr

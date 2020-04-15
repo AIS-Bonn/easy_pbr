@@ -17,6 +17,8 @@
 
 // #include "easy_pbr/Mesh.h"
 
+namespace easy_pbr{
+
 //forward declarations
 class Mesh;
 
@@ -78,3 +80,6 @@ private:
 };
 
 typedef std::shared_ptr<MeshGL> MeshGLSharedPtr;
+
+
+} //namespace easy_pbr

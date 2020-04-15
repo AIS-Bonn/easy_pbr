@@ -8,8 +8,11 @@
 #include "shared_ptr/EnableSharedFromThis.h"
 #include "shared_ptr/SmartPtrBuilder.h"
 
-class RandGenerator;
+namespace radu { namespace utils { 
+    class RandGenerator; 
+    }}
 
+namespace easy_pbr{
 
 // class Camera : public std::enable_shared_from_this<Camera>
 class Camera : public Generic::EnableSharedFromThis< Camera >
@@ -86,7 +89,7 @@ private:
     Eigen::Vector3f m_prev_translation; //translation of the camera at the previous timestmap
     Eigen::Quaternionf m_prev_rotation; // rotation fo the camera at the previous timestep
     bool m_prev_mouse_pos_valid;
-    std::shared_ptr<RandGenerator> m_rand_gen;
+    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
 
 
     void recalculate_orientation();
@@ -95,3 +98,4 @@ private:
 };
 
 
+} //namespace easy_pbr

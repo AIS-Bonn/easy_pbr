@@ -52,10 +52,12 @@ using namespace configuru;
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-using namespace easy_pbr::utils;
+using namespace radu::utils;
 
 //ros
 // #include "easy_pbr/utils/RosTools.h"
+
+namespace easy_pbr{
 
 Viewer::Viewer(const std::string config_file):
    dummy( init_context() ),
@@ -2698,3 +2700,5 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
 
 // }
 
+
+} //namespace easy_pbr

@@ -17,7 +17,9 @@ using namespace configuru;
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
-using namespace easy_pbr::utils;
+using namespace radu::utils;
+
+namespace easy_pbr{
 
 LabelMngr::LabelMngr(const configuru::Config& config):
     m_nr_classes(-1){
@@ -307,3 +309,7 @@ cv::Mat LabelMngr::apply_color_map(cv::Mat classes){
 //     //read the L, write in C
 
 // }
+
+
+} //namespace easy_pbr
+

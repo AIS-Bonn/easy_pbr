@@ -7,6 +7,8 @@
 //my stuff 
 #include "easy_pbr/Mesh.h";
 
+namespace easy_pbr{
+
 MeshGL::MeshGL():
     m_first_core_assignment(true),
     V_buf("V_buf"),
@@ -136,3 +138,6 @@ void MeshGL::upload_to_gpu(){
 
     m_core->m_is_dirty=false;
 }
+
+
+} //namespace easy_pbr

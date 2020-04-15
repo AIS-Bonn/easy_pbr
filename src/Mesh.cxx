@@ -41,11 +41,13 @@
 #include "numerical_utils.h"
 #include "eigen_utils.h"
 #include "string_utils.h"
-using namespace easy_pbr::utils;
+using namespace radu::utils;
 
 //boost
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
+namespace easy_pbr{
 
 Mesh::Mesh():
         id(0),
@@ -1949,3 +1951,5 @@ std::ostream& operator<<(std::ostream& os, const Mesh& m)
     return os;
 }
  
+
+} //namespace easy_pbr

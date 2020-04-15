@@ -1,6 +1,7 @@
 //My stuff
 #include "easy_pbr/Viewer.h"
 
+using namespace easy_pbr;
 
 int main(int argc, char *argv[]) {
 

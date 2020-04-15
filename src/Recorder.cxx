@@ -14,6 +14,7 @@ namespace fs = boost::filesystem;
 
 // #include <ros/ros.h>
 
+namespace easy_pbr{
 
 Recorder::Recorder():
     m_is_recording(false)
@@ -261,3 +262,4 @@ void Recorder::write_to_file_threaded(){
 }
 
 
+} //namespace easy_pbr

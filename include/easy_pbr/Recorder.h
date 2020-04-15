@@ -9,6 +9,8 @@
 
 #include "concurrentqueue.h"
 
+namespace easy_pbr{
+
 class Viewer;
 
 
@@ -62,3 +64,6 @@ private:
     bool m_threads_are_running;
 
 };
+
+
+} //namespace easy_pbr

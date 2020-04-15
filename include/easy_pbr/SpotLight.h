@@ -17,6 +17,8 @@
 #include "shared_ptr/EnableSharedFromThis.h"
 #include "shared_ptr/SmartPtrBuilder.h"
 
+namespace easy_pbr{
+
 class MeshGL;
 
 // class SpotLight : public std::enable_shared_from_this<SpotLight>, public Camera
@@ -52,3 +54,5 @@ private:
     int m_shadow_map_resolution;
   
 };
+
+} //namespace easy_pbr

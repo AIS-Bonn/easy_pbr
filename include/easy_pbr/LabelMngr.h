@@ -13,6 +13,7 @@
 //Eigen
 #include <Eigen/Core>
 
+namespace easy_pbr{
 
 class LabelMngr : public std::enable_shared_from_this<LabelMngr>{ //the enable shared from this is needed so that we can safely create shared ptr to a single object managed by both dataloaders and MeshCores
 public:
@@ -54,4 +55,6 @@ private:
     // std::string m_labels_file;
     // std::string m_color_scheme_file;
 
-};
+}
+;
+} //namespace easy_pbr

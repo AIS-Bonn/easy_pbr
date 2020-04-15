@@ -6,6 +6,8 @@
 #include <memory>
 #include <mutex>
 
+namespace easy_pbr{
+
 class Mesh;
 
 class Scene{
@@ -37,3 +39,5 @@ private:
     static std::mutex m_mesh_mutex; // when adding a new mesh to the scene, we need to lock them so it can be thread safe
 
 };
+
+} //namespace easy_pbr

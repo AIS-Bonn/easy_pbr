@@ -7,6 +7,8 @@
 #include <loguru.hpp>
 
 
+namespace easy_pbr{
+
 //redeclared things here so we can use them from this file even though they are static
 std::vector<MeshSharedPtr>  Scene::m_meshes;
 std::mutex Scene::m_mesh_mutex;
@@ -274,3 +276,6 @@ bool Scene::is_empty(){
     }
     return true;
 }
+
+
+} //namespace easy_pbr

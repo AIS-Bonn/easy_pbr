@@ -6,6 +6,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+using namespace easy_pbr;
+
 int main(int argc, char *argv[]) {
 
     std::string config_file= fs::canonical(fs::path(PROJECT_SOURCE_DIR) / "./config/example.cfg").string();
