@@ -69,7 +69,7 @@ void main(){
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
     // bool points_as_circle=false;
-    bool points_as_circle=true;
+    bool points_as_circle=false;
     float u,v; //local uvs inside the point
     if(points_as_circle){
         u = 2.0 * gl_PointCoord.x - 1.0;
