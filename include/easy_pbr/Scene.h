@@ -28,9 +28,9 @@ public:
     static void remove_meshes_starting_with_name(const std::string name_prefix); // check all the meshes and removed the ones that start with a certain name
 
     //more high level operations on the meshes in the scene
-    static Eigen::Vector3f get_centroid(); //returns the aproximate center of our scene which consists of all meshes 
-    static float get_scale(); //returns how big the scene is as a measure betwen the min and the coefficient of the vertices
-    static bool is_empty();
+    static Eigen::Vector3f get_centroid(const bool use_mutex=true); //returns the aproximate center of our scene which consists of all meshes 
+    static float get_scale(const bool use_mutex=true); //returns how big the scene is as a measure betwen the min and the coefficient of the vertices
+    static bool is_empty(const bool use_mutex=true);
 
 
 

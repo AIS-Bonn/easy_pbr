@@ -50,7 +50,7 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
 
         MeshSharedPtr mesh_grid=Mesh::create();
         // mesh_grid->create_grid(8, mesh->V.col(1).minCoeff(), get_scale());
-        mesh_grid->create_grid(8, 0.0, get_scale());
+        mesh_grid->create_grid(8, 0.0, get_scale(false));
         // m_meshes.push_back(mesh_grid); 
         m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added 
 
@@ -78,7 +78,7 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
 
         MeshSharedPtr mesh_grid=Mesh::create();
         // mesh_grid->create_grid(8, mesh->V.col(1).minCoeff(), get_scale());
-        mesh_grid->create_grid(8, 0.0, get_scale());
+        mesh_grid->create_grid(8, 0.0, get_scale(false));
         // m_meshes.push_back(mesh_grid);
         m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added 
       
@@ -194,10 +194,14 @@ void Scene::remove_meshes_starting_with_name(const std::string name_prefix){
 // }
 
 
-Eigen::Vector3f Scene::get_centroid(){
+Eigen::Vector3f Scene::get_centroid(const bool use_mutex){
+
+    if(use_mutex){
+        std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    }
 
     //if the scene is empty just return the 0.0.0 
-    if(is_empty()){
+    if(is_empty(false)){ //don't use mutex because we either locked in the the previous line or whoever called this function ensured us that the lock is already locked
         return Eigen::Vector3f::Zero();
     }
 
@@ -222,10 +226,14 @@ Eigen::Vector3f Scene::get_centroid(){
     return centroid.cast<float>();
 }
   
-float Scene::get_scale(){
+float Scene::get_scale(const bool use_mutex){
+
+    if(use_mutex){
+        std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    }
 
     //if the scene is empty just return the scale 1.0 
-    if(is_empty()){
+    if(is_empty(false)){ //don't use mutex because we either locked in the the previous line or whoever called this function ensured us that the lock is already locked
        return 1.0; 
     }
 
@@ -267,7 +275,11 @@ float Scene::get_scale(){
     return scale;
 }
 
-bool Scene::is_empty(){
+bool Scene::is_empty(const bool use_mutex){
+
+    if(use_mutex){
+        std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    }
     //return true when all of the meshes have no vertices`
     for(size_t i=0; i<m_meshes.size(); i++){
         if(!m_meshes[i]->is_empty()){
