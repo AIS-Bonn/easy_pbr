@@ -74,7 +74,7 @@ private:
     ImFont* m_roboto_regular;
     ImFont* m_roboto_bold;
 
-    static std::mutex m_add_cv_mats_mutex; //adding or registering images for viewing must be thread safe
+    static std::mutex m_cv_mats_mutex; //adding or registering images for viewing must be thread safe
     //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context 
     static std::unordered_map<std::string, cv::Mat> m_cv_mats_map;
     static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it 

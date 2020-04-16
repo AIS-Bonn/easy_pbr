@@ -59,7 +59,7 @@ namespace easy_pbr{
 //redeclared things here so we can use them from this file even though they are static
 std::unordered_map<std::string, cv::Mat>  Gui::m_cv_mats_map;
 std::unordered_map<std::string, bool>  Gui::m_cv_mats_dirty_map;
-std::mutex  Gui::m_add_cv_mats_mutex;
+std::mutex  Gui::m_cv_mats_mutex;
 
 
 Gui::Gui( const std::string config_file,
@@ -793,7 +793,7 @@ void Gui::show(const cv::Mat cv_mat, const std::string name){
         return;
     }
 
-    std::lock_guard<std::mutex> lock(m_add_cv_mats_mutex);  // so that "show" can be usef from any thread
+    std::lock_guard<std::mutex> lock(m_cv_mats_mutex);  // so that "show" can be usef from any thread
 
     // m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
     m_cv_mats_map[name] = cv_mat; //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
@@ -802,6 +802,8 @@ void Gui::show(const cv::Mat cv_mat, const std::string name){
 }
 
 void Gui::show_images(){
+
+    std::lock_guard<std::mutex> lock(m_cv_mats_mutex);  // so that "show" can be used at the same time as the viewer thread shows images
 
     //TODO check if the cv mats actually changed, maybe a is_dirty flag
     for (auto const& x : m_cv_mats_map){
