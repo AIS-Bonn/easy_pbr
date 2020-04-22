@@ -1594,6 +1594,23 @@ void Mesh::set_normals_tex(const std::string file_path){
     cv::flip(mat, m_normals_mat.mat, 0);
     m_normals_mat.is_dirty=true;
 }
+//using a mat directly
+void Mesh::set_diffuse_tex(const cv::Mat& mat){
+    cv::flip(mat, m_diffuse_mat.mat, 0);
+    m_diffuse_mat.is_dirty=true;
+}
+void Mesh::set_metalness_tex(const cv::Mat& mat){
+    cv::flip(mat, m_metalness_mat.mat, 0);
+    m_metalness_mat.is_dirty=true;
+}
+void Mesh::set_roughness_tex(const cv::Mat& mat){
+    cv::flip(mat, m_roughness_mat.mat, 0);
+    m_roughness_mat.is_dirty=true;
+}
+void Mesh::set_normals_tex(const cv::Mat& mat){
+    cv::flip(mat, m_normals_mat.mat, 0);
+    m_normals_mat.is_dirty=true;
+}
 
 
 

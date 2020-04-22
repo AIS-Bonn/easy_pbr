@@ -784,6 +784,17 @@ void Viewer::draw(const GLuint fbo_id){
                         if(mesh->m_core->m_vis.m_show_points){
                             m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
                         }
+
+                        //if we use a custom shader we try to make an educated guess weather we should render this mesh as a mesh or as point cloud in the shadow map 
+                        if(mesh->m_core->m_vis.m_use_custom_shader && mesh->m_core->custom_render_func ){
+                            if(mesh->m_core->F.size()){
+                                m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
+                            }else{
+                                m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
+                            }
+                        }
+
+
                     }
                 }
             }
@@ -822,6 +833,12 @@ void Viewer::draw(const GLuint fbo_id){
             if(mesh->m_core->m_vis.m_show_points){
                 render_points_to_gbuffer(mesh);
             }
+
+            //renders to the gbuffer by calling whatever function the user defined. T
+            if(mesh->m_core->m_vis.m_use_custom_shader){
+                mesh->m_core->custom_render_func( shared_from_this() );
+            }
+
         }
     }
     TIME_END("geom_pass");

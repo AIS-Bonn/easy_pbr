@@ -24,6 +24,7 @@ BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, 
 class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff
 class LabelMngr;
 class Mesh;
+class Viewer;
 
 
 struct VisOptions{
@@ -36,6 +37,7 @@ struct VisOptions{
     bool m_show_surfels=false;
     bool m_show_vert_ids=false;
     bool m_show_vert_coords=false;
+    bool m_use_custom_shader=false;
 
 
     float m_point_size=4.0;
@@ -177,6 +179,11 @@ public:
     void set_metalness_tex(const std::string file_path);
     void set_roughness_tex(const std::string file_path);
     void set_normals_tex(const std::string file_path);
+    //using a mat directly
+    void set_diffuse_tex(const cv::Mat& mat);
+    void set_metalness_tex(const cv::Mat& mat);
+    void set_roughness_tex(const cv::Mat& mat);
+    void set_normals_tex(const cv::Mat& mat);
 
 
     friend std::ostream &operator<<(std::ostream&, const Mesh& m);
@@ -217,6 +224,7 @@ public:
     std::shared_ptr<LabelMngr> m_label_mngr;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
     std::vector<std::shared_ptr<Mesh>> m_child_meshes;
+    std::function<void( std::shared_ptr<Viewer> view )> custom_render_func; //use this render the mesh with whatever function we define
 
     //oher stuff that may or may not be needed depending on the application
     uint64_t t; //timestamp or scan nr which will be monotonically increasing

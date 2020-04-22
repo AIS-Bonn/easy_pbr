@@ -346,6 +346,13 @@ void Gui::draw_main_menu(){
             ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
             ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
             ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
+            if( ImGui::Checkbox("Custom shader", &mesh->m_vis.m_use_custom_shader )){
+                //check that we have defined a custom rendering function
+                if(!mesh->custom_render_func){
+                    LOG(WARNING) << "There is no custom render function for this mesh. Please assign one by using mesh->custom_render_func=foo";
+                    mesh->m_vis.m_use_custom_shader=false;
+                }
+            }
             ImGui::Checkbox("Show vert ids", &mesh->m_vis.m_show_vert_ids);
             ImGui::SameLine(); help_marker("Shows the indexes that each vertex has within the V matrix, \n i.e. the row index");
             ImGui::Checkbox("Show vert coords", &mesh->m_vis.m_show_vert_coords);
