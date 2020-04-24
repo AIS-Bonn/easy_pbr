@@ -735,7 +735,7 @@ void Mesh::decimate(const int nr_target_faces){
         for (int i = 0; i < V.rows(); i++) {
             is_vertex_non_manifold_original_mesh[i]=is_vertex_non_manifold[i];
         }
-        std::cout << "is_edge_manifold is " << is_edge_manifold << '\n';
+        VLOG(3) << "is_edge_manifold is " << is_edge_manifold;
         remove_marked_vertices(is_vertex_non_manifold_original_mesh, false);
     }
 
@@ -785,10 +785,10 @@ bool Mesh::compute_non_manifold_edges(std::vector<bool>& is_face_non_manifold, s
              &&
              (r1[1] == r2[1] && r2[1] == r3[1]) )
         {
-            std::cout << "non manifold around the 3 faces (v_idx, v_idx, f_idx, e_idx)"  << std::endl;
-            std::cout << " edge_1 " << r1[0] << " " << r1[1] << " " << r1[2] << " " << r1[3] << std::endl;
-            std::cout << " edge_2 " << r2[0] << " " << r2[1] << " " << r2[2] << " " << r2[3] << std::endl;
-            std::cout << " edge_3 " << r3[0] << " " << r3[1] << " " << r3[2] << " " << r3[3] << std::endl;
+            VLOG(3) << "non manifold around the 3 faces (v_idx, v_idx, f_idx, e_idx)";;
+            VLOG(3) << " edge_1 " << r1[0] << " " << r1[1] << " " << r1[2] << " " << r1[3];
+            VLOG(3) << " edge_2 " << r2[0] << " " << r2[1] << " " << r2[2] << " " << r2[3];
+            VLOG(3) << " edge_3 " << r3[0] << " " << r3[1] << " " << r3[2] << " " << r3[3];
             is_face_non_manifold[r1[2]]=true;
             is_face_non_manifold[r2[2]]=true;
             is_face_non_manifold[r3[2]]=true;
