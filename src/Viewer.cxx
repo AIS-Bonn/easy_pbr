@@ -1072,6 +1072,9 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     if(mesh->m_core->V.size()){
         mesh->vao.vertex_attribute(m_draw_lines_shader, "position", mesh->V_buf, 3);
     }
+    if(mesh->m_core->C.size()){
+        mesh->vao.vertex_attribute(m_draw_lines_shader, "color_per_vertex", mesh->C_buf, 3);
+    }
     if(mesh->m_core->E.size()){
         mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
     }
@@ -1087,6 +1090,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
     m_draw_lines_shader.uniform_4x4(MVP, "MVP");
     m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
+    m_draw_lines_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     glLineWidth( mesh->m_core->m_vis.m_line_width );
 
     m_draw_lines_shader.draw_into(m_final_fbo_no_gui,
