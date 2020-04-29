@@ -16,9 +16,10 @@ namespace fs = boost::filesystem;
 
 namespace easy_pbr{
 
-Recorder::Recorder(std::shared_ptr<Viewer> view):
+Recorder::Recorder(Viewer* view):
     m_is_recording(false),
-    m_view(view)
+    m_view(view),
+    m_nr_images_recorded(0)
     // m_recording_path("./recordings/"),
     // m_snapshot_name("img.png")
 {
@@ -79,6 +80,11 @@ bool Recorder::record(gl::Texture2D& tex, const std::string name, const std::str
         mat_with_file.cv_mat=cv_mat;
         mat_with_file.file_path= ( fs::path(path)/name ).string();
         m_cv_mats_queue.enqueue(mat_with_file);
+
+        if (is_recording()){
+            m_nr_images_recorded++;
+        }
+    
 
         return true;
     }else{
@@ -260,6 +266,21 @@ void Recorder::write_to_file_threaded(){
 
     }
 
+}
+
+
+bool Recorder::is_recording(){
+    return m_is_recording;
+}
+void Recorder::start_recording(){
+    m_is_recording=true;
+}
+void Recorder::stop_recording(){
+    m_is_recording=false;
+    m_nr_images_recorded=0;
+}
+int Recorder::nr_images_recorded(){
+    return m_nr_images_recorded;
 }
 
 

@@ -68,7 +68,7 @@ Viewer::Viewer(const std::string config_file):
     m_scene(new Scene),
     // m_gui(new Gui(this, m_window )),
     m_default_camera(new Camera),
-    m_recorder(new Recorder( shared_from_this() )),
+    m_recorder(new Recorder( this )),
     m_rand_gen(new RandGenerator()),
     m_timer(new Timer()),
     m_viewport_size(1920, 1080),
@@ -109,6 +109,10 @@ Viewer::Viewer(const std::string config_file):
     m_multichannel_line_width(10),
     m_multichannel_line_angle(31),
     m_multichannel_start_x(1500),
+    m_recording_path("./recordings/"),
+    m_snapshot_name("img.png"),
+    m_record_gui(false),
+    m_record_with_transparency(true),
     m_first_draw(true)
     {
         // m_timer->start();
@@ -733,6 +737,21 @@ void Viewer::post_draw(){
     glfwSwapBuffers(m_window);
 
     // m_recorder->update();
+    if (m_recorder->is_recording()){
+        std::string next_img = std::to_string(m_recorder->nr_images_recorded()) +".png";
+        // m_recorder->record(next_img, m_gui->m_recording_path);
+
+            if(m_record_gui){
+                m_recorder->record(m_final_fbo_with_gui.tex_with_name("color_gtex"), next_img, m_recording_path);
+            }else{
+                if (m_record_with_transparency){
+                    m_recorder->record( m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex") , next_img, m_recording_path);
+                }else{
+                    m_recorder->record( m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex") , next_img, m_recording_path);
+                }
+            }
+
+    }
 }
 
 
@@ -2625,10 +2644,10 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
             }
             case GLFW_KEY_S :{
                 VLOG(1) << "Snapshot";
-                if(m_gui->m_record_gui){
-                    m_recorder->write_without_buffering(m_final_fbo_with_gui.tex_with_name("color_gtex"), m_gui->m_snapshot_name, m_gui->m_recording_path);
+                if(m_record_gui){
+                    m_recorder->write_without_buffering(m_final_fbo_with_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
                 }else{
-                    m_recorder->write_without_buffering(m_final_fbo_no_gui.tex_with_name("color_gtex"), m_gui->m_snapshot_name, m_gui->m_recording_path);
+                    m_recorder->write_without_buffering(m_final_fbo_no_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
                 }
                 break;
             }

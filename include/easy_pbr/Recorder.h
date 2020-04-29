@@ -23,7 +23,7 @@ struct MatWithFilePath{
 class Recorder: public std::enable_shared_from_this<Recorder>
 {
 public:
-    Recorder(std::shared_ptr<Viewer> view);
+    Recorder(Viewer* view);
     ~Recorder();
     bool record(gl::Texture2D& tex, const std::string name,  const std::string path); //downloads the tex into a pbo and downlaod from the previous pbo into a cv which is queued for writing
     void write_without_buffering(gl::Texture2D& tex, const std::string name,  const std::string path); //writes the texture directly, without PBO buffering. useful for taking screenshots
@@ -33,15 +33,19 @@ public:
     // void update();
     // void reset(); //set the m_nr_frames_recorder to zero so that we can start recording again
 
+    bool is_recording();
+    void start_recording();
+    void stop_recording();
+    int nr_images_recorded();
+
 
     //objects
-    // Viewer* m_view;
-    std::shared_ptr<Viewer> m_view;
+    Viewer* m_view;
+    // std::shared_ptr<Viewer> m_view;
 
     //params 
     // std::string m_recording_path;
     // std::string m_snapshot_name;
-    bool m_is_recording;
 
 private:
     void write_to_file_threaded();
@@ -64,6 +68,8 @@ private:
     std::vector<std::thread> m_writer_threads; 
     bool m_threads_are_running;
 
+    bool m_is_recording;
+    int m_nr_images_recorded;
 };
 
 

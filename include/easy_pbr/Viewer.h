@@ -229,6 +229,12 @@ public:
     // Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
     bool m_first_draw;
 
+    //recorder stuff 
+    std::string m_recording_path;
+    std::string m_snapshot_name;
+    bool m_record_gui;
+    bool m_record_with_transparency;
+
 private:
     Viewer(const std::string config_file=std::string(DEFAULT_CONFIG) ); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();

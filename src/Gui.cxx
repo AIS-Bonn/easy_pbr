@@ -78,11 +78,11 @@ Gui::Gui( const std::string config_file,
         m_guizmo_mode(ImGuizmo::LOCAL),
         m_hidpi_scaling(1.0),
         m_subsample_factor(0.5),
-        m_decimate_nr_target_faces(100),
-        m_recording_path("./recordings/"),
-        m_snapshot_name("img.png"),
-        m_record_gui(false),
-        m_record_with_transparency(true)
+        m_decimate_nr_target_faces(100)
+        // m_recording_path("./recordings/"),
+        // m_snapshot_name("img.png"),
+        // m_record_gui(false),
+        // m_record_with_transparency(true)
          {
     m_view = view;
 
@@ -650,30 +650,33 @@ void Gui::draw_main_menu(){
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Recorder")) {
-        ImGui::InputText("record_path", m_recording_path);
-        ImGui::InputText("snapshot_name", m_snapshot_name);
+        ImGui::InputText("record_path", m_view->m_recording_path);
+        ImGui::InputText("snapshot_name", m_view->m_snapshot_name);
         if(ImGui::Button("Write viewer to png") ){
-            if(m_record_gui){
-                m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+            if(m_view->m_record_gui){
+                m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex"), m_view->m_snapshot_name, m_view->m_recording_path);
             }else{
-                if (m_record_with_transparency){
-                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), m_snapshot_name, m_recording_path);
+                if (m_view->m_record_with_transparency){
+                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), m_view->m_snapshot_name, m_view->m_recording_path);
                 }else{
-                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), m_snapshot_name, m_recording_path);
+                    m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), m_view->m_snapshot_name, m_view->m_recording_path);
                 }
             }
         }
-        ImGui::Checkbox("Record GUI", &m_record_gui);
-        ImGui::Checkbox("Record with transparency", &m_record_with_transparency);
+        ImGui::Checkbox("Record GUI", &m_view->m_record_gui);
+        ImGui::Checkbox("Record with transparency", &m_view->m_record_with_transparency);
         // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
 
-        // //recording
-        // ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
-        // const char* icon_recording = m_view->m_recorder->m_is_recording ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
-        // // if(ImGui::Button("Record") ){
-        // if(ImGui::Button(icon_recording, button_size) ){
-        //     m_view->m_recorder->m_is_recording^= 1;
-        // }
+        //recording
+        ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
+        const char* icon_recording = m_view->m_recorder->is_recording() ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
+        if(ImGui::Button(icon_recording, button_size) ){
+            if(m_view->m_recorder->is_recording()){ 
+               m_view->m_recorder->stop_recording();
+            }else{
+               m_view->m_recorder->start_recording();
+            }
+        }
     }
 
 

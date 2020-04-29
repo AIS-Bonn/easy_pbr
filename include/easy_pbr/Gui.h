@@ -48,10 +48,7 @@ public:
     void select_mesh_with_idx(const int idx); //set the selection fo the meshes to the one with a certain index
     void toggle_main_menu();
 
-    //recorder stuff 
-    std::string m_recording_path;
-    std::string m_snapshot_name;
-    bool m_record_gui;
+
 
 private:
 
@@ -80,7 +77,6 @@ private:
     static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it 
     //for showing images we store a list of their opengl textures implemented as a map between their name and the gltexture
     std::unordered_map<std::string, gl::Texture2D> m_textures_map;
-    bool m_record_with_transparency;
 
 
 
