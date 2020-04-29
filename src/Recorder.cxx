@@ -16,8 +16,9 @@ namespace fs = boost::filesystem;
 
 namespace easy_pbr{
 
-Recorder::Recorder():
-    m_is_recording(false)
+Recorder::Recorder(std::shared_ptr<Viewer> view):
+    m_is_recording(false),
+    m_view(view)
     // m_recording_path("./recordings/"),
     // m_snapshot_name("img.png")
 {
@@ -107,9 +108,9 @@ void Recorder::write_without_buffering(gl::Texture2D& tex, const std::string nam
 
 }
 
-bool Recorder::record(std::shared_ptr<Viewer> view, const std::string name, const std::string path){
+bool Recorder::record(const std::string name, const std::string path){
     //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
-    bool recorded=record(view->m_final_fbo_with_gui.tex_with_name("color_gtex"), name, path);
+    bool recorded=record(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
     return recorded;
 }
     

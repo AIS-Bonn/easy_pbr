@@ -207,8 +207,8 @@ PYBIND11_MODULE(easypbr, m) {
 
     //Recorder
     py::class_<Recorder, std::shared_ptr<Recorder>> (m, "Recorder")
-    .def(py::init<>())
-    .def("record", py::overload_cast<std::shared_ptr<Viewer>, const std::string, const std::string >(&Recorder::record) )
+    // .def(py::init<>())
+    .def("record", py::overload_cast<const std::string, const std::string >(&Recorder::record) )
     ;
 
     //Profiler

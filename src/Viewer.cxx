@@ -68,7 +68,7 @@ Viewer::Viewer(const std::string config_file):
     m_scene(new Scene),
     // m_gui(new Gui(this, m_window )),
     m_default_camera(new Camera),
-    m_recorder(new Recorder()),
+    m_recorder(new Recorder( shared_from_this() )),
     m_rand_gen(new RandGenerator()),
     m_timer(new Timer()),
     m_viewport_size(1920, 1080),
