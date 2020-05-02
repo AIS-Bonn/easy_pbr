@@ -937,10 +937,10 @@ void Viewer::update_meshes_gl(){
             //find the meshgl  with the same name
             bool found=false;
             int idx_found=-1;
-            for(size_t i = 0; i < m_meshes_gl.size(); i++){
-                if(m_meshes_gl[i]->m_core->name==mesh_core->name){
+            for(size_t gl_idx = 0; gl_idx < m_meshes_gl.size(); gl_idx++){
+                if(m_meshes_gl[gl_idx]->m_core->name==mesh_core->name){
                     found=true;
-                    idx_found=i;
+                    idx_found=gl_idx;
                     break;
                 }
             }
@@ -967,14 +967,16 @@ void Viewer::update_meshes_gl(){
 
     //check if any of the mesh in the scene got deleted, in which case we should also delete the corresponding mesh_gl
     //need to do it after updating first the meshes_gl with the new meshes in the scene a some of them may have been added newly just now
+    //we check if we have any mesh_gl which has no corresponding mesh_core in the scene with the same name
     std::vector< std::shared_ptr<MeshGL> > meshes_gl_filtered;
-    for(int i=0; i<m_scene->nr_meshes(); i++){
-        MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
+    for(size_t gl_idx=0; gl_idx<m_meshes_gl.size(); gl_idx++){
+        // MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
 
-        //find the mesh_gl with the same name
+        //find the mesh in the scene with the same name
         bool found=false;
-        for(size_t i = 0; i < m_meshes_gl.size(); i++){
-            if(m_meshes_gl[i]->m_core->name==mesh_core->name){
+        for(int i = 0; i<m_scene->nr_meshes(); i++){
+            MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
+            if(m_meshes_gl[gl_idx]->m_core->name==mesh_core->name){
                 found=true;
                 break;
             }
@@ -982,7 +984,9 @@ void Viewer::update_meshes_gl(){
 
         //we found it in the scene and in the gpu so we keep it
         if(found){
-            meshes_gl_filtered.push_back(m_meshes_gl[i]);
+            meshes_gl_filtered.push_back(m_meshes_gl[gl_idx]);
+        }else{
+            //the mesh_gl has no corresponding mesh_core in the scene which means we discard this mesh_gl which will in turn also garbage collect whatever shared ptr if has over the mesh_core
         }
     }
     m_meshes_gl=meshes_gl_filtered;
