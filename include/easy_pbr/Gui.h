@@ -33,7 +33,7 @@ class DataLoaderPNG;
 class Viewer;
 class Mesh;
 class MeshGL;
-
+class Camera;
 
 
 class Gui{
@@ -80,6 +80,7 @@ private:
 
 
 
+
     //IO stuff
     std::string m_write_mesh_file_path;
 
@@ -90,11 +91,26 @@ private:
     //debug stuff 
     ImVec2 m_curve_points[10];
 
+    // trajectory follower:
+    int m_selected_trajectory_idx;
+    float m_trajectory_frustum_size = 0.01f;
+    std::string m_traj_file_name = "./traj.txt";
+    ImGuizmo::MODE m_traj_guizmo_mode = ImGuizmo::LOCAL;
+    ImGuizmo::OPERATION m_traj_guizmo_operation=ImGuizmo::ROTATE;
 
+    bool m_traj_should_draw = true;
+    bool m_traj_is_playing = false;
+    bool m_traj_is_paused = false;
+    bool m_traj_preview = false;
+    bool m_traj_use_time_not_frames = true;
+    int m_traj_fps = 30;
+    int m_traj_view_updates = 0;
+    std::shared_ptr<Camera> m_preview_camera;
 
     void init_params(const std::string config_file);
     void init_style();
     void edit_transform(const std::shared_ptr<Mesh>& mesh);
+    void edit_trajectory(const std::shared_ptr<Camera> & cam);
     void help_marker(const char* desc);
     void show_images(); // uplaod all cv mats to gl textures and displays them 
     void draw_overlays(); //draw all the overlays like the vert ids above each vertex of the meshes that are visible
@@ -103,7 +119,7 @@ private:
     void draw_main_menu();
     void draw_profiler();
     void draw_drag_drop_text();
-
+    void draw_trajectory(const std::string & trajectory_mesh_name, const std::string & frustum_mesh_name);
 
 };
 

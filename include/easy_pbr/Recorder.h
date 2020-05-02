@@ -35,6 +35,7 @@ public:
 
     bool is_recording();
     void start_recording();
+    void pause_recording();
     void stop_recording();
     int nr_images_recorded();
 

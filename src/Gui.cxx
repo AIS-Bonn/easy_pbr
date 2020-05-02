@@ -33,6 +33,8 @@ namespace fs = boost::filesystem;
 #include "easy_pbr/Recorder.h"
 #include "easy_pbr/LabelMngr.h"
 #include "string_utils.h"
+#include "eigen_utils.h"
+#include "se3_utils.h"
 
 // //imgui
 // #include "imgui.h"
@@ -72,10 +74,14 @@ Gui::Gui( const std::string config_file,
         m_show_player_window(true),
         m_selected_mesh_idx(0),
         m_selected_spot_light_idx(0),
+        m_selected_trajectory_idx(0),
         m_mesh_tex_idx(0),
         m_show_debug_textures(false),
         m_guizmo_operation(ImGuizmo::TRANSLATE),
         m_guizmo_mode(ImGuizmo::LOCAL),
+        m_traj_guizmo_operation(ImGuizmo::TRANSLATE),
+        m_traj_guizmo_mode(ImGuizmo::LOCAL),
+        m_trajectory_frustum_size(0.01f),
         m_hidpi_scaling(1.0),
         m_subsample_factor(0.5),
         m_decimate_nr_target_faces(100)
@@ -486,25 +492,25 @@ void Gui::draw_main_menu(){
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("MeshOps")) {
-        if (ImGui::Button("worldGL2worldROS")){
+        if (ImGui::Button("worldGL2worldROS") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->worldGL2worldROS();
         }
-        if (ImGui::Button("worldROS2worldGL")){
+        if (ImGui::Button("worldROS2worldGL") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->worldROS2worldGL();
         }
-        if (ImGui::Button("Rotate_90")){
+        if (ImGui::Button("Rotate_90") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->rotate_90_x_axis();
         }
         ImGui::SliderFloat("rand subsample_factor", &m_subsample_factor, 0.0, 1.0);
-        if (ImGui::Button("Rand subsample")){
+        if (ImGui::Button("Rand subsample") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->random_subsample(m_subsample_factor);
         }
-        int nr_faces=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->F.rows();
+        int nr_faces= m_view->m_scene->is_empty() ? 0 : m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->F.rows();
         ImGui::SliderInt("decimate_nr_faces", &m_decimate_nr_target_faces, 1, nr_faces);
-        if (ImGui::Button("Decimate")){
+        if (ImGui::Button("Decimate") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->decimate(m_decimate_nr_target_faces);
         }
-        if (ImGui::Button("Flip normals")){
+        if (ImGui::Button("Flip normals") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
         }
 
@@ -611,6 +617,293 @@ void Gui::draw_main_menu(){
         
     }
 
+    ImGui::Separator();
+    if ( ImGui::CollapsingHeader("ViewFollower") )
+    {
+        const std::string trajectory_mesh_name="trajectory";
+        const std::string frustum_mesh_name="frustum";
+
+        if(ImGui::ListBoxHeader("Trajectory", m_view->m_trajectory.size(), 6)){
+            for (int i = 0; i < (int)m_view->m_trajectory.size(); ++i) {
+
+                //it's the one we have selected so we change the header color to a whiter value
+                if(i==m_selected_trajectory_idx){
+                    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.3f, 0.3f, 0.3f, 1.00f));
+                }else{
+                    ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
+                }
+
+                //visibility changes the text color from green to red
+                if(m_view->m_trajectory[i]->m_traj.m_enabled){
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.7f, 0.1f, 1.00f));  //green text
+                }else{
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
+                }
+                if(ImGui::Selectable( ("Pose_"+std::to_string(i)).c_str(), true ) ){
+                    m_selected_trajectory_idx=i;
+                }
+                // add code for manipulation
+                ImGui::PopStyleColor(2);
+            }
+            ImGui::ListBoxFooter();
+            if ( ! m_view->m_trajectory.empty() )
+            {
+                if (ImGui::Button("Move Up")){
+                    if ( m_selected_trajectory_idx > 0 ){
+                        std::shared_ptr<Camera> tmpCam = m_view->m_trajectory[m_selected_trajectory_idx-1];
+                        m_view->m_trajectory[m_selected_trajectory_idx-1] = m_view->m_trajectory[m_selected_trajectory_idx];
+                        m_view->m_trajectory[m_selected_trajectory_idx] = tmpCam;
+                        --m_selected_trajectory_idx;
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Move Down")){
+                    if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() ){
+                        std::shared_ptr<Camera> tmpCam = m_view->m_trajectory[m_selected_trajectory_idx+1];
+                        m_view->m_trajectory[m_selected_trajectory_idx+1] = m_view->m_trajectory[m_selected_trajectory_idx];
+                        m_view->m_trajectory[m_selected_trajectory_idx] = tmpCam;
+                        ++m_selected_trajectory_idx;
+                    }
+                }
+                ImGui::Checkbox("Enabled", &m_view->m_trajectory[m_selected_trajectory_idx]->m_traj.m_enabled);
+
+                ImGui::Checkbox("Draw Trajectory", &m_traj_should_draw);
+                if ( m_traj_should_draw )
+                {
+                    draw_trajectory( trajectory_mesh_name, frustum_mesh_name );
+                }
+                else
+                {
+                    if ( m_view->m_scene->does_mesh_with_name_exist( trajectory_mesh_name) )
+                        m_view->m_scene->remove_mesh_with_idx(m_view->m_scene->get_idx_for_name(trajectory_mesh_name));
+                    if ( m_view->m_scene->does_mesh_with_name_exist( frustum_mesh_name) )
+                        m_view->m_scene->remove_mesh_with_idx(m_view->m_scene->get_idx_for_name(frustum_mesh_name));
+                }
+
+                if (ImGui::RadioButton("Use Time", m_traj_use_time_not_frames)) { m_traj_use_time_not_frames = true; } ImGui::SameLine();
+                if (ImGui::RadioButton("Use Frames", ! m_traj_use_time_not_frames)) { m_traj_use_time_not_frames = false; }
+                ImGui::SliderInt("FPS", &m_traj_fps, 1, 100);
+                ImGui::SliderFloat("Transition Duration", &m_view->m_trajectory[m_selected_trajectory_idx]->m_traj.m_transition_duration, 0.01, 100.0);
+                ImGui::SliderFloat("Frustum size", &m_trajectory_frustum_size, 0.0001, 2.0);
+
+            }
+        }
+        ImGui::InputText("trajectory_file", m_traj_file_name);
+        if (ImGui::Button("Load"))
+        {
+            if ( fs::exists(m_traj_file_name) )
+            {
+                std::ifstream file ( m_traj_file_name );
+                if ( ! file.is_open() )
+                    LOG(FATAL) << "file not opened: " << m_traj_file_name;
+                m_traj_is_playing = false;
+                m_view->m_trajectory.clear();
+                m_selected_trajectory_idx = 0;
+                double ts;
+                bool enabled;
+                while ( file.good() )
+                {
+                    file >> ts >> enabled;
+                    std::string line;
+                    if ( ! std::getline(file, line) ) continue;
+                    std::shared_ptr<Camera> new_camera = m_view->m_default_camera->clone();
+                    new_camera->from_string(line);
+                    new_camera->m_traj.m_enabled = enabled;
+                    new_camera->m_traj.m_transition_duration = ts;
+                    m_view->m_trajectory.emplace_back(new_camera);
+                }
+                file.close();
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Save"))
+        {
+            std::ofstream file ( m_traj_file_name );
+            if ( ! file.is_open() )
+                LOG(FATAL) << "file not opened: " << m_traj_file_name;
+            for ( std::shared_ptr<Camera> & cam : m_view->m_trajectory )
+            {
+                file << cam->m_traj.m_transition_duration << " " << cam->m_traj.m_enabled << " " << cam->to_string() <<"\n";
+            }
+            file.close();
+        }
+        if (ImGui::Button("Add View")){
+            m_view->m_trajectory.emplace_back(std::make_shared<Camera>());
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Copy View")){
+            if ( ! m_view->m_trajectory.empty() )
+                m_view->m_trajectory.emplace_back(m_view->m_trajectory[m_selected_trajectory_idx]->clone());
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("From View")){
+            m_view->m_trajectory.emplace_back(m_view->m_camera->clone());
+        }
+        if (ImGui::Button("Remove View")){
+            if ( !m_view->m_trajectory.empty() )
+            {
+                m_view->m_trajectory.erase(m_view->m_trajectory.begin()+m_selected_trajectory_idx);
+                m_selected_trajectory_idx = std::max(m_selected_trajectory_idx-1,0);
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Clear Views"))
+        {
+            m_traj_is_playing = false;
+            m_view->m_trajectory.clear();
+            m_selected_trajectory_idx = 0;
+            if ( m_view->m_scene->does_mesh_with_name_exist( trajectory_mesh_name) )
+                m_view->m_scene->remove_mesh_with_idx(m_view->m_scene->get_idx_for_name(trajectory_mesh_name));
+            if ( m_view->m_scene->does_mesh_with_name_exist( frustum_mesh_name) )
+                m_view->m_scene->remove_mesh_with_idx(m_view->m_scene->get_idx_for_name(frustum_mesh_name));
+        }
+        if (ImGui::Button("Set View"))
+        {
+            m_traj_is_playing = false;
+            if ( ! m_view->m_trajectory.empty() )
+                m_view->m_camera = m_view->m_trajectory[m_selected_trajectory_idx]->clone();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Reset View"))
+        {
+            m_view->m_camera = m_view->m_default_camera;
+            m_traj_is_playing = false;
+        }
+        bool should_play_trajectory = false;
+        if (ImGui::Button("Play"))
+        {
+            if ( ! m_view->m_trajectory.empty() )
+                should_play_trajectory = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Stop"))
+        {
+            m_traj_is_paused = false;
+            m_traj_is_playing = false;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Pause"))
+        {
+            m_traj_is_paused = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Preview"))
+        {
+            if ( ! m_view->m_trajectory.empty() )
+            {
+                should_play_trajectory = true;
+                m_traj_preview = true;
+            }
+        }
+        if ( should_play_trajectory )
+        {
+            m_view->m_timer->start();
+            if ( ! m_traj_preview )
+                m_view->m_camera = m_view->m_trajectory[m_selected_trajectory_idx]->clone();
+            else
+                m_preview_camera = m_view->m_trajectory[m_selected_trajectory_idx]->clone();
+            m_traj_is_playing = true;
+            m_traj_is_paused = false;
+        }
+        if ( m_traj_is_playing && !m_traj_is_paused && !m_view->m_trajectory.empty() )
+        {
+            ++m_traj_view_updates;
+            static double last_ts = m_view->m_timer->elapsed_s();
+            double ts = m_view->m_timer->elapsed_s();
+            std::shared_ptr<Camera> cur_camera = m_traj_preview ? m_preview_camera : m_view->m_camera;
+
+            // should switch to next:
+            const bool need_to_update = m_traj_use_time_not_frames ? ts < cur_camera->m_traj.m_transition_duration : m_traj_view_updates < m_traj_fps * cur_camera->m_traj.m_transition_duration;
+            if (  need_to_update )
+            {
+                if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() )
+                {
+                    // interpolate for current one the model_matrix
+                    const double maxT = m_traj_use_time_not_frames ? cur_camera->m_traj.m_transition_duration : m_traj_fps * cur_camera->m_traj.m_transition_duration;
+                    const double dt = m_traj_use_time_not_frames ? (ts - last_ts) : 1. ;
+                    const double lastT = m_traj_use_time_not_frames ? last_ts : m_traj_view_updates;
+                    const double newT = std::min(1., std::max(0., dt / ( maxT - lastT + dt )));
+                    const Eigen::Affine3d curModelMatrix ( cur_camera->model_matrix().cast<double>() );
+                    const Eigen::Affine3d desiredModelMatrix (m_view->m_trajectory[m_selected_trajectory_idx+1]->model_matrix().cast<double>() );
+                    const Eigen::Affine3d nextModelMatrix = interpolateSE3(curModelMatrix,desiredModelMatrix,newT);
+                    const Eigen::Affine3d delta = nextModelMatrix * curModelMatrix.inverse();
+
+                    cur_camera->transform_model_matrix(delta.cast<float>());
+                    cur_camera->m_fov = (1-newT) * cur_camera->m_fov + newT * m_view->m_trajectory[m_selected_trajectory_idx+1]->m_fov;
+                    cur_camera->m_near = (1-newT) * cur_camera->m_near + newT * m_view->m_trajectory[m_selected_trajectory_idx+1]->m_near;
+                    cur_camera->m_far = (1-newT) * cur_camera->m_far + newT * m_view->m_trajectory[m_selected_trajectory_idx+1]->m_far;
+
+                    if ( m_traj_preview )
+                    {
+                        // show preview of frustum
+                        MeshSharedPtr frustum_mesh = cur_camera->create_frustum_mesh( m_trajectory_frustum_size, m_view->m_viewport_size);
+                        frustum_mesh->C.setConstant(0);
+                        frustum_mesh->C.col(0).setConstant(1);
+                        frustum_mesh->m_vis.m_point_size = 20;
+                        frustum_mesh->m_vis.m_line_width = 5;
+                        frustum_mesh->m_vis.set_color_pervertcolor();
+                        frustum_mesh->m_vis.m_show_points=true;
+                        frustum_mesh->m_vis.m_show_mesh=false;
+                        frustum_mesh->m_vis.m_show_lines=true;
+                        Scene::show(frustum_mesh,"cur_frustrum");
+                    }
+                }
+            }
+            else
+            {
+                m_view->m_timer->stop();
+                if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() )
+                {
+                    // next step
+                    if ( ! m_traj_preview )
+                        m_view->m_camera = m_view->m_trajectory[m_selected_trajectory_idx+1]->clone();
+                    else
+                        m_preview_camera = m_view->m_trajectory[m_selected_trajectory_idx+1]->clone();
+                    m_view->m_timer->start();
+                    m_traj_view_updates = 0;
+                    ts = 0;
+                    m_selected_trajectory_idx++;
+                }
+                else
+                {
+                    // stop:
+                    m_traj_is_playing = false;
+                    m_traj_is_paused = false;
+                    m_traj_preview = false;
+                }
+            }
+            last_ts = ts;
+        }
+        else
+        {
+            if ( !m_traj_is_paused )
+            {
+                m_traj_preview = false;
+                m_traj_is_playing = false;
+            }
+        }
+        if ( ! m_traj_is_playing )
+        {
+            if ( m_view->m_timer->is_running() )
+                m_view->m_timer->stop();
+            m_traj_is_playing = false;
+            m_traj_preview = false;
+            if ( ! m_traj_is_paused  )
+                m_traj_view_updates = 0;
+        }
+
+        ImGui::Separator();
+        if (ImGui::CollapsingHeader("Edit") && !m_view->m_trajectory.empty() ) {
+            if (ImGui::RadioButton("Trans", m_traj_guizmo_operation == ImGuizmo::TRANSLATE)) { m_traj_guizmo_operation = ImGuizmo::TRANSLATE; } ImGui::SameLine();
+            if (ImGui::RadioButton("Rot", m_traj_guizmo_operation == ImGuizmo::ROTATE)) { m_traj_guizmo_operation = ImGuizmo::ROTATE; } ImGui::SameLine();
+
+            if (ImGui::RadioButton("Local", m_traj_guizmo_mode == ImGuizmo::LOCAL)) { m_traj_guizmo_mode = ImGuizmo::LOCAL; } ImGui::SameLine();
+            if (ImGui::RadioButton("World", m_traj_guizmo_mode == ImGuizmo::WORLD)) { m_traj_guizmo_mode = ImGuizmo::WORLD; }
+
+            edit_trajectory(m_view->m_trajectory[m_selected_trajectory_idx]);
+        }
+    }
+
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Lights")) {
@@ -676,6 +969,11 @@ void Gui::draw_main_menu(){
             }else{
                m_view->m_recorder->start_recording();
             }
+        }
+        ImGui::SameLine();
+        if ( ImGui::Button("Pause") )
+        {
+            m_view->m_recorder->pause_recording();
         }
     }
 
@@ -1087,6 +1385,99 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     
 
 
+}
+
+void Gui::edit_trajectory(const std::shared_ptr<Camera> & cam){
+
+    Eigen::Matrix4f widget_placement;
+    widget_placement.setIdentity();
+    Eigen::Matrix4f view = m_view->m_camera->view_matrix();
+    Eigen::Matrix4f proj = m_view->m_camera->proj_matrix(m_view->m_viewport_size);
+
+    ImGuizmo::BeginFrame();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+    Eigen::Matrix4f delta;
+    delta.setIdentity();
+
+    ImGuizmo::Manipulate(view.data(), proj.data(), m_traj_guizmo_operation, m_traj_guizmo_mode, cam->m_model_matrix.data(), delta.data() );
+
+    //update the model matrix with the delta and updates the model matrix of all the children
+    cam->transform_model_matrix(Eigen::Affine3f(delta));
+}
+
+void Gui::draw_trajectory( const std::string & trajectory_mesh_name, const std::string & frustum_mesh_name )
+{
+    if ( m_view->m_trajectory.empty() ) return;
+    MeshSharedPtr trajectory_mesh = Mesh::create();
+    MeshSharedPtr frustum_mesh = Mesh::create();
+    std::shared_ptr<Camera> prevCam = nullptr;
+    for ( int i=0; i< int(m_view->m_trajectory.size()); ++i )
+    {
+        std::shared_ptr<Camera> cam = m_view->m_trajectory[i];
+        if ( ! cam ) continue;
+
+        if ( prevCam && cam->m_traj.m_enabled )
+        {
+            // interpolation:
+            const Eigen::Affine3d prevPose = prevCam->m_model_matrix.cast<double>();
+            const Eigen::Affine3d curPose = cam->m_model_matrix.cast<double>();
+            Eigen::Affine3d diffPose = prevPose.inverse() * curPose;
+            const double scaleDiff = diffPose.translation().norm();
+            diffPose.translation() /= scaleDiff;
+            const Eigen::Matrix<double,6,1> omega = SophusLog(diffPose);
+            Eigen::Affine3d lastPose = prevPose;
+            std::vector<Eigen::VectorXd> interpV, interpC;
+            std::vector<Eigen::VectorXi> interpE;
+            interpV.emplace_back(prevPose.translation());
+            interpC.emplace_back(Eigen::Vector3d(1,0,0));
+            const double dt = .05;
+            for ( float t = dt; t < 1.f; t+=dt)
+            {
+                // incremental drawing
+                Eigen::Affine3d dx = SophusExp(t * omega);
+                dx.translation() *= scaleDiff;
+                const double newT = dt / (1-t+dt);
+                const Eigen::Affine3d newPose = interpolateSE3(lastPose,curPose,newT);
+                lastPose = newPose;
+                interpV.emplace_back(newPose.translation());
+                interpC.emplace_back(Eigen::Vector3d::Ones());
+                interpE.emplace_back((Eigen::Vector2i() << interpV.size()-2,interpV.size()-1).finished());
+            }
+            interpV.emplace_back(curPose.translation());
+            interpC.emplace_back(Eigen::Vector3d(0,1,0));
+            interpE.emplace_back((Eigen::Vector2i() << interpV.size()-2,interpV.size()-1).finished());
+
+            MeshSharedPtr interpolatedMesh = Mesh::create();
+            interpolatedMesh->V = vec2eigen(interpV);
+            interpolatedMesh->C = vec2eigen(interpC);
+            interpolatedMesh->E = vec2eigen(interpE);
+            trajectory_mesh->add(*interpolatedMesh);
+        }
+
+        MeshSharedPtr camMesh = cam->create_frustum_mesh( m_trajectory_frustum_size, m_view->m_viewport_size);
+        if ( i != m_selected_trajectory_idx )
+            camMesh->C *= 0.75;
+        if ( !cam->m_traj.m_enabled )
+            camMesh->C.setConstant(0.25);
+        else
+            prevCam = cam;
+        frustum_mesh->add(*camMesh);
+    }
+    trajectory_mesh->m_vis.m_point_size = 20;
+    trajectory_mesh->m_vis.set_color_pervertcolor();
+    trajectory_mesh->m_vis.m_show_points=true;
+    trajectory_mesh->m_vis.m_show_mesh=false;
+    trajectory_mesh->m_vis.m_show_lines=true;
+    Scene::show(trajectory_mesh,trajectory_mesh_name);
+
+    frustum_mesh->m_vis.m_point_size = 10;
+    frustum_mesh->m_vis.set_color_pervertcolor();
+    frustum_mesh->m_vis.m_show_points=true;
+    frustum_mesh->m_vis.m_show_mesh=false;
+    frustum_mesh->m_vis.m_show_lines=true;
+    Scene::show(frustum_mesh,frustum_mesh_name);
 }
 
 

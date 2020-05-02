@@ -160,6 +160,18 @@ bool Scene::does_mesh_with_name_exist(const std::string name){
     return false;
 }
 
+void Scene::remove_mesh_with_idx(const unsigned int idx)
+{
+    std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    if ( idx >= m_meshes.size() ) return;
+
+    std::vector< MeshSharedPtr> meshes_filtered;
+    for(size_t i=0; i<m_meshes.size(); ++i)
+        if ( i != idx )
+            meshes_filtered.push_back(m_meshes[i]);
+    m_meshes=meshes_filtered;
+}
+
 void Scene::remove_meshes_starting_with_name(const std::string name_prefix){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
 

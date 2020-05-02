@@ -1,4 +1,5 @@
 #include "easy_pbr/Camera.h"
+#include "easy_pbr/Mesh.h"
 
 
 //loguru
@@ -184,9 +185,17 @@ void Camera::rotate(const Eigen::Quaternionf& q){
     CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
 }
 
+void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
+{
+    //we get here the distance to the lookat point and after rotating we should have a lookat position that is at the same distance
+    float dist=dist_to_lookat();
 
+    m_model_matrix = delta * m_model_matrix;
+    //update the lookat point
+    m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist); //goes in the negative z direction for an amount equal to the distance to lookat so we get a point in cam coords. Afterwards we multiply with the model matrix to get it in world coords
 
-
+    //CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
+}
 
 //computations
 Eigen::Matrix4f Camera::compute_projection_matrix(const float fov_x, const float aspect, const float znear, const float zfar){
@@ -420,6 +429,78 @@ void Camera::from_string(const std::string pose){
     m_far=stof(tokens[12]);
 
     m_is_initialized=true;
+}
+
+MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const Eigen::Vector2f & viewport_size )
+{
+    MeshSharedPtr frustum_mesh = Mesh::create();
+    // https://gamedev.stackexchange.com/questions/29999/how-do-i-create-a-bounding-frustum-from-a-view-projection-matrix
+    Eigen::Matrix4f proj=compute_projection_matrix(m_fov, viewport_size.x()/viewport_size.y(), m_near, scale_multiplier * m_far);
+    Eigen::Matrix4f view=view_matrix();
+    Eigen::Matrix4f view_projection=proj*view;
+    Eigen::Matrix4f view_projection_inv=view_projection.inverse();
+    Eigen::MatrixXf frustum_V_in_NDC(8,3); //cube in range [-1,1]
+    frustum_V_in_NDC <<
+                        // near face
+                        1,  1, -1,
+                       -1,  1, -1,
+                       -1, -1, -1,
+                        1, -1, -1,
+                        //far face
+                        1,  1,  1,
+                       -1,  1,  1,
+                       -1, -1,  1,
+                        1, -1,  1;
+
+    //edges
+    Eigen::MatrixXi E(12,2);
+    E <<
+         //near face
+         0,1,
+         1,2,
+         2,3,
+         3,0,
+         //far face
+         4,5,
+         5,6,
+         6,7,
+         7,4,
+         //in between
+         0,4,
+         5,1,
+         6,2,
+         7,3;
+
+    // Eigen::MatrixXf frustum_in_world=frustum_V_in_NDC*view_projection_inv;
+    Eigen::MatrixXf frustum_in_world=(view_projection_inv*frustum_V_in_NDC.transpose().colwise().homogeneous()).transpose();
+    Eigen::MatrixXf frustum_in_world_postw;
+    Eigen::MatrixXf frustum_vertex_color;
+    // frustrum_in_world_postw=frustum_in_world.leftCols(3).array().rowwise()/frustum_in_world.col(3).transpose().array();
+    frustum_in_world_postw.resize(8,3);
+    frustum_vertex_color.resize(8,3);
+    for (int i = 0; i < frustum_in_world.rows(); ++i) {
+        float w=frustum_in_world(i,3);
+        for (size_t j = 0; j < 3; j++) {
+            frustum_in_world_postw(i,j)=frustum_in_world(i,j)/w;
+            frustum_vertex_color(i,j) = 1.f;
+        }
+    }
+    // std::cout << "frustrum_in_world_postw is " << frustrum_in_world_postw.rows() << " " << frustrum_in_world_postw.cols() << '\n';
+
+    frustum_mesh->V=frustum_in_world_postw.cast<double>();
+    frustum_mesh->C=frustum_vertex_color.cast<double>();
+    frustum_mesh->E=E;
+    frustum_mesh->m_vis.m_show_mesh=false;
+    frustum_mesh->m_vis.m_show_lines=false;
+    return frustum_mesh;
+}
+
+
+std::shared_ptr<Camera> Camera::clone()
+{
+    //std::shared_ptr<Camera> newCam = std::make_shared<Camera>();
+    //return newCam;
+    return std::make_shared<Camera>(*this);
 }
 
 } //namespace easy_pbr

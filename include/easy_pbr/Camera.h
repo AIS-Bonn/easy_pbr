@@ -13,6 +13,8 @@ namespace radu { namespace utils {
     }}
 
 namespace easy_pbr{
+class Mesh;
+typedef std::shared_ptr<Mesh> MeshSharedPtr;
 
 // class Camera : public std::enable_shared_from_this<Camera>
 class Camera : public Generic::EnableSharedFromThis< Camera >
@@ -22,6 +24,12 @@ public:
     // UI Enumerations 
     enum class MouseButton {Left, Middle, Right};
     enum class MouseMode { None, Rotation, Zoom, Pan, Translation} mouse_mode;
+
+    struct Trajectory
+    {
+        bool m_enabled = true;
+        float m_transition_duration = 10; // in seconds
+    };
 
     Camera();
     //stores internally something akin to a model_matrix, that puts the camera from the local camera coordinates into the world coordinates. we call this the model matrix and the inverse is the view_matrix
@@ -46,6 +54,7 @@ public:
 
 
     //convenience functions
+    void transform_model_matrix(const Eigen::Affine3f & delta);
     void move_cam_and_lookat(const Eigen::Vector3f& pos); //moves the camera together with the lookat point
     void dolly(const Eigen::Vector3f& dv); //moves the camera along a certain displacement vector dv expressed in world coordinates
     void push_away(const float s); //moves the camera closer or further from the lookup point. A 's' values of 1 means no movement s>1 means going further and s<1 means closer
@@ -76,9 +85,13 @@ public:
     float m_far;
     bool m_is_initialized; //the camera start in a somewhat default position. Initializing it means putting the camera in position in which you see the scene. This can be done with from_string or can be done by the viewer automatically when the first update is done. If you used from_string then the viewer doesnt need to do anything
 
-private:
+    Trajectory m_traj;
+    std::shared_ptr<Camera> clone();
+    MeshSharedPtr create_frustum_mesh(const float scale_multiplier, const Eigen::Vector2f & viewport_size );
 
     Eigen::Affine3f m_model_matrix; //transforms from cam to world coordinates. So the same as tf_world_cam
+private:
+
     Eigen::Vector3f m_up; //usually just (0,1,0)
     Eigen::Vector3f m_lookat;
 
