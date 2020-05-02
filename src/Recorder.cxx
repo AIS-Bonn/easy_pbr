@@ -59,6 +59,9 @@ Recorder::~Recorder(){
 bool Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
     tex.download_to_pbo();
 
+    if( m_cv_mats_queue.size_approx()>100)
+        VLOG(1) << "Enqueued too many cv_mats approx mats in queue: " << m_cv_mats_queue.size_approx();
+
     if(tex.cur_pbo_download().storage_initialized() ){
         int cv_type=gl_internal_format2cv_type(tex.internal_format());
         cv::Mat cv_mat = cv::Mat::zeros(cv::Size(tex.cur_pbo_download().width(), tex.cur_pbo_download().height()), cv_type); //the size of the texture is not the same as the pbo we ae downloading from because the pbo is delayed a couple of frames so a resizing of texture takes a while to take effect
@@ -278,6 +281,9 @@ void Recorder::start_recording(){
 void Recorder::stop_recording(){
     m_is_recording=false;
     m_nr_images_recorded=0;
+}
+void Recorder::pause_recording(){
+    m_is_recording=false;
 }
 int Recorder::nr_images_recorded(){
     return m_nr_images_recorded;

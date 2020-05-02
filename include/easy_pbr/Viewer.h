@@ -70,7 +70,7 @@ public:
     std::shared_ptr<Recorder> m_recorder;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
     std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
-
+    std::vector<std::shared_ptr<Camera>> m_trajectory;
 
 
     //params

@@ -26,6 +26,7 @@ public:
     static int get_idx_for_name(const std::string name);
     static bool does_mesh_with_name_exist(const std::string name);
     static void remove_meshes_starting_with_name(const std::string name_prefix); // check all the meshes and removed the ones that start with a certain name
+    static void remove_mesh_with_idx(const unsigned int idx);
 
     //more high level operations on the meshes in the scene
     static Eigen::Vector3f get_centroid(const bool use_mutex=true); //returns the aproximate center of our scene which consists of all meshes 

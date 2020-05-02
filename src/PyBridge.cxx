@@ -69,6 +69,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_position", &Viewer::set_position )
     .def("check_position", &Viewer::check_position )
     .def_readwrite("m_camera", &Viewer::m_camera )
+    .def_readonly("m_viewport_size", &Viewer::m_viewport_size )
     ;
 
     //Gui
@@ -89,6 +90,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("push_away_by_dist", &Camera::push_away_by_dist )
     .def("orbit_y", &Camera::orbit_y )
     .def("from_string", &Camera::from_string )
+    .def("create_frustum_mesh", &Camera::create_frustum_mesh)
     .def_readwrite("m_near", &SpotLight::m_near )
     .def_readwrite("m_far", &SpotLight::m_far )
     ;
