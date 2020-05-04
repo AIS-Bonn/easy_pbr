@@ -42,6 +42,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("backproject_depth", &Frame::backproject_depth )
     .def("assign_color", &Frame::assign_color )
     .def("pixel_world_direction", &Frame::pixel_world_direction )
+    .def("rgb_with_valid_depth", &Frame::rgb_with_valid_depth )
     .def("pos_in_world", &Frame::pos_in_world )
     .def_readwrite("width", &Frame::width )
     .def_readwrite("height", &Frame::height )

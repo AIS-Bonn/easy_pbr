@@ -47,9 +47,10 @@ public:
 
     Mesh create_frustum_mesh(float scale_multiplier=1.0);
     void rotate_y_axis(const float rads );
-    Mesh backproject_depth();
+    Mesh backproject_depth() const;
     Mesh assign_color(Mesh& cloud);
     std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
+    cv::Mat rgb_with_valid_depth(const Frame& frame_depth);
 
     //getters that are nice to have for python bindings
     Eigen::Vector3f pos_in_world();

@@ -96,7 +96,7 @@ void Frame::rotate_y_axis(const float rads ){
 
 }
 
-Mesh Frame::backproject_depth(){
+Mesh Frame::backproject_depth() const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
@@ -137,6 +137,8 @@ Mesh Frame::backproject_depth(){
     Mesh cloud;
     cloud.V=V;
     cloud.D=D;
+    cloud.m_width=depth.cols;
+    cloud.m_height=depth.rows;
     Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
     cloud.transform_vertices_cpu(tf_world_cam);
     cloud.m_vis.m_show_points=true;
@@ -229,8 +231,40 @@ std::shared_ptr<Mesh> Frame::pixel_world_direction(){
     }
 
     directions_mesh->m_vis.m_show_points=true;
+    directions_mesh->m_width=width;
+    directions_mesh->m_height=height;
 
     return directions_mesh;
+
+}
+
+cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
+    CHECK(width>0) <<"Width of this frame was not assigned";
+    CHECK(height>0) <<"Height of this frame was not assigned";
+    CHECK(frame_depth.depth.data) << "frame depth does not have depth data assigned";
+    CHECK(rgb_32f.data) << "current does not have rgb_32f data assigned";
+
+    cv::Mat rgb_valid = rgb_32f.clone();
+
+    Mesh cloud= frame_depth.backproject_depth();
+    cloud=assign_color(cloud);
+
+    for(int y=0; y<height; y++){
+        for(int x=0; x<width; x++){
+
+            int idx= y*cloud.m_width + x;
+
+            if(cloud.C.row(idx).isZero()){
+                rgb_valid.at<cv::Vec3f>(y, x) [0]=0;
+                rgb_valid.at<cv::Vec3f>(y, x) [1]=0;
+                rgb_valid.at<cv::Vec3f>(y, x) [2]=0;
+            }
+        }
+    }
+
+    // directions_mesh->m_vis.m_show_points=true;
+
+    return rgb_valid;
 
 }
 
