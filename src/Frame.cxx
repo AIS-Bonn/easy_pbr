@@ -244,13 +244,14 @@ cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
     CHECK(frame_depth.depth.data) << "frame depth does not have depth data assigned";
     CHECK(rgb_32f.data) << "current does not have rgb_32f data assigned";
 
-    cv::Mat rgb_valid = rgb_32f.clone();
 
     Mesh cloud= frame_depth.backproject_depth();
     cloud=assign_color(cloud);
 
-    for(int y=0; y<height; y++){
-        for(int x=0; x<width; x++){
+    cv::Mat rgb_valid = cv::Mat(cloud.m_height, cloud.m_width, CV_32FC3);  //rgb valid has to be in the size of whatever depth image created the cloud
+
+    for(int y=0; y<cloud.m_height; y++){
+        for(int x=0; x<cloud.m_width; x++){
 
             int idx= y*cloud.m_width + x;
 
@@ -258,6 +259,10 @@ cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
                 rgb_valid.at<cv::Vec3f>(y, x) [0]=0;
                 rgb_valid.at<cv::Vec3f>(y, x) [1]=0;
                 rgb_valid.at<cv::Vec3f>(y, x) [2]=0;
+            }else{
+                rgb_valid.at<cv::Vec3f>(y, x) [0]=cloud.C(idx,2);
+                rgb_valid.at<cv::Vec3f>(y, x) [1]=cloud.C(idx,1);
+                rgb_valid.at<cv::Vec3f>(y, x) [2]=cloud.C(idx,0);
             }
         }
     }
