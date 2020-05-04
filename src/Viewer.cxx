@@ -2112,7 +2112,7 @@ void Viewer::blend_bg(){
 //     return MVP;
 // }
 
-std::shared_ptr<SpotLight> Viewer::spotlight_with_idx(const int idx){
+std::shared_ptr<SpotLight> Viewer::spotlight_with_idx(const size_t idx){
     CHECK(idx<m_spot_lights.size()) << "Indexing the spotlight array out of bounds";
 
     // for(int i=0; i<m_spot_lights.size(); i++){
@@ -2454,23 +2454,23 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 }
 
 
-void Viewer::print_pointers(){
-    for(int i=0; i<m_spot_lights.size(); i++){
-        VLOG(1) << "light at idx" << i << " has ptr " << m_spot_lights[i].get();
-        m_spot_lights[i]->print_ptr();
-    }
-}
+// void Viewer::print_pointers(){
+//     for(int i=0; i<m_spot_lights.size(); i++){
+//         VLOG(1) << "light at idx" << i << " has ptr " << m_spot_lights[i].get();
+//         m_spot_lights[i]->print_ptr();
+//     }
+// }
 
-void Viewer::set_position(const int i, Eigen::Vector3f& pos){
-    // VLOG(1) << "C++ position is " << m_spot_lights[0]->position().transpose();
-    // Eigen::Vector3f pos;
-    // pos << 19.6983, 41.4829, -79.779
-    VLOG(1)<<"C++ is settig position of object " << m_spot_lights[i].get();
-    m_spot_lights[i]->set_position(pos);
-}
-void Viewer::check_position(const int i){
-    VLOG(1) << "C++ object with ptr "  <<m_spot_lights[i]<< "has position " << m_spot_lights[i]->position().transpose();
-}
+// void Viewer::set_position(const int i, Eigen::Vector3f& pos){
+//     // VLOG(1) << "C++ position is " << m_spot_lights[0]->position().transpose();
+//     // Eigen::Vector3f pos;
+//     // pos << 19.6983, 41.4829, -79.779
+//     VLOG(1)<<"C++ is settig position of object " << m_spot_lights[i].get();
+//     m_spot_lights[i]->set_position(pos);
+// }
+// void Viewer::check_position(const int i){
+//     VLOG(1) << "C++ object with ptr "  <<m_spot_lights[i]<< "has position " << m_spot_lights[i]->position().transpose();
+// }
 
 void Viewer::write_gbuffer_to_folder(){
     //read the normals and dencode them for writing to file

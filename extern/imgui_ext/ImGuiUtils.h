@@ -23,16 +23,16 @@ namespace ImGui
     {
         if( *pB_ )
         {
-            ImGui::Text(pOn_);
+            ImGui::TextUnformatted(pOn_);
         }
         else
         {
-            ImGui::Text(pOff_);
+            ImGui::TextUnformatted(pOff_);
         }
         bool bHover = false;
         bHover = bHover || ImGui::IsItemHovered();
         ImGui::SameLine();
-        ImGui::Text( name_ );
+        ImGui::TextUnformatted( name_ );
         bHover = bHover || ImGui::IsItemHovered();
         if( bHover && ImGui::IsMouseClicked(0) )
         {

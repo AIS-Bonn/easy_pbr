@@ -260,7 +260,7 @@ Eigen::Vector3f Frame::pos_in_world(){
         torch::Tensor tensor_cpu=tensor.to("cpu");
 
         rgb_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC3 );
-        std::memcpy( rgb_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
+        std::memcpy( rgb_32f.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
     }
     void Frame::tensor2gray(const torch::Tensor& tensor){
 
@@ -269,7 +269,7 @@ Eigen::Vector3f Frame::pos_in_world(){
         torch::Tensor tensor_cpu=tensor.to("cpu");
 
         gray_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
-        std::memcpy( gray_32f.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
+        std::memcpy( gray_32f.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
     }
     void Frame::tensor2depth(const torch::Tensor& tensor){
 
@@ -278,7 +278,7 @@ Eigen::Vector3f Frame::pos_in_world(){
         torch::Tensor tensor_cpu=tensor.to("cpu");
 
         depth=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
-        std::memcpy( depth.data, tensor_cpu.data<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
+        std::memcpy( depth.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
     }
 #endif
 

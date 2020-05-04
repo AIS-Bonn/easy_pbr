@@ -65,9 +65,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
-    .def("print_pointers", &Viewer::print_pointers )
-    .def("set_position", &Viewer::set_position )
-    .def("check_position", &Viewer::check_position )
+    // .def("print_pointers", &Viewer::print_pointers )
+    // .def("set_position", &Viewer::set_position )
+    // .def("check_position", &Viewer::check_position )
     .def_readwrite("m_camera", &Viewer::m_camera )
     .def_readonly("m_viewport_size", &Viewer::m_viewport_size )
     ;

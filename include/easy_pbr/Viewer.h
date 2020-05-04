@@ -99,14 +99,14 @@ public:
     void render_wireframe(const std::shared_ptr<MeshGL> mesh);
     void render_mesh_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_surfels_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
-    std::shared_ptr<SpotLight> spotlight_with_idx(const int);
+    std::shared_ptr<SpotLight> spotlight_with_idx(const size_t);
     // cv::Mat download_to_cv_mat(); //downloads the last drawn framebuffer into a cv::Mat. It is however sloas it forces a stall of the pipeline. For recording the viewer look into the Recorder class
     void load_environment_map(const std::string path);
 
-    //for debuggin
-    void print_pointers();
-    void set_position(const int i, Eigen::Vector3f&);
-    void check_position(const int i);
+    // //for debuggin
+    // void print_pointers();
+    // void set_position(const int i, Eigen::Vector3f&);
+    // void check_position(const int i);
     void write_gbuffer_to_folder();
 
 

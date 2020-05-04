@@ -180,7 +180,7 @@ void Gui::toggle_main_menu(){
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see misc/fonts/README.txt)
 void Gui::help_marker(const char* desc){
     // ImGui::TextDisabled("(?)");
-    ImGuiStyle *style = &ImGui::GetStyle();
+    // ImGuiStyle *style = &ImGui::GetStyle();
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.34f, 0.33f, 0.39f, 1.00f) ); 
     // ImGui::Text("(?)"); 
     ImVec2 pos = ImGui::GetCursorPos();
@@ -315,18 +315,18 @@ void Gui::draw_main_menu(){
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
                         ImGui::PushFont(m_roboto_bold);
                     }
-                    ImGui::Text(  ( m->V.size()? ( "V:" + std::to_string(m->V.rows()) + " x " + std::to_string(m->V.cols()))  : "V: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->V.size()? ( "V:" + std::to_string(m->V.rows()) + " x " + std::to_string(m->V.cols()))  : "V: empty"  ).c_str()  );
                     if(!m->V.size()){
                         ImGui::PopStyleColor();
                         ImGui::PopFont();
                     }
-                    ImGui::Text(  ( m->F.size()? ( "F:" + std::to_string(m->F.rows()) + " x " + std::to_string(m->F.cols()))  : "F: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->E.size()? ( "E:" + std::to_string(m->E.rows()) + " x " + std::to_string(m->E.cols()))  : "E: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->C.size()? ( "C:" + std::to_string(m->C.rows()) + " x " + std::to_string(m->C.cols()))  : "C: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->D.size()? ( "D:" + std::to_string(m->D.rows()) + " x " + std::to_string(m->D.cols()))  : "D: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->NV.size()? ( "NV:" + std::to_string(m->NV.rows()) + " x " + std::to_string(m->NV.cols()))  : "NV: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->NF.size()? ( "NF:" + std::to_string(m->NF.rows()) + " x " + std::to_string(m->NF.cols()))  : "NF: empty"  ).c_str()  );
-                    ImGui::Text(  ( m->UV.size()? ( "UV:" + std::to_string(m->UV.rows()) + " x " + std::to_string(m->UV.cols()))  : "UV: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->F.size()? ( "F:" + std::to_string(m->F.rows()) + " x " + std::to_string(m->F.cols()))  : "F: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->E.size()? ( "E:" + std::to_string(m->E.rows()) + " x " + std::to_string(m->E.cols()))  : "E: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->C.size()? ( "C:" + std::to_string(m->C.rows()) + " x " + std::to_string(m->C.cols()))  : "C: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->D.size()? ( "D:" + std::to_string(m->D.rows()) + " x " + std::to_string(m->D.cols()))  : "D: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->NV.size()? ( "NV:" + std::to_string(m->NV.rows()) + " x " + std::to_string(m->NV.cols()))  : "NV: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->NF.size()? ( "NF:" + std::to_string(m->NF.rows()) + " x " + std::to_string(m->NF.cols()))  : "NF: empty"  ).c_str()  );
+                    ImGui::TextUnformatted(  ( m->UV.size()? ( "UV:" + std::to_string(m->UV.rows()) + " x " + std::to_string(m->UV.cols()))  : "UV: empty"  ).c_str()  );
 
 
                     // }
@@ -658,7 +658,7 @@ void Gui::draw_main_menu(){
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Move Down")){
-                    if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() ){
+                    if ( m_selected_trajectory_idx+1 < (int)m_view->m_trajectory.size() ){
                         std::shared_ptr<Camera> tmpCam = m_view->m_trajectory[m_selected_trajectory_idx+1];
                         m_view->m_trajectory[m_selected_trajectory_idx+1] = m_view->m_trajectory[m_selected_trajectory_idx];
                         m_view->m_trajectory[m_selected_trajectory_idx] = tmpCam;
@@ -816,7 +816,7 @@ void Gui::draw_main_menu(){
             const bool need_to_update = m_traj_use_time_not_frames ? ts < cur_camera->m_traj.m_transition_duration : m_traj_view_updates < m_traj_fps * cur_camera->m_traj.m_transition_duration;
             if (  need_to_update )
             {
-                if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() )
+                if ( m_selected_trajectory_idx+1 < (int)m_view->m_trajectory.size() )
                 {
                     // interpolate for current one the model_matrix
                     const double maxT = m_traj_use_time_not_frames ? cur_camera->m_traj.m_transition_duration : m_traj_fps * cur_camera->m_traj.m_transition_duration;
@@ -852,7 +852,7 @@ void Gui::draw_main_menu(){
             else
             {
                 m_view->m_timer->stop();
-                if ( m_selected_trajectory_idx+1 < m_view->m_trajectory.size() )
+                if ( m_selected_trajectory_idx+1 < (int)m_view->m_trajectory.size() )
                 {
                     // next step
                     if ( ! m_traj_preview )
@@ -1024,8 +1024,8 @@ void Gui::draw_main_menu(){
 
 
     ImGui::Separator();
-    ImGui::Text(("Nr of points: " + format_with_commas(Scene::nr_vertices())).data());
-    ImGui::Text(("Nr of triangles: " + format_with_commas(Scene::nr_vertices())).data());
+    ImGui::TextUnformatted(("Nr of points: " + format_with_commas(Scene::nr_vertices())).data());
+    ImGui::TextUnformatted(("Nr of triangles: " + format_with_commas(Scene::nr_vertices())).data());
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 

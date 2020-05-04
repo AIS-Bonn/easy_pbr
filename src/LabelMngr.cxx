@@ -258,7 +258,7 @@ void LabelMngr::reindex_into_compacted_labels(Eigen::MatrixXi& labels_indices){
 
     for(int i=0; i<labels_indices.rows(); i++){
         int initial_idx=labels_indices(i);
-        if(initial_idx>m_idx_uncompacted2idx_compacted.size()){
+        if(initial_idx>(int)m_idx_uncompacted2idx_compacted.size()){
             found_idx_putside_of_range=true;
             nr_indexes_outside_of_range++;
             labels_indices(i)=m_unlabeled_idx;

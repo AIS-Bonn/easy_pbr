@@ -1181,7 +1181,7 @@ void Mesh::remove_small_uv_charts(){
     Eigen::VectorXi tris_per_component(nr_components);
     std::vector< std::vector<int>> tris_idxs_per_comp(nr_components); //first idx is the component, second idx are the indexes of the faces
     tris_per_component.setZero();
-    for (size_t i = 0; i < F.rows(); i++) {
+    for (int i = 0; i < F.rows(); i++) {
         int idx_component=components(i);
         tris_per_component(idx_component)++;
         tris_idxs_per_comp[idx_component].push_back(i);
@@ -1315,7 +1315,7 @@ void Mesh::to_mesh(Eigen::Affine3d tf_world_vel) {
 
     Eigen::Affine3d tf_world_alg=tf_world_vel * tf_vel_alg; 
 
-    for (size_t i = 0; i < V.rows(); i++) {
+    for (int i = 0; i < V.rows(); i++) {
         if(!V.row(i).isZero()){
             V.row(i)=tf_world_alg.linear()*V.row(i).transpose() + tf_world_alg.translation();  //mapping from the current frame to the algorithm one
         }

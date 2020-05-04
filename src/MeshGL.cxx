@@ -5,7 +5,7 @@
 #include <algorithm>
 
 //my stuff 
-#include "easy_pbr/Mesh.h";
+#include "easy_pbr/Mesh.h"
 
 namespace easy_pbr{
 
