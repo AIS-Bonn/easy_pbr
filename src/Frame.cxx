@@ -152,6 +152,8 @@ Mesh Frame::assign_color(Mesh& cloud){
     V_transformed.resize(cloud.V.rows(), cloud.V.cols());
     cloud.C.resize(cloud.V.rows(), 3);
     cloud.C.setZero();
+    cloud.UV.resize(cloud.V.rows(),2);
+    cloud.UV.setZero();
 
     // VLOG(1) << "V is " << cloud.V;
 
@@ -193,6 +195,9 @@ Mesh Frame::assign_color(Mesh& cloud){
         cloud.C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ];
         cloud.C(i,1)=rgb_32f.at<cv::Vec3f>(y, x) [ 1 ];
         cloud.C(i,2)=rgb_32f.at<cv::Vec3f>(y, x) [ 0 ];
+
+        cloud.UV(i,0) = V_transformed(i,0)/rgb_32f.cols;
+        cloud.UV(i,1) = V_transformed(i,1)/rgb_32f.rows;
     }
 
     cloud.m_vis.set_color_pervertcolor();
