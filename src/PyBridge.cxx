@@ -4,6 +4,8 @@
     #include <torch/extension.h>
     #include "torch/torch.h"
     #include "torch/csrc/utils/pybind.h"
+
+    #include "UtilsPytorch.h"
 #endif
 
 //my stuff 
@@ -51,13 +53,24 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("gray_32f", &Frame::gray_32f )
     .def_readwrite("depth", &Frame::depth )
     #ifdef WITH_TORCH
-        .def("rgb2tensor", &Frame::rgb2tensor )
-        .def("depth2tensor", &Frame::depth2tensor )
-        .def("tensor2rgb", &Frame::tensor2rgb )
-        .def("tensor2gray", &Frame::tensor2gray )
-        .def("tensor2depth", &Frame::tensor2depth )
+        // .def("rgb2tensor", &Frame::rgb2tensor )
+        // .def("depth2tensor", &Frame::depth2tensor )
+        // .def("tensor2rgb", &Frame::tensor2rgb )
+        // .def("tensor2gray", &Frame::tensor2gray )
+        // .def("tensor2depth", &Frame::tensor2depth )
     #endif
     ;
+
+    //convenience functions to transform from mat or eigen to tensors
+    #ifdef WITH_TORCH
+        m.def("mat2tensor", &mat2tensor);
+        m.def("tensor2mat", &tensor2mat);
+        m.def("eigen2tensor", &eigen2tensor);
+        m.def("eigen2mat", &eigen2mat);
+        m.def("tensor2eigen", &tensor2eigen);
+        m.def("vec2tensor", &vec2tensor);
+        m.def("cuda_clear_cache", &cuda_clear_cache);
+    #endif
  
     //Viewer
     py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")
