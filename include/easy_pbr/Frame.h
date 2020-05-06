@@ -55,13 +55,13 @@ public:
     //getters that are nice to have for python bindings
     Eigen::Vector3f pos_in_world();
 
-    #ifdef WITH_TORCH
-        torch::Tensor rgb2tensor();
-        torch::Tensor depth2tensor();
-        void tensor2rgb(const torch::Tensor& tensor);
-        void tensor2gray(const torch::Tensor& tensor);
-        void tensor2depth(const torch::Tensor& tensor);
-    #endif
+    // #ifdef WITH_TORCH
+    //     torch::Tensor rgb2tensor();
+    //     torch::Tensor depth2tensor();
+    //     void tensor2rgb(const torch::Tensor& tensor);
+    //     void tensor2gray(const torch::Tensor& tensor);
+    //     void tensor2depth(const torch::Tensor& tensor);
+    // #endif
 
 
 
