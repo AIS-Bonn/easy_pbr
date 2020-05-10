@@ -243,6 +243,28 @@ std::shared_ptr<Mesh> Frame::pixel_world_direction(){
 
 }
 
+std::shared_ptr<Mesh> Frame::pixel_world_direction_euler_angles(){
+    CHECK(width>0) <<"Width of this frame was not assigned";
+    CHECK(height>0) <<"Height of this frame was not assigned";
+
+    std::shared_ptr<Mesh> dirs_mesh = pixel_world_direction();
+
+
+    for(int i=0; i<dirs_mesh->V.rows(); i++){
+        Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors( dirs_mesh->V.row(i), -Eigen::Vector3d::UnitZ() );
+        Eigen::Matrix3d rot = q.toRotationMatrix();
+        Eigen::Vector3d euler_angles= rot.eulerAngles(0,1,2);
+        dirs_mesh->V.row(i) = euler_angles;
+    }
+
+    dirs_mesh->m_vis.m_show_points=true;
+    dirs_mesh->m_width=width;
+    dirs_mesh->m_height=height;
+
+    return dirs_mesh;
+
+}
+
 cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
     CHECK(width>0) <<"Width of this frame was not assigned";
     CHECK(height>0) <<"Height of this frame was not assigned";

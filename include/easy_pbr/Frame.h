@@ -50,6 +50,8 @@ public:
     Mesh backproject_depth() const;
     Mesh assign_color(Mesh& cloud);
     std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
+    std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
+
     cv::Mat rgb_with_valid_depth(const Frame& frame_depth);
 
     //getters that are nice to have for python bindings
