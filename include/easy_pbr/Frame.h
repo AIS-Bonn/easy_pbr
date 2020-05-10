@@ -54,6 +54,7 @@ public:
 
     //getters that are nice to have for python bindings
     Eigen::Vector3f pos_in_world();
+    Eigen::Vector3f look_dir();
 
     // #ifdef WITH_TORCH
     //     torch::Tensor rgb2tensor();

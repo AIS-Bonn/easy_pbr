@@ -282,6 +282,15 @@ Eigen::Vector3f Frame::pos_in_world(){
     return tf_cam_world.inverse().translation();
 }
 
+Eigen::Vector3f Frame::look_dir(){
+    // return tf_cam_world.inverse().translation();
+    Eigen::Matrix3f rot= tf_cam_world.inverse().linear();
+    Eigen::Vector3f dir= rot.col(2); 
+    dir=dir.normalized();
+    return dir;
+}
+
+
 // #ifdef WITH_TORCH
 //     torch::Tensor Frame::rgb2tensor(){
 //         CHECK(rgb_32f.data) << "There is no data for the rgb_32f image. Are you sure this frame contains the image?";
