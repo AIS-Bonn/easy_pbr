@@ -18,7 +18,7 @@ EasyPBR is a lightweight Physically-Based Renderer designed for ease of use and 
 
 
 
-# Example
+# Usage
 
 An example of a python3 script which shows a single mesh using the default viewing parameters:
 
@@ -98,7 +98,7 @@ $ make
 ```
 
 
-## Examples
+# Examples
 
 Various examples can be found in the ./examples folder. A short description of each one is given here. The various effects are achived through a combination of different .cfg file configurations and different setting established in the python file.
 
