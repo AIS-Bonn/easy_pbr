@@ -45,18 +45,26 @@ public:
     bool is_last=false; //is true when this image is the last in the dataset
     bool is_keyframe=false; //if it is keyframe we would need to create seeds
 
-    Mesh create_frustum_mesh(float scale_multiplier=1.0);
-    void rotate_y_axis(const float rads );
-    Mesh backproject_depth() const;
-    Mesh assign_color(Mesh& cloud);
-    std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
-    std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
+    std::shared_ptr<Mesh> create_frustum_mesh(float scale_multiplier=1.0) const;
+    // void rotate_y_axis(const float rads );
+    // Mesh backproject_depth() const;
+    // Mesh assign_color(Mesh& cloud);
+    // std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
+    // std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
 
-    cv::Mat rgb_with_valid_depth(const Frame& frame_depth);
+
+    //conversions that are useful for treating the data with pytorch for example
+    cv::Mat depth2world_xyz_mat() const; //backprojects the depth to the world coodinates and returns a mat of the same size as the depth and with 3 channels cooresponding to the xyz positions in world coords
+    std::shared_ptr<Mesh> depth2world_xyz_mesh() const; //backprojects the depth to the world coodinates and point cloud with the XYZ points in world coordinates
+    std::shared_ptr<Mesh> pixels2dirs_mesh() const; //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
+    std::shared_ptr<Mesh> pixels2_euler_angles_mesh() const; //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
+    std::shared_ptr<Mesh>  assign_color(std::shared_ptr<Mesh>& cloud) const; //grabs a point cloud in world coordinates and assings colors to the points by projecting it into the current color frame
+    cv::Mat rgb_with_valid_depth(const Frame& frame_depth) const; //returns a color Mat which the color set to 0 for pixels that have no depth info
+
 
     //getters that are nice to have for python bindings
-    Eigen::Vector3f pos_in_world();
-    Eigen::Vector3f look_dir();
+    Eigen::Vector3f pos_in_world() const;
+    Eigen::Vector3f look_dir() const;
 
     // #ifdef WITH_TORCH
     //     torch::Tensor rgb2tensor();

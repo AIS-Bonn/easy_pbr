@@ -14,13 +14,13 @@ Frame::Frame()
 }
 
 
-Mesh Frame::create_frustum_mesh(float scale_multiplier){
+std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier) const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
 
     // https://gamedev.stackexchange.com/questions/29999/how-do-i-create-a-bounding-frustum-from-a-view-projection-matrix
-    Mesh frustum_mesh;
+    MeshSharedPtr frustum_mesh=Mesh::create();
 
     Eigen::Matrix4f proj=intrinsics_to_opengl_proj(K, width, height, 0.5*scale_multiplier, 2.5*scale_multiplier);
     Eigen::Matrix4f view= tf_cam_world.matrix();
@@ -73,30 +73,55 @@ Mesh Frame::create_frustum_mesh(float scale_multiplier){
     }
     // std::cout << "frustrum_in_world_postw is " << frustrum_in_world_postw.rows() << " " << frustrum_in_world_postw.cols() << '\n';
 
-    frustum_mesh.V=frustrum_in_world_postw.cast<double>();
-    frustum_mesh.E=E;
-    frustum_mesh.m_vis.m_show_mesh=false;
-    frustum_mesh.m_vis.m_show_lines=true;
+    frustum_mesh->V=frustrum_in_world_postw.cast<double>();
+    frustum_mesh->E=E;
+    frustum_mesh->m_vis.m_show_mesh=false;
+    frustum_mesh->m_vis.m_show_lines=true;
 
     return frustum_mesh;
 
 }
 
-void Frame::rotate_y_axis(const float rads ){
-    Eigen::Affine3f tf;
-    tf.setIdentity();
-    Eigen::Matrix3f tf_rot;
-    tf_rot = Eigen::AngleAxisf(rads*M_PI, Eigen::Vector3f::UnitY());
-    tf.matrix().block<3,3>(0,0)=tf_rot;
+cv::Mat Frame::depth2world_xyz_mat() const{
 
-    //transform 
-    Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
-    Eigen::Affine3f tf_world_cam_rotated= tf*tf_world_cam; //cam goes to world, and then cam rotates
-    tf_cam_world=tf_world_cam_rotated.inverse();
+    CHECK(width!=-1) << "Width was not set";
+    CHECK(height!=-1) << "Height was not set";
+    CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains depth image?";
+
+    cv::Mat mat_xyz = cv::Mat(depth.rows, depth.cols, CV_32FC3);
+    mat_xyz=0.0;
+    Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
+
+    //backproject the depth into the 3D world
+    for(int y=0; y<depth.rows; y++){
+        for(int x=0; x<depth.cols; x++){
+            // int idx_insert= y*depth.cols + x;
+
+            float depth_val = depth.at<float>(y,x);
+            if(depth_val!=0.0){
+
+                Eigen::Vector3d point_2D;
+                point_2D << x, y, 1.0; 
+                Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D; 
+                point_3D_camera_coord*=depth_val;
+                Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
+
+                // VLOG(1) << "mat xyz is " << point_3D_world_coord.transpose();
+
+                mat_xyz.at<cv::Vec3f>(y, x) [0] = point_3D_world_coord.x();
+                mat_xyz.at<cv::Vec3f>(y, x) [1] = point_3D_world_coord.y();
+                mat_xyz.at<cv::Vec3f>(y, x) [2] = point_3D_world_coord.z();
+            }
+
+        }
+    }
+
+    return mat_xyz;
 
 }
 
-Mesh Frame::backproject_depth() const{
+std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
+
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
@@ -117,9 +142,6 @@ Mesh Frame::backproject_depth() const{
     }
 
     //puts it in camera frame 
-    // VLOG(1) << " K is \n" << K;
-    // VLOG(1) << " K inverse is \n" << K.cast<double>().inverse();
-    // V=(K.cast<double>().inverse()*V.transpose()).transpose();
     V=V*K.cast<double>().inverse().transpose(); 
     // V=V.rowwise()*D.array();
     for(int i=0; i<V.rows(); i++){
@@ -127,86 +149,23 @@ Mesh Frame::backproject_depth() const{
         V(i,1)=V(i,1)*D(i,0); 
         V(i,2)=V(i,2)*D(i,0); 
     }
+ 
 
-    //flip y and x
-    // V.col(1) = -V.col(1);
-    // V.col(0) = -V.col(0);
-
-    // V.row(i)=trans.linear()*V.row(i).transpose() + trans.translation(); 
-
-    Mesh cloud;
-    cloud.V=V;
-    cloud.D=D;
-    cloud.m_width=depth.cols;
-    cloud.m_height=depth.rows;
+    MeshSharedPtr cloud=Mesh::create();
+    cloud->V=V;
+    cloud->D=D;
+    cloud->m_width=depth.cols;
+    cloud->m_height=depth.rows;
     Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
-    cloud.transform_vertices_cpu(tf_world_cam);
-    cloud.m_vis.m_show_points=true;
+    cloud->transform_vertices_cpu(tf_world_cam);
+    cloud->m_vis.m_show_points=true;
+
 
     return cloud;
 
 }
 
-Mesh Frame::assign_color(Mesh& cloud){
-    Eigen::MatrixXd V_transformed;
-    V_transformed.resize(cloud.V.rows(), cloud.V.cols());
-    cloud.C.resize(cloud.V.rows(), 3);
-    cloud.C.setZero();
-    cloud.UV.resize(cloud.V.rows(),2);
-    cloud.UV.setZero();
-
-    // VLOG(1) << "V is " << cloud.V;
-
-    // transform from world into this frame coords
-    // V_transformed=tf_cam_world*cloud.V;
-    Eigen::Affine3d trans=tf_cam_world.cast<double>();
-    int nr_valid=0;
-    for (int i = 0; i < cloud.V.rows(); i++) {
-        if(!cloud.V.row(i).isZero()){
-            V_transformed.row(i)=trans.linear()*cloud.V.row(i).transpose() + trans.translation();
-            nr_valid++;
-        }
-    }
-
-    // VLOG(1) << "nr valid is " << nr_valid;
-    // VLOG(1) << "V_transformed" << V_transformed;
-    // VLOG(1) << "V_transformed" << V_transformed;
-
-
-    //project
-    V_transformed=V_transformed*K.cast<double>().transpose(); 
-    // V_transformed=K.cast<double>()*V_transformed; 
-    // for (int i = 0; i < V_transformed.rows(); i++) {
-        // V_transformed.row(i)=trans.linear()*cloud.V.row(i).transpose() + trans.translation();
-        // nr_valid++;
-    // }
-    for (int i = 0; i < cloud.V.rows(); i++) {
-        V_transformed(i,0)/=V_transformed(i,2);
-        V_transformed(i,1)/=V_transformed(i,2);
-        // V_transformed(i,2)=1.0;
-
-        int x=V_transformed(i,0);
-        int y=V_transformed(i,1);
-        if(y<0 || y>=rgb_32f.rows || x<0 || x>rgb_32f.cols){
-            continue;
-        }
-
-        // VLOG(1) << "accessing at y,x" << y << " " << x;
-        cloud.C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ];
-        cloud.C(i,1)=rgb_32f.at<cv::Vec3f>(y, x) [ 1 ];
-        cloud.C(i,2)=rgb_32f.at<cv::Vec3f>(y, x) [ 0 ];
-
-        cloud.UV(i,0) = V_transformed(i,0)/rgb_32f.cols;
-        cloud.UV(i,1) = V_transformed(i,1)/rgb_32f.rows;
-    }
-
-    cloud.m_vis.set_color_pervertcolor();
-
-    return cloud;
-
-}
-
-std::shared_ptr<Mesh> Frame::pixel_world_direction(){
+std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
     CHECK(width>0) <<"Width of this frame was not assigned";
     CHECK(height>0) <<"Height of this frame was not assigned";
 
@@ -243,11 +202,11 @@ std::shared_ptr<Mesh> Frame::pixel_world_direction(){
 
 }
 
-std::shared_ptr<Mesh> Frame::pixel_world_direction_euler_angles(){
+std::shared_ptr<Mesh> Frame::pixels2_euler_angles_mesh() const{
     CHECK(width>0) <<"Width of this frame was not assigned";
     CHECK(height>0) <<"Height of this frame was not assigned";
 
-    std::shared_ptr<Mesh> dirs_mesh = pixel_world_direction();
+    std::shared_ptr<Mesh> dirs_mesh = pixels2dirs_mesh();
 
 
     for(int i=0; i<dirs_mesh->V.rows(); i++){
@@ -265,31 +224,84 @@ std::shared_ptr<Mesh> Frame::pixel_world_direction_euler_angles(){
 
 }
 
-cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
+std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
+    Eigen::MatrixXd V_transformed;
+    V_transformed.resize(cloud->V.rows(), cloud->V.cols());
+    cloud->C.resize(cloud->V.rows(), 3);
+    cloud->C.setZero();
+    cloud->UV.resize(cloud->V.rows(),2);
+    cloud->UV.setZero();
+
+
+    // transform from world into this frame coords
+    // V_transformed=tf_cam_world*cloud.V;
+    Eigen::Affine3d trans=tf_cam_world.cast<double>();
+    int nr_valid=0;
+    for (int i = 0; i < cloud->V.rows(); i++) {
+        if(!cloud->V.row(i).isZero()){
+            V_transformed.row(i)=trans.linear()*cloud->V.row(i).transpose() + trans.translation();
+            nr_valid++;
+        }
+    }
+
+    // VLOG(1) << "nr valid is " << nr_valid;
+    // VLOG(1) << "V_transformed" << V_transformed;
+    // VLOG(1) << "V_transformed" << V_transformed;
+
+
+    //project
+    V_transformed=V_transformed*K.cast<double>().transpose(); 
+    for (int i = 0; i < cloud->V.rows(); i++) {
+        V_transformed(i,0)/=V_transformed(i,2);
+        V_transformed(i,1)/=V_transformed(i,2);
+        // V_transformed(i,2)=1.0;
+
+        int x=V_transformed(i,0);
+        int y=V_transformed(i,1);
+        if(y<0 || y>=rgb_32f.rows || x<0 || x>rgb_32f.cols){
+            continue;
+        }
+
+        // VLOG(1) << "accessing at y,x" << y << " " << x;
+        cloud->C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ];
+        cloud->C(i,1)=rgb_32f.at<cv::Vec3f>(y, x) [ 1 ];
+        cloud->C(i,2)=rgb_32f.at<cv::Vec3f>(y, x) [ 0 ];
+
+        cloud->UV(i,0) = V_transformed(i,0)/rgb_32f.cols;
+        cloud->UV(i,1) = V_transformed(i,1)/rgb_32f.rows;
+    }
+
+    cloud->m_vis.set_color_pervertcolor();
+
+    return cloud;
+
+}
+
+cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth) const{
     CHECK(width>0) <<"Width of this frame was not assigned";
     CHECK(height>0) <<"Height of this frame was not assigned";
     CHECK(frame_depth.depth.data) << "frame depth does not have depth data assigned";
     CHECK(rgb_32f.data) << "current does not have rgb_32f data assigned";
 
 
-    Mesh cloud= frame_depth.backproject_depth();
+    MeshSharedPtr cloud= frame_depth.depth2world_xyz_mesh();
     cloud=assign_color(cloud);
 
-    cv::Mat rgb_valid = cv::Mat(cloud.m_height, cloud.m_width, CV_32FC3);  //rgb valid has to be in the size of whatever depth image created the cloud
+    cv::Mat rgb_valid = cv::Mat(cloud->m_height, cloud->m_width, CV_32FC3);  //rgb valid has to be in the size of whatever depth image created the cloud
 
-    for(int y=0; y<cloud.m_height; y++){
-        for(int x=0; x<cloud.m_width; x++){
+    for(int y=0; y<cloud->m_height; y++){
+        for(int x=0; x<cloud->m_width; x++){
 
-            int idx= y*cloud.m_width + x;
+            int idx= y*cloud->m_width + x;
 
-            if(cloud.C.row(idx).isZero()){
+            if(cloud->C.row(idx).isZero()){
                 rgb_valid.at<cv::Vec3f>(y, x) [0]=0;
                 rgb_valid.at<cv::Vec3f>(y, x) [1]=0;
                 rgb_valid.at<cv::Vec3f>(y, x) [2]=0;
             }else{
-                rgb_valid.at<cv::Vec3f>(y, x) [0]=cloud.C(idx,2);
-                rgb_valid.at<cv::Vec3f>(y, x) [1]=cloud.C(idx,1);
-                rgb_valid.at<cv::Vec3f>(y, x) [2]=cloud.C(idx,0);
+                rgb_valid.at<cv::Vec3f>(y, x) [0]=cloud->C(idx,2);
+                rgb_valid.at<cv::Vec3f>(y, x) [1]=cloud->C(idx,1);
+                rgb_valid.at<cv::Vec3f>(y, x) [2]=cloud->C(idx,0);
             }
         }
     }
@@ -300,11 +312,29 @@ cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth){
 
 }
 
-Eigen::Vector3f Frame::pos_in_world(){
+// void Frame::rotate_y_axis(const float rads ){
+//     Eigen::Affine3f tf;
+//     tf.setIdentity();
+//     Eigen::Matrix3f tf_rot;
+//     tf_rot = Eigen::AngleAxisf(rads*M_PI, Eigen::Vector3f::UnitY());
+//     tf.matrix().block<3,3>(0,0)=tf_rot;
+
+//     //transform 
+//     Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
+//     Eigen::Affine3f tf_world_cam_rotated= tf*tf_world_cam; //cam goes to world, and then cam rotates
+//     tf_cam_world=tf_world_cam_rotated.inverse();
+
+// }
+
+
+
+
+
+Eigen::Vector3f Frame::pos_in_world() const{
     return tf_cam_world.inverse().translation();
 }
 
-Eigen::Vector3f Frame::look_dir(){
+Eigen::Vector3f Frame::look_dir() const{
     // return tf_cam_world.inverse().translation();
     Eigen::Matrix3f rot= tf_cam_world.inverse().linear();
     Eigen::Vector3f dir= rot.col(2); 
