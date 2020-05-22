@@ -49,7 +49,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("assign_color", &Frame::assign_color )
     // .def("pixel_world_direction", &Frame::pixel_world_direction )
     // .def("pixel_world_direction_euler_angles", &Frame::pixel_world_direction_euler_angles )
-    // .def("rgb_with_valid_depth", &Frame::rgb_with_valid_depth )
+    .def("rgb_with_valid_depth", &Frame::rgb_with_valid_depth )
     .def("pos_in_world", &Frame::pos_in_world )
     .def("look_dir", &Frame::look_dir )
     .def_readwrite("width", &Frame::width )
