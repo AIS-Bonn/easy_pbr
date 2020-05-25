@@ -263,7 +263,8 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         }
 
         // VLOG(1) << "accessing at y,x" << y << " " << x;
-        cloud->C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ];
+        // store Color in C as RGB
+        cloud->C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ]; 
         cloud->C(i,1)=rgb_32f.at<cv::Vec3f>(y, x) [ 1 ];
         cloud->C(i,2)=rgb_32f.at<cv::Vec3f>(y, x) [ 0 ];
 
@@ -299,6 +300,7 @@ cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth) const{
                 rgb_valid.at<cv::Vec3f>(y, x) [1]=0;
                 rgb_valid.at<cv::Vec3f>(y, x) [2]=0;
             }else{
+                //get the RGB data from C and store it as BGR in the mat
                 rgb_valid.at<cv::Vec3f>(y, x) [0]=cloud->C(idx,2);
                 rgb_valid.at<cv::Vec3f>(y, x) [1]=cloud->C(idx,1);
                 rgb_valid.at<cv::Vec3f>(y, x) [2]=cloud->C(idx,0);
