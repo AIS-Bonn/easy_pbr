@@ -127,37 +127,39 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
     CHECK(height!=-1) << "Height was not set";
     CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains depth image?";
 
+    cv::Mat depth_xyz=depth2world_xyz_mat();
+
     //Make a series of point in sensor frame 
     Eigen::MatrixXd V;
-    Eigen::MatrixXd D;
-    V.resize(depth.rows*depth.cols,3);
-    D.resize(depth.rows*depth.cols,1);
+    // Eigen::MatrixXd D;
+    V.resize(depth_xyz.rows*depth_xyz.cols,3);
+    // D.resize(depth_xyz.rows*depth_xyz.cols,1);
     V.setZero();
-    for(int y=0; y<depth.rows; y++){
-        for(int x=0; x<depth.cols; x++){
-            int idx_insert= y*depth.cols + x;
-            V.row(idx_insert) << x, y, 1.0; 
-            D.row(idx_insert) << depth.at<float>(y,x);
+    for(int y=0; y<depth_xyz.rows; y++){
+        for(int x=0; x<depth_xyz.cols; x++){
+            int idx_insert= y*depth_xyz.cols + x;
+            V.row(idx_insert) << depth_xyz.at<cv::Vec3f>(y, x) [0], depth_xyz.at<cv::Vec3f>(y, x) [1], depth_xyz.at<cv::Vec3f>(y, x) [2]; 
         }
     }
 
-    //puts it in camera frame 
-    V=V*K.cast<double>().inverse().transpose(); 
-    // V=V.rowwise()*D.array();
-    for(int i=0; i<V.rows(); i++){
-        V(i,0)=V(i,0)*D(i,0); 
-        V(i,1)=V(i,1)*D(i,0); 
-        V(i,2)=V(i,2)*D(i,0); 
-    }
+    // //puts it in camera frame 
+    // V=V*K.cast<double>().inverse().transpose(); 
+    // // V=V.rowwise()*D.array();
+    // for(int i=0; i<V.rows(); i++){
+    //     V(i,0)=V(i,0)*D(i,0); 
+    //     V(i,1)=V(i,1)*D(i,0); 
+    //     V(i,2)=V(i,2)*D(i,0); 
+    // }
+
  
 
     MeshSharedPtr cloud=Mesh::create();
     cloud->V=V;
-    cloud->D=D;
-    cloud->m_width=depth.cols;
-    cloud->m_height=depth.rows;
-    Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
-    cloud->transform_vertices_cpu(tf_world_cam);
+    // cloud->D=D;
+    cloud->m_width=depth_xyz.cols;
+    cloud->m_height=depth_xyz.rows;
+    // Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
+    // cloud->transform_vertices_cpu(tf_world_cam);
     cloud->m_vis.m_show_points=true;
 
 
@@ -227,6 +229,7 @@ std::shared_ptr<Mesh> Frame::pixels2_euler_angles_mesh() const{
 std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
     Eigen::MatrixXd V_transformed;
     V_transformed.resize(cloud->V.rows(), cloud->V.cols());
+    V_transformed.setZero();
     cloud->C.resize(cloud->V.rows(), 3);
     cloud->C.setZero();
     cloud->UV.resize(cloud->V.rows(),2);

@@ -43,6 +43,11 @@ MeshGL::MeshGL():
     L_gt_buf.set_target(GL_ARRAY_BUFFER);
     I_buf.set_target(GL_ARRAY_BUFFER);
 
+    m_diffuse_tex.set_wrap_mode(GL_REPEAT);
+    m_metalness_tex.set_wrap_mode(GL_REPEAT);
+    m_roughness_tex.set_wrap_mode(GL_REPEAT);
+    m_normals_tex.set_wrap_mode(GL_REPEAT);
+
 }
 
 void MeshGL::assign_core(std::shared_ptr<Mesh> mesh_core){
