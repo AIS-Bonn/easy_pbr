@@ -25,6 +25,7 @@
 #include <igl/vertex_triangle_adjacency.h>
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/connect_boundary_to_infinity.h>
+#include <igl/upsample.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
@@ -805,6 +806,22 @@ bool Mesh::compute_non_manifold_edges(std::vector<bool>& is_face_non_manifold, s
         }
     }
     return is_edge_manifold;
+}
+
+
+void Mesh::upsample(const int nr_of_subdivisions){
+    Eigen::MatrixXd new_V;
+    Eigen::MatrixXi new_F;
+
+    igl::upsample(V,F, new_V, new_F, nr_of_subdivisions);
+
+    V=new_V;
+    F=new_F;
+
+    recalculate_normals();
+
+    m_is_dirty=true;
+
 }
 
 void Mesh::flip_normals(){

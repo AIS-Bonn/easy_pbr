@@ -130,6 +130,7 @@ public:
     void remove_duplicate_vertices();
     void set_duplicate_verts_to_zero();
     void decimate(const int nr_target_faces);
+    void upsample(const int nr_of_subdivisions);
     bool compute_non_manifold_edges(std::vector<bool>& is_face_non_manifold, std::vector<bool>& is_vertex_non_manifold,  const Eigen::MatrixXi& F_in);
     void rotate_90_x_axis();
     void worldGL2worldROS();
