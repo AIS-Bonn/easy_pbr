@@ -215,6 +215,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )
     .def("compute_tangents", &Mesh::compute_tangents, py::arg("tangent_length") = 1.0)
+    .def("create_grid", &Mesh::create_grid )
     // .def("rotate_x_axis", &Mesh::rotate_x_axis )
     // .def("rotate_y_axis", &Mesh::rotate_y_axis )
     .def("random_subsample", &Mesh::random_subsample )

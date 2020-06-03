@@ -1032,6 +1032,29 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
         idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
     } 
 
+
+    //make some faces in case the grid is used for something else except as a floor for the scene
+    std::vector<Eigen::VectorXi> faces_vec;
+    for(int x=0; x<nr_segments_even; x++){
+        for(int y=0; y<nr_segments_even; y++){
+
+            int idx_v = y + x*(nr_segments_even+1);
+
+            Eigen::VectorXi f1(3);
+            Eigen::VectorXi f2(3);
+            f1 << idx_v, idx_v+1, idx_v+nr_segments_even+1;
+            f2 << idx_v+nr_segments_even+1, idx_v+1, idx_v+nr_segments_even+2;
+
+            // VLOG(1) << "f1 is " << f1.transpose();
+            // VLOG(1) << "f2 is " << f2.transpose();
+
+            faces_vec.push_back(f1);
+            faces_vec.push_back(f2);
+        }
+    }
+    F=vec2eigen(faces_vec);
+
+
     //scale it to be in range [-1, 1]
     V.array()/=half_size;
     //scale to be in the range of the mesh 
@@ -1044,6 +1067,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     trans.translate(t);
     transform_vertices_cpu(trans,true);
  
+    recalculate_normals(); //just so we have them in case the grid is used for something else except as a floor for the scene
 
     name="grid_floor";
     m_vis.m_show_lines=true;
