@@ -23,6 +23,7 @@ public:
     cv::Mat rgb_32f; // becasue some algorithms like the cnns require floating point tensors
     // cv::Mat_<cv::Vec4b> rgba_8u; //Opengl likes 4 channels images
     // cv::Mat_<cv::Vec4f> rgba_32f; //Opengl likes 4 channels images
+    cv::Mat gray_8u;
     cv::Mat gray_32f;
     cv::Mat grad_x_32f;
     cv::Mat grad_y_32f;

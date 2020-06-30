@@ -54,6 +54,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("look_dir", &Frame::look_dir )
     .def_readwrite("width", &Frame::width )
     .def_readwrite("height", &Frame::height )
+    .def_readwrite("gray_8u", &Frame::gray_8u )
     .def_readwrite("rgb_8u", &Frame::rgb_8u )
     .def_readwrite("rgb_32f", &Frame::rgb_32f )
     .def_readwrite("gray_32f", &Frame::gray_32f )
@@ -89,6 +90,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("set_position", &Viewer::set_position )
     // .def("check_position", &Viewer::check_position )
     .def_readwrite("m_camera", &Viewer::m_camera )
+    .def_readwrite("m_recorder", &Viewer::m_recorder )
     .def_readonly("m_viewport_size", &Viewer::m_viewport_size )
     ;
 
