@@ -158,8 +158,9 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
     // cloud->D=D;
     cloud->m_width=depth_xyz.cols;
     cloud->m_height=depth_xyz.rows;
-    // Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
-    // cloud->transform_vertices_cpu(tf_world_cam);
+    Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
+    // VLOG(1) << tf_world_cam.matrix();
+    cloud->transform_vertices_cpu(tf_world_cam);
     cloud->m_vis.m_show_points=true;
 
 
@@ -227,6 +228,21 @@ std::shared_ptr<Mesh> Frame::pixels2_euler_angles_mesh() const{
 }
 
 std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
+
+    //check that we can get rgb color
+    CHECK(!rgb_8u.empty() || !rgb_32f.empty() ) << "There is no rgb data";
+    // bool rgb_8u_has_data;
+    // VLOG(1) << "rgb_8u" << rgb_8u.empty();
+    // VLOG(1) << "rgb_32f" << rgb_32f.empty();
+    cv::Mat color_mat;
+    if (rgb_32f.empty()){
+        // VLOG(1) << "rgb32f is empty";
+        rgb_8u.convertTo(color_mat, CV_32FC3, 1.0/255.0);
+    }else{
+        color_mat=rgb_32f;
+    }
+
+
     Eigen::MatrixXd V_transformed;
     V_transformed.resize(cloud->V.rows(), cloud->V.cols());
     V_transformed.setZero();
@@ -234,6 +250,7 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
     cloud->C.setZero();
     cloud->UV.resize(cloud->V.rows(),2);
     cloud->UV.setZero();
+
 
 
     // transform from world into this frame coords
@@ -247,13 +264,10 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         }
     }
 
-    // VLOG(1) << "nr valid is " << nr_valid;
-    // VLOG(1) << "V_transformed" << V_transformed;
-    // VLOG(1) << "V_transformed" << V_transformed;
-
 
     //project
     V_transformed=V_transformed*K.cast<double>().transpose(); 
+    int nr_points_projected=0;
     for (int i = 0; i < cloud->V.rows(); i++) {
         V_transformed(i,0)/=V_transformed(i,2);
         V_transformed(i,1)/=V_transformed(i,2);
@@ -261,21 +275,24 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
 
         int x=V_transformed(i,0);
         int y=V_transformed(i,1);
-        if(y<0 || y>=rgb_32f.rows || x<0 || x>rgb_32f.cols){
+        if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
             continue;
         }
+        nr_points_projected++;
 
-        // VLOG(1) << "accessing at y,x" << y << " " << x;
-        // store Color in C as RGB
-        cloud->C(i,0)=rgb_32f.at<cv::Vec3f>(y, x) [ 2 ]; 
-        cloud->C(i,1)=rgb_32f.at<cv::Vec3f>(y, x) [ 1 ];
-        cloud->C(i,2)=rgb_32f.at<cv::Vec3f>(y, x) [ 0 ];
+        // // VLOG(1) << "accessing at y,x" << y << " " << x;
+        // // store Color in C as RGB
+        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ]; 
+        cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
+        cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
 
         cloud->UV(i,0) = V_transformed(i,0)/rgb_32f.cols;
         cloud->UV(i,1) = V_transformed(i,1)/rgb_32f.rows;
     }
+    // VLOG(1) << "nr_points_projected" << nr_points_projected;
 
     cloud->m_vis.set_color_pervertcolor();
+
 
     return cloud;
 

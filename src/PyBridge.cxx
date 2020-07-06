@@ -46,7 +46,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("pixels2_euler_angles_mesh", &Frame::pixels2_euler_angles_mesh )
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )
-    // .def("assign_color", &Frame::assign_color )
+    .def("assign_color", &Frame::assign_color )
     // .def("pixel_world_direction", &Frame::pixel_world_direction )
     // .def("pixel_world_direction_euler_angles", &Frame::pixel_world_direction_euler_angles )
     .def("rgb_with_valid_depth", &Frame::rgb_with_valid_depth )
