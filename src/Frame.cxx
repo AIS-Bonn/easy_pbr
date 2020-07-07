@@ -106,11 +106,43 @@ cv::Mat Frame::depth2world_xyz_mat() const{
                 point_3D_camera_coord*=depth_val;
                 Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
 
-                // VLOG(1) << "mat xyz is " << point_3D_world_coord.transpose();
-
                 mat_xyz.at<cv::Vec3f>(y, x) [0] = point_3D_world_coord.x();
                 mat_xyz.at<cv::Vec3f>(y, x) [1] = point_3D_world_coord.y();
                 mat_xyz.at<cv::Vec3f>(y, x) [2] = point_3D_world_coord.z();
+
+
+                // //attempt 2 doing it more like https://github.com/IntelRealSense/librealsense/blob/8594d09f092347a8b3d832d14e4fb631140620c5/src/gl/pointcloud-gl.cpp
+                // float focal1=K(0,0);
+                // float focal2=K(1,1);
+                // float principal_x=K(0,2);
+                // float principal_y=K(1,2);
+
+                // float x_val= (x-principal_x)/focal1;
+                // float y_val= (y-principal_y)/focal2;
+
+                // float coeffs1[5];
+                // // 0.15755560994148254, -0.4658984839916229, -0.0013873715652152896, -0.00021726528939325362, 0.41800209879875183
+                // coeffs1[0]=0.15755560994148254;
+                // coeffs1[1]=-0.4658984839916229;
+                // coeffs1[2]=-0.0013873715652152896;
+                // coeffs1[3]=-0.00021726528939325362;
+                // coeffs1[4]=0.41800209879875183;
+
+                // float r2  = x_val*x_val + y_val*y_val;
+                // float f = 1.0 + coeffs1[0]*r2 + coeffs1[1]*r2*r2 + coeffs1[4]*r2*r2*r2;
+                // float ux = x_val*f + 2.0*coeffs1[2]*x_val*y_val + coeffs1[3]*(r2 + 2.0*x_val*x_val);
+                // float uy = y_val*f + 2.0*coeffs1[3]*x_val*y_val + coeffs1[2]*(r2 + 2.0*y_val*y_val);
+                // x_val = ux;
+                // y_val = uy;
+
+                // Eigen::Vector3d point_3D_camera_coord;
+                // point_3D_camera_coord << x_val*depth_val, y_val*depth_val, depth_val;
+                // Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
+                // mat_xyz.at<cv::Vec3f>(y, x) [0] = point_3D_world_coord.x();
+                // mat_xyz.at<cv::Vec3f>(y, x) [1] = point_3D_world_coord.y();
+                // mat_xyz.at<cv::Vec3f>(y, x) [2] = point_3D_world_coord.z();
+
+
             }
 
         }
@@ -286,8 +318,8 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
         cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
 
-        cloud->UV(i,0) = V_transformed(i,0)/rgb_32f.cols;
-        cloud->UV(i,1) = V_transformed(i,1)/rgb_32f.rows;
+        cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
+        cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
     }
     // VLOG(1) << "nr_points_projected" << nr_points_projected;
 

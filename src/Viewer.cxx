@@ -855,7 +855,7 @@ void Viewer::draw(const GLuint fbo_id){
 
             //renders to the gbuffer by calling whatever function the user defined. T
             if(mesh->m_core->m_vis.m_use_custom_shader){
-                mesh->m_core->custom_render_func( shared_from_this() );
+                mesh->m_core->custom_render_func( mesh, shared_from_this() );
             }
 
         }
@@ -1328,6 +1328,9 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->L_gt.size()){
         mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
     }
+    // if(mesh->m_core->UV.size()){
+    //     GL_C(mesh->vao.vertex_attribute(m_draw_surfels_shader, "uv", mesh->UV_buf, 2) );
+    // }
 
     //matrices setuo
     Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
@@ -1373,6 +1376,16 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     // m_draw_surfels_shader.uniform_v3_float(m_specular_color , "specular_color");
     // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
     // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
+
+    
+    // //pbr textures
+    // if(mesh->m_diffuse_tex.storage_initialized() ){  m_draw_surfels_shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
+    // if(mesh->m_metalness_tex.storage_initialized() ){  m_draw_surfels_shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
+    // if(mesh->m_roughness_tex.storage_initialized() ){  m_draw_surfels_shader.bind_texture(mesh->m_roughness_tex, "roughness_tex");   }
+    // // if(mesh->m_normals_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
+    // m_draw_surfels_shader.uniform_bool(mesh->m_diffuse_tex.storage_initialized(), "has_diffuse_tex");
+    // m_draw_surfels_shader.uniform_bool(mesh->m_metalness_tex.storage_initialized(), "has_metalness_tex");
+    // m_draw_surfels_shader.uniform_bool(mesh->m_roughness_tex.storage_initialized(), "has_roughness_tex");
 
 
 

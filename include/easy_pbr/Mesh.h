@@ -225,7 +225,7 @@ public:
     std::shared_ptr<LabelMngr> m_label_mngr;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
     std::vector<std::shared_ptr<Mesh>> m_child_meshes;
-    std::function<void( std::shared_ptr<Viewer> view )> custom_render_func; //use this render the mesh with whatever function we define
+    std::function<void( std::shared_ptr<MeshGL> mesh_gl, std::shared_ptr<Viewer> view )> custom_render_func; //use this render the mesh with whatever function we define
 
     //oher stuff that may or may not be needed depending on the application
     uint64_t t; //timestamp or scan nr which will be monotonically increasing
