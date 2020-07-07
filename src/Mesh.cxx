@@ -322,8 +322,8 @@ void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
     transform_model_matrix(tf);
 }
 
-void Mesh::apply_model_matrix_to_cpu(){
-    transform_vertices_cpu(m_model_matrix);
+void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
+    transform_vertices_cpu(m_model_matrix, transform_points_at_zero);
     m_model_matrix.setIdentity();
 }
 
@@ -836,8 +836,9 @@ void Mesh::normalize_size(){
 
     Eigen::VectorXd max= V.colwise().maxCoeff();
     Eigen::VectorXd min= V.colwise().minCoeff();
-    double size_diff=(max-min).norm();
-    V.array()/=size_diff;
+    // double size_diff=(max-min).norm();
+    float scale= get_scale();
+    V.array()/=scale;
 }
 
 void Mesh::normalize_position(){
@@ -1073,6 +1074,8 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     m_vis.m_show_lines=true;
     m_vis.m_line_color<<0.6, 0.6, 0.6;
     m_vis.m_show_mesh=false;
+
+    VLOG(1) << "get scale " << get_scale();
 
 }
 
