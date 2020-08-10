@@ -426,6 +426,11 @@ void Mesh::load_from_file(const std::string file_path){
             } 
         }
         LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
+        
+        //set the width and height from the pcd file 
+        m_width=cloud_blob.width;
+        m_height=cloud_blob.height;
+        
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
     }
