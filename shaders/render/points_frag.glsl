@@ -33,7 +33,14 @@ layout(location = 3) out vec2 metalness_and_roughness_out;
 
 // //uniform
 uniform int color_type;
-uniform sampler2D tex; //the rgb tex that is used for coloring
+// uniform sampler2D tex; //the rgb tex that is used for coloring
+uniform sampler2D diffuse_tex; 
+uniform sampler2D metalness_tex; 
+uniform sampler2D roughness_tex; 
+uniform sampler2D normals_tex; 
+uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_normals=false; //if we have normals this will get set to true
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
@@ -65,6 +72,9 @@ vec3 encode_normal(vec3 normal){
 
 void main(){
 
+    float metalness_out=metalness;
+    float roughness_out=roughness;
+
     // float log_depth_val=log_depth_in;
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
@@ -95,18 +105,37 @@ void main(){
 
 
     if(color_type==2){ //TEXTURE
-        vec4 tex_color=texture(tex, uv_in);
-        // the texture sampling may mix the pixel with the background which has alpha of zero so it makes the color darker and also dimmer, if we renomalize we make it brighter again
-        if(tex_color.w!=0 ){
-            tex_color/=tex_color.w;
+//         vec4 tex_color=texture(tex, uv_in);
+
+        if(has_diffuse_tex){
+            vec4 tex_color=texture(diffuse_tex, uv_in);
+            // the texture sampling may mix the pixel with the background which has alpha of zero so it makes the color darker and also dimmer, if we renomalize we make it brighter again
+            // if(tex_color.w!=0 ){
+                // tex_color/=tex_color.w;
+            // }
+            diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
+        }else{
+            diffuse_out=vec4( vec3(0.0), 1.0 );
         }
-        diffuse_out = vec4(tex_color.rgb, 1.0);
+
+        if (has_metalness_tex){
+            metalness_out=texture(metalness_tex, uv_in).x;
+        }
+        if (has_roughness_tex){
+            roughness_out=texture(roughness_tex, uv_in).x;
+        }
+
+        // the texture sampling may mix the pixel with the background which has alpha of zero so it makes the color darker and also dimmer, if we renomalize we make it brighter again
+        //if(tex_color.w!=0 ){
+        //    tex_color/=tex_color.w;
+        //}
+        //diffuse_out = vec4(tex_color.rgb, 1.0);
     }else{
         diffuse_out = vec4(color_per_vertex_in, 1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
     normal_out=encode_normal(normal_in);
-    metalness_and_roughness_out=vec2(metalness, roughness);
+    metalness_and_roughness_out=vec2(metalness_out, roughness_out);
   
 }
 

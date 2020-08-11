@@ -1025,6 +1025,9 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->C.size()){
         GL_C(mesh->vao.vertex_attribute(shader, "color_per_vertex", mesh->C_buf, 3) );
     }
+    if(mesh->m_core->UV.size()){
+        GL_C(mesh->vao.vertex_attribute(shader, "uv", mesh->UV_buf, 2) );
+    }
     if(mesh->m_core->I.size()){
         GL_C(mesh->vao.vertex_attribute(shader, "intensity_per_vertex", mesh->I_buf, 1) );
     }
@@ -1065,6 +1068,15 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     // if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
     //     shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     // }
+    
+     //pbr textures
+    if(mesh->m_diffuse_tex.storage_initialized() ){  shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
+    if(mesh->m_metalness_tex.storage_initialized() ){  shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
+    if(mesh->m_roughness_tex.storage_initialized() ){  shader.bind_texture(mesh->m_roughness_tex, "roughness_tex");   }
+    // if(mesh->m_normals_tex.storage_initialized() ){  shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
+    shader.uniform_bool(mesh->m_diffuse_tex.storage_initialized(), "has_diffuse_tex");
+    shader.uniform_bool(mesh->m_metalness_tex.storage_initialized(), "has_metalness_tex");
+    shader.uniform_bool(mesh->m_roughness_tex.storage_initialized(), "has_roughness_tex");
 
 
     m_gbuffer.bind_for_draw();
