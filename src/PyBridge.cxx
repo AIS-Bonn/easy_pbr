@@ -34,6 +34,10 @@ PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
     ;
+    py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
+    ;
+    py::class_<Eigen::Affine3d> (m, "Eigen::Affine3d")
+    ;
 
     //Frame
     py::class_<Frame> (m, "Frame")
@@ -84,6 +88,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def(py::init<const std::string>())
     .def_static("create",  &Viewer::create<const std::string>, py::arg("config_file") = DEFAULT_CONFIG ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
+    .def("draw", &Viewer::draw, py::arg("fbo_id") = 0)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     // .def("print_pointers", &Viewer::print_pointers )
@@ -91,7 +96,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("check_position", &Viewer::check_position )
     .def_readwrite("m_camera", &Viewer::m_camera )
     .def_readwrite("m_recorder", &Viewer::m_recorder )
-    .def_readonly("m_viewport_size", &Viewer::m_viewport_size )
+    .def_readwrite("m_viewport_size", &Viewer::m_viewport_size )
     ;
 
     //Gui
@@ -105,16 +110,29 @@ PYBIND11_MODULE(easypbr, m) {
     //Camera
     py::class_<Camera, std::shared_ptr<Camera>> (m, "Camera")
     .def(py::init<>())
+    .def("model_matrix", &Camera::model_matrix )
+    .def("view_matrix", &Camera::view_matrix )
+    .def("intrinsics", &Camera::intrinsics )
     .def("position", &Camera::position )
+    .def("direction", &Camera::direction )
+    .def("up", &Camera::up )
+    .def("cam_axes", &Camera::cam_axes )
+    .def("dist_to_lookat", &Camera::dist_to_lookat )
     .def("set_position", &Camera::set_position )
     .def("set_lookat", &Camera::set_lookat )
+    .def("set_dist_to_lookat", &Camera::set_dist_to_lookat )
     .def("push_away", &Camera::push_away )
     .def("push_away_by_dist", &Camera::push_away_by_dist )
     .def("orbit_y", &Camera::orbit_y )
+    .def("flip_around_x", &Camera::flip_around_x )
     .def("from_string", &Camera::from_string )
     .def("create_frustum_mesh", &Camera::create_frustum_mesh)
-    .def_readwrite("m_near", &SpotLight::m_near )
-    .def_readwrite("m_far", &SpotLight::m_far )
+    .def("transform_model_matrix", &Camera::transform_model_matrix)
+    .def("clone", &Camera::clone)
+    .def_readwrite("m_near", &Camera::m_near )
+    .def_readwrite("m_far", &Camera::m_far )
+    .def_readwrite("m_fov", &Camera::m_fov )
+    .def_readwrite("m_model_matrix", &Camera::m_model_matrix )
     ;
 
     //Spotlight
@@ -170,6 +188,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_color_semanticpred", &VisOptions::set_color_semanticpred )
     .def("set_color_semanticgt", &VisOptions::set_color_semanticgt )
     .def("set_color_normalvector", &VisOptions::set_color_normalvector )
+    .def("set_color_height", &VisOptions::set_color_height )
+    .def("set_color_intensity", &VisOptions::set_color_intensity )
     ;
 
 
@@ -207,6 +227,14 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
     .def_readwrite("m_disk_path", &Mesh::m_disk_path)
+    .def("model_matrix_d", [](const Mesh &m) {
+            return m.m_model_matrix;
+        }
+    )
+    .def("model_matrix_f", [](const Mesh &m) {
+            return m.m_model_matrix.cast<float>();
+        }
+    )
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
@@ -244,6 +272,7 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<Recorder, std::shared_ptr<Recorder>> (m, "Recorder")
     // .def(py::init<>())
     .def("record", py::overload_cast<const std::string, const std::string >(&Recorder::record) )
+    .def("snapshot", py::overload_cast<const std::string, const std::string >(&Recorder::snapshot) )
     ;
 
     //Profiler

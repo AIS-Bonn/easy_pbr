@@ -122,6 +122,11 @@ bool Recorder::record(const std::string name, const std::string path){
     bool recorded=record(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
     return recorded;
 }
+
+void Recorder::snapshot(const std::string name, const std::string path){
+    //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
+    write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
+}
     
 
 // void Recorder::write_viewer_to_png(){

@@ -39,6 +39,7 @@ public:
     Eigen::Matrix4f view_matrix(); //returns the view matrix which moves the world into the camera coordinate system. Equivalent to tf_cam_world
     Eigen::Matrix4f proj_matrix(const Eigen::Vector2f viewport_size);
     Eigen::Matrix4f proj_matrix(const float viewport_width, const float viewport_height); //convenience function that takes the size as two separate arguments
+    Eigen::Matrix3f intrinsics(const float viewport_width, const float viewport_height);
     Eigen::Vector3f position(); //position of the center of the camera (the eye)
     Eigen::Vector3f lookat(); //target point around which the camera can rotate
     Eigen::Vector3f direction(); // normalized direction towards which the camera looks
@@ -51,6 +52,7 @@ public:
     void set_lookat(const Eigen::Vector3f& lookat); //updates the orientation according to the up vector so that it points towards lookat
     void set_position(const Eigen::Vector3f& pos); //updates the orientation according to the up vector so that it keeps pointing towards lookat
     void set_up(const Eigen::Vector3f& up);
+    void set_dist_to_lookat(const float dist); //sets the lookat at a certain distance along the negative z axis
 
 
     //convenience functions
@@ -65,6 +67,7 @@ public:
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera
+    void flip_around_x(); //some cameras assume you look in the positive Z direction so we may need to flip them to look backwards. This rotates 180 degrees around the x axis
 
 
     //writing the current camera pose to string so we can use it later

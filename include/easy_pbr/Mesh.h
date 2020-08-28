@@ -70,6 +70,12 @@ struct VisOptions{
     void set_color_normalvector(){
         m_color_type=MeshColorType::NormalVector;
     }
+    void set_color_height(){
+        m_color_type=MeshColorType::Height;
+    }
+    void set_color_intensity(){
+        m_color_type=MeshColorType::Intensity;
+    }
 
 
 };

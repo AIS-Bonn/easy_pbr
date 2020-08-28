@@ -514,6 +514,7 @@ void Viewer::configure_auto_params(){
     // std::cout << " scene centroid " << centroid << std::endl;
     // std::cout << " scene scale " << scale << std::endl;
 
+
     //CAMERA------------
     if (!m_camera->m_is_initialized){
         m_camera->set_lookat(centroid);
@@ -671,6 +672,22 @@ void Viewer::update(const GLuint fbo_id){
     //     // }
     // }
 
+
+    // //test the intrincis to proj and back 
+    // std::cout.precision(11);
+    // std::setprecision(20);
+    // Eigen::Matrix3f K;
+    // K.setIdentity();
+    // K(0,0)=2264.805259224865;
+    // K(1,1)=2264.9097603949817;
+    // K(0,2)= 1069.6593940596147;
+    // K(1,2)=  782.3950731603901;
+    // int width=4;
+    // int height=4;
+    // Eigen::Matrix4f P = intrinsics_to_opengl_proj(K, width, height);
+    // VLOG(1) <<  std::fixed << "P is \n " << P;
+    // Eigen::Matrix3f new_K = opengl_proj_to_intrinsics(P, width, height);
+    // VLOG(1) << "new K is " << new_K;
 
 
     pre_draw();

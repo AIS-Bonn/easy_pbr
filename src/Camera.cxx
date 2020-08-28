@@ -14,6 +14,7 @@
 
 #include "string_utils.h"
 #include "RandGenerator.h"
+#include "UtilsGL.h"
 
 using namespace radu::utils;
 
@@ -31,7 +32,7 @@ Camera::Camera():
 {
 
     m_model_matrix.setIdentity();
-    m_model_matrix.translation() << 0,0,1;
+    // m_model_matrix.translation() << 0,0,1;
     m_lookat.setZero();
     m_up=Eigen::Vector3f::UnitY();
 
@@ -52,6 +53,11 @@ Eigen::Matrix4f Camera::proj_matrix(const float viewport_width, const float view
     Eigen::Vector2f viewport_size;
     viewport_size << viewport_width, viewport_height;
     return proj_matrix(viewport_size);
+}
+Eigen::Matrix3f Camera::intrinsics(const float viewport_width, const float viewport_height){
+    Eigen::Matrix4f P = proj_matrix(viewport_width, viewport_height);
+    Eigen::Matrix3f K = opengl_proj_to_intrinsics(P, viewport_width, viewport_height);
+    return K;
 }
 Eigen::Vector3f Camera::position(){
     return m_model_matrix.translation();
@@ -127,6 +133,9 @@ void Camera::set_up(const Eigen::Vector3f& up){
 
     recalculate_orientation();
 }
+void Camera::set_dist_to_lookat(const float dist){
+    m_lookat = position() + cam_axes().col(2) * dist;
+}
 
 
 //convenicence
@@ -195,7 +204,17 @@ void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
     m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist); //goes in the negative z direction for an amount equal to the distance to lookat so we get a point in cam coords. Afterwards we multiply with the model matrix to get it in world coords
 
     //CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
+
+    // m_up=cam_axes().col(1);
+
+    m_is_initialized=true;
 }
+
+void Camera::flip_around_x(){
+    m_model_matrix.linear().col(1)=-m_model_matrix.linear().col(1);
+    m_model_matrix.linear().col(2)=-m_model_matrix.linear().col(2);
+}
+
 
 //computations
 Eigen::Matrix4f Camera::compute_projection_matrix(const float fov_x, const float aspect, const float znear, const float zfar){
