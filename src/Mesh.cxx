@@ -327,6 +327,18 @@ void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
     m_model_matrix.setIdentity();
 }
 
+void Mesh::set_model_matrix(const Eigen::VectorXd& xyz_q){
+    m_model_matrix.translation().x() = xyz_q[0];
+    m_model_matrix.translation().y() = xyz_q[1];
+    m_model_matrix.translation().z() = xyz_q[2];
+    Eigen::Quaterniond q;
+    q.x()=xyz_q[3];
+    q.y()=xyz_q[4];
+    q.z()=xyz_q[5];
+    q.w()=xyz_q[6];
+    m_model_matrix.linear() = q.toRotationMatrix();
+}
+
 
 
 

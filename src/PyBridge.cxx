@@ -213,6 +213,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
     .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
     .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
+    .def("set_model_matrix", &Mesh::set_model_matrix )
     .def("recalculate_normals", &Mesh::recalculate_normals )
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )

@@ -1362,7 +1362,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     if(m_guizmo_operation==ImGuizmo::SCALE){
         delta=Eigen::Matrix4f::Identity()-(Eigen::Matrix4f::Identity()-delta)*0.1; //scaling is for some reason very fast, make it a bit slower
     }
-    
+
 
 
     //update the model matrix with the delta and updates the model matrix of all the children
@@ -1382,8 +1382,10 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     //     new_model_matrix=delta*child->m_model_matrix.cast<float>().matrix();    
     //     child->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
     // }
-    
 
+    Eigen::Matrix3d rot = mesh->m_model_matrix.linear();
+    Eigen::Quaterniond q(rot);
+    VLOG(1) << "Model matrix is " << mesh->m_model_matrix.translation().x() << ", " << mesh->m_model_matrix.translation().y() << ", " << mesh->m_model_matrix.translation().z() << " quat(x,y,z,w) is: " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w();
 
 }
 
