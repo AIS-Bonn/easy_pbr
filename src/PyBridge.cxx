@@ -8,6 +8,11 @@
     #include "UtilsPytorch.h"
 #endif
 
+// #include "pybind11_tests.h"
+// #include "constructor_stats.h"
+#include <pybind11/operators.h>
+#include <functional>
+
 //my stuff 
 #include "easy_pbr/Viewer.h"
 #include "easy_pbr/Gui.h"
@@ -29,15 +34,145 @@ namespace py = pybind11;
 
 
 namespace easy_pbr{
+    
+//way to declare multiple templaded class with the same functions that are exposed through pybind11 https://stackoverflow.com/a/47749076
+template<typename T>
+void eigen_affine_bindings(py::module &m, const std::string typestr) {
+
+    using Class =  Eigen::Transform<T,3,Eigen::Affine>;
+    std::string pyclass_name = std::string("Affine3") + typestr;
+    py::class_<Class> (m, pyclass_name.c_str())
+    .def(py::init<>())
+    //operators
+    .def(py::self * py::self) //multiply a matrix with another one
+    //getters
+    .def("matrix", [](const Class &m) {  return m.matrix();  } )
+    .def("translation", [](const Class &m) {  return m.translation();  } )
+    .def("linear", [](const Class &m) {  return m.linear();  } )
+    .def("quat", [](const Class &m) {  Eigen::Quaternion<T> q ( m.linear() );    return q.coeffs();   } )
+    //TODO euler
+    //TODO to_xyz_quat_vec
+    //setters
+    .def("set_translation", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()=t;  } )
+    .def("set_linear", [](Class &m, const Eigen::Matrix<T, 3, 3>& r) {  m.linear()=r;  } )
+    .def("set_quat", [](Class &m, const Eigen::Matrix<T, 4, 1>& q_vec) { 
+        Eigen::Quaternion<T> q;  
+        q.coeffs()=q_vec;
+        m.linear()=q.toRotationMatrix();
+    } )
+    //convenience functions
+    .def("translate", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()+=t;  } )
+    .def("rotate_axis_angle", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
+        Eigen::Quaternion<T> q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+        Class tf;
+        tf.setIdentity();
+        tf.linear()=q.toRotationMatrix();
+        //compose the old transform with this new one
+        m=tf*m;
+    } )
+    .def("rotate_axis_angle_local", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
+        Eigen::Quaternion<T>  q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+        Class rot;
+        rot.setIdentity();
+        rot.linear()=q.toRotationMatrix();
+        Class tf=Eigen::Translation<T,3>(m.translation()) * rot *  Eigen::Translation<T,3>(-m.translation());
+        //compose the old transform with this new one
+        m=tf*m;
+    } )
+    //cast
+    .def("to_float", [](const Class &m) {  return m.template cast<float>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
+    .def("to_double", [](const Class &m) {  return m.template cast<double>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
+    ;
+}
+
+
+
 
 PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
     ;
-    py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
-    ;
-    py::class_<Eigen::Affine3d> (m, "Eigen::Affine3d")
-    ;
+    // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
+    // .def(py::init<>())
+    // //operators
+    // .def(py::self * py::self) //multiply a matrix with another one
+    // //getters
+    // .def("matrix", [](const Eigen::Affine3f &m) {  return m.matrix();  } )
+    // .def("translation", [](const Eigen::Affine3f &m) {  return m.translation();  } )
+    // .def("linear", [](const Eigen::Affine3f &m) {  return m.linear();  } )
+    // // .def("matrix", &Eigen::Affine3f::matrix, py::return_value_policy::reference_internal )
+    // // .def("matrix", &Eigen::Affine3f::matrix )
+    // // .def("translation", &Eigen::Affine3f::translation )
+    // // .def("linear", &Eigen::Affine3f::linear )
+    // //setters
+
+    // //translational
+
+    // //convenience functions for translating and rotating
+
+
+    // .def("to_double", [](const Eigen::Affine3f &m) {  return m.cast<double>();  }  )
+    // ;
+
+
+    // py::class_<Eigen::Affine3d> (m, "Eigen::Affine3d")
+    // .def(py::init<>())
+    // //operators
+    // .def(py::self * py::self) //multiply a matrix with another one
+    // //getters
+    // .def("matrix", [](const Eigen::Affine3d &m) {  return m.matrix();  } )
+    // .def("translation", [](const Eigen::Affine3d &m) {  return m.translation();  } )
+    // .def("linear", [](const Eigen::Affine3d &m) {  return m.linear();  } )
+    // .def("quat", [](const Eigen::Affine3d &m) {  Eigen::Quaterniond q ( m.linear() );    return q.coeffs();   } )
+    // //TODO euler
+    // //TODO to_xyz_quat_vec
+    // //setters
+    // .def("set_translation", [](Eigen::Affine3d &m, const Eigen::Vector3d& t) {  m.translation()=t;  } )
+    // .def("set_linear", [](Eigen::Affine3d &m, const Eigen::Matrix3d& t) {  m.linear()=t;  } )
+    // .def("set_quat", [](Eigen::Affine3d &m, const Eigen::Vector4d& q_vec) { 
+    //     Eigen::Quaterniond q;  
+    //     q.coeffs()=q_vec;
+    //     m.linear()=q.toRotationMatrix();
+    // } )
+    // //convenience functions
+    // .def("rotate_axis_angle", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) { 
+    //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+    //     Eigen::Affine3d tf;
+    //     tf.setIdentity();
+    //     tf.linear()=q.toRotationMatrix();
+    //     //compose the old transform with this new one
+    //     m=tf*m;
+    // } )
+    // .def("rotate_axis_angle_local", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) { 
+    //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+    //     Eigen::Affine3d rot;
+    //     rot.setIdentity();
+    //     rot.linear()=q.toRotationMatrix();
+    //     Eigen::Affine3d tf=Eigen::Translation3d(m.translation()) * rot *  Eigen::Translation3d(-m.translation());
+    //     //compose the old transform with this new one
+    //     m=tf*m;
+    // } )
+    // //cast
+    // .def("to_float", [](const Eigen::Affine3d &m) {  return m.cast<float>();  }  )
+    // ;
+
+
+
+        
+    // template<typename T>
+    // void declare_array(py::module &m, std::string &typestr) {
+    //     // using Class = Array2D<T>;
+    //     // std::string pyclass_name = std::string("Array2D") + typestr;
+    //     // py::class_<Class>(m, pyclass_name.c_str(), py::buffer_protocol(), py::dynamic_attr())
+    //     // .def(py::init<>())
+    //     // .def(py::init<Class::xy_t, Class::xy_t, T>())
+    //     // .def("size",      &Class::size)
+    //     // .def("width",     &Class::width)
+    //     // .def("height",    &Class::height);
+    // }
+   
+    eigen_affine_bindings<float>(m, "f");
+    eigen_affine_bindings<double>(m, "d");
 
     //Frame
     py::class_<Frame> (m, "Frame")
@@ -227,21 +362,26 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
     .def_readwrite("m_disk_path", &Mesh::m_disk_path)
-    .def("model_matrix_d", [](const Mesh &m) {
-            return m.m_model_matrix;
-        }
-    )
-    .def("model_matrix_f", [](const Mesh &m) {
-            return m.m_model_matrix.cast<float>();
-        }
-    )
+    // .def("model_matrix_d", [](const Mesh &m) {
+    //         return m.m_model_matrix;
+    //     }
+    // )
+    // .def("model_matrix_f", [](const Mesh &m) {
+    //         return m.m_model_matrix.cast<float>();
+    //     }
+    // )
+    .def_readwrite("m_model_matrix", &Mesh::m_model_matrix)
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
-    .def("translate_model_matrix", &Mesh::translate_model_matrix )
-    .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
-    .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
+    // .def("translate_model_matrix", &Mesh::translate_model_matrix )
+    // .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
+    // .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
     .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
-    .def("set_model_matrix", &Mesh::set_model_matrix )
+    // .def("set_model_matrix", &Mesh::set_model_matrix )
+    // .def("model_matrix_as_xyz_and_quaternion", &Mesh::model_matrix_as_xyz_and_quaternion )
+    // .def("model_matrix_as_xyz_and_rpy", &Mesh::model_matrix_as_xyz_and_rpy )
+    // .def("premultiply_model_matrix", &Mesh::premultiply_model_matrix )
+    // .def("postmultiply_model_matrix", &Mesh::postmultiply_model_matrix )
     .def("recalculate_normals", &Mesh::recalculate_normals )
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )

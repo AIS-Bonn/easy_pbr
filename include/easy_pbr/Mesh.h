@@ -111,12 +111,17 @@ public:
 
     void transform_vertices_cpu(const Eigen::Affine3d& trans, const bool transform_points_at_zero=false); //modifyed the vertices on the cpu but does not update the model matrix
     void transform_model_matrix(const Eigen::Affine3d& trans); //just affects how the model is displayed when rendered by modifying the model matrix but does not change the vertices themselves
-    void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python
-    void rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees);
-    void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
-    void rotate_model_matrix_local(const Eigen::Quaterniond& q);
+    // void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python
+    // void rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees);
+    // void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
+    // void rotate_model_matrix_local(const Eigen::Quaterniond& q);
     void apply_model_matrix_to_cpu( const bool transform_points_at_zero);
-    void set_model_matrix(const Eigen::VectorXd& xyz_q);
+    // void set_model_matrix(const Eigen::VectorXd& xyz_q);
+    // Eigen::VectorXd model_matrix_as_xyz_and_quaternion();
+    // Eigen::VectorXd model_matrix_as_xyz_and_rpy();
+    // void premultiply_model_matrix(const Eigen::VectorXd& xyz_q);
+    // void postmultiply_model_matrix(const Eigen::VectorXd& xyz_q);
+
 
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);

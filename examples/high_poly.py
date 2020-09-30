@@ -16,7 +16,8 @@ view.m_camera.from_string("186.721  92.773 104.449 -0.0674357    0.38319  0.0280
 # mesh=Mesh("./data/scan_the_world/barbarian.stl")
 # mesh=Mesh("./data/scan_the_world/maqueta-catedral.stl")
 mesh=Mesh("./data/scan_the_world/masterpiece-goliath-ii.stl")
-mesh.rotate_model_matrix( [1.0, 0.0, 0.0], -90 )
+# mesh.rotate_model_matrix( [1.0, 0.0, 0.0], -90 )
+mesh.m_model_matrix.rotate_axis_angle( [1.0, 0.0, 0.0], -90 )
 # mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0] #for barbarian
 mesh.m_vis.m_solid_color=[1.0, 188.0/255.0, 130.0/255.0] #for goliath
 # mesh.m_vis.m_roughness=0.39 #for barbarian

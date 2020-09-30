@@ -280,65 +280,151 @@ void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
     }
 }
 
-void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
-    Eigen::Affine3d tf;
-    tf.setIdentity();
+// void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
 
-    tf.translation()=translation;
-    transform_model_matrix(tf);
-}
+//     tf.translation()=translation;
+//     transform_model_matrix(tf);
+// }
 
-void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
-    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+// void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
+//     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
 
-    Eigen::Affine3d tf;
-    tf.setIdentity();
+//     Eigen::Affine3d tf;
+//     tf.setIdentity();
 
-    tf.linear()=q.toRotationMatrix();
-    transform_model_matrix(tf);
-}
+//     tf.linear()=q.toRotationMatrix();
+//     transform_model_matrix(tf);
+// }
 
-void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
-    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+// void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
+//     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
 
-    Eigen::Affine3d rot;
-    rot.setIdentity();
+//     Eigen::Affine3d rot;
+//     rot.setIdentity();
 
-    rot.linear()=q.toRotationMatrix();
+//     rot.linear()=q.toRotationMatrix();
 
-    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+//     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
-    transform_model_matrix(tf);
-}
+//     transform_model_matrix(tf);
+// }
 
-void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
-    Eigen::Affine3d rot;
-    rot.setIdentity();
+// void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
+//     Eigen::Affine3d rot;
+//     rot.setIdentity();
 
-    rot.linear()=q.toRotationMatrix();
+//     rot.linear()=q.toRotationMatrix();
 
-    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+//     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
-    transform_model_matrix(tf);
-}
+//     transform_model_matrix(tf);
+// }
 
 void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
     transform_vertices_cpu(m_model_matrix, transform_points_at_zero);
     m_model_matrix.setIdentity();
 }
 
-void Mesh::set_model_matrix(const Eigen::VectorXd& xyz_q){
-    m_model_matrix.translation().x() = xyz_q[0];
-    m_model_matrix.translation().y() = xyz_q[1];
-    m_model_matrix.translation().z() = xyz_q[2];
-    Eigen::Quaterniond q;
-    q.x()=xyz_q[3];
-    q.y()=xyz_q[4];
-    q.z()=xyz_q[5];
-    q.w()=xyz_q[6];
-    m_model_matrix.linear() = q.toRotationMatrix();
-}
+// void Mesh::set_model_matrix(const Eigen::VectorXd& xyz_q){
+//     m_model_matrix.translation().x() = xyz_q[0];
+//     m_model_matrix.translation().y() = xyz_q[1];
+//     m_model_matrix.translation().z() = xyz_q[2];
+//     Eigen::Quaterniond q;
+//     q.x()=xyz_q[3];
+//     q.y()=xyz_q[4];
+//     q.z()=xyz_q[5];
+//     q.w()=xyz_q[6];
+//     m_model_matrix.linear() = q.toRotationMatrix();
+// }
 
+// Eigen::VectorXd Mesh::model_matrix_as_xyz_and_quaternion(){
+
+//     Eigen::VectorXd out(7);
+
+//     out[0] = m_model_matrix.translation().x() ;
+//     out[1] = m_model_matrix.translation().y() ;
+//     out[2] = m_model_matrix.translation().z() ;
+
+//     Eigen::Quaterniond q ( m_model_matrix.linear() );
+//     out[3]=q.x();
+//     out[4]=q.y();
+//     out[5]=q.z();
+//     out[6]=q.w();
+
+//     return out; 
+// }
+
+// Eigen::VectorXd Mesh::model_matrix_as_xyz_and_rpy(){
+
+//     Eigen::VectorXd out(6);
+
+//     out[0] = m_model_matrix.translation().x() ;
+//     out[1] = m_model_matrix.translation().y() ;
+//     out[2] = m_model_matrix.translation().z() ;
+
+//     Eigen::Quaterniond q ( m_model_matrix.linear() );
+//     // out[3]=q.x();
+//     // out[4]=q.y();
+//     // out[5]=q.z();
+//     // out[6]=q.w();
+
+//     auto euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
+
+//     out[3]=euler[0];
+//     out[4]=euler[1];
+//     out[5]=euler[2];
+
+//     // //http://ros-developer.com/2017/11/18/finding-roll-pitch-yaw-3x3-rotation-matrix-eigen/
+//     // Eigen::Matrix3d rotationMatrix = q.toRotationMatrix();
+//     // float roll = M_PI/atan2( rotationMatrix(2,1),rotationMatrix(2,2) );
+//     // float pitch = M_PI/atan2( -rotationMatrix(2,0), std::pow( rotationMatrix(2,1)*rotationMatrix(2,1) +rotationMatrix(2,2)*rotationMatrix(2,2) ,0.5  )  );
+//     // float yaw = M_PI/atan2( rotationMatrix(1,0),rotationMatrix(0,0) );
+//     // out[3]=M_PI/roll;
+//     // out[4]=M_PI/pitch;
+//     // out[5]=M_PI/yaw;
+
+//     // tf2::Quaternion q( -0.019, 0.037, 0.127, 0.991);
+//     // tf2::Matrix3x3 m(q);
+//     // double r, p, y;
+//     // m.getRPY(r, p, y, 2);
+
+
+//     return out; 
+// }
+
+// void Mesh::premultiply_model_matrix(const Eigen::VectorXd& xyz_q){
+
+//     Eigen::Affine3d matrix;
+//     matrix.translation().x() = xyz_q[0];
+//     matrix.translation().y() = xyz_q[1];
+//     matrix.translation().z() = xyz_q[2];
+//     Eigen::Quaterniond q;
+//     q.x()=xyz_q[3];
+//     q.y()=xyz_q[4];
+//     q.z()=xyz_q[5];
+//     q.w()=xyz_q[6];
+//     matrix.linear() = q.toRotationMatrix();
+
+//     m_model_matrix=matrix*m_model_matrix;
+// }
+
+// void Mesh::postmultiply_model_matrix(const Eigen::VectorXd& xyz_q){
+
+//     Eigen::Affine3d matrix;
+//     matrix.translation().x() = xyz_q[0];
+//     matrix.translation().y() = xyz_q[1];
+//     matrix.translation().z() = xyz_q[2];
+//     Eigen::Quaterniond q;
+//     q.x()=xyz_q[3];
+//     q.y()=xyz_q[4];
+//     q.z()=xyz_q[5];
+//     q.w()=xyz_q[6];
+//     matrix.linear() = q.toRotationMatrix();
+
+//     m_model_matrix=m_model_matrix*matrix;
+// }
 
 
 
