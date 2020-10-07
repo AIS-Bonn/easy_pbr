@@ -33,10 +33,17 @@ Scene.show(mesh,"mesh")
 grid_floor=Scene.get_mesh_with_name("grid_floor")
 grid_floor.m_vis.m_is_visible=False
 
+Profiler.set_profile_gpu(True)
+
+i=0
 while True:
     #set light 
     # view.spotlight_with_idx(0).m_color=[1.0, 1.0, 1.0]
     # view.spotlight_with_idx(1).m_color=[1.0, 1.0, 1.0]
     # view.spotlight_with_idx(2).m_color=[1.0, 1.0, 1.0]
+    i+=1
+    if i==60*30:
+        Profiler.print_all_stats()
+
 
     view.update()

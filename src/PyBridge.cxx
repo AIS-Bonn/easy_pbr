@@ -373,7 +373,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_model_matrix", &Mesh::m_model_matrix)
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
-    // .def("translate_model_matrix", &Mesh::translate_model_matrix )
+    .def("translate_model_matrix", &Mesh::translate_model_matrix )
     // .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
     // .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
     .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
@@ -418,6 +418,7 @@ PYBIND11_MODULE(easypbr, m) {
     //Profiler
     py::class_<radu::utils::Profiler_ns::Profiler> (m, "Profiler") 
     .def_static("is_profiling_gpu", &radu::utils::Profiler_ns::is_profiling_gpu )
+    .def_static("set_profile_gpu", &radu::utils::Profiler_ns::set_profile_gpu )
     .def_static("start",  []( std::string name ) { TIME_START(name); })
     // .def_static("start_and_sync_cuda",  []( std::string name ) { TIME_START(name); })
     .def_static("end",  []( std::string name ) { TIME_END(name); })

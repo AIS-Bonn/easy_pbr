@@ -280,47 +280,47 @@ void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
     }
 }
 
-// void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
-//     Eigen::Affine3d tf;
-//     tf.setIdentity();
+void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
+    Eigen::Affine3d tf;
+    tf.setIdentity();
 
-//     tf.translation()=translation;
-//     transform_model_matrix(tf);
-// }
+    tf.translation()=translation;
+    transform_model_matrix(tf);
+}
 
-// void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
-//     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
+    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
 
-//     Eigen::Affine3d tf;
-//     tf.setIdentity();
+    Eigen::Affine3d tf;
+    tf.setIdentity();
 
-//     tf.linear()=q.toRotationMatrix();
-//     transform_model_matrix(tf);
-// }
+    tf.linear()=q.toRotationMatrix();
+    transform_model_matrix(tf);
+}
 
-// void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
-//     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
+    Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
 
-//     Eigen::Affine3d rot;
-//     rot.setIdentity();
+    Eigen::Affine3d rot;
+    rot.setIdentity();
 
-//     rot.linear()=q.toRotationMatrix();
+    rot.linear()=q.toRotationMatrix();
 
-//     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
-//     transform_model_matrix(tf);
-// }
+    transform_model_matrix(tf);
+}
 
-// void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
-//     Eigen::Affine3d rot;
-//     rot.setIdentity();
+void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
+    Eigen::Affine3d rot;
+    rot.setIdentity();
 
-//     rot.linear()=q.toRotationMatrix();
+    rot.linear()=q.toRotationMatrix();
 
-//     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
+    Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
-//     transform_model_matrix(tf);
-// }
+    transform_model_matrix(tf);
+}
 
 void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
     transform_vertices_cpu(m_model_matrix, transform_points_at_zero);
@@ -524,7 +524,7 @@ void Mesh::load_from_file(const std::string file_path){
             } 
         }
         LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
-        
+
         //set the width and height from the pcd file 
         m_width=cloud_blob.width;
         m_height=cloud_blob.height;

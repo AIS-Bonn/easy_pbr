@@ -1457,6 +1457,8 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
 void Viewer::ssao_pass(){
 
+    TIME_SCOPE("ssao_pass_full");
+
     //SSAO needs to perform a lot of accesses to the depth map in order to calculate occlusion. Due to cache coherency it is faster to sampler from a downsampled depth map
     //furthermore we only need the linearized depth map. So we first downsample the depthmap, then we linearize it and we run the ao shader and then the bilateral blurring
 
