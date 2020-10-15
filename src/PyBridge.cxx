@@ -50,6 +50,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     .def("translation", [](const Class &m) {  return m.translation();  } )
     .def("linear", [](const Class &m) {  return m.linear();  } )
     .def("quat", [](const Class &m) {  Eigen::Quaternion<T> q ( m.linear() );    return q.coeffs();   } )
+    .def("inverse", [](const Class &m) {  return m.inverse();   } )
     //TODO euler
     //TODO to_xyz_quat_vec
     //setters
@@ -191,6 +192,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("rgb_with_valid_depth", &Frame::rgb_with_valid_depth )
     .def("pos_in_world", &Frame::pos_in_world )
     .def("look_dir", &Frame::look_dir )
+    .def_readwrite("tf_cam_world", &Frame::tf_cam_world )
     .def_readwrite("width", &Frame::width )
     .def_readwrite("height", &Frame::height )
     .def_readwrite("gray_8u", &Frame::gray_8u )
@@ -374,6 +376,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
+    .def("transform_vertices_cpu", &Mesh::transform_vertices_cpu )
     // .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
     // .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
     .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
