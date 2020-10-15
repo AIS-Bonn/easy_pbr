@@ -190,9 +190,6 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
     // cloud->D=D;
     cloud->m_width=depth_xyz.cols;
     cloud->m_height=depth_xyz.rows;
-    Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
-    // VLOG(1) << tf_world_cam.matrix();
-    cloud->transform_vertices_cpu(tf_world_cam);
     cloud->m_vis.m_show_points=true;
 
 
