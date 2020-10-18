@@ -193,6 +193,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("pos_in_world", &Frame::pos_in_world )
     .def("look_dir", &Frame::look_dir )
     .def_readwrite("tf_cam_world", &Frame::tf_cam_world )
+    .def_readwrite("K", &Frame::K )
     .def_readwrite("width", &Frame::width )
     .def_readwrite("height", &Frame::height )
     .def_readwrite("gray_8u", &Frame::gray_8u )
