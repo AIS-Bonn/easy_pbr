@@ -33,11 +33,15 @@ public:
     static float get_scale(const bool use_mutex=true); //returns how big the scene is as a measure betwen the min and the coefficient of the vertices
     static bool is_empty(const bool use_mutex=true);
 
+    static void set_floor_visible(const bool val);
+
 
 
 private:
     static std::vector< std::shared_ptr<Mesh> > m_meshes;
     static std::mutex m_mesh_mutex; // when adding a new mesh to the scene, we need to lock them so it can be thread safe
+
+    static bool m_floor_visible; //storing if the user wants the floor visible or not. We store it here because the user might set it before we even added a floor
 
 };
 

@@ -289,6 +289,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("get_mesh_with_name",  &Scene::get_mesh_with_name )
     .def_static("does_mesh_with_name_exist",  &Scene::does_mesh_with_name_exist)
     .def_static("add_mesh",  &Scene::add_mesh)
+    .def_static("set_floor_visible",  &Scene::set_floor_visible)
     ;
 
     //LabelMngr
