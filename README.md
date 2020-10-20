@@ -107,4 +107,4 @@ Various examples can be found in the ./examples folder. A short description of e
 | Deferred Physically based rendering | ![PBR demo preview](imgs/pbr_multiscatter.jpg) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. <br /> Run with [./examples/pbr.py](./examples/pbr.py) |
 | Shadows and Ambient Occlusion | ![Shadows and Ambient Occlusion](imgs/shadows2.jpg) <br /> Run with [./examples/shadows.py](./examples/shadows.py) |
 | Bloom | ![Bloom](imgs/bloom_head.jpg) <br /> Run with [./examples/bloom.py](./examples/bloom.py)  |
-| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br />   |
+| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br /> Eye-dome lighting and SSAO for shading |
