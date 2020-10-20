@@ -28,6 +28,8 @@ Camera::Camera():
     m_is_mouse_down(false),
     m_prev_mouse_pos_valid(false),
     m_is_initialized(false),
+    m_position_initialized(false),
+    m_lookat_initialized(false),
     m_rand_gen(new RandGenerator())
 {
 
@@ -117,16 +119,15 @@ void Camera::set_lookat(const Eigen::Vector3f& lookat){
 
     //setting a new lookat means rotating the cam in said direction
     recalculate_orientation();
+
+    m_lookat_initialized=true;
 }
 void Camera::set_position(const Eigen::Vector3f& pos){
-    // VLOG(1) << "Setting position to " << pos.transpose();
-    // VLOG(1) << "C++ modifying object with pointer " << this;
     m_model_matrix.translation()=pos;
-    // VLOG(1) << "Before recaulculating orientation the pos is " << position().transpose();
 
-    //setting a new position means rotating the cam so that it still looks at the lookat point
     recalculate_orientation();
-    // VLOG(1) << "AFTER recaulculating orientation the pos is " << position().transpose();
+    
+    m_position_initialized=true;
 }
 void Camera::set_up(const Eigen::Vector3f& up){
     m_up=up;
@@ -135,6 +136,7 @@ void Camera::set_up(const Eigen::Vector3f& up){
 }
 void Camera::set_dist_to_lookat(const float dist){
     m_lookat = position() + cam_axes().col(2) * dist;
+    m_lookat_initialized=true;
 }
 
 
@@ -143,19 +145,28 @@ void Camera::move_cam_and_lookat(const Eigen::Vector3f& pos){
     Eigen::Vector3f displacement=pos-m_model_matrix.translation();
     m_model_matrix.translation()+=displacement;;
     m_lookat+=displacement;
+
+    m_lookat_initialized=true;
+    m_position_initialized=true;
 }
 void Camera::dolly(const Eigen::Vector3f & dv){
     m_model_matrix.translation() += dv;
+
+    m_position_initialized=true;
 }
 
 void Camera::push_away(const float s){
     float old_at_dist = (lookat() - position()).norm();
     float new_lookat_dist = old_at_dist * s;
     dolly(-direction()*(new_lookat_dist - old_at_dist));
+
+    m_position_initialized=true;
 }
 
 void Camera::push_away_by_dist(const float new_dist){
     dolly(-direction()*(new_dist));
+
+    m_position_initialized=true;
 }
 
 void Camera::orbit(const Eigen::Quaternionf& q){
@@ -168,6 +179,7 @@ void Camera::orbit(const Eigen::Quaternionf& q){
 
     m_model_matrix=model_matrix_rotated;
 
+    m_position_initialized=true;
 }
 void Camera::orbit_y(const float angle_degrees){
 
@@ -177,6 +189,7 @@ void Camera::orbit_y(const float angle_degrees){
 
     orbit(q_y);
 
+    m_position_initialized=true;
 }
 void Camera::rotate(const Eigen::Quaternionf& q){
     // Eigen::Vector3f lookat_in_cam_coords=view_matrix() * lookat(); //gets the lookat position which is in world and puts it in cam coords
@@ -192,6 +205,9 @@ void Camera::rotate(const Eigen::Quaternionf& q){
     m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist); //goes in the negative z direction for an amount equal to the distance to lookat so we get a point in cam coords. Afterwards we multiply with the model matrix to get it in world coords
 
     CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
+
+    m_lookat_initialized=true;
+    m_position_initialized=true;
 }
 
 void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
@@ -208,6 +224,8 @@ void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
     // m_up=cam_axes().col(1);
 
     m_is_initialized=true;
+    m_lookat_initialized=true;
+    m_position_initialized=true;
 }
 
 void Camera::flip_around_x(){
@@ -448,6 +466,8 @@ void Camera::from_string(const std::string pose){
     m_far=stof(tokens[12]);
 
     m_is_initialized=true;
+    m_lookat_initialized=true;
+    m_position_initialized=true;
 }
 
 MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const Eigen::Vector2f & viewport_size )

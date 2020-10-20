@@ -517,8 +517,12 @@ void Viewer::configure_auto_params(){
 
     //CAMERA------------
     if (!m_camera->m_is_initialized){
-        m_camera->set_lookat(centroid);
-        m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+        if (!m_camera->m_lookat_initialized){
+            m_camera->set_lookat(centroid);
+        }
+        if (!m_camera->m_position_initialized){
+            m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+        }
         if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
             m_camera->m_fov=30 ;
         }

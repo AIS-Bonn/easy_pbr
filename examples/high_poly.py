@@ -9,41 +9,22 @@ from easypbr  import *
 config_file="./config/high_poly.cfg"
 
 view=Viewer.create(config_file) 
-# view.m_camera.from_string("9.60482 48.7507 186.803  0.0503284 -0.0824315 0.00416816 0.995317  41.6137  68.4781 -5.11737 90 6.53242 6532.42")  #for barbarian
-# view.m_camera.from_string("260.526 99.6492 50.0316 -0.055629  0.560416 0.0377659 0.825485   51.968  69.2687 -32.7791 90 6.53242 6532.42")  #for goliath
-view.m_camera.from_string("186.721  92.773 104.449 -0.0674357    0.38319  0.0280626 0.920786  50.7827  64.5595 -30.6014 90 6.53242 6532.42")  #for goliath
 
-# mesh=Mesh("./data/scan_the_world/barbarian.stl")
-# mesh=Mesh("./data/scan_the_world/maqueta-catedral.stl")
+#puts the camera in a nicer view than default. You can also comment these two lines and EasyPBR will place the camera by default for you so that the scene is fully visible
+view.m_camera.set_position([186.721,  92.773, 104.44])
+view.m_camera.set_lookat([50.7827,  64.5595, -30.6014 ])
+
 mesh=Mesh("./data/scan_the_world/masterpiece-goliath-ii.stl")
-# mesh.rotate_model_matrix( [1.0, 0.0, 0.0], -90 )
 mesh.m_model_matrix.rotate_axis_angle( [1.0, 0.0, 0.0], -90 )
-# mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0] #for barbarian
 mesh.m_vis.m_solid_color=[1.0, 188.0/255.0, 130.0/255.0] #for goliath
-# mesh.m_vis.m_roughness=0.39 #for barbarian
-# mesh.m_vis.m_roughness=0.42 #for goliath
-#for metal goliath
-mesh.m_vis.m_metalness=0.64
+mesh.m_vis.m_metalness=0.0
 mesh.m_vis.m_roughness=0.5
 
-# mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0]
 Scene.show(mesh,"mesh")
 
 #hide the gird floor
-grid_floor=Scene.get_mesh_with_name("grid_floor")
-grid_floor.m_vis.m_is_visible=False
+Scene.set_floor_visible(False)
 
-Profiler.set_profile_gpu(True)
 
-i=0
 while True:
-    #set light 
-    # view.spotlight_with_idx(0).m_color=[1.0, 1.0, 1.0]
-    # view.spotlight_with_idx(1).m_color=[1.0, 1.0, 1.0]
-    # view.spotlight_with_idx(2).m_color=[1.0, 1.0, 1.0]
-    i+=1
-    if i==60*30:
-        Profiler.print_all_stats()
-
-
     view.update()
