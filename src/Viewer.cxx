@@ -576,8 +576,12 @@ void Viewer::configure_auto_params(){
         Eigen::Vector3f dir_movement;
         dir_movement<<0.5, 0.6, 0.5;
         dir_movement=dir_movement.normalized();
-        key->set_lookat(centroid);
-        key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        if (!key->m_lookat_initialized){
+            key->set_lookat(centroid);
+        }
+        if(!key->m_position_initialized){
+            key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        }
         key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
         key->m_far=( (centroid-key->position()).norm()*10 ) ;
         key->m_fov=40;
@@ -595,8 +599,12 @@ void Viewer::configure_auto_params(){
         Eigen::Vector3f dir_movement;
         dir_movement<< -0.5, 0.6, 0.5;
         dir_movement=dir_movement.normalized();
-        fill->set_lookat(centroid);
-        fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        if (!fill->m_lookat_initialized){
+            fill->set_lookat(centroid);
+        }
+        if (!fill->m_position_initialized){
+            fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        }
         fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
         fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
         fill->m_fov=40;
@@ -613,8 +621,12 @@ void Viewer::configure_auto_params(){
         Eigen::Vector3f dir_movement;
         dir_movement<< -0.5, 0.6, -0.5;
         dir_movement=dir_movement.normalized();
-        rim->set_lookat(centroid);
-        rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        if (!rim->m_lookat_initialized){
+            rim->set_lookat(centroid);
+        }
+        if (!rim->m_position_initialized){
+            rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
+        }
         rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
         rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
         rim->m_fov=40;

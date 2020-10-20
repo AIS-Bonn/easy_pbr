@@ -9,7 +9,10 @@ from easypbr  import *
 config_file="./config/pbr.cfg"
 
 view=Viewer.create(config_file) 
-view.m_camera.from_string("  2.14319 -0.516111   1.65069 -0.00579448    0.356071   0.0022081 0.934438  0.498184 -0.546767   -0.1944 90 0.00761097 7.61097")
+
+#puts the camera in a nicer view than default. You can also comment these two lines and EasyPBR will place the camera by default for you so that the scene is fully visible
+view.m_camera.set_position([2.14319, -0.516111,   1.65069 ])
+view.m_camera.set_lookat([ 0.498184, -0.546767,   -0.1944   ])
 
 
 grid_size=6
@@ -26,8 +29,7 @@ for x in range(grid_size):
 
 
 #hide the gird floor
-grid_floor=Scene.get_mesh_with_name("grid_floor")
-grid_floor.m_vis.m_is_visible=False
+Scene.set_floor_visible(False)
 
 while True:
     view.update()
