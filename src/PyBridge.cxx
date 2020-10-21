@@ -250,6 +250,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def(py::init<>())
     .def("model_matrix", &Camera::model_matrix )
     .def("view_matrix", &Camera::view_matrix )
+    .def("view_matrix_affine", &Camera::view_matrix_affine )
     .def("intrinsics", &Camera::intrinsics )
     .def("position", &Camera::position )
     .def("direction", &Camera::direction )

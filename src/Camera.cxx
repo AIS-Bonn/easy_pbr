@@ -47,6 +47,9 @@ Eigen::Matrix4f Camera::model_matrix(){
 Eigen::Matrix4f Camera::view_matrix(){
     return model_matrix().inverse().matrix();
 }
+Eigen::Affine3f Camera::view_matrix_affine(){
+    return Eigen::Affine3f(model_matrix().inverse());
+}
 Eigen::Matrix4f Camera::proj_matrix(const Eigen::Vector2f viewport_size){
     float aspect=viewport_size.x()/viewport_size.y();
     return compute_projection_matrix(m_fov, aspect, m_near, m_far);
@@ -530,7 +533,7 @@ MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const E
     frustum_mesh->C=frustum_vertex_color.cast<double>();
     frustum_mesh->E=E;
     frustum_mesh->m_vis.m_show_mesh=false;
-    frustum_mesh->m_vis.m_show_lines=false;
+    frustum_mesh->m_vis.m_show_lines=true;
     return frustum_mesh;
 }
 

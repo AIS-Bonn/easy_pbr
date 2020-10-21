@@ -37,6 +37,7 @@ public:
     //getters
     Eigen::Matrix4f model_matrix(); //return the model matrix that places the camera in the world. Equivalent to tf_world_cam (maps from the camera coordinates to the world coordinates)
     Eigen::Matrix4f view_matrix(); //returns the view matrix which moves the world into the camera coordinate system. Equivalent to tf_cam_world
+    Eigen::Affine3f view_matrix_affine(); //returns the view matrix which moves the world into the camera coordinate system. Equivalent to tf_cam_world
     Eigen::Matrix4f proj_matrix(const Eigen::Vector2f viewport_size);
     Eigen::Matrix4f proj_matrix(const float viewport_width, const float viewport_height); //convenience function that takes the size as two separate arguments
     Eigen::Matrix3f intrinsics(const float viewport_width, const float viewport_height);
