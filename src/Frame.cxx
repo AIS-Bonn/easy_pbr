@@ -1,6 +1,7 @@
 #include "easy_pbr/Frame.h"
 
 #include "UtilsGL.h"
+#include "opencv_utils.h"
 
 //loguru
 #define LOGURU_REPLACE_GLOG 1
@@ -86,6 +87,8 @@ cv::Mat Frame::depth2world_xyz_mat() const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
+    CHECK(depth.channels()==1) << "We assume that the depth should have only one channel but it has " << depth.channels();
+    CHECK(depth.type()==CV_32FC1) << "We assume that the depth should be of type CV_32FC1 but it is " << radu::utils::type2string(depth.type() );
     CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains depth image?";
 
     cv::Mat mat_xyz = cv::Mat(depth.rows, depth.cols, CV_32FC3);
@@ -157,6 +160,8 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
+    CHECK(depth.channels()==1) << "We assume that the depth should have only one channel but it has " << depth.channels();
+    CHECK(depth.type()==CV_32FC1) << "We assume that the depth should be of type CV_32FC1 but it is " << radu::utils::type2string(depth.type() );
     CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains depth image?";
 
     cv::Mat depth_xyz=depth2world_xyz_mat();
