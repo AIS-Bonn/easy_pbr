@@ -201,6 +201,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("rgb_32f", &Frame::rgb_32f )
     .def_readwrite("gray_32f", &Frame::gray_32f )
     .def_readwrite("depth", &Frame::depth )
+    .def_readwrite("mask", &Frame::mask )
     #ifdef WITH_TORCH
         // .def("rgb2tensor", &Frame::rgb2tensor )
         // .def("depth2tensor", &Frame::depth2tensor )
