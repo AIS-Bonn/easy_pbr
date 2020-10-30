@@ -87,58 +87,66 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
     //make also a mesh from the far face so that we can display a texture
     if(show_texture){
-        Eigen::MatrixXi F(2,3);
-        F << 4,5,6,
-            4,6,7;
-        Eigen::MatrixXd NV(8,3);
-        NV << 
-            // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            //far face (here we have defined the faces for the texturing and we set also the normals to be pointing towards the camera)
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1;
-
-        //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
-        Eigen::MatrixXd UV(8,2);
-        UV << 
-            // near face (doesnt actually need uvs)
-            1, 1, //top right
-            0, 1, // top left
-            0, 0, //bottom left
-            1, 0, //bottom right
-            //far face
-            1, 1, //top right
-            0, 1, // top left
-            0, 0, //bottom left
-            1, 0; //bottom right
-        frustum_mesh->F=F;
-        frustum_mesh->NV=NV;
-        frustum_mesh->UV=UV;
+        
         //try to get a mat that has texture
         cv::Mat tex;
         if(tex.empty() && !rgb_8u.empty()){  tex=rgb_8u;  }
         if(tex.empty() && !gray_8u.empty()){ tex=gray_8u;  }
         if(tex.empty() && !rgb_32f.empty()){  tex=rgb_32f;  }
         if(tex.empty() && !gray_32f.empty()){  tex=gray_32f;  }
-        //resize 
-        int max_size=128.0;
-        if(tex.cols>max_size || tex.rows> max_size){
-            int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
-            cv::Mat resized;
-            cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_LINEAR );
-            tex=resized;
-        }
 
-        if( !tex.empty() ){
-            frustum_mesh->set_diffuse_tex(tex);
+        //if we found a texture 
+        if(!tex.empty()){
+
+            Eigen::MatrixXi F(2,3);
+            F << 4,5,6,
+                4,6,7;
+            Eigen::MatrixXd NV(8,3);
+            NV << 
+                // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                //far face (here we have defined the faces for the texturing and we set also the normals to be pointing towards the camera)
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1;
+
+            //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
+            Eigen::MatrixXd UV(8,2);
+            UV << 
+                // near face (doesnt actually need uvs)
+                1, 1, //top right
+                0, 1, // top left
+                0, 0, //bottom left
+                1, 0, //bottom right
+                //far face
+                1, 1, //top right
+                0, 1, // top left
+                0, 0, //bottom left
+                1, 0; //bottom right
+            frustum_mesh->F=F;
+            frustum_mesh->NV=NV;
+            frustum_mesh->UV=UV;
+        
+            //resize 
+            int max_size=128.0;
+            if(tex.cols>max_size || tex.rows> max_size){
+                int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
+                cv::Mat resized;
+                cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_LINEAR );
+                tex=resized;
+            }
+
+            if( !tex.empty() ){
+                frustum_mesh->set_diffuse_tex(tex);
+            }
+            frustum_mesh->m_vis.m_show_mesh=true;
+            frustum_mesh->m_vis.set_color_texture();
+
         }
-        frustum_mesh->m_vis.m_show_mesh=true;
-        frustum_mesh->m_vis.set_color_texture();
     }
     
 
