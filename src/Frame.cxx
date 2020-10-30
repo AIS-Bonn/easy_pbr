@@ -125,6 +125,15 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
         if(tex.empty() && !gray_8u.empty()){ tex=gray_8u;  }
         if(tex.empty() && !rgb_32f.empty()){  tex=rgb_32f;  }
         if(tex.empty() && !gray_32f.empty()){  tex=gray_32f;  }
+        //resize 
+        int max_size=128.0;
+        if(tex.cols>max_size || tex.rows> max_size){
+            int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
+            cv::Mat resized;
+            cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_LINEAR );
+            tex=resized;
+        }
+
         if( !tex.empty() ){
             frustum_mesh->set_diffuse_tex(tex);
         }

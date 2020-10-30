@@ -1385,7 +1385,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
 
     Eigen::Matrix3d rot = mesh->m_model_matrix.linear();
     Eigen::Quaterniond q(rot);
-    VLOG(1) << "Model matrix is " << mesh->m_model_matrix.translation().x() << ", " << mesh->m_model_matrix.translation().y() << ", " << mesh->m_model_matrix.translation().z() << " quat(x,y,z,w) is: " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w();
+    // VLOG(1) << "Model matrix is " << mesh->m_model_matrix.translation().x() << ", " << mesh->m_model_matrix.translation().y() << ", " << mesh->m_model_matrix.translation().z() << " quat(x,y,z,w) is: " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w();
 
 }
 
