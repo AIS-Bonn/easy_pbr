@@ -22,5 +22,8 @@ void main(){
         color_per_vertex_out=line_color;
     }else if(color_type==1){ //per vert color
        color_per_vertex_out=color_per_vertex;
+    }else{
+        //it's none of those color types so it might be soemthing weird like texture rendering. this can happen when we render a frustum and we want to render a part of it with texture. In this case default the line to solid rendering
+        color_per_vertex_out=line_color;
     }
 }
