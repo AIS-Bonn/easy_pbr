@@ -79,6 +79,11 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier) const{
     frustum_mesh->m_vis.m_show_mesh=false;
     frustum_mesh->m_vis.m_show_lines=true;
 
+    //since we want somtimes to see the axes of the camera, we actually make the vertices be at the origin an then use the model matrix to trasnform them while rendering. And then through the imguimzo i can check the axes
+    //transform from world to camera 
+    frustum_mesh->transform_vertices_cpu(tf_cam_world.cast<double>(), true);
+    frustum_mesh->m_model_matrix=tf_cam_world.cast<double>().inverse();
+
     return frustum_mesh;
 
 }

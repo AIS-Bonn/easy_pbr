@@ -534,6 +534,13 @@ MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const E
     frustum_mesh->E=E;
     frustum_mesh->m_vis.m_show_mesh=false;
     frustum_mesh->m_vis.m_show_lines=true;
+
+    //since we want somtimes to see the axes of the camera, we actually make the vertices be at the origin an then use the model matrix to trasnform them while rendering. And then through the imguimzo i can check the axes
+    //transform from world to camera 
+    Eigen::Affine3d tf_cam_world=Eigen::Affine3d(view.cast<double>());
+    frustum_mesh->transform_vertices_cpu(tf_cam_world.cast<double>(), true);
+    frustum_mesh->m_model_matrix=tf_cam_world.cast<double>().inverse();
+
     return frustum_mesh;
 }
 
