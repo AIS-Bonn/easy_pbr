@@ -1,4 +1,5 @@
 #include "easy_pbr/Frame.h"
+#include "easy_pbr/Scene.h"
 
 #include "UtilsGL.h"
 #include "opencv_utils.h"
@@ -123,8 +124,8 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
                 0, 0, //bottom left
                 1, 0, //bottom right
                 //far face
-                1, 1, //top right
-                0, 1, // top left
+                1, 1, //top right 
+                0, 1, // top left corner of ndc
                 0, 0, //bottom left
                 1, 0; //bottom right
             frustum_mesh->F=F;
@@ -147,6 +148,70 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
             frustum_mesh->m_vis.set_color_texture();
 
         }
+    }
+
+    {
+    //for debugging add also a ray going through the first pixel 
+    MeshSharedPtr mesh_debug=Mesh::create();
+    Eigen::Vector3d point_2D;
+    point_2D << 0, 0, 1.0; 
+    Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D; 
+    Eigen::Vector3d ray=point_3D_camera_coord.normalized();
+    ray*=5.0;
+    mesh_debug->V.resize(2,3);
+    mesh_debug->V.row(0) << 0,0,0;
+    mesh_debug->V.row(1) = ray;
+    mesh_debug->E.resize(1,2);
+    mesh_debug->E.row(0) << 0,1;
+    mesh_debug->m_vis.m_show_lines=true;
+    mesh_debug->m_vis.m_line_color<<0,1,0;
+    mesh_debug->m_model_matrix=frustum_mesh->m_model_matrix;
+    Scene::show(mesh_debug, "debug_orig");
+    }
+
+    {
+    //for debugging add also a ray going through the first pixel 
+    MeshSharedPtr mesh_debug=Mesh::create();
+    Eigen::Vector3d point_2D;
+    point_2D << 100, 0, 1.0; 
+    Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D; 
+    Eigen::Vector3d ray=point_3D_camera_coord.normalized();
+    ray*=5.0;
+    mesh_debug->V.resize(2,3);
+    mesh_debug->V.row(0) << 0,0,0;
+    mesh_debug->V.row(1) = ray;
+    mesh_debug->E.resize(1,2);
+    mesh_debug->E.row(0) << 0,1;
+    mesh_debug->m_vis.m_show_lines=true;
+    mesh_debug->m_vis.m_line_color<<0,1,0;
+    mesh_debug->m_model_matrix=frustum_mesh->m_model_matrix;
+    Scene::show(mesh_debug, "debug_100x");
+    }
+
+    {
+    //for debugging also a plane with a texture on it
+    MeshSharedPtr mesh_debug=Mesh::create();
+    //V
+    mesh_debug->V.resize(4,3);
+    mesh_debug->V.row(0) << 0,0,0;
+    mesh_debug->V.row(1) << 1,0,0;
+    mesh_debug->V.row(2) << 1,1,0;
+    mesh_debug->V.row(3) << 0,1,0;
+    //UV 
+    mesh_debug->UV.resize(4,2);
+    mesh_debug->UV.row(0) << 0,0;
+    mesh_debug->UV.row(1) << 1,0;
+    mesh_debug->UV.row(2) << 1,1;
+    mesh_debug->UV.row(3) << 0,1;
+    //F
+    mesh_debug->F.resize(2,3);
+    mesh_debug->F.row(0) << 0,1,2;
+    mesh_debug->F.row(1) << 0,2,3;
+    mesh_debug->recalculate_normals();
+    mesh_debug->m_vis.m_show_mesh=true;
+    mesh_debug->set_diffuse_tex(rgb_8u);
+    mesh_debug->m_vis.set_color_texture();
+    Scene::show(mesh_debug, "tex");
     }
     
 
@@ -172,11 +237,12 @@ cv::Mat Frame::depth2world_xyz_mat() const{
         for(int x=0; x<depth.cols; x++){
             // int idx_insert= y*depth.cols + x;
 
-            float depth_val = depth.at<float>(y,x);
+            float depth_val = depth.at<float>(y,x); 
             if(depth_val!=0.0){
 
                 Eigen::Vector3d point_2D;
-                point_2D << x, y, 1.0; 
+                //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
+                point_2D << x, depth.rows-y, 1.0;  
                 Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D; 
                 point_3D_camera_coord*=depth_val;
                 Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
@@ -285,7 +351,8 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
     for(int y=0; y<height; y++){
         for(int x=0; x<width; x++){
             Eigen::Vector3f point_screen;
-            point_screen << x,y,1.0;
+            //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
+            point_screen << x,height-y,1.0;
 
             Eigen::Vector3f point_cam_coords;
             point_cam_coords=K.inverse()*point_screen;
@@ -379,8 +446,9 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         V_transformed(i,1)/=V_transformed(i,2);
         // V_transformed(i,2)=1.0;
 
+        //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
         int x=V_transformed(i,0);
-        int y=V_transformed(i,1);
+        int y=height-V_transformed(i,1);
         if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
             continue;
         }

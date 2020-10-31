@@ -1723,7 +1723,7 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
 
 void Mesh::set_diffuse_tex(const std::string file_path){
     cv::Mat mat = cv::imread(file_path);
-    cv::flip(mat, m_diffuse_mat.mat, 0);
+    cv::flip(mat, m_diffuse_mat.mat, 0); //opencv mat has origin of the texture on the upper left but opengl expect it to be on the lower left so we flip the texture. https://gamedev.stackexchange.com/questions/26175/how-do-i-load-a-texture-in-opengl-where-the-origin-of-the-texture0-0-isnt-in
     m_diffuse_mat.is_dirty=true;
 }
 void Mesh::set_metalness_tex(const std::string file_path){
