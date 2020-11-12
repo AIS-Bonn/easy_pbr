@@ -32,6 +32,30 @@ LabelMngr::LabelMngr(const std::string labels_file, const std::string color_sche
     read_data(labels_file ,color_scheme_file, frequency_file);
 }
 
+//creates some random colors for X nr of classes and set unlabeled idx to color black
+LabelMngr::LabelMngr(const int nr_classes, const int unlabeled_idx ){
+    m_unlabeled_idx=unlabeled_idx;
+    m_nr_classes=nr_classes;
+
+
+    //init all the internal stuff 
+    for (int i=0; i<nr_classes; i++){
+        std::string class_name="class_" + std::to_string(i);
+        m_idx2label.push_back( class_name );
+        m_label2idx[class_name]=i;
+    }
+
+    //colorscheme 
+    m_C_per_class.resize(nr_classes,3);
+    m_C_per_class.setRandom(); //fill with random in range [-1,1]
+    m_C_per_class=(m_C_per_class+ Eigen::MatrixXd::Constant(nr_classes,3, 1.0) )*0.5;
+    m_C_per_class.row(unlabeled_idx).setZero(); //unlabeled index is always black
+
+    //freq 
+    m_frequency_per_class.resize(nr_classes);
+    m_frequency_per_class.setZero();
+
+}
 
 void LabelMngr::init_params(const Config& config ){
 
@@ -121,6 +145,7 @@ void LabelMngr::read_data(const std::string labels_file, const std::string color
 
     //read frequencies of each class
     m_frequency_per_class.resize(m_nr_classes);
+    m_frequency_per_class.setZero();
     int class_frequencies_read=0;
     std::ifstream frequency_input(frequency_file );
     if(!frequency_input.is_open()){

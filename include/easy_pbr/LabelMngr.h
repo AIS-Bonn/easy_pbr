@@ -19,6 +19,7 @@ class LabelMngr : public std::enable_shared_from_this<LabelMngr>{ //the enable s
 public:
     LabelMngr(const configuru::Config& config);
     LabelMngr(const std::string labels_file, const std::string colors_cheme_file, const std::string frequency_file, const int unlabeled_idx );
+    LabelMngr(const int nr_classes, const int unlabeled_idx ); //creates some random colors for X nr of classes and set unlabeled idx to color black
 
     int nr_classes();
     // int get_idx_background(); //I know what it is but I don't care (in image segmentation it may be just the clutter behing an object that we don't care about labeling)
