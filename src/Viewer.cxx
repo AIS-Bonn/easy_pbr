@@ -485,12 +485,8 @@ void Viewer::init_opengl(){
 
     //initialize a cubemap 
     integrate_brdf(m_brdf_lut_tex); //we leave it outside the if because when we drag some hdr map into the viewer we don't want to integrate the brdf every time
-    if(m_enable_ibl){
-        read_background_img(m_background_tex, m_environment_map_path);
-        //if it's equirectangular we convert it to cubemap because it is faster to sample
-        equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
-        radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
-        prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
+    if(m_enable_ibl){ 
+        load_environment_map(m_environment_map_path);
     }
 
 
@@ -2212,9 +2208,20 @@ gl::Texture2D& Viewer::rendered_tex_with_gui(){
 
 void Viewer::load_environment_map(const std::string path){
 
+    //check if the path is relative 
+    std::string path_abs;
+    if (fs::path(path).is_relative()){
+        path_abs=(fs::path(PROJECT_SOURCE_DIR) / path).string();
+    }else{
+        path_abs=path;
+    }
+
+    CHECK(fs::is_regular_file(path_abs)) << "Could not open environment map from file " << path_abs;
+
+
     m_enable_ibl=true;
 
-    read_background_img(m_background_tex, path);
+    read_background_img(m_background_tex, path_abs);
     //if it's equirectangular we convert it to cubemap because it is faster to sample
     equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex);
     radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);

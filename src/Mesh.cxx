@@ -542,6 +542,14 @@ void Mesh::load_from_file(const std::string file_path){
         m_vis.set_color_pervertcolor();
     }
 
+    //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+    //if we have texture coordinates and normal vectors, we will be able to load a normal map from file and therefore we will need the TBN matrix. 
+    //we precompute here the tangent vector and leave the bitangent in the vertex shader
+    recalculate_normals();
+    if(NV.size()&&UV.size()){
+        compute_tangents(); //
+    }
+
     //calculate the min and max y which will be useful for coloring
     m_min_max_y(0)=V.col(1).minCoeff();
     m_min_max_y(1)=V.col(1).maxCoeff();
@@ -1550,36 +1558,108 @@ void Mesh::compute_tangents(const float tangent_length){
     CHECK(NV.size()) << "We expect a mesh with normals but thise one has none. Please use recalculate_normals() first";
     CHECK(NV.rows()==V.rows()) << "We expect that evey point has a normal vector however we have V.rows " << V.rows() << " and NV.rows " << NV.rows();
 
-    //in order to get the tangent and bitanget from a series of normal vectors, we do a cross product between a template vector and the normal, this will get us the tangent. Afterward, another cross product between normalized tangent and normals gives us the bitangent.
 
     V_tangent_u.resize(V.rows(),3);
+    Eigen::MatrixXd  V_bitangent;
+    V_bitangent.resize(V.rows(),3);
     V_length_v.resize(V.rows(),1);
+    V_tangent_u.setZero();
+    V_length_v.setOnes();
+    V_bitangent.setZero();
 
-    Eigen::Matrix3d basis;
-    basis.setIdentity();
-    int cur_template_idx=0;
+    Eigen::VectorXi degree_vertices;
+    degree_vertices.resize(V.rows());
+    degree_vertices.setZero();
 
-    for (int i = 0; i < NV.rows(); i++){
-        Eigen::Vector3d n = NV.row(i);
+    //if we have UV per vertex then we can calculate a tangent that is aligned with the U direction
+    //code from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+    //more explanation in https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+    if(UV.size() && F.size()){
+        //compute the tangent for each triangle and then average for each vertex
+        for(int f=0; f<F.rows(); f++){
+            //increase the degree for the vertices we touch
+            degree_vertices(F(f,0))++;
+            degree_vertices(F(f,1))++;
+            degree_vertices(F(f,2))++;
 
-        //if the normal and the vector we are going to do the cross product with are almost the same then we won't get a tangent
-        float diff=0.0;
-        float eps=0.001;
-        Eigen::Vector3d vec;
-        do {
-            vec = basis.col(cur_template_idx);
-            diff = (n-vec).norm();
-            if(diff<eps){
-                cur_template_idx +=1;
-                cur_template_idx=cur_template_idx%3;
-            }
-        } while (diff<eps);
+            Eigen::Vector3d v0 = V.row(F(f,0));
+            Eigen::Vector3d v1 = V.row(F(f,1));
+            Eigen::Vector3d v2 = V.row(F(f,2));
 
-        //cross product to get the tangent 
+            Eigen::Vector2d uv0 = UV.row(F(f,0));
+            Eigen::Vector2d uv1 = UV.row(F(f,1));
+            Eigen::Vector2d uv2 = UV.row(F(f,2));
 
-        Eigen::Vector3d tangent = n.cross(vec).normalized();
-        V_tangent_u.row(i) = tangent*tangent_length;
-        V_length_v(i,0) = tangent_length;
+             // Edges of the triangle : position delta
+            Eigen::Vector3d deltaPos1 = v1-v0;
+            Eigen::Vector3d deltaPos2 = v2-v0;
+
+            // UV delta
+            Eigen::Vector2d deltaUV1 = uv1-uv0;
+            Eigen::Vector2d deltaUV2 = uv2-uv0;
+
+            float r = 1.0f / (deltaUV1.x() * deltaUV2.y() - deltaUV1.y() * deltaUV2.x() );
+            Eigen::Vector3d tangent = (deltaPos1 * deltaUV2.y()   - deltaPos2 * deltaUV1.y() )*r;
+            Eigen::Vector3d  bitangent = (deltaPos2 * deltaUV1.x()   - deltaPos1 * deltaUV2.x() )*r;
+
+            V_tangent_u.row(F(f,0)) += tangent; 
+            V_tangent_u.row(F(f,1)) += tangent; 
+            V_tangent_u.row(F(f,2)) += tangent; 
+            V_bitangent.row(F(f,0)) += bitangent; 
+            V_bitangent.row(F(f,1)) += bitangent; 
+            V_bitangent.row(F(f,2)) += bitangent; 
+        }
+
+        //average the tangent and bitangent per vector and then normalize then
+        // V_tangent_u = V_tangent_u.array()/ degree_vertices.array();
+        // V_bitangent = V_bitangent.array()/ degree_vertices.array();
+        for(int i=0; i<V.rows(); i++){
+            V_tangent_u.row(i) = V_tangent_u.row(i)/degree_vertices(i);
+            V_bitangent.row(i) = V_bitangent.row(i)/degree_vertices(i);
+        }
+        V_tangent_u.rowwise().normalize();
+        V_bitangent.rowwise().normalize();
+
+
+        //compute the normal as the cross between the tangent and bitangnet
+        for(int i=0; i<V.rows(); i++){
+            Eigen::Vector3d T = V_tangent_u.row(i);
+            Eigen::Vector3d B = V_bitangent.row(i);
+            NV.row(i) = T.cross( B );
+        }
+
+    }else{
+        //we don't have uv so we get a random tangent vector
+        //in order to get the tangent and bitanget from a series of normal vectors, we do a cross product between a template vector and the normal, this will get us the tangent. Afterward, another cross product between normalized tangent and normals gives us the bitangent.
+
+
+        Eigen::Matrix3d basis;
+        basis.setIdentity();
+        int cur_template_idx=0;
+
+        for (int i = 0; i < NV.rows(); i++){
+            Eigen::Vector3d n = NV.row(i);
+
+            //if the normal and the vector we are going to do the cross product with are almost the same then we won't get a tangent
+            float diff=0.0;
+            float eps=0.001;
+            Eigen::Vector3d vec;
+            do {
+                vec = basis.col(cur_template_idx);
+                diff = (n-vec).norm();
+                if(diff<eps){
+                    cur_template_idx +=1;
+                    cur_template_idx=cur_template_idx%3;
+                }
+            } while (diff<eps);
+
+            //cross product to get the tangent 
+
+            Eigen::Vector3d tangent = n.cross(vec).normalized();
+            V_tangent_u.row(i) = tangent*tangent_length;
+            V_length_v(i,0) = tangent_length;
+        }
+
 
 
     }
