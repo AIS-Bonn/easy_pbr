@@ -3,6 +3,7 @@
 //in
 in vec3 position;
 in vec3 normal;
+in vec3 tangent; //T vector fom the TBN. We have already the N and we reconstruct the B with a cross product
 in vec3 color_per_vertex;
 in vec2 uv;
 in int label_pred_per_vertex;
@@ -18,7 +19,7 @@ layout(location = 1) out vec3 position_cam_coords_out; //position of the vertex 
 layout(location = 3) out vec3 color_per_vertex_out;
 layout(location = 4) out vec2 uv_out;
 layout(location = 5) out vec3 position_world_out; //useful for some hacks like when when we want to discard all fragments above a certain height
-
+layout(location = 6) out mat3 TBN_out;
 
 
 //uniforms
@@ -50,6 +51,16 @@ void main(){
 
    gl_Position = MVP*vec4(position, 1.0);
 
+   //tbn matrix 
+   vec3 bitangent = cross(normal, tangent);  //calculate the bitgent in the object coordinate system. The tangent and normal are also in the object coordinate system
+
+   //get the tbn vectors from the model to the world coordinate system
+   vec3 T = normalize(vec3(M * vec4(tangent,   0.0)));
+   vec3 B = normalize(vec3(M * vec4(bitangent, 0.0)));
+   vec3 N = normalize(vec3(M * vec4(normal,    0.0)));
+   mat3 TBN = mat3(T, B, N);
+   TBN_out=TBN;
+
 
    //TODO normals also have to be rotated by the model matrix (at the moment it's only identity so its fine)
    normal_out=normalize(vec3(M*vec4(normal,0.0))); //normals are not affected by translation so the homogenous component is 0
@@ -72,8 +83,8 @@ void main(){
         color_per_vertex_out=color_scheme[label_pred_per_vertex];
     }else if(color_type==4){ //semantic gt
         color_per_vertex_out=color_scheme[label_gt_per_vertex];
-    }else if(color_type==5){ //normal vector
-        color_per_vertex_out=(normal_out+1.0)/2.0;
+    // }else if(color_type==5){ //normal vector //NORMAL WILL BE OUTPUTTED FROM FRAGMENT SHADER BECAUSE sometime we might want to do normal mapping and only the framgne thas acces to that
+        // color_per_vertex_out=(normal_out+1.0)/2.0;
     // }else if(color_type==6){ //SSAO CANNOT BE DONE HERE AS IT CAN ONLY BE DONE BY THE COMPOSE SHADER
         // color_per_vertex_out=vec3(0);
     }else if(color_type==6){ //height

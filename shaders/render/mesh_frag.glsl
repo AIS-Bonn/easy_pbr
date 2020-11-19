@@ -7,6 +7,7 @@ layout(location = 1) in vec3 position_cam_coords_in; //position of the vertex in
 layout(location = 3) in vec3 color_per_vertex_in;
 layout(location = 4) in vec2 uv_in;
 layout(location = 5) in vec3 position_world_in;
+layout(location = 6) in mat3 TBN_in;
 
 
 
@@ -29,7 +30,7 @@ uniform sampler2D normals_tex;
 uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
-// uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
@@ -94,6 +95,14 @@ void main(){
     float roughness_out=roughness;
     vec3 normal_to_encode=normal_in;
 
+    //if we have a normal map texture we get the normal from there 
+    if (has_normals_tex){
+        vec3 normal = texture(normals_tex, uv_in).rgb;
+        normal = normal * 2.0 - 1.0;   
+        normal = normalize(TBN_in * normal); 
+        normal_to_encode=normal;
+    }
+
 
     if(color_type==2){ //TEXTURE
         if(has_diffuse_tex){
@@ -119,7 +128,8 @@ void main(){
             // normal_to_encode+=normal_deviation;
             // normal_to_encode=normalize(normal_to_encode);
         // }
-        
+    }else if(color_type==5){ //normal vector //NORMAL WILL BE OUTPUTTED FROM FRAGMENT SHADER BECAUSE sometime we might want to do normal mapping and only the framgne thas acces to that
+        diffuse_out=vec4( (normal_to_encode+1.0)/2.0, 1.0 );
     }else{
         diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }

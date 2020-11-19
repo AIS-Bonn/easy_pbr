@@ -411,10 +411,11 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_diffuse_tex",  py::overload_cast<const std::string > (&Mesh::set_diffuse_tex) )
     .def("set_metalness_tex", py::overload_cast<const std::string > (&Mesh::set_metalness_tex) )
     .def("set_roughness_tex", py::overload_cast<const std::string > (&Mesh::set_roughness_tex) )
+    .def("set_normals_tex", py::overload_cast<const std::string > (&Mesh::set_normals_tex) )
     .def("set_diffuse_tex",  py::overload_cast<const cv::Mat& > (&Mesh::set_diffuse_tex) )
     .def("set_metalness_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_metalness_tex) )
     .def("set_roughness_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_roughness_tex) )
-    // .def("set_normals_tex", &Mesh::set_normals_tex )
+    .def("set_normals_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_normals_tex) )
     ;
 
     //Recorder
