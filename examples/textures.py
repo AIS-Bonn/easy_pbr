@@ -13,6 +13,7 @@ view=Viewer.create(config_file)
 #lantern
 mesh=Mesh("./data/textured/lantern/lantern_obj.obj")
 mesh.set_diffuse_tex("./data/textured/lantern/textures/lantern_Base_Color.jpg")
+mesh.set_normals_tex("./data/textured/lantern/textures/lantern_Normal_OpenGL.jpg")
 mesh.set_metalness_tex("./data/textured/lantern/textures/lantern_Metallic.jpg")
 mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
 

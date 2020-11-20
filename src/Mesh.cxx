@@ -42,6 +42,7 @@
 #include "numerical_utils.h"
 #include "eigen_utils.h"
 #include "string_utils.h"
+#include "opencv_utils.h"
 using namespace radu::utils;
 
 //boost
@@ -1800,42 +1801,93 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
     // return ret_matches;
 }
 
-
-void Mesh::set_diffuse_tex(const std::string file_path){
+void Mesh::set_diffuse_tex(const std::string file_path, const int subsample){
     cv::Mat mat = cv::imread(file_path);
-    cv::flip(mat, m_diffuse_mat.mat, 0); //opencv mat has origin of the texture on the upper left but opengl expect it to be on the lower left so we flip the texture. https://gamedev.stackexchange.com/questions/26175/how-do-i-load-a-texture-in-opengl-where-the-origin-of-the-texture0-0-isnt-in
-    m_diffuse_mat.is_dirty=true;
+    set_diffuse_tex(mat, subsample);
 }
-void Mesh::set_metalness_tex(const std::string file_path){
+void Mesh::set_metalness_tex(const std::string file_path, const int subsample){
     cv::Mat mat = cv::imread(file_path);
-    cv::flip(mat, m_metalness_mat.mat, 0);
-    m_metalness_mat.is_dirty=true;
+    set_metalness_tex(mat, subsample);
 }
-void Mesh::set_roughness_tex(const std::string file_path){
+void Mesh::set_roughness_tex(const std::string file_path, const int subsample){
     cv::Mat mat = cv::imread(file_path);
-    cv::flip(mat, m_roughness_mat.mat, 0);
-    m_roughness_mat.is_dirty=true;
+    set_roughness_tex(mat, subsample);
 }
-void Mesh::set_normals_tex(const std::string file_path){
+void Mesh::set_gloss_tex(const std::string file_path, const int subsample){
+    cv::Mat gloss = cv::imread(file_path);
+    set_gloss_tex(gloss, subsample);
+}
+void Mesh::set_normals_tex(const std::string file_path, const int subsample){
     cv::Mat mat = cv::imread(file_path);
-    cv::flip(mat, m_normals_mat.mat, 0);
-    m_normals_mat.is_dirty=true;
+    set_normals_tex(mat, subsample);
 }
 //using a mat directly
-void Mesh::set_diffuse_tex(const cv::Mat& mat){
-    cv::flip(mat, m_diffuse_mat.mat, 0);
+void Mesh::set_diffuse_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Diffuse mat is empty";
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::flip(mat_internal, m_diffuse_mat.mat, 0); //opencv mat has origin of the texture on the upper left but opengl expect it to be on the lower left so we flip the texture. https://gamedev.stackexchange.com/questions/26175/how-do-i-load-a-texture-in-opengl-where-the-origin-of-the-texture0-0-isnt-in
     m_diffuse_mat.is_dirty=true;
+    m_vis.set_color_texture(); //if we have diffuse we might as well just switch to actually display it
 }
-void Mesh::set_metalness_tex(const cv::Mat& mat){
-    cv::flip(mat, m_metalness_mat.mat, 0);
+void Mesh::set_metalness_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Metalness mat is empty";
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::flip(mat_internal, m_metalness_mat.mat, 0);
     m_metalness_mat.is_dirty=true;
 }
-void Mesh::set_roughness_tex(const cv::Mat& mat){
-    cv::flip(mat, m_roughness_mat.mat, 0);
+void Mesh::set_roughness_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Roughness mat is empty";
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::flip(mat_internal, m_roughness_mat.mat, 0);
     m_roughness_mat.is_dirty=true;
 }
-void Mesh::set_normals_tex(const cv::Mat& mat){
-    cv::flip(mat, m_normals_mat.mat, 0);
+void Mesh::set_gloss_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Gloss mat is empty"; 
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::Mat rough;
+    cv::subtract(cv::Scalar::all(255),mat_internal,rough);
+    cv::flip(rough, m_roughness_mat.mat, 0);
+    m_roughness_mat.is_dirty=true;
+}
+void Mesh::set_normals_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Normals mat is empty";
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::flip(mat_internal, m_normals_mat.mat, 0);
     m_normals_mat.is_dirty=true;
 }
 

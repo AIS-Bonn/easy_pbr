@@ -396,6 +396,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("upsample", &Mesh::upsample )
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
     .def("compute_tangents", &Mesh::compute_tangents, py::arg("tangent_length") = 1.0)
+    // .def("compute_tangents", py::overload_cast<const float>(&Mesh::compute_tangents), py::arg("tangent_length") = 1.0)
     .def("create_grid", &Mesh::create_grid )
     // .def("rotate_x_axis", &Mesh::rotate_x_axis )
     // .def("rotate_y_axis", &Mesh::rotate_y_axis )
@@ -408,14 +409,16 @@ PYBIND11_MODULE(easypbr, m) {
     .def("add_child", &Mesh::add_child )
     .def("radius_search", &Mesh::radius_search )
     .def("color_from_label_indices", &Mesh::color_from_label_indices )
-    .def("set_diffuse_tex",  py::overload_cast<const std::string > (&Mesh::set_diffuse_tex) )
-    .def("set_metalness_tex", py::overload_cast<const std::string > (&Mesh::set_metalness_tex) )
-    .def("set_roughness_tex", py::overload_cast<const std::string > (&Mesh::set_roughness_tex) )
-    .def("set_normals_tex", py::overload_cast<const std::string > (&Mesh::set_normals_tex) )
-    .def("set_diffuse_tex",  py::overload_cast<const cv::Mat& > (&Mesh::set_diffuse_tex) )
-    .def("set_metalness_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_metalness_tex) )
-    .def("set_roughness_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_roughness_tex) )
-    .def("set_normals_tex", py::overload_cast<const cv::Mat& > (&Mesh::set_normals_tex) )
+    .def("set_diffuse_tex",  py::overload_cast<const std::string, const int> (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )  //https://github.com/pybind/pybind11/issues/876
+    .def("set_metalness_tex", py::overload_cast<const std::string, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_roughness_tex", py::overload_cast<const std::string, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_gloss_tex", py::overload_cast<const std::string, const int > (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_normals_tex", py::overload_cast<const std::string, const int > (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_diffuse_tex",  py::overload_cast<const cv::Mat&, const int > (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_metalness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_roughness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_gloss_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_normals_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     ;
 
     //Recorder
