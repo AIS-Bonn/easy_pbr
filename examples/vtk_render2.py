@@ -4,11 +4,13 @@ import os
 import sys
 
 import vtk
+import easypbr
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-
+ms_acum=0
+nr_iters=0
 
 #parts from https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/Testing/Cxx/TestPBRHdrEnvironment.cxx
 
@@ -117,6 +119,20 @@ def ReadHDR(path):
 
     # return equi2cube
     return texture
+
+
+def CallbackFunction(obj, ev ):
+    # print("awd")
+    # fps=1.0/obj.GetLastRenderTimeInSeconds()
+    # print("fps is ", fps)
+    ms= obj.GetLastRenderTimeInSeconds()*0.001 
+    # ms_acum=ms_acum+ms
+    # nr_iters+=1
+    # print("avg ms ", ms_acum/nr_iters )
+    # print("ms is ", ms)
+    print("s is ", obj.GetLastRenderTimeInSeconds() )
+
+
 
 # cube_path="/media/rosu/Data/phd/ws/vtk/Testing/Data/skybox"
 # hdr_path="/media/rosu/Data/data/hdri_haven/mbpbcRtwt7LykKNWC62lCEpQDJd_ebLn.jpg"
@@ -325,10 +341,31 @@ renderer.AddLight(light_2)
 # renderer.GetActiveCamera().SetUseHorizontalViewAngle(40)
 
 
+#get a callback for the endevent to print framerate https://vtk.org/Wiki/VTK/Examples/Cxx/Utilities/FrameRate
+#more code in https://vtk.org/Wiki/VTK/Examples/Python/Interaction/MouseEventsObserver
+# renderer.AddObserver( vtk.vtkCommand.EndEvent , CallbackFunction)
+
+
+
+#make rnederer render constantly as fast as it can 
+renderer.InteractiveOff()
+
+
+#set ssao 
+# renderer.SetUseSSAO(True)
+# renderer.SetSSAORadius(0.035)
+# renderer.SetSSAOBlur(True)
 
 
 
 interactor.SetRenderWindow(renderWindow)
 
-renderWindow.Render()
-interactor.Start()
+easypbr.Profiler.set_profile_gpu(True)
+while True:
+    easypbr.Profiler.start("forward")
+    renderWindow.Render()
+    easypbr.Profiler.end("forward")
+    easypbr.Profiler.print_all_stats()
+    # elapsed=ELAPSED("forward")
+    # print
+# interactor.Start()
