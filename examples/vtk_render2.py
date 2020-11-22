@@ -10,6 +10,8 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 
+#parts from https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/Testing/Cxx/TestPBRHdrEnvironment.cxx
+
 
 
 def ReadCubeMap(folderRoot, fileRoot, ext, key):
@@ -90,21 +92,37 @@ def GetTexture(file_name):
 
 def ReadHDR(path):
 
-    hdr_equilateral=GetTexture(path)
+    # hdr_equilateral=GetTexture(path)
+    
 
-    equi2cube = vtk.vtkEquirectangularToCubeMapTexture()
-    # help(equi2cube)
-    # print("nr outputs", equi2cube.GetNumberOfOutputPorts() )
-    # exit(1)
-    equi2cube.SetInputTexture(hdr_equilateral)
-    equi2cube.SetCubeMapSize(512)
+    #read hdr https://blog.kitware.com/pbrj1/
+    reader=vtk.vtkHDRReader()
+    reader.SetFileName(path)
+    reader.Update()
 
+    texture=vtk.vtkTexture()
+    texture.SetColorModeToDirectScalars()
+    texture.MipmapOn()
+    texture.InterpolateOn()
+    texture.SetInputConnection(reader.GetOutputPort())
+    texture.Update()
+    # hdr_equilateral=texture
 
-    return equi2cube
+    # equi2cube = vtk.vtkEquirectangularToCubeMapTexture()
+    # # help(equi2cube)
+    # # print("nr outputs", equi2cube.GetNumberOfOutputPorts() )
+    # # exit(1)
+    # equi2cube.SetInputTexture(hdr_equilateral)
+    # equi2cube.SetCubeMapSize(512)
+
+    # return equi2cube
+    return texture
 
 # cube_path="/media/rosu/Data/phd/ws/vtk/Testing/Data/skybox"
 # hdr_path="/media/rosu/Data/data/hdri_haven/mbpbcRtwt7LykKNWC62lCEpQDJd_ebLn.jpg"
-hdr_path="/media/rosu/Data/data/hdri_haven/nature/epping_forest_02.jpg"
+# hdr_path="/media/rosu/Data/data/hdri_haven/nature/epping_forest_02.jpg"
+# hdr_path="/media/rosu/Data/data/hdri_haven/nature/epping_forest_01.jpg"
+hdr_path="/media/rosu/Data/data/hdri_haven/nature/epping_forest_01_4k.hdr"
 cubemap=ReadHDR(hdr_path)
 # cubemap = ReadCubeMap(cube_path, '/', '.jpg', 3)
 # cubemap = ReadCubeMap(cube_path, '/skybox', '.jpg', 2)
@@ -114,10 +132,10 @@ cubemap=ReadHDR(hdr_path)
 # skybox = ReadCubeMap(cube_path, '/', '.jpg', 0)
 # skybox = ReadCubeMap(cube_path, '/', '.jpg', 3)
 # skybox = ReadCubeMap(cube_path, '/skybox', '.jpg', 2)
-skybox=ReadHDR(hdr_path)
-skybox.InterpolateOn()
-skybox.RepeatOff()
-skybox.EdgeClampOn()
+# skybox=ReadHDR(hdr_path)
+# skybox.InterpolateOn()
+# skybox.RepeatOff()
+# skybox.EdgeClampOn()
 
 
 renderer = vtk.vtkRenderer()
@@ -206,13 +224,106 @@ actor.GetProperty().SetNormalTexture(normal)
 
 renderer.UseImageBasedLightingOn()
 renderer.SetEnvironmentTexture(cubemap)
-renderer.SetBackground(colors.GetColor3d("BkgColor"))
+# renderer.SetTwoSidedLighting(False)
+# renderer.SetBackground(colors.GetColor3d("BkgColor"))
+renderer.GetEnvMapIrradiance().SetIrradianceStep(0.3)
 renderer.AddActor(actor)
 
 # Comment out if you don't want a skybox
-skyboxActor = vtk.vtkSkybox()
-skyboxActor.SetTexture(skybox)
+skyboxActor = vtk.vtkOpenGLSkybox()
+skyboxActor.SetTexture(cubemap)
+skyboxActor.SetFloorRight(0.0, 0.0, 1.0)
+skyboxActor.SetProjection(vtk.vtkSkybox.Sphere)
 renderer.AddActor(skyboxActor)
+
+
+
+#ssao  https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/Testing/Cxx/TestSSAOPass.cxx
+# basicPasses=vtk.vtkRenderStepsPass()
+#from https://discourse.vtk.org/t/enabling-self-occlusion-shadows-wrt-image-based-skybox-lighting/4358/2
+# passes = vtk.vtkRenderPassCollection()
+# passes.AddItem(vtk.vtkRenderStepsPass())
+# seq = vtk.vtkSequencePass()
+# seq.SetPasses(passes)
+# ssao=vtk.vtkSSAOPass()
+# ssao.SetDelegatePass(seq)
+# ssao.SetRadius(0.035)
+# ssao.SetKernelSize(128)
+# ssao.BlurOff() # do not blur occlusion
+# renderer.SetPass(ssao)
+
+
+
+# #set tonemapping https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/Testing/Cxx/TestToneMappingPass.cxx
+cameraP=vtk.vtkCameraPass()
+seq=vtk.vtkSequencePass()
+opaque=vtk.vtkOpaquePass()
+lights=vtk.vtkLightsPass()
+
+passes=vtk.vtkRenderPassCollection()
+passes.AddItem(lights)
+passes.AddItem(opaque)
+seq.SetPasses(passes)
+cameraP.SetDelegatePass(seq)
+
+toneMappingP=vtk.vtkToneMappingPass()
+toneMappingP.SetToneMappingType(vtk.vtkToneMappingPass.GenericFilmic)
+toneMappingP.SetGenericFilmicDefaultPresets()
+toneMappingP.SetDelegatePass(cameraP)
+toneMappingP.SetExposure(0.2)
+# vtkOpenGLRenderer::SafeDownCast(renderer)->SetPass(toneMappingP);
+renderer.SetPass(toneMappingP)
+
+
+
+
+
+
+
+
+
+
+#lights 
+# view.spotlight_with_idx(0).from_string("1.28357 1.02985 1.09627 -0.219563  0.406239   0.10122 0.881201        0 0.132991        0 40 0.191147 19.1147")
+# view.spotlight_with_idx(0).m_power=11
+# view.spotlight_with_idx(0).m_color=[160/255, 225/255, 225/255]
+#light 0
+light_0 = vtk.vtkLight()
+light_0.SetPositional(1)
+light_0.SetPosition(1.28357, 1.02985, 1.09627 )
+light_0.SetColor(160/255, 225/255, 225/255)
+light_0.SetIntensity(11/1)
+#light 1
+# view.spotlight_with_idx(1).from_string("-1.11644  1.35694 0.953531 -0.309229 -0.393641 -0.142557 0.853874        0 0.132991        0 40 0.191147 19.1147")
+# view.spotlight_with_idx(1).m_power=11
+# view.spotlight_with_idx(1).m_color=[255/255, 225/255, 225/255]
+light_1 = vtk.vtkLight()
+light_1.SetPositional(1)
+light_1.SetPosition(-1.11644,  1.35694, 0.953531  )
+light_1.SetColor(255/255, 225/255, 225/255)
+light_1.SetIntensity(11/1)
+#light 2
+# view.spotlight_with_idx(2).from_string("0.00953877    1.36971   -1.45745 -0.00112774    0.938742    0.344605 0.00307224        0 0.132991        0 40 0.191147 19.1147")
+# view.spotlight_with_idx(2).m_power=40
+# view.spotlight_with_idx(2).m_color=[90/255, 221/255, 255/255]
+light_2 = vtk.vtkLight()
+light_2.SetPositional(1)
+light_2.SetPosition(0.00953877,    1.36971 ,  -1.45745   )
+light_2.SetColor(90/255, 221/255, 255/255)
+light_2.SetIntensity(40/1)
+
+
+#assign lights to renderer 
+renderer.AddLight(light_0)
+renderer.AddLight(light_1)
+renderer.AddLight(light_2)
+
+
+#Set camera 
+# view.m_camera.from_string("-0.614212  0.293787  0.377881 -0.0415488  -0.463654 -0.0217731 0.884773 -0.00559545    0.224117  -0.0433487 32 0.0320167 32.0167")
+# renderer.GetActiveCamera().SetPosition(-0.614212,  0.293787,  0.377881)
+# renderer.GetActiveCamera().SetUseHorizontalViewAngle(40)
+
 
 
 

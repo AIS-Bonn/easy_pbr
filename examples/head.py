@@ -26,6 +26,7 @@ head.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/H
 # head.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Gloss_8k.jpg")
 head.m_vis.m_roughness=0.49
 head.m_model_matrix.rotate_axis_angle([0,1,0], -80)
+head.apply_model_matrix_to_cpu(True)
 
 jacket=Mesh("/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Jacket/Jacket.OBJ")
 jacket.set_diffuse_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg", 4)
@@ -33,13 +34,14 @@ jacket.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures
 # jacket.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Gloss.jpg")
 jacket.m_vis.m_roughness=0.55
 jacket.m_model_matrix.rotate_axis_angle([0,1,0], -80)
+jacket.apply_model_matrix_to_cpu(True)
 
 jacket.name="jacket"
 head.add_child(jacket)
 
 view.m_camera.m_exposure=1.0
 view.spotlight_with_idx(2).from_string("0.00953877    1.36971   -1.45745 -0.00112774    0.938742    0.344605 0.00307224        0 0.132991        0 40 0.191147 19.1147")
-view.spotlight_with_idx(2).m_power=11
+view.spotlight_with_idx(2).m_power=40
 view.spotlight_with_idx(2).m_color=[90/255, 221/255, 255/255]
 view.spotlight_with_idx(1).from_string("-1.11644  1.35694 0.953531 -0.309229 -0.393641 -0.142557 0.853874        0 0.132991        0 40 0.191147 19.1147")
 view.spotlight_with_idx(1).m_power=11
