@@ -132,7 +132,60 @@ def CallbackFunction(obj, ev ):
     # print("ms is ", ms)
     print("s is ", obj.GetLastRenderTimeInSeconds() )
 
+def make_actor(mesh_path, diffuse_path, normal_path ):
+    albedo = GetTexture(diffuse_path)
+    albedo.UseSRGBColorSpaceOn()
+    normal = GetTexture(normal_path)
 
+    # reader = vtk.vtkOBJReader()
+    reader = vtk.vtkPLYReader()
+    reader.SetFileName(mesh_path)
+    reader.Update()
+    polydata=reader.GetOutputDataObject(0)
+
+    #make it into triangles
+    triangulator=vtk.vtkTriangleFilter()
+    triangulator.SetInputData(polydata)
+    triangulator.Update()
+    polydata=triangulator.GetOutput()
+
+
+    #compute tangents
+    tangents=vtk.vtkPolyDataTangents()
+    tangents.SetInputData(polydata)
+    tangents.Update()
+    polydata=tangents.GetOutput()
+
+    mapper = vtk.vtkPolyDataMapper()
+    # mapper.SetInputConnection(reader.GetOutputPort())
+    mapper.SetInputData(polydata)
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    actor.GetProperty().SetInterpolationToPBR()
+
+    colors = vtk.vtkNamedColors()
+    actor.GetProperty().SetColor(colors.GetColor3d('White'))
+    actor.GetProperty().SetMetallic(0.0)
+    actor.GetProperty().SetRoughness(0.5)
+
+    # configure textures (needs tcoords on the mesh)
+    actor.GetProperty().SetBaseColorTexture(albedo)
+    # help(actor.GetProperty())
+    # exit(1)
+    # actor.GetProperty().SetORMTexture(material)
+    # actor.GetProperty().SetOcclusionStrength(occlusionStrength)
+
+    # actor.GetProperty().SetEmissiveTexture(emissive)
+    # actor.GetProperty().SetEmissiveFactor(emissiveFactor)
+
+    # needs tcoords, normals and tangents on the mesh
+    normalScale = 1.0
+    actor.GetProperty().SetNormalTexture(normal)
+    actor.GetProperty().BackfaceCullingOn()
+
+    return actor
 
 # cube_path="/media/rosu/Data/phd/ws/vtk/Testing/Data/skybox"
 # hdr_path="/media/rosu/Data/data/hdri_haven/mbpbcRtwt7LykKNWC62lCEpQDJd_ebLn.jpg"
@@ -169,81 +222,20 @@ interactor.SetRenderWindow(renderWindow)
 obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/head.ply"
 diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
 normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
+jacket_obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/jacket.ply"
+jacket_diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg"
+jacket_normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg"
 
-
-#get textures 
-# material = GetTexture(material_fn)
-albedo = GetTexture(diffuse_path)
-albedo.UseSRGBColorSpaceOn()
-normal = GetTexture(normal_path)
-
-
-# Build the pipeline
-# mapper = vtk.vtkPolyDataMapper()
-# mapper.SetInputData(source)
-
-# actor = vtk.vtkActor()
-# actor.SetMapper(mapper)
-
-# reader = vtk.vtkOBJReader()
-reader = vtk.vtkPLYReader()
-reader.SetFileName(obj_path)
-reader.Update()
-polydata=reader.GetOutputDataObject(0)
-
-#make it into triangles
-triangulator=vtk.vtkTriangleFilter()
-triangulator.SetInputData(polydata)
-triangulator.Update()
-polydata=triangulator.GetOutput()
-
-
-#compute tangents
-tangents=vtk.vtkPolyDataTangents()
-tangents.SetInputData(polydata)
-tangents.Update()
-polydata=tangents.GetOutput()
-
-mapper = vtk.vtkPolyDataMapper()
-# mapper.SetInputConnection(reader.GetOutputPort())
-mapper.SetInputData(polydata)
-
-actor = vtk.vtkActor()
-actor.SetMapper(mapper)
-
-actor.GetProperty().SetInterpolationToPBR()
-
-
-
-
-
-# configure the basic properties
-colors = vtk.vtkNamedColors()
-actor.GetProperty().SetColor(colors.GetColor3d('White'))
-actor.GetProperty().SetMetallic(0.0)
-actor.GetProperty().SetRoughness(0.5)
-
-# configure textures (needs tcoords on the mesh)
-actor.GetProperty().SetBaseColorTexture(albedo)
-# help(actor.GetProperty())
-# exit(1)
-# actor.GetProperty().SetORMTexture(material)
-# actor.GetProperty().SetOcclusionStrength(occlusionStrength)
-
-# actor.GetProperty().SetEmissiveTexture(emissive)
-# actor.GetProperty().SetEmissiveFactor(emissiveFactor)
-
-# needs tcoords, normals and tangents on the mesh
-normalScale = 1.0
-actor.GetProperty().SetNormalTexture(normal)
-# actor.GetProperty().SetNormalScale(normalScale)
+head_actor=make_actor(obj_path, diffuse_path, normal_path)
+jacket_actor=make_actor(jacket_obj_path, jacket_diffuse_path, jacket_normal_path)
 
 renderer.UseImageBasedLightingOn()
 renderer.SetEnvironmentTexture(cubemap)
 # renderer.SetTwoSidedLighting(False)
 # renderer.SetBackground(colors.GetColor3d("BkgColor"))
 renderer.GetEnvMapIrradiance().SetIrradianceStep(0.3)
-renderer.AddActor(actor)
+renderer.AddActor(head_actor)
+renderer.AddActor(jacket_actor)
 
 # Comment out if you don't want a skybox
 skyboxActor = vtk.vtkOpenGLSkybox()
@@ -366,6 +358,6 @@ while True:
     renderWindow.Render()
     easypbr.Profiler.end("forward")
     easypbr.Profiler.print_all_stats()
-    # elapsed=ELAPSED("forward")
-    # print
+
+# renderWindow.Render()
 # interactor.Start()
