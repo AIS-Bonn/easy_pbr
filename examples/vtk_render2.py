@@ -221,29 +221,29 @@ interactor.SetRenderWindow(renderWindow)
 # diffuse_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Base_Color.jpg"
 # normal_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Normal_OpenGL.jpg"
 
-obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ"
-obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/head.ply"
-diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
-normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
-jacket_obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/jacket.ply"
-jacket_diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg"
-jacket_normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg"
+# obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ"
+# obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/head.ply"
+# diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
+# normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
+# jacket_obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/jacket.ply"
+# jacket_diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg"
+# jacket_normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg"
 #goliath
-# obj_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/goliath_subsampled.ply"
-# diffuse_path="none"
-# normal_path="none"
+obj_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/goliath_subsampled.ply"
+diffuse_path="none"
+normal_path="none"
 
 for i in range(1):
     head_actor=make_actor(obj_path, diffuse_path, normal_path)
-    jacket_actor=make_actor(jacket_obj_path, jacket_diffuse_path, jacket_normal_path)
-    transform = vtk.vtkTransform()
-    transform.PostMultiply()
-    transform.Translate(i*0.5, 0, 0)
-    head_actor.SetUserTransform(transform)
-    jacket_actor.SetUserTransform(transform)
+    # jacket_actor=make_actor(jacket_obj_path, jacket_diffuse_path, jacket_normal_path)
+    # transform = vtk.vtkTransform()
+    # transform.PostMultiply()
+    # transform.Translate(i*0.5, 0, 0)
+    # head_actor.SetUserTransform(transform)
+    # jacket_actor.SetUserTransform(transform)
   
     renderer.AddActor(head_actor)
-    renderer.AddActor(jacket_actor)
+    # renderer.AddActor(jacket_actor)
 
 renderer.UseImageBasedLightingOn()
 renderer.SetEnvironmentTexture(cubemap)
@@ -286,7 +286,23 @@ passes=vtk.vtkRenderPassCollection()
 passes.AddItem(lights)
 passes.AddItem(opaque)
 seq.SetPasses(passes)
+
+#shadows  https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/Testing/Cxx/TestShadowMapPass.cxx
+shadows=vtk.vtkShadowMapPass()
+shadows.GetShadowMapBakerPass().SetResolution(1024)
+# to cancel self->shadowing
+# shadows.GetShadowMapBakerPass().SetPolygonOffsetFactor(3.1)
+# shadows.GetShadowMapBakerPass().SetPolygonOffsetUnits(10.0)
+seq=vtk.vtkSequencePass()
+passes=vtk.vtkRenderPassCollection()
+passes.AddItem(lights)
+passes.AddItem(opaque)
+passes.AddItem(shadows.GetShadowMapBakerPass())
+passes.AddItem(shadows)
+seq.SetPasses(passes)
+cameraP=vtk.vtkCameraPass()
 cameraP.SetDelegatePass(seq)
+
 
 toneMappingP=vtk.vtkToneMappingPass()
 toneMappingP.SetToneMappingType(vtk.vtkToneMappingPass.GenericFilmic)
@@ -311,7 +327,8 @@ renderer.SetPass(toneMappingP)
 # view.spotlight_with_idx(0).m_color=[160/255, 225/255, 225/255]
 #light 0
 light_0 = vtk.vtkLight()
-light_0.SetPositional(1)
+light_0.SetFocalPoint(0, 0, 0)
+# light_0.SetPositional(1)
 light_0.SetPosition(1.28357, 1.02985, 1.09627 )
 light_0.SetColor(160/255, 225/255, 225/255)
 light_0.SetIntensity(11/1)
@@ -320,7 +337,8 @@ light_0.SetIntensity(11/1)
 # view.spotlight_with_idx(1).m_power=11
 # view.spotlight_with_idx(1).m_color=[255/255, 225/255, 225/255]
 light_1 = vtk.vtkLight()
-light_1.SetPositional(1)
+light_1.SetFocalPoint(0, 0, 0)
+# light_1.SetPositional(1)
 light_1.SetPosition(-1.11644,  1.35694, 0.953531  )
 light_1.SetColor(255/255, 225/255, 225/255)
 light_1.SetIntensity(11/1)
@@ -329,7 +347,8 @@ light_1.SetIntensity(11/1)
 # view.spotlight_with_idx(2).m_power=40
 # view.spotlight_with_idx(2).m_color=[90/255, 221/255, 255/255]
 light_2 = vtk.vtkLight()
-light_2.SetPositional(1)
+light_2.SetFocalPoint(0, 0, 0)
+# light_2.SetPositional(1)
 light_2.SetPosition(0.00953877,    1.36971 ,  -1.45745   )
 light_2.SetColor(90/255, 221/255, 255/255)
 light_2.SetIntensity(40/1)
