@@ -188,15 +188,17 @@ public:
     float max_y();
 
     //set textures for pbr 
-    void set_diffuse_tex(const std::string file_path);
-    void set_metalness_tex(const std::string file_path);
-    void set_roughness_tex(const std::string file_path);
-    void set_normals_tex(const std::string file_path);
+    void set_diffuse_tex(const std::string file_path, const int subsample=1);
+    void set_metalness_tex(const std::string file_path, const int subsample=1);
+    void set_roughness_tex(const std::string file_path, const int subsample=1);
+    void set_gloss_tex(const std::string file_path, const int subsample=1);
+    void set_normals_tex(const std::string file_path, const int subsample=1);
     //using a mat directly
-    void set_diffuse_tex(const cv::Mat& mat);
-    void set_metalness_tex(const cv::Mat& mat);
-    void set_roughness_tex(const cv::Mat& mat);
-    void set_normals_tex(const cv::Mat& mat);
+    void set_diffuse_tex(const cv::Mat& mat, const int subsample=1);
+    void set_metalness_tex(const cv::Mat& mat, const int subsample=1);
+    void set_roughness_tex(const cv::Mat& mat, const int subsample=1);
+    void set_gloss_tex(const cv::Mat& mat, const int subsample=1);
+    void set_normals_tex(const cv::Mat& mat, const int subsample=1);
 
 
     friend std::ostream &operator<<(std::ostream&, const Mesh& m);

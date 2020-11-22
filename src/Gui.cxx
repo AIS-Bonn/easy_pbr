@@ -451,7 +451,7 @@ void Gui::draw_main_menu(){
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
  
 
-        // ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
+        ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
         ImGui::SameLine(); help_marker("Hides the mesh faces that are pointing away from the viewer. Offers a mild increase in performance.");
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);

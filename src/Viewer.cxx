@@ -2771,7 +2771,7 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
 
         std::string file_ext = std::string(paths[i]).substr(std::string(paths[i]).find_last_of(".") + 1);
         trim(file_ext); //remove whitespaces from beggining and end
-        if(file_ext=="hdr" || file_ext=="HDR"){
+        if(file_ext=="hdr" || file_ext=="HDR" || file_ext=="exr" || file_ext=="EXR"){
             //load environment map
             // read_background_img(m_background_tex, paths[i]);
             // equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample

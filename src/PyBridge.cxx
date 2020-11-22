@@ -271,6 +271,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("create_frustum_mesh", &Camera::create_frustum_mesh)
     .def("transform_model_matrix", &Camera::transform_model_matrix)
     .def("clone", &Camera::clone)
+    .def_readwrite("m_exposure", &Camera::m_exposure )
     .def_readwrite("m_near", &Camera::m_near )
     .def_readwrite("m_far", &Camera::m_far )
     .def_readwrite("m_fov", &Camera::m_fov )

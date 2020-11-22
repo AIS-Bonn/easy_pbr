@@ -82,6 +82,8 @@ def GetTexture(file_name):
 
     texture.SetInputConnection(imgReader.GetOutputPort())
     texture.Update()
+    texture.InterpolateOn()
+    texture.MipmapOn()
 
     return texture
 
@@ -100,8 +102,9 @@ def ReadHDR(path):
 
     return equi2cube
 
-cube_path="/media/rosu/Data/phd/ws/vtk/Testing/Data/skybox"
-hdr_path="/media/rosu/Data/data/hdri_haven/mbpbcRtwt7LykKNWC62lCEpQDJd_ebLn.jpg"
+# cube_path="/media/rosu/Data/phd/ws/vtk/Testing/Data/skybox"
+# hdr_path="/media/rosu/Data/data/hdri_haven/mbpbcRtwt7LykKNWC62lCEpQDJd_ebLn.jpg"
+hdr_path="/media/rosu/Data/data/hdri_haven/nature/epping_forest_02.jpg"
 cubemap=ReadHDR(hdr_path)
 # cubemap = ReadCubeMap(cube_path, '/', '.jpg', 3)
 # cubemap = ReadCubeMap(cube_path, '/skybox', '.jpg', 2)
@@ -124,13 +127,14 @@ interactor = vtk.vtkRenderWindowInteractor()
 interactor.SetRenderWindow(renderWindow)
 
 
-obj_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/lantern_obj.obj"
-diffuse_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Base_Color.jpg"
-normal_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Normal_OpenGL.jpg"
+# obj_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/lantern_obj.obj"
+# diffuse_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Base_Color.jpg"
+# normal_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Normal_OpenGL.jpg"
 
 # obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ"
-# diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
-# normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
+obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/head.ply"
+diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
+normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
 
 
 #get textures 
@@ -147,22 +151,43 @@ normal = GetTexture(normal_path)
 # actor = vtk.vtkActor()
 # actor.SetMapper(mapper)
 
-reader = vtk.vtkOBJReader()
+# reader = vtk.vtkOBJReader()
+reader = vtk.vtkPLYReader()
 reader.SetFileName(obj_path)
+reader.Update()
+polydata=reader.GetOutputDataObject(0)
+
+#make it into triangles
+triangulator=vtk.vtkTriangleFilter()
+triangulator.SetInputData(polydata)
+triangulator.Update()
+polydata=triangulator.GetOutput()
+
+
+#compute tangents
+tangents=vtk.vtkPolyDataTangents()
+tangents.SetInputData(polydata)
+tangents.Update()
+polydata=tangents.GetOutput()
 
 mapper = vtk.vtkPolyDataMapper()
-mapper.SetInputConnection(reader.GetOutputPort())
+# mapper.SetInputConnection(reader.GetOutputPort())
+mapper.SetInputData(polydata)
 
 actor = vtk.vtkActor()
 actor.SetMapper(mapper)
 
 actor.GetProperty().SetInterpolationToPBR()
 
+
+
+
+
 # configure the basic properties
 colors = vtk.vtkNamedColors()
 actor.GetProperty().SetColor(colors.GetColor3d('White'))
-actor.GetProperty().SetMetallic(1.0)
-actor.GetProperty().SetRoughness(0.1)
+actor.GetProperty().SetMetallic(0.0)
+actor.GetProperty().SetRoughness(0.5)
 
 # configure textures (needs tcoords on the mesh)
 actor.GetProperty().SetBaseColorTexture(albedo)
@@ -177,7 +202,7 @@ actor.GetProperty().SetBaseColorTexture(albedo)
 # needs tcoords, normals and tangents on the mesh
 normalScale = 1.0
 actor.GetProperty().SetNormalTexture(normal)
-actor.GetProperty().SetNormalScale(normalScale)
+# actor.GetProperty().SetNormalScale(normalScale)
 
 renderer.UseImageBasedLightingOn()
 renderer.SetEnvironmentTexture(cubemap)

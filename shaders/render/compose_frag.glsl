@@ -494,6 +494,8 @@ void main(){
 
             // Dielectrics have a constant low coeff, metals use the baseColor (ie reflections are tinted).
             vec3 F0 = mix(vec3(0.08), albedo, metalness);
+            // F0=vec3(0.1, 0.8, 0.8);
+            // F0*=0.1;
 
             // reflectance equation
             vec3 Lo = vec3(0.0);
@@ -565,6 +567,7 @@ void main(){
                 vec3 nominator    = NDF * G * F; 
                 float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
                 vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+                // specular=specular* vec3(0.1, 0.8, 0.8);
                 
                 // kS is equal to Fresnel
                 vec3 kS = F;
