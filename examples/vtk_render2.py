@@ -125,17 +125,18 @@ def CallbackFunction(obj, ev ):
     # print("awd")
     # fps=1.0/obj.GetLastRenderTimeInSeconds()
     # print("fps is ", fps)
-    ms= obj.GetLastRenderTimeInSeconds()*0.001 
+    ms= obj.GetLastRenderTimeInSeconds()*1000
     # ms_acum=ms_acum+ms
     # nr_iters+=1
     # print("avg ms ", ms_acum/nr_iters )
     # print("ms is ", ms)
-    print("s is ", obj.GetLastRenderTimeInSeconds() )
+    print("ms is ", ms )
 
 def make_actor(mesh_path, diffuse_path, normal_path ):
-    albedo = GetTexture(diffuse_path)
-    albedo.UseSRGBColorSpaceOn()
-    normal = GetTexture(normal_path)
+    if diffuse_path!="none":
+        albedo = GetTexture(diffuse_path)
+        albedo.UseSRGBColorSpaceOn()
+        normal = GetTexture(normal_path)
 
     # reader = vtk.vtkOBJReader()
     reader = vtk.vtkPLYReader()
@@ -143,18 +144,19 @@ def make_actor(mesh_path, diffuse_path, normal_path ):
     reader.Update()
     polydata=reader.GetOutputDataObject(0)
 
-    #make it into triangles
-    triangulator=vtk.vtkTriangleFilter()
-    triangulator.SetInputData(polydata)
-    triangulator.Update()
-    polydata=triangulator.GetOutput()
+    # #make it into triangles
+    # triangulator=vtk.vtkTriangleFilter()
+    # triangulator.SetInputData(polydata)
+    # triangulator.Update()
+    # polydata=triangulator.GetOutput()
 
 
     #compute tangents
-    tangents=vtk.vtkPolyDataTangents()
-    tangents.SetInputData(polydata)
-    tangents.Update()
-    polydata=tangents.GetOutput()
+    if diffuse_path!="none":
+        tangents=vtk.vtkPolyDataTangents()
+        tangents.SetInputData(polydata)
+        tangents.Update()
+        polydata=tangents.GetOutput()
 
     mapper = vtk.vtkPolyDataMapper()
     # mapper.SetInputConnection(reader.GetOutputPort())
@@ -171,7 +173,8 @@ def make_actor(mesh_path, diffuse_path, normal_path ):
     actor.GetProperty().SetRoughness(0.5)
 
     # configure textures (needs tcoords on the mesh)
-    actor.GetProperty().SetBaseColorTexture(albedo)
+    if diffuse_path!="none":
+        actor.GetProperty().SetBaseColorTexture(albedo)
     # help(actor.GetProperty())
     # exit(1)
     # actor.GetProperty().SetORMTexture(material)
@@ -181,8 +184,8 @@ def make_actor(mesh_path, diffuse_path, normal_path ):
     # actor.GetProperty().SetEmissiveFactor(emissiveFactor)
 
     # needs tcoords, normals and tangents on the mesh
-    normalScale = 1.0
-    actor.GetProperty().SetNormalTexture(normal)
+    if diffuse_path!="none":
+        actor.GetProperty().SetNormalTexture(normal)
     actor.GetProperty().BackfaceCullingOn()
 
     return actor
@@ -218,24 +221,35 @@ interactor.SetRenderWindow(renderWindow)
 # diffuse_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Base_Color.jpg"
 # normal_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/data/textured/lantern/textures/lantern_Normal_OpenGL.jpg"
 
-# obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ"
+obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ"
 obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/head.ply"
 diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg"
 normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg"
 jacket_obj_path="/media/rosu/Data/data/3d_objs/3d_scan_store/jacket.ply"
 jacket_diffuse_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg"
 jacket_normal_path="/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg"
+#goliath
+# obj_path="/media/rosu/Data/phd/c_ws/src/easy_pbr/goliath_subsampled.ply"
+# diffuse_path="none"
+# normal_path="none"
 
-head_actor=make_actor(obj_path, diffuse_path, normal_path)
-jacket_actor=make_actor(jacket_obj_path, jacket_diffuse_path, jacket_normal_path)
+for i in range(1):
+    head_actor=make_actor(obj_path, diffuse_path, normal_path)
+    jacket_actor=make_actor(jacket_obj_path, jacket_diffuse_path, jacket_normal_path)
+    transform = vtk.vtkTransform()
+    transform.PostMultiply()
+    transform.Translate(i*0.5, 0, 0)
+    head_actor.SetUserTransform(transform)
+    jacket_actor.SetUserTransform(transform)
+  
+    renderer.AddActor(head_actor)
+    renderer.AddActor(jacket_actor)
 
 renderer.UseImageBasedLightingOn()
 renderer.SetEnvironmentTexture(cubemap)
 # renderer.SetTwoSidedLighting(False)
 # renderer.SetBackground(colors.GetColor3d("BkgColor"))
 renderer.GetEnvMapIrradiance().SetIrradianceStep(0.3)
-renderer.AddActor(head_actor)
-renderer.AddActor(jacket_actor)
 
 # Comment out if you don't want a skybox
 skyboxActor = vtk.vtkOpenGLSkybox()
@@ -335,12 +349,13 @@ renderer.AddLight(light_2)
 
 #get a callback for the endevent to print framerate https://vtk.org/Wiki/VTK/Examples/Cxx/Utilities/FrameRate
 #more code in https://vtk.org/Wiki/VTK/Examples/Python/Interaction/MouseEventsObserver
-# renderer.AddObserver( vtk.vtkCommand.EndEvent , CallbackFunction)
+renderer.AddObserver( vtk.vtkCommand.EndEvent , CallbackFunction)
 
 
 
 #make rnederer render constantly as fast as it can 
-renderer.InteractiveOff()
+# renderer.InteractiveOff()
+# renderer.SetSwapControl(0)
 
 
 #set ssao 
@@ -349,15 +364,16 @@ renderer.InteractiveOff()
 # renderer.SetSSAOBlur(True)
 
 
+# renderWindow.SetSwapBuffers(False)
 
 interactor.SetRenderWindow(renderWindow)
 
-easypbr.Profiler.set_profile_gpu(True)
-while True:
-    easypbr.Profiler.start("forward")
-    renderWindow.Render()
-    easypbr.Profiler.end("forward")
-    easypbr.Profiler.print_all_stats()
+# easypbr.Profiler.set_profile_gpu(True)
+# while True:
+#     easypbr.Profiler.start("forward")
+#     renderWindow.Render()
+#     easypbr.Profiler.end("forward")
+#     easypbr.Profiler.print_all_stats()
 
-# renderWindow.Render()
-# interactor.Start()
+renderWindow.Render()
+interactor.Start()
