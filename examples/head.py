@@ -19,7 +19,7 @@ def make_figure():
   head.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg", 1)
   # head.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Gloss_8k.jpg")
   head.m_vis.m_roughness=0.49
-  head.m_model_matrix.rotate_axis_angle([0,1,0], -80)
+  head.model_matrix.rotate_axis_angle([0,1,0], -80)
   head.apply_model_matrix_to_cpu(True)
 
   jacket=Mesh("/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Jacket/Jacket.OBJ")
@@ -27,7 +27,7 @@ def make_figure():
   jacket.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg", 1)
   # jacket.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Gloss.jpg")
   jacket.m_vis.m_roughness=0.55
-  jacket.m_model_matrix.rotate_axis_angle([0,1,0], -80)
+  jacket.model_matrix.rotate_axis_angle([0,1,0], -80)
   jacket.apply_model_matrix_to_cpu(True)
 
   jacket.name="jacket"
@@ -46,8 +46,8 @@ view.m_camera.from_string("-0.614212  0.293787  0.377881 -0.0415488  -0.463654 -
 
 for i in range(1):
   head, jacket = make_figure()
-  head.m_model_matrix.set_translation([i*0.5, 0, 0])
-  jacket.m_model_matrix.set_translation([i*0.5, 0, 0])
+  head.model_matrix.set_translation([i*0.5, 0, 0])
+  jacket.model_matrix.set_translation([i*0.5, 0, 0])
   Scene.show(head,"head"+str(i))
   Scene.show(jacket,"jacket"+str(i))
 

@@ -21,7 +21,7 @@ for x in range(grid_size):
         #create a ball at position x,y and metalness and roughness corresponding to x and y
         ball=Mesh("./data/sphere.obj")
         displacement=ball.get_scale()*1.5
-        ball.m_model_matrix.translate([x*displacement,-y*displacement,0]) #translate the sphere to the corresponding position
+        ball.model_matrix.translate([x*displacement,-y*displacement,0]) #translate the sphere to the corresponding position
         ball.m_vis.m_metalness=x/(float(grid_size)-1)
         ball.m_vis.m_roughness=y/(float(grid_size)-1)
         # print("adding ball for x and y", x, " ", y)

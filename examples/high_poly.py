@@ -14,8 +14,8 @@ view=Viewer.create(config_file)
 view.m_camera.set_position([186.721,  92.773, 104.44])
 view.m_camera.set_lookat([50.7827,  64.5595, -30.6014 ])
 
-# mesh=Mesh("./data/scan_the_world/masterpiece-goliath-ii.stl")
-mesh=Mesh("/media/rosu/Data/phd/c_ws/src/easy_pbr/goliath_subsampled.ply")
+mesh=Mesh("./data/scan_the_world/masterpiece-goliath-ii.stl")
+# mesh=Mesh("/media/rosu/Data/phd/c_ws/src/easy_pbr/goliath_subsampled.ply")
 mesh.model_matrix.rotate_axis_angle( [1.0, 0.0, 0.0], -90 )
 mesh.m_vis.m_solid_color=[1.0, 188.0/255.0, 130.0/255.0] #for goliath
 mesh.m_vis.m_metalness=0.0
