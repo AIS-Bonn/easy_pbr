@@ -67,7 +67,7 @@ void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
     //matrices setup
     Eigen::Vector2f viewport_size;
     viewport_size<< m_shadow_map_resolution, m_shadow_map_resolution;
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = view_matrix();
     Eigen::Matrix4f P = proj_matrix(viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
@@ -108,7 +108,7 @@ void SpotLight::render_points_to_shadow_map(MeshGLSharedPtr& mesh){
     //matrices setup
     Eigen::Vector2f viewport_size;
     viewport_size<< m_shadow_map_resolution, m_shadow_map_resolution;
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = view_matrix();
     Eigen::Matrix4f P = proj_matrix(viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
@@ -150,6 +150,9 @@ bool SpotLight::has_shadow_map(){
 
 gl::Texture2D& SpotLight::get_shadow_map_ref(){
     return m_shadow_map_fbo.tex_with_name("shadow_map_depth");
+}
+gl::GBuffer& SpotLight::get_shadow_map_fbo_ref(){
+    return m_shadow_map_fbo;
 }
 
 void SpotLight::print_ptr(){

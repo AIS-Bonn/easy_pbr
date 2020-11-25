@@ -37,6 +37,7 @@ public:
     int shadow_map_resolution();
     bool has_shadow_map();
     gl::Texture2D& get_shadow_map_ref();
+    gl::GBuffer& get_shadow_map_fbo_ref();
 
     void print_ptr();
 

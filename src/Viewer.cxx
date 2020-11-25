@@ -309,7 +309,7 @@ bool Viewer::init_context(){
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)){
         LOG(FATAL) << "GLAD failed to load";        
     }
-    glfwSwapInterval(1); // Enable vsync
+    // glfwSwapInterval(1); // Enable vsync
 
     glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
 
@@ -815,8 +815,17 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     TIME_START("shadow_pass");
+    //check if any of the objects has moved, and if it has we need to clear all shadow maps and redo them. We need to redo them from scratch because an object moving may have revealed what is behind another object
+    bool need_shadow_map_update=false;
+    for(size_t i=0; i<m_meshes_gl.size(); i++){
+        MeshGLSharedPtr mesh=m_meshes_gl[i];
+        if (mesh->m_core->m_is_shadowmap_dirty){
+            need_shadow_map_update=true;
+            break;
+        }
+    }
     //loop through all the light and each mesh into their shadow maps as a depth map
-    if(!m_enable_edl_lighting){
+    if(!m_enable_edl_lighting && need_shadow_map_update){
         for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
             if(m_spot_lights[l_idx]->m_create_shadow){
                 m_spot_lights[l_idx]->clear_shadow_map();
@@ -844,12 +853,67 @@ void Viewer::draw(const GLuint fbo_id){
 
 
                     }
+                    mesh->m_core->m_is_shadowmap_dirty=false;
                 }
             }
         }
     }
-
     TIME_END("shadow_pass");
+
+
+
+    // //attempt 2 
+    // TIME_START("shadow_pass");
+    // //check if any of the objects has moved, and if it has we need to clear all shadow maps and redo them. We need to redo them from scratch because an object moving may have revealed what is behind another object
+    // bool need_shadow_map_update=false;
+    // for(size_t i=0; i<m_meshes_gl.size(); i++){
+    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
+    //     if (mesh->m_core->m_is_shadowmap_dirty){
+    //         need_shadow_map_update=true;
+    //         break;
+    //     }
+    // }
+
+    // //loop through all the mesh and if they need to update the shadow map they do it into their shadow maps as a depth map
+
+
+    // if(!m_enable_edl_lighting){
+    //     for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
+    //         if(m_spot_lights[l_idx]->m_create_shadow){
+    //             m_spot_lights[l_idx]->clear_shadow_map();
+
+    //             //loop through all the meshes
+    //             for(size_t i=0; i<m_meshes_gl.size(); i++){
+    //                 MeshGLSharedPtr mesh=m_meshes_gl[i];
+    //                 VLOG(1) << "Mesh has shadowmap dirtyu set to " << mesh->m_core->name  << mesh->m_core->m_is_shadowmap_dirty; 
+    //                 if(mesh->m_core->m_vis.m_is_visible && mesh->m_core->m_is_shadowmap_dirty && !mesh->m_core->is_empty() ){
+
+    //                     if(mesh->m_core->m_vis.m_show_mesh){
+    //                         m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
+    //                     }
+    //                     if(mesh->m_core->m_vis.m_show_points){
+    //                         m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
+    //                     }
+
+    //                     //if we use a custom shader we try to make an educated guess weather we should render this mesh as a mesh or as point cloud in the shadow map 
+    //                     if(mesh->m_core->m_vis.m_use_custom_shader && mesh->m_core->custom_render_func ){
+    //                         if(mesh->m_core->F.size()){
+    //                             m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
+    //                         }else{
+    //                             m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
+    //                         }
+    //                     }
+
+    //                     mesh->m_core->m_is_shadowmap_dirty=false;
+
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    // TIME_END("shadow_pass");
+
 
 
 
@@ -1070,7 +1134,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //matrices setuo
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
     Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
@@ -1143,7 +1207,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
         mesh->vao.indices(mesh->E_buf); //Says the indices with we refer to vertices, this gives us the triangles
     }
 
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
@@ -1183,7 +1247,7 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
         mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
     }
 
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
@@ -1254,7 +1318,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 
     //matrices setuo
     // Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
     Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
@@ -1377,7 +1441,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     // }
 
     //matrices setuo
-    Eigen::Matrix4f M=mesh->m_core->m_model_matrix.cast<float>().matrix();
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
     Eigen::Matrix4f V = m_camera->view_matrix();
     Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
     Eigen::Matrix4f MV = V*M;

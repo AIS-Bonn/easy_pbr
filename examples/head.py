@@ -15,16 +15,16 @@ Scene.set_floor_visible(False)
 
 def make_figure():
   head=Mesh("/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Head/Head.OBJ")
-  head.set_diffuse_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg", 4)
-  head.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg", 4)
+  head.set_diffuse_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Colour_8k.jpg", 1)
+  head.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Normal Map_SubDivision_1.jpg", 1)
   # head.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Head/JPG/Gloss_8k.jpg")
   head.m_vis.m_roughness=0.49
   head.m_model_matrix.rotate_axis_angle([0,1,0], -80)
   head.apply_model_matrix_to_cpu(True)
 
   jacket=Mesh("/media/rosu/Data/data/3d_objs/3d_scan_store/OBJ/Jacket/Jacket.OBJ")
-  jacket.set_diffuse_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg", 4)
-  jacket.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg", 4)
+  jacket.set_diffuse_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Colour.jpg", 1)
+  jacket.set_normals_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Normal.jpg", 1)
   # jacket.set_gloss_tex("/media/rosu/Data/data/3d_objs/3d_scan_store/JPG Textures/Jacket/JPG/Jacket_Gloss.jpg")
   jacket.m_vis.m_roughness=0.55
   jacket.m_model_matrix.rotate_axis_angle([0,1,0], -80)

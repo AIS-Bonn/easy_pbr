@@ -54,6 +54,7 @@ namespace easy_pbr{
 Mesh::Mesh():
         id(0),
         m_is_dirty(true),
+        m_is_shadowmap_dirty(true),
         m_model_matrix(Eigen::Affine3d::Identity()),
         m_cur_pose(Eigen::Affine3d::Identity()),
         m_width(0),
@@ -77,6 +78,7 @@ Mesh Mesh::clone(){
     Mesh cloned;
 
     cloned.m_is_dirty=true;
+    cloned.m_is_shadowmap_dirty=true;
     cloned.m_vis=m_vis;
     cloned.m_force_vis_update=m_force_vis_update;
     cloned.m_model_matrix=m_model_matrix;
@@ -227,6 +229,7 @@ void Mesh::clear() {
     m_min_max_y_for_plotting.setZero();
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 
@@ -234,6 +237,7 @@ void Mesh::clear_C() {
     Eigen::MatrixXd C_empty;
     C = C_empty;
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -269,8 +273,20 @@ void Mesh::transform_vertices_cpu(const Eigen::Affine3d& trans, const bool trans
     if (V_tangent_u.size())  V_tangent_u.transpose() = (trans.linear() * V_tangent_u.transpose());
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
+
+Eigen::Affine3d Mesh::model_matrix(){
+    return m_model_matrix;
+}
+Eigen::Affine3d& Mesh::model_matrix_ref(){
+    return m_model_matrix;
+}
+void Mesh::set_model_matrix(const Eigen::Affine3d& new_model_matrix){
+    m_model_matrix=new_model_matrix;
+    m_is_shadowmap_dirty=true;
+}
 void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
     m_model_matrix=trans*m_model_matrix;
 
@@ -279,6 +295,8 @@ void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
         MeshSharedPtr child=m_child_meshes[i];
         child->transform_model_matrix(trans);
     }
+
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
@@ -287,6 +305,8 @@ void Mesh::translate_model_matrix(const Eigen::Vector3d& translation){
 
     tf.translation()=translation;
     transform_model_matrix(tf);
+
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_degrees){
@@ -297,6 +317,8 @@ void Mesh::rotate_model_matrix(const Eigen::Vector3d& axis, const float angle_de
 
     tf.linear()=q.toRotationMatrix();
     transform_model_matrix(tf);
+
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees){
@@ -310,6 +332,8 @@ void Mesh::rotate_model_matrix_local(const Eigen::Vector3d& axis, const float an
     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
     transform_model_matrix(tf);
+
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
@@ -321,11 +345,15 @@ void Mesh::rotate_model_matrix_local(const Eigen::Quaterniond& q){
     Eigen::Affine3d tf=Eigen::Translation3d(m_model_matrix.translation()) * rot *  Eigen::Translation3d(-m_model_matrix.translation());
 
     transform_model_matrix(tf);
+
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
     transform_vertices_cpu(m_model_matrix, transform_points_at_zero);
     m_model_matrix.setIdentity();
+
+    m_is_shadowmap_dirty=true;
 }
 
 // void Mesh::set_model_matrix(const Eigen::VectorXd& xyz_q){
@@ -441,6 +469,7 @@ void Mesh::recalculate_normals(){
     igl::per_face_normals(V,F,NF);
     igl::per_vertex_normals(V,F, igl::PerVertexNormalsWeightingType::PER_VERTEX_NORMALS_WEIGHTING_TYPE_ANGLE, NF, NV);
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -557,6 +586,7 @@ void Mesh::load_from_file(const std::string file_path){
     m_min_max_y_for_plotting=m_min_max_y;
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
     m_disk_path=file_path_abs;
 
@@ -573,6 +603,7 @@ void Mesh::save_to_file(const std::string file_path){
         }
     }
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
     remove_vertices_at_zero();
 
@@ -643,6 +674,7 @@ void Mesh::remove_marked_vertices(const std::vector<bool>& mask, const bool keep
     E=filter_apply_indirection_return_mask(E_kept, V_indir, E);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -671,6 +703,7 @@ void Mesh::set_marked_vertices_to_zero(const std::vector<bool>& mask, const bool
     E=filter_apply_indirection_return_mask(E_kept, V_indir, E);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
  
 
 }
@@ -686,6 +719,7 @@ void Mesh::remove_vertices_at_zero(){
     remove_marked_vertices(is_vertex_zero, false);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -702,6 +736,7 @@ void Mesh::remove_unreferenced_verts(){
     remove_marked_vertices(is_vertex_referenced, true);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -742,6 +777,7 @@ void Mesh::rotate_90_x_axis(){
     transform_vertices_cpu(tf_worldGL_worldROS);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 //this maps a mesh from world_GL to world ros, so it multiplies with tf_worldROS_worldGL
@@ -755,6 +791,7 @@ void Mesh::worldGL2worldROS(){
     transform_vertices_cpu(tf_worldROS_worldGL);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 //this maps a mesh from world_ROS to world GL, so it multiplies with tf_worldGL_worldROS
@@ -767,6 +804,7 @@ void Mesh::worldROS2worldGL(){
     transform_vertices_cpu(tf_worldGL_worldROS);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 // void Mesh::rotate_x_axis(const float degrees ){
@@ -813,6 +851,7 @@ void Mesh::random_subsample(const float percentage_removal){
     remove_marked_vertices(is_vertex_to_be_removed, false);
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -861,6 +900,7 @@ void Mesh::decimate(const int nr_target_faces){
     recalculate_normals(); //we completely changed the V and F so we might as well just recompute NV and NF
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 
@@ -933,6 +973,7 @@ void Mesh::upsample(const int nr_of_subdivisions){
     recalculate_normals();
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 }
 
@@ -941,6 +982,7 @@ void Mesh::flip_normals(){
     NV=-NV;
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 void Mesh::normalize_size(){
@@ -1696,6 +1738,7 @@ void Mesh::as_uv_mesh_paralel_to_axis(const int axis, const float size_modifier)
     V=new_V;
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 
 
 }

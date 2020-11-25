@@ -109,6 +109,9 @@ public:
     // void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
     // void apply_transform(const Eigen::Affine3d& tf, const bool update_cpu_data, const bool transform_points_at_zero=false); //if we update the CPU data we move directly the V vertices but the model matrix does not get updates and it will stay as whatever it was set before. That means that the origin around which rotations will be applied subsequently may not lie anymore where you expected. If we have update_cpu_data to false, we only modify the model matrix therefore the model matrix 
 
+    Eigen::Affine3d model_matrix();
+    Eigen::Affine3d& model_matrix_ref();
+    void set_model_matrix(const Eigen::Affine3d& new_model_matrix);
     void transform_vertices_cpu(const Eigen::Affine3d& trans, const bool transform_points_at_zero=false); //modifyed the vertices on the cpu but does not update the model matrix
     void transform_model_matrix(const Eigen::Affine3d& trans); //just affects how the model is displayed when rendered by modifying the model matrix but does not change the vertices themselves
     void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python
@@ -204,12 +207,11 @@ public:
     friend std::ostream &operator<<(std::ostream&, const Mesh& m);
 
     bool m_is_dirty; // if it's dirty then we need to upload this data to the GPU
+    bool m_is_shadowmap_dirty; // if it has moved through the m_model_matrix or if the V matrix or something like that has changed, then we need to update the shadow map
 
     VisOptions m_vis;
     bool m_force_vis_update; //sometimes we want the m_vis stored in the this MeshCore to go into the MeshGL, sometimes we don't. The default is to not propagate, setting this flag to true will force the update of m_vis inside the MeshGL
 
-    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
-    Eigen::Affine3d m_cur_pose; //the current pose, which describest the transformation that the cpu vertices underwent in order to appear centered nicelly for the gpu. The gpu then puts the vertices into the world with the model matrix. The cur pose is not used by opengl
 
     Eigen::MatrixXd V; 
     Eigen::MatrixXi F;
@@ -269,6 +271,8 @@ private:
     void write_ply(const std::string file_path);
     void read_obj(const std::string file_path);
 
+    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
+    Eigen::Affine3d m_cur_pose; 
 
 
 };

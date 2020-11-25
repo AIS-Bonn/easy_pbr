@@ -387,12 +387,12 @@ renderer.AddObserver( vtk.vtkCommand.EndEvent , CallbackFunction)
 
 interactor.SetRenderWindow(renderWindow)
 
-# easypbr.Profiler.set_profile_gpu(True)
-# while True:
-#     easypbr.Profiler.start("forward")
-#     renderWindow.Render()
-#     easypbr.Profiler.end("forward")
-#     easypbr.Profiler.print_all_stats()
+easypbr.Profiler.set_profile_gpu(True)
+while True:
+    easypbr.Profiler.start("forward")
+    renderWindow.Render()
+    easypbr.Profiler.end("forward")
+    easypbr.Profiler.print_all_stats()
 
-renderWindow.Render()
-interactor.Start()
+# renderWindow.Render()
+# interactor.Start()

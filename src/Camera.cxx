@@ -539,7 +539,7 @@ MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const E
     //transform from world to camera 
     Eigen::Affine3d tf_cam_world=Eigen::Affine3d(view.cast<double>());
     frustum_mesh->transform_vertices_cpu(tf_cam_world.cast<double>(), true);
-    frustum_mesh->m_model_matrix=tf_cam_world.cast<double>().inverse();
+    frustum_mesh->set_model_matrix( tf_cam_world.cast<double>().inverse() );
 
     return frustum_mesh;
 }

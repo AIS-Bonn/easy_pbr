@@ -54,15 +54,16 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     //TODO euler
     //TODO to_xyz_quat_vec
     //setters
-    .def("set_translation", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()=t;  } )
-    .def("set_linear", [](Class &m, const Eigen::Matrix<T, 3, 3>& r) {  m.linear()=r;  } )
+    .def("set_translation", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()=t; return m; } )
+    .def("set_linear", [](Class &m, const Eigen::Matrix<T, 3, 3>& r) {  m.linear()=r; return m; } )
     .def("set_quat", [](Class &m, const Eigen::Matrix<T, 4, 1>& q_vec) { 
         Eigen::Quaternion<T> q;  
         q.coeffs()=q_vec;
         m.linear()=q.toRotationMatrix();
+        return m;
     } )
     //convenience functions
-    .def("translate", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()+=t;  } )
+    .def("translate", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()+=t; return m; } )
     .def("rotate_axis_angle", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
         Eigen::Quaternion<T> q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
         Class tf;
@@ -70,6 +71,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
         tf.linear()=q.toRotationMatrix();
         //compose the old transform with this new one
         m=tf*m;
+        return m;
     } )
     .def("rotate_axis_angle_local", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
         Eigen::Quaternion<T>  q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
@@ -79,10 +81,12 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
         Class tf=Eigen::Translation<T,3>(m.translation()) * rot *  Eigen::Translation<T,3>(-m.translation());
         //compose the old transform with this new one
         m=tf*m;
+        return m;
     } )
     //cast
     .def("to_float", [](const Class &m) {  return m.template cast<float>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
     .def("to_double", [](const Class &m) {  return m.template cast<double>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
+    .def("clone", [](const Class &m) {  Class m_new=m; return m_new;  }  )
     ;
 }
 
@@ -379,7 +383,11 @@ PYBIND11_MODULE(easypbr, m) {
     //         return m.m_model_matrix.cast<float>();
     //     }
     // )
-    .def_readwrite("m_model_matrix", &Mesh::m_model_matrix)
+    // .def_readwrite("m_model_matrix", &Mesh::m_model_matrix)
+    // .def("model_matrix", &Mesh::model_matrix )
+    // .def("set_model_matrix", &Mesh::set_model_matrix )
+    // .def_property("model_matrix", &Mesh::model_matrix, &Mesh::set_model_matrix)
+    .def_property("model_matrix", &Mesh::model_matrix_ref, &Mesh::set_model_matrix)
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )

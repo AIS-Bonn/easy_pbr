@@ -523,8 +523,8 @@ void Gui::draw_main_menu(){
             for(int i=0; i<Scene::nr_meshes(); i++){
                 MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
                 if(mesh->name!="grid_floor"){
-                    mesh->transform_vertices_cpu(mesh->m_model_matrix);
-                    mesh->m_model_matrix.setIdentity();
+                    mesh->transform_vertices_cpu(mesh->model_matrix());
+                    mesh->set_model_matrix( Eigen::Affine3d::Identity() );
                     mesh_merged->add(*mesh);
                 }
             }
@@ -1181,7 +1181,7 @@ void Gui::draw_overlays(){
         //draw vert ids
         if(mesh->m_vis.m_is_visible && mesh->m_vis.m_show_vert_ids){
             for (int i = 0; i < mesh->V.rows(); ++i){
-                draw_overlay_text( mesh->V.row(i), mesh->m_model_matrix.cast<float>().matrix(), std::to_string(i), mesh->m_vis.m_label_color );
+                draw_overlay_text( mesh->V.row(i), mesh->model_matrix().cast<float>().matrix(), std::to_string(i), mesh->m_vis.m_label_color );
             }
         }
         //draw vert coords in x,y,z format
@@ -1191,7 +1191,7 @@ void Gui::draw_overlays(){
                 std::stringstream stream;
                 stream << std::fixed << std::setprecision(3) << "(" << mesh->V(i,0) << ", " << mesh->V(i,1) << ", " << mesh->V(i,2) << ")";
                 std::string coord_string = stream.str();
-                draw_overlay_text( mesh->V.row(i), mesh->m_model_matrix.cast<float>().matrix(), coord_string, mesh->m_vis.m_label_color );
+                draw_overlay_text( mesh->V.row(i), mesh->model_matrix().cast<float>().matrix(), coord_string, mesh->m_vis.m_label_color );
             }
         }
     }
@@ -1357,8 +1357,9 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
 
     Eigen::Matrix4f delta;
     delta.setIdentity();
-    
-    ImGuizmo::Manipulate(view.data(), proj.data(), m_guizmo_operation, m_guizmo_mode, mesh->m_model_matrix.cast<float>().data(), delta.data() );
+
+    Eigen::Affine3d model_matrix=mesh->model_matrix(); 
+    ImGuizmo::Manipulate(view.data(), proj.data(), m_guizmo_operation, m_guizmo_mode, model_matrix.cast<float>().data(), delta.data() );
     if(m_guizmo_operation==ImGuizmo::SCALE){
         delta=Eigen::Matrix4f::Identity()-(Eigen::Matrix4f::Identity()-delta)*0.1; //scaling is for some reason very fast, make it a bit slower
     }
@@ -1366,7 +1367,9 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
 
 
     //update the model matrix with the delta and updates the model matrix of all the children
-    mesh->transform_model_matrix(Eigen::Affine3d(delta.cast<double>()));
+    if( (delta-Eigen::Matrix4f::Identity() ).norm()>1e-9){ //if the movement is very small then we don't need to do anything and therefore we save ourselves from doing one update to the shadow map
+        mesh->transform_model_matrix(Eigen::Affine3d(delta.cast<double>()));
+    }
     // Eigen::Matrix4f new_model_matrix;
     // new_model_matrix=mesh->m_model_matrix.matrix().cast<float>();
     // new_model_matrix=delta*mesh->m_model_matrix.cast<float>().matrix();    
@@ -1383,7 +1386,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     //     child->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
     // }
 
-    Eigen::Matrix3d rot = mesh->m_model_matrix.linear();
+    Eigen::Matrix3d rot = mesh->model_matrix().linear();
     Eigen::Quaterniond q(rot);
     // VLOG(1) << "Model matrix is " << mesh->m_model_matrix.translation().x() << ", " << mesh->m_model_matrix.translation().y() << ", " << mesh->m_model_matrix.translation().z() << " quat(x,y,z,w) is: " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w();
 
