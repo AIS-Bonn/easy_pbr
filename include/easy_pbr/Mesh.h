@@ -39,6 +39,12 @@ struct VisOptions{
     bool m_show_vert_coords=false;
     bool m_use_custom_shader=false;
 
+    //sometimes when you render lines or points you just want them on top of everything else so you just disable all depth testing for that mesh
+    bool m_overlay_points=false;
+    bool m_overlay_lines=false;
+
+    bool m_points_as_circle=false;
+
 
     float m_point_size=4.0;
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering

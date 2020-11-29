@@ -322,6 +322,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_show_mesh", &VisOptions::m_show_mesh)
     .def_readwrite("m_show_wireframe", &VisOptions::m_show_wireframe)
     .def_readwrite("m_show_surfels", &VisOptions::m_show_surfels)
+    .def_readwrite("m_overlay_points", &VisOptions::m_overlay_points)
+    .def_readwrite("m_overlay_lines", &VisOptions::m_overlay_lines)
+    .def_readwrite("m_points_as_circle", &VisOptions::m_points_as_circle)
     .def_readwrite("m_point_size", &VisOptions::m_point_size)
     .def_readwrite("m_line_width", &VisOptions::m_line_width)
     // .def_readwrite("m_color_type", &VisOptions::m_color_type) // doesnt really work because I would have to also expose a lot of the better enum library, but I'll make some funcs instead

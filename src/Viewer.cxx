@@ -1146,6 +1146,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     shader.uniform_4x4(MV, "MV");
     shader.uniform_4x4(MVP, "MVP");
     shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
+    shader.uniform_bool(mesh->m_core->m_vis.m_points_as_circle , "points_as_circle");
     shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
     shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
     shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
@@ -1185,10 +1186,14 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
     // draw
     mesh->vao.bind(); 
+    if(mesh->m_core->m_vis.m_overlay_points){
+        glDisable(GL_DEPTH_TEST);  
+    }
     glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
+    glEnable(GL_DEPTH_TEST);  
 
 }
 
@@ -1231,9 +1236,13 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
     // draw
     mesh->vao.bind(); 
+    if(mesh->m_core->m_vis.m_overlay_lines){
+        glDisable(GL_DEPTH_TEST);  
+    }
     glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
 
     glLineWidth( 1.0f );
+    glEnable(GL_DEPTH_TEST);  
     
 }
 

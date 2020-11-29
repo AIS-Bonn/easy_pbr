@@ -347,8 +347,14 @@ void Gui::draw_main_menu(){
         if(!m_view->m_scene->is_empty() ){ //if the scene is empty there will be no mesh to select
             MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
             ImGui::InputText("Name", mesh->name );
-            ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points);
-            ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines);
+            ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points); 
+                ImGui::Indent(10.0f*m_hidpi_scaling);  
+                ImGui::Checkbox("Overlay points", &mesh->m_vis.m_overlay_points);  ImGui::SameLine(); help_marker("Draws the points even if they are occluded");
+                ImGui::Checkbox("Points as circle", &mesh->m_vis.m_points_as_circle); ImGui::SameLine(); help_marker("Draws points as circles instad of squares. Moderate performance impact.");
+                ImGui::Unindent(10.0f*m_hidpi_scaling );
+            ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines); 
+                ImGui::Indent(10.0f*m_hidpi_scaling);  ImGui::Checkbox("Overlay lines", &mesh->m_vis.m_overlay_lines); ImGui::SameLine(); help_marker("Draws the lines even if they are occluded");
+                ImGui::Unindent(10.0f*m_hidpi_scaling );
             ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
             ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
             ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);

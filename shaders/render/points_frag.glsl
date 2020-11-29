@@ -46,6 +46,7 @@ uniform bool has_normals=false; //if we have normals this will get set to true
 uniform float metalness;
 uniform float roughness;
 uniform bool using_fat_gbuffer;
+uniform bool points_as_circle;
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 // vec2 encode_normal(vec3 normal){
@@ -78,8 +79,6 @@ void main(){
     // float log_depth_val=log_depth_in;
 
     //from https://github.com/potree/potree/blob/develop/src/materials/shaders/pointcloud.fs
-    // bool points_as_circle=false;
-    bool points_as_circle=false;
     float u,v; //local uvs inside the point
     if(points_as_circle){
         u = 2.0 * gl_PointCoord.x - 1.0;
