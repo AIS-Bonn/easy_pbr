@@ -408,6 +408,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("upsample", &Mesh::upsample )
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
     .def("compute_tangents", &Mesh::compute_tangents, py::arg("tangent_length") = 1.0)
+    .def("estimate_normals_from_neighbourhood", &Mesh::estimate_normals_from_neighbourhood )
+
     // .def("compute_tangents", py::overload_cast<const float>(&Mesh::compute_tangents), py::arg("tangent_length") = 1.0)
     .def("create_grid", &Mesh::create_grid )
     // .def("rotate_x_axis", &Mesh::rotate_x_axis )

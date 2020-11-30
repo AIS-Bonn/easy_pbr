@@ -179,6 +179,7 @@ public:
     Mesh interpolate(const Mesh& target_mesh, const float factor);
     float get_scale();
     void color_solid2pervert(); //makes the solid color into a per vert color by allocating a C vector. It is isefult when merging meshes of different colors.
+    void estimate_normals_from_neighbourhood(const float radius);
 
     //nanoflann options for querying points in a certain radius or querying neighbiurs
     int radius_search(const Eigen::Vector3d& query_point, const double radius); //returns touples of (index in V of the point, distance to it)

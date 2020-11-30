@@ -33,6 +33,9 @@
 //for reading pcd files
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/kdtree/kdtree_flann.h>
+// #include <pcl/search/impl/search.hpp>
 // #include <sensor_msgs/PointCloud2.h>
 
 #include "nanoflann.hpp"
@@ -1793,6 +1796,55 @@ void Mesh::color_solid2pervert(){
 
 }
 
+void Mesh::estimate_normals_from_neighbourhood(const float radius){
+    CHECK(V.size()) << "We have no vertices";
+
+    //https://pointclouds.org/documentation/tutorials/normal_estimation.html
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+//   ... read, pass in or create a point cloud ...
+    for(int i=0; i<V.rows(); i++){
+        pcl::PointXYZ p;
+        p.x=V(i,0);
+        p.y=V(i,1);
+        p.z=V(i,2);
+        cloud->points.push_back(p);
+    }
+
+    // Create the normal estimation class, and pass the input dataset to it
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+    ne.setInputCloud (cloud);
+
+    // Create an empty kdtree representation, and pass it to the normal estimation object.
+    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+    // pcl::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::KdTree<pcl::PointXYZ> ());
+    ne.setSearchMethod (tree);
+
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+    // Use all neighbors in a sphere of radius 3cm
+    ne.setRadiusSearch (radius);
+
+    // Compute the features
+    ne.compute (*cloud_normals);
+
+    NV.resize(cloud_normals->points.size(),3);
+    for(size_t i=0; i<cloud_normals->points.size(); i++){
+        pcl::Normal p=cloud_normals->points[i];
+        NV(i,0)=p.normal_x;
+        NV(i,1)=p.normal_y;
+        NV(i,2)=p.normal_z;
+        // p.x=V(i,0);
+        // p.y=V(i,1);
+        // p.z=V(i,2);
+        // cloud.push_back(p);
+    }
+
+
+
+}
 
 float Mesh::min_y(){
     return m_min_max_y_for_plotting(0);
