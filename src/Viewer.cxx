@@ -1182,7 +1182,8 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
                     }
                     ); //makes the shaders draw into the buffers we defines in the gbuffer
 
-    glPointSize(mesh->m_core->m_vis.m_point_size);
+    float point_size=std::max(1.0f, mesh->m_core->m_vis.m_point_size); //need to cap the point size at a minimum of 1 because something like 0.5 will break opengl :(
+    glPointSize(point_size);
 
     // draw
     mesh->vao.bind(); 

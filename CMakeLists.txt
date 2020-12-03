@@ -221,7 +221,7 @@ if(${TORCH_FOUND})
         set(LIBS ${LIBS} ${TORCH_PYTHON_LIBRARY} )
     endif()
 endif()
-message ( "  PCL_LIBRARIES ------------------------",  ${PCL_LIBRARIES} )
+# message ( "  PCL_LIBRARIES ------------------------",  ${PCL_LIBRARIES} )
 set(LIBS ${LIBS} Eigen3::Eigen ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
 
 

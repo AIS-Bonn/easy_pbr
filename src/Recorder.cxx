@@ -269,6 +269,7 @@ void Recorder::write_to_file_threaded(){
         }else if(cv_mat_flipped.channels()==3){
             cv::cvtColor(cv_mat_flipped, cv_mat_flipped, cv::COLOR_BGR2RGB);
         }
+        VLOG(1) << "writen image to " << mat_with_file.file_path;
         cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
         TIME_END("write_to_file");
 
