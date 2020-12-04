@@ -180,6 +180,8 @@ public:
     float get_scale();
     void color_solid2pervert(); //makes the solid color into a per vert color by allocating a C vector. It is isefult when merging meshes of different colors.
     void estimate_normals_from_neighbourhood(const float radius);
+    Eigen::MatrixXd compute_distance_to_mesh(const std::shared_ptr<Mesh>& target_mesh); //compute for each point in this cloud, the distance to another one, returns a D vector of distances which is of size Nx1 where N is the vertices in this mesh
+    
 
     //nanoflann options for querying points in a certain radius or querying neighbiurs
     int radius_search(const Eigen::Vector3d& query_point, const double radius); //returns touples of (index in V of the point, distance to it)

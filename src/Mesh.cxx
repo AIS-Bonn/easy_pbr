@@ -26,6 +26,7 @@
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/connect_boundary_to_infinity.h>
 #include <igl/upsample.h>
+#include <igl/point_mesh_squared_distance.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
@@ -1895,6 +1896,27 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
 
     // return ret_matches;
 }
+Eigen::MatrixXd Mesh::compute_distance_to_mesh(const MeshSharedPtr& target_mesh){
+    //we use the point_mesh_squared_distance.h 
+    //it computes the distances to a mesh, so if the target mesh doesnt have F then we make F for each vertex, a degenerate triangle with [0,0,0] 
+    Eigen::MatrixXi F=target_mesh->F;
+    if (!F.size()){
+        F.resize(target_mesh->V.rows(),3);
+        for(int i=0; i<target_mesh->V.rows(); i++){
+            F.row(i) << i,i,i;
+        }
+    }
+
+    //compute the distance
+    Eigen::MatrixXi indices_closest;
+    Eigen::MatrixXd closest_points;
+    igl::point_mesh_squared_distance(
+        V, target_mesh->V, F,
+        D, indices_closest, closest_points
+    );
+
+    return D;
+}
 
 void Mesh::set_diffuse_tex(const std::string file_path, const int subsample){
     cv::Mat mat = cv::imread(file_path);
@@ -2304,6 +2326,7 @@ void Mesh::sanity_check() const{
     LOG_IF_S(ERROR, V.rows()!=NV.rows() && F.size()) << name << ": V and NV don't coincide in size, they are " << V.rows() << " and " << NV.rows();
     LOG_IF_S(ERROR, V.size() && D.size() && V.rows()!=D.rows() ) << name << ": V and D don't coincide " << V.rows() << " and " << D.rows();
     LOG_IF_S(ERROR, V.size() && I.size() && V.rows()!=I.rows() ) << name << ": V and I don't coincide " << V.rows() << " and " << I.rows();
+    LOG_IF_S(ERROR, V.size() && C.size() && V.rows()!=C.rows() ) << name << ": V and C don't coincide " << V.rows() << " and " << C.rows();
     if (F.size()) LOG_IF_S(ERROR, F.maxCoeff()>V.rows()-1) << name << ": F indexes V at invalid poisitions, max coeff is " << F.maxCoeff() << " and V size is" << V.rows();
     if (E.size()) LOG_IF_S(ERROR, E.maxCoeff()>V.rows()-1) << name << ": E indexes V at invalid poisitions, max coeff is " << E.maxCoeff() << " and V size is" << V.rows() ;
     if (C.size()) LOG_IF_S(ERROR, C.rows()!=V.rows() ) << name << ": We have per vertex color but C and V don't match. C has rows " << C.rows() << " and V size is" << V.rows() ;

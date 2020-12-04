@@ -1188,13 +1188,13 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     // draw
     mesh->vao.bind(); 
     if(mesh->m_core->m_vis.m_overlay_points){
-        glDisable(GL_DEPTH_TEST);  
+        glDepthFunc(GL_ALWAYS);
     }
     glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
-    glEnable(GL_DEPTH_TEST);  
+    glDepthFunc(GL_LESS);
 
 }
 
@@ -1238,12 +1238,12 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     // draw
     mesh->vao.bind(); 
     if(mesh->m_core->m_vis.m_overlay_lines){
-        glDisable(GL_DEPTH_TEST);  
+        glDepthFunc(GL_ALWAYS);
     }
     glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
 
     glLineWidth( 1.0f );
-    glEnable(GL_DEPTH_TEST);  
+    glDepthFunc(GL_LESS);
     
 }
 

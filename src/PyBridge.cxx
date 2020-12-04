@@ -354,6 +354,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def(py::init<std::string>())
     .def("load_from_file", &Mesh::load_from_file )
     .def("save_to_file", &Mesh::save_to_file )
+    .def("sanity_check", &Mesh::sanity_check )
     .def("clone", &Mesh::clone )
     .def("add", &Mesh::add )
     .def("is_empty", &Mesh::is_empty )
@@ -414,6 +415,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
     .def("compute_tangents", &Mesh::compute_tangents, py::arg("tangent_length") = 1.0)
     .def("estimate_normals_from_neighbourhood", &Mesh::estimate_normals_from_neighbourhood )
+    .def("compute_distance_to_mesh", &Mesh::compute_distance_to_mesh )
 
     // .def("compute_tangents", py::overload_cast<const float>(&Mesh::compute_tangents), py::arg("tangent_length") = 1.0)
     .def("create_grid", &Mesh::create_grid )
@@ -458,6 +460,14 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("pause",  []( std::string name ) { TIME_PAUSE(name); })
     .def_static("print_all_stats", &radu::utils::Profiler_ns::Profiler::print_all_stats)
     // .def_static("scope",  []( std::string name ) { TIME_SCOPE(name); }) //DOESNT work because scoping in python doesnt work like that. Rather the scope will die as soon as this function is finished
+    ;
+
+    //Recorder
+    py::class_<ColorMngr, std::shared_ptr<ColorMngr>> (m, "ColorMngr")
+    .def(py::init<>())
+    .def("magma_color", &ColorMngr::magma_color )
+    .def("plasma_color", &ColorMngr::plasma_color )
+    .def("viridis_color", &ColorMngr::viridis_color )
     ;
 
 
