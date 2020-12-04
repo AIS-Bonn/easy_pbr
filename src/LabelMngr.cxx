@@ -204,6 +204,14 @@ Eigen::Vector3d LabelMngr::color_for_label(const int idx){
     CHECK(m_nr_classes!=-1) << "The label mngr has not been initialized yet. Please use LabelMngr.init() first.";
     return m_C_per_class.row(idx).transpose();
 }
+void LabelMngr::set_color_for_label_with_idx(const int idx, Eigen::Vector3d color){
+    CHECK(m_nr_classes!=-1) << "The label mngr has not been initialized yet. Please use LabelMngr.init() first.";
+    m_C_per_class.row(idx)=color;
+}
+void LabelMngr::set_color_scheme(Eigen::MatrixXd& color_per_class){
+    m_C_per_class=color_per_class;
+    m_nr_classes=color_per_class.rows();
+}
 
 Eigen::MatrixXd LabelMngr::color_scheme(){
     CHECK(m_nr_classes!=-1) << "The label mngr has not been initialized yet. Please use LabelMngr.init() first.";

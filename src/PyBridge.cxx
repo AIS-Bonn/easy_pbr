@@ -313,6 +313,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("idx2label", &LabelMngr::idx2label )
     .def("label2idx", &LabelMngr::label2idx )
     .def("compact", &LabelMngr::compact )
+    .def("set_color_scheme", &LabelMngr::set_color_scheme )
+    .def("set_color_for_label_with_idx", &LabelMngr::set_color_for_label_with_idx )
     ;
 
     //VisOptions

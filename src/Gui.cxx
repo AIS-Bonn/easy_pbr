@@ -1285,7 +1285,7 @@ void Gui::draw_label_mngr_legend(){
                 float widget_size=20*m_hidpi_scaling;
                 ImGui::SetNextItemWidth(widget_size); //only gives sizes to the widget and not the label
                 if( ImGui::ColorEdit3(label.c_str(), color.data(), ImGuiColorEditFlags_NoInputs) ){
-                    VLOG(1) << "modif";
+                    mesh->m_label_mngr->set_color_for_label_with_idx(i, color.cast<double>());
                 }
                 nr_drawn_labels++;
                 float x_size_label=ImGui::CalcTextSize(label.c_str()).x;

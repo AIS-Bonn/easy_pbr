@@ -28,6 +28,8 @@ public:
     std::string idx2label(int idx);
     int label2idx(std::string label);
     Eigen::Vector3d color_for_label(const int idx);
+    void set_color_for_label_with_idx(const int idx, Eigen::Vector3d color); //modifies the color for one specific label at a certain index
+    void set_color_scheme(Eigen::MatrixXd& color_per_class); //set a new colormap as a matrix of Nx3 where N is the number of classes we are interested in
     Eigen::MatrixXd color_scheme();
     Eigen::MatrixXf color_scheme_for_gl(); //the data in eigen is stord columnmajor and we want to put the rows first into gl
     Eigen::VectorXf class_frequencies();
