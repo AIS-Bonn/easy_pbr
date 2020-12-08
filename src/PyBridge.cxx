@@ -307,6 +307,7 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<LabelMngr, std::shared_ptr<LabelMngr>> (m, "LabelMngr")
     // .def(py::init<>()) //canot initialize it because it required in the construction a configuru::Config object and that is not exposed in python
     .def(py::init<const std::string, const std::string, const std::string, const int>()) 
+    .def(py::init<const int, const int>() ) 
     .def("nr_classes", &LabelMngr::nr_classes )
     .def("get_idx_unlabeled", &LabelMngr::get_idx_unlabeled )
     .def("class_frequencies", &LabelMngr::class_frequencies )

@@ -1272,9 +1272,9 @@ void Gui::draw_label_mngr_legend(){
             int nr_drawn_labels=0;
             for(int i=0; i<mesh->m_label_mngr->nr_classes(); i++){
                 std::string label=mesh->m_label_mngr->idx2label(i);
-                if(i==mesh->m_label_mngr->get_idx_unlabeled()){
-                    continue; //don't shot the background label
-                }
+                // if(i==mesh->m_label_mngr->get_idx_unlabeled()){
+                    // continue; //don't shot the background label
+                // }
                 // if(i>mesh->m_label_mngr->nr_classes()-1){
                     // continue;
                 // }
