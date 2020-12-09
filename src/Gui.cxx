@@ -149,12 +149,14 @@ void Gui::init_params(const std::string config_file){
     //read all the parameters
     // Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
 
+    std::string config_file_trim=radu::utils::trim_copy(config_file);
     std::string config_file_abs;
-    if (fs::path(config_file).is_relative()){
-        config_file_abs=fs::canonical(fs::path(PROJECT_SOURCE_DIR) / config_file).string();
+    if (fs::path(config_file_trim).is_relative()){
+        config_file_abs=fs::canonical(fs::path(PROJECT_SOURCE_DIR) / config_file_trim).string();
     }else{
-        config_file_abs=config_file;
+        config_file_abs=config_file_trim;
     }
+
 
     //get all the default configs and all it's sections
     Config default_cfg = configuru::parse_file(std::string(DEFAULT_CONFIG), CFG);

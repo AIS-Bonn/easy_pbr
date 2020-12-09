@@ -134,11 +134,13 @@ void Viewer::init_params(const std::string config_file){
 
     //read all the parameters
     // Config cfg = configuru::parse_file(std::string(CMAKE_SOURCE_DIR)+"/config/"+config_file, CFG);
+
+    std::string config_file_trim=radu::utils::trim_copy(config_file);
     std::string config_file_abs;
-    if (fs::path(config_file).is_relative()){
-        config_file_abs=(fs::path(PROJECT_SOURCE_DIR) / config_file).string();
+    if (fs::path(config_file_trim).is_relative()){
+        config_file_abs=(fs::path(PROJECT_SOURCE_DIR) / config_file_trim).string();
     }else{
-        config_file_abs=config_file;
+        config_file_abs=config_file_trim;
     }
 
     //get all the default configs and all it's sections
@@ -2286,11 +2288,12 @@ gl::Texture2D& Viewer::rendered_tex_with_gui(){
 void Viewer::load_environment_map(const std::string path){
 
     //check if the path is relative 
+    std::string path_trim=radu::utils::trim_copy(path);
     std::string path_abs;
-    if (fs::path(path).is_relative()){
-        path_abs=(fs::path(PROJECT_SOURCE_DIR) / path).string();
+    if (fs::path(path_trim).is_relative()){
+        path_abs=(fs::path(PROJECT_SOURCE_DIR) / path_trim).string();
     }else{
-        path_abs=path;
+        path_abs=path_trim;
     }
 
     CHECK(fs::is_regular_file(path_abs)) << "Could not open environment map from file " << path_abs;

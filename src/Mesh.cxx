@@ -120,6 +120,9 @@ Mesh Mesh::clone(){
     cloned.m_min_max_y=m_min_max_y;
     cloned.m_min_max_y_for_plotting=m_min_max_y_for_plotting;
 
+    cloned.name=name;
+    cloned.m_disk_path=m_disk_path;
+
     return cloned;
 }
 
@@ -479,11 +482,12 @@ void Mesh::recalculate_normals(){
 
 void Mesh::load_from_file(const std::string file_path){
 
+    std::string filepath_trim= radu::utils::trim_copy(file_path);
     std::string file_path_abs;
-    if (fs::path(file_path).is_relative()){
-        file_path_abs=(fs::path(PROJECT_SOURCE_DIR) / file_path).string();
+    if (fs::path( filepath_trim ).is_relative()){
+        file_path_abs=(fs::path(PROJECT_SOURCE_DIR) / filepath_trim).string();
     }else{
-        file_path_abs=file_path;
+        file_path_abs=filepath_trim;
     }
 
     std::string file_ext = file_path_abs.substr(file_path_abs.find_last_of(".") + 1);
