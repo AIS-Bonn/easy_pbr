@@ -133,11 +133,11 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
             frustum_mesh->UV=UV;
         
             //resize 
-            int max_size=128.0;
+            int max_size=256.0;
             if(tex.cols>max_size || tex.rows> max_size){
                 int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
                 cv::Mat resized;
-                cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_LINEAR );
+                cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA );
                 tex=resized;
             }
 

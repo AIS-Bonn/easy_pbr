@@ -96,6 +96,9 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
 PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
+    .def_readonly("rows", &cv::Mat::rows )
+    .def_readonly("cols", &cv::Mat::cols )
+    // .def("rows", [](const cv::Mat &m) {  return m.rows;  }  )
     ;
     // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
     // .def(py::init<>())
@@ -179,6 +182,8 @@ PYBIND11_MODULE(easypbr, m) {
     eigen_affine_bindings<float>(m, "f");
     eigen_affine_bindings<double>(m, "d");
 
+    m.def("cv_imread", [](const std::string path) {  cv::Mat mat=cv::imread(path); return mat;  } );
+
     //Frame
     py::class_<Frame> (m, "Frame")
     .def(py::init<>())
@@ -238,6 +243,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
     .def_readwrite("m_enable_culling", &Viewer::m_enable_culling )
+    .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting )
     // .def("print_pointers", &Viewer::print_pointers )
     // .def("set_position", &Viewer::set_position )
     // .def("check_position", &Viewer::check_position )
