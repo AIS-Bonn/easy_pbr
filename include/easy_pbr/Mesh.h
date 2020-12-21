@@ -108,7 +108,7 @@ public:
     void add(const Mesh& new_mesh); //Adds another mesh to this one and combines it into one
     void clear();
     void assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu); //assigns the pointer to the gpu implementation of this mesh
-    void load_from_file(const std::string file_path);
+    bool load_from_file(const std::string file_path); //return sucess or failure
     void save_to_file(const std::string file_path);
     bool is_empty()const;
     // void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
@@ -211,6 +211,7 @@ public:
     void set_roughness_tex(const cv::Mat& mat, const int subsample=1);
     void set_gloss_tex(const cv::Mat& mat, const int subsample=1);
     void set_normals_tex(const cv::Mat& mat, const int subsample=1);
+    bool is_any_texture_dirty();
 
 
     friend std::ostream &operator<<(std::ostream&, const Mesh& m);

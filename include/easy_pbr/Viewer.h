@@ -130,6 +130,7 @@ public:
     void glfw_char_mods(GLFWwindow* w, unsigned int codepoint, int modifier);
     void glfw_resize(GLFWwindow* window, int width, int height);
     void glfw_drop(GLFWwindow* window, int count, const char** paths);
+    void imgui_drop(GLFWwindow* window, int count, const char** paths);
 
     radu::utils::ColorMngr m_colormngr;
     
@@ -174,6 +175,7 @@ public:
     gl::CubeMap m_irradiance_cubemap_tex; //averages the radiance around the hermisphere for each direction. Used for diffuse IBL
     gl::CubeMap m_prefilter_cubemap_tex; //stores filtered maps for various roughness. Used for specular IBL
     gl::Texture2D m_brdf_lut_tex;
+    gl::Texture2D m_uv_checker_tex;
     Eigen::MatrixXf m_random_samples;
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
 

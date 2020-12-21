@@ -348,12 +348,15 @@ bool Viewer::init_context(){
 }
 
 void Viewer::setup_callbacks_imgui(GLFWwindow* window){
+    auto imgui_drop_func = [](GLFWwindow* w, int count, const char** paths) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->imgui_drop( w, count, paths );     };   
+
     glfwSetMouseButtonCallback(window, ImGui_ImplGlfw_MouseButtonCallback);
     glfwSetCursorPosCallback(window, nullptr);
     glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
     glfwSetKeyCallback(window, ImGui_ImplGlfw_KeyCallback);
     glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
     glfwSetCharModsCallback(window, nullptr);
+    glfwSetDropCallback(window, imgui_drop_func);
 }
 
 
@@ -490,6 +493,10 @@ void Viewer::init_opengl(){
     if(m_enable_ibl){ 
         load_environment_map(m_environment_map_path);
     }
+
+    //load a dummy uv_checkermap 
+    cv::Mat mat = cv::imread(std::string(EASYPBR_DATA_DIR)+"/uv_checker.png");
+    m_uv_checker_tex.upload_from_cv_mat(mat, false);
 
 
 }
@@ -1027,7 +1034,7 @@ void Viewer::update_meshes_gl(){
     //Check if we need to upload to gpu
     for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
-        if(mesh_core->m_is_dirty){ //the mesh gl needs updating
+        if(mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty() ) { //the mesh gl needs updating
 
             //find the meshgl  with the same name
             bool found=false;
@@ -2857,16 +2864,67 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
             load_environment_map(paths[i]);
         }else{
             MeshSharedPtr mesh = Mesh::create();
-            mesh->load_from_file(std::string(paths[i]));
-            std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
-            m_scene->add_mesh(mesh,name);
-            //select the newest mesh I added 
-            m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
+            bool success=mesh->load_from_file(std::string(paths[i]));
+            if (success){
+                std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
+                m_scene->add_mesh(mesh,name);
+                //select the newest mesh I added 
+                m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
+            }
         }
 
 
     }
 }
+
+void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
+    for(int i=0; i<count; i++){
+        // VLOG(1) << "loading from path " << paths[i]; 
+
+        //check that do we do with this drag and drop
+        
+        //check if maybe we are loading a texture
+        MeshSharedPtr mesh=m_scene->get_mesh_with_idx(m_gui->selected_mesh_idx() );
+        if (m_gui->m_diffuse_tex_hovered){
+            VLOG(1) << "setting diffuse tex from " << paths[i]; 
+            mesh->set_diffuse_tex(paths[i]);
+        }
+        if (m_gui->m_normals_tex_hovered){
+            VLOG(1) << "setting normals tex from " << paths[i]; 
+            mesh->set_normals_tex(paths[i]);
+        }
+        if (m_gui->m_metalness_tex_hovered){
+            VLOG(1) << "setting metalness tex from " << paths[i]; 
+            mesh->set_metalness_tex(paths[i]);
+        }
+        if (m_gui->m_roughness_tex_hovered){
+            VLOG(1) << "setting roughness tex from " << paths[i]; 
+            mesh->set_roughness_tex(paths[i]);
+        }
+
+
+        // std::string file_ext = std::string(paths[i]).substr(std::string(paths[i]).find_last_of(".") + 1);
+        // trim(file_ext); //remove whitespaces from beggining and end
+        // if(file_ext=="hdr" || file_ext=="HDR" || file_ext=="exr" || file_ext=="EXR"){
+        //     //load environment map
+        //     // read_background_img(m_background_tex, paths[i]);
+        //     // equirectangular2cubemap(m_environment_cubemap_tex, m_background_tex); //if it's equirectangular we convert it to cubemap because it is faster to sample
+        //     // radiance2irradiance(m_irradiance_cubemap_tex, m_environment_cubemap_tex);
+        //     // prefilter(m_prefilter_cubemap_tex, m_environment_cubemap_tex);
+        //     load_environment_map(paths[i]);
+        // }else{
+        //     MeshSharedPtr mesh = Mesh::create();
+        //     mesh->load_from_file(std::string(paths[i]));
+        //     std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
+        //     m_scene->add_mesh(mesh,name);
+        //     //select the newest mesh I added 
+        //     m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
+        // }
+
+
+    }
+}
+
 
 
 // PYBIND11_MODULE(EasyPBR, m) {

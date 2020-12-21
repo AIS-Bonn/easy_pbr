@@ -480,7 +480,7 @@ void Mesh::recalculate_normals(){
 
 }
 
-void Mesh::load_from_file(const std::string file_path){
+bool Mesh::load_from_file(const std::string file_path){
 
     std::string filepath_trim= radu::utils::trim_copy(file_path);
     std::string file_path_abs;
@@ -569,6 +569,7 @@ void Mesh::load_from_file(const std::string file_path){
         
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
+        return false;
     }
 
     //set some sensible things to see 
@@ -597,6 +598,8 @@ void Mesh::load_from_file(const std::string file_path){
     m_is_shadowmap_dirty=true;
 
     m_disk_path=file_path_abs;
+
+    return true;
 
 }
 
@@ -2010,6 +2013,10 @@ void Mesh::set_normals_tex(const cv::Mat& mat, const int subsample){
     }
     cv::flip(mat_internal, m_normals_mat.mat, 0);
     m_normals_mat.is_dirty=true;
+}
+bool Mesh::is_any_texture_dirty(){
+    return  m_diffuse_mat.is_dirty || m_normals_mat.is_dirty || m_metalness_mat.is_dirty || m_roughness_mat.is_dirty;
+
 }
 
 
