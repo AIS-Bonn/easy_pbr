@@ -55,6 +55,9 @@ private:
     std::shared_ptr<Viewer> m_view;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
 
+    gl::Shader m_blur_shader;
+    gl::Texture2D m_blur_tmp_tex;
+
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
     int m_iter;
 
@@ -79,6 +82,9 @@ private:
     //pre draw callbacks
     void pre_draw_animate_mesh(Viewer& view);
     void pre_draw_colorize_mesh(Viewer& view);
+
+    //fullscreen effects
+    void fullscreen_blur(Viewer& view);
 
     //post draw callbacks
     void post_draw(Viewer& view);

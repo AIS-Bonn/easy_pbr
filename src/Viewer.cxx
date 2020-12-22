@@ -648,6 +648,9 @@ void Viewer::configure_auto_params(){
 void Viewer::add_callback_pre_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_pre_draw.push_back(func);
 }
+void Viewer::add_callback_fullscreen_effect(const std::function<void(Viewer& viewer)> func){
+    m_callbacks_fullscreen_effects.push_back(func);
+}
 void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_post_draw.push_back(func);
 }
@@ -714,8 +717,15 @@ void Viewer::update(const GLuint fbo_id){
     pre_draw();
     draw(fbo_id);
 
+
+    // fullscreen_callbacks
+    for(size_t i=0; i<m_callbacks_fullscreen_effects.size(); i++){
+        m_callbacks_fullscreen_effects[i](*this);
+    }
+
+
     if(m_show_gui){
-        m_gui->update();
+        m_gui->update(); //queues the rendering of the widgets but doesnt yet render them. This happens in the post draw with imgui::render. Therefore post_draw callbacks can still add more widgets
     }
 
     post_draw();
@@ -1916,7 +1926,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
 }
 
-void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int m_bloom_blur_iters){
+void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int bloom_blur_iters){
 
     // TIME_START("blur_img");
 
@@ -1988,8 +1998,8 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     glDisable(GL_DEPTH_TEST);
     
     // Set attributes that the vao will pulll from buffers
-    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
-    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
 
     //shader setup
@@ -2014,7 +2024,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     //for each mip map level of the bright image we blur it a bit
     for (int mip = start_mip_map_lvl; mip < max_mip_map_lvl; mip++){
 
-        for (int i = 0; i < m_bloom_blur_iters; i++){
+        for (int i = 0; i < bloom_blur_iters; i++){
 
             Eigen::Vector2i blurred_img_size;
             blurred_img_size=calculate_mipmap_size(img.width(), img.height(), mip);
