@@ -1530,6 +1530,7 @@ void Gui::draw_trajectory( const std::string & trajectory_mesh_name, const std::
         }
 
         MeshSharedPtr camMesh = cam->create_frustum_mesh( m_trajectory_frustum_size, m_view->m_viewport_size);
+        camMesh->apply_model_matrix_to_cpu(true);
         if ( i != m_selected_trajectory_idx )
             camMesh->C *= 0.75;
         if ( !cam->m_traj.m_enabled )
