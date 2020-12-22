@@ -1,4 +1,6 @@
 #version 430 core
+#extension GL_ARB_explicit_attrib_location : require
+
 layout (location = 0) in vec3 position;
 uniform mat4 MVP;
 void main(){

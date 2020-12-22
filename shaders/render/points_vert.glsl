@@ -41,6 +41,8 @@
 
 //quite similar to the mesh_vert
 #version 430 core
+#extension GL_ARB_explicit_attrib_location : require
+
 
 //in
 in vec3 position;

@@ -1,4 +1,5 @@
 #version 430
+#extension GL_ARB_explicit_attrib_location : require
 
 //in
 layout(location=0) in vec2 uv_in;

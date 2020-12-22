@@ -446,34 +446,35 @@ void Gui::draw_main_menu(){
                 ImGui::Separator();
 
                 //diffuse
+                ImVec2 size = ImVec2(50*m_hidpi_scaling,50*m_hidpi_scaling);
                 if ( mesh_gpu->m_diffuse_tex.storage_initialized() ){
-                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_diffuse_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_diffuse_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }else{
-                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }
                 if (ImGui::IsItemHovered()){ m_diffuse_tex_hovered=true; }
 
                 //normals
                  if ( mesh_gpu->m_normals_tex.storage_initialized() ){
-                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_normals_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_normals_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }else{
-                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }
                  if (ImGui::IsItemHovered()){ m_normals_tex_hovered=true; }
 
                 //metalness
                 if ( mesh_gpu->m_metalness_tex.storage_initialized() ){
-                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_metalness_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_metalness_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }else{
-                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }
                  if (ImGui::IsItemHovered()){ m_metalness_tex_hovered=true; }
 
                 //roughness
                 if ( mesh_gpu->m_roughness_tex.storage_initialized() ){
-                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_roughness_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_roughness_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }else{
-                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), ImVec2(50,50), ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }
                 if (ImGui::IsItemHovered()){ m_roughness_tex_hovered=true; }
 

@@ -1,4 +1,5 @@
-#version 330 core
+#version 430 core
+#extension GL_ARB_explicit_attrib_location : require
 
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;

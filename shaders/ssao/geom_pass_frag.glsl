@@ -1,4 +1,5 @@
 #version 430 core
+#extension GL_ARB_explicit_attrib_location : require
 
 //int
 layout(location = 0) in vec3 normal_in;
