@@ -5,7 +5,7 @@
 
 #include "easy_pbr/Mesh.h"
 
-#ifdef WITH_TORCH
+#ifdef EASYPBR_WITH_TORCH
     #include "torch/torch.h"
 #endif
 
@@ -68,14 +68,6 @@ public:
     //getters that are nice to have for python bindings
     Eigen::Vector3f pos_in_world() const;
     Eigen::Vector3f look_dir() const;
-
-    // #ifdef WITH_TORCH
-    //     torch::Tensor rgb2tensor();
-    //     torch::Tensor depth2tensor();
-    //     void tensor2rgb(const torch::Tensor& tensor);
-    //     void tensor2gray(const torch::Tensor& tensor);
-    //     void tensor2depth(const torch::Tensor& tensor);
-    // #endif
 
 
 

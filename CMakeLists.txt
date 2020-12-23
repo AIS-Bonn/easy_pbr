@@ -50,13 +50,17 @@ option(LIBIGL_WITH_VIEWER            "Use OpenGL viewer"  OFF)
 option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
 
+# set(Boost_USE_STATIC_LIBS OFF)
+# set(Boost_USE_MULTITHREADED ON)
+# set(Boost_USE_STATIC_RUNTIME OFF)
+# add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 
 ######   PACKAGES   ############################################################
 # find_package(PythonLibs REQUIRED)
 find_package(GLFW REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread filesystem)
+# find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui imgcodecs )
 find_package(LIBIGL REQUIRED)
 find_package(PCL 1.3 REQUIRED)
 link_directories(${PCL_LIBRARY_DIRS})
@@ -84,38 +88,6 @@ find_package(Torch)
 
 
 
-###   INCLUDES   #########################################################
-set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
-                        ${PROJECT_SOURCE_DIR}/extern
-                        ${PROJECT_SOURCE_DIR}/deps
-                        ${PROJECT_SOURCE_DIR}/deps/imgui
-                        ${PROJECT_SOURCE_DIR}/deps/imgui_ext
-                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
-                        ${PROJECT_SOURCE_DIR}/deps/loguru
-                        ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
-                        ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
-                        ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/libigl/include
-                        ${PROJECT_SOURCE_DIR}/deps/better_enums
-                        ${PROJECT_SOURCE_DIR}/deps/imguizmo
-                        ${PROJECT_SOURCE_DIR}/deps/concurrent_queue
-                        ${PROJECT_SOURCE_DIR}/deps/pybind11/include
-                        ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
-                        ${PROJECT_SOURCE_DIR}/deps/tiny_obj
-                        ${PROJECT_SOURCE_DIR}/deps/utils/include
-                        ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
-                        ) # Header folder
-include_directories(${PROJECT_INCLUDE_DIR} )
-include_directories(${GLFW_INCLUDE_DIR})
-include_directories(${Boost_INCLUDE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(${LIBIGL_INCLUDE_DIR})
-include_directories(${KQUEUE_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
-include_directories(${TORCH_INCLUDE_DIRS})
-# message("torch include dir is " ${TORCH_INCLUDE_DIRS})
 
 
 
@@ -143,47 +115,93 @@ if(CORE_WITH_DIR_WATCHER)
 endif()
 
 
+
+
+###   MAIN LIB  ####################
+# add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
+add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
+
+
 ###   SET ALL THE GLOBAL OPTIONS #########################################
 if(CORE_WITH_VIEWER)
     message("USING GL Viewer")
-    add_definitions(-DWITH_VIEWER)
+    # add_definitions(-DWITH_VIEWER)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_VIEWER)
 else()
     message("USING OFFSCREEN")
 endif()
 if(CORE_WITH_HALIDE)
     message("USING HALIDE")
-    add_definitions(-DWITH_HALIDE)
+    # add_definitions(-DWITH_HALIDE)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
 else()
     message("NOT USING HALIDE")
 endif()
 if(${TORCH_FOUND})
     message("USING TORCH")
-    add_definitions(-DWITH_TORCH)
+    # add_definitions(-DWITH_TORCH)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
 else()
     message("NOT USING TORCH")
 endif()
 if(CORE_WITH_CUDA)
     message("USING CUDA")
-    add_definitions(-DWITH_CUDA)
+    # add_definitions(-DWITH_CUDA)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_CUDA)
 else()
     message("NOT USING CUDA")
 endif()
 if(CORE_WITH_GLM)
     message("USING GLM")
-    add_definitions(-DWITH_GLM)
+    # add_definitions(-DWITH_GLM)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_GLM)
 else()
     message("NOT USING GLM")
 endif()
 if(CORE_WITH_DIR_WATCHER)
     message("USING DIR_WATCHER")
-    add_definitions(-DWITH_DIR_WATCHER)
+    # add_definitions(-DWITH_DIR_WATCHER)
+    target_compile_definitions(easypbr_cpp PRIVATE WITH_EASYPBR_DIR_WATCHER)
 else()
     message("NOT USING DIR_WATCHER")
 endif()
 
-###   MAIN LIB  ####################
-# add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
-add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
+
+###   INCLUDES   #########################################################
+set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+                        ${PROJECT_SOURCE_DIR}/extern
+                        ${PROJECT_SOURCE_DIR}/deps
+                        ${PROJECT_SOURCE_DIR}/deps/imgui
+                        ${PROJECT_SOURCE_DIR}/deps/imgui_ext
+                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
+                        ${PROJECT_SOURCE_DIR}/deps/loguru
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
+                        ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/libigl/include
+                        ${PROJECT_SOURCE_DIR}/deps/better_enums
+                        ${PROJECT_SOURCE_DIR}/deps/imguizmo
+                        ${PROJECT_SOURCE_DIR}/deps/concurrent_queue
+                        ${PROJECT_SOURCE_DIR}/deps/pybind11/include
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_obj
+                        ${PROJECT_SOURCE_DIR}/deps/utils/include
+                        ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
+                        ) # Header folder
+target_include_directories(easypbr_cpp PUBLIC ${PROJECT_INCLUDE_DIR} )
+target_include_directories(easypbr_cpp PUBLIC ${GLFW_INCLUDE_DIR})
+# include_directories(${Boost_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${OpenCV_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${LIBIGL_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${PCL_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${TORCH_INCLUDE_DIRS})
+
+
+
+
 
 ##pybind
 pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
@@ -222,10 +240,14 @@ if(${TORCH_FOUND})
     endif()
 endif()
 # message ( "  PCL_LIBRARIES ------------------------",  ${PCL_LIBRARIES} )
-set(LIBS ${LIBS} Eigen3::Eigen ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PCL_LIBRARIES} igl::core  )
+# set(LIBS ${LIBS} Eigen3::Eigen  ${Boost_LIBRARIES}  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
+set(LIBS ${LIBS} Eigen3::Eigen  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
+# set(LIBS ${LIBS} Eigen3::Eigen  igl::core   ${GLFW_LIBRARIES} ${PCL_LIBRARIES}  )
+# message("boost libs is "  ${Boost_LIBRARIES}  )
+# message("all libs is "   ${LIBS}   )
 
 
-target_link_libraries(easypbr_cpp ${LIBS} )
+target_link_libraries(easypbr_cpp PUBLIC ${LIBS} )
 target_link_libraries(easypbr PRIVATE easypbr_cpp)
 target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
 
@@ -243,7 +265,8 @@ target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_DATA_DIR="${PROJECT_SOURC
 target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${PROJECT_SOURCE_DIR}/shaders")
 # target_compile_definitions(easypbr_cpp PRIVATE DEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg")
 target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-add_definitions( -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
+# add_definitions( -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
+target_compile_definitions(easypbr_cpp PUBLIC -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
 
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 

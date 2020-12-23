@@ -1,6 +1,6 @@
 #include "easy_pbr/PyBridge.h"
 
-#ifdef WITH_TORCH
+#ifdef EASYPBR_WITH_TORCH
     #include <torch/extension.h>
     #include "torch/torch.h"
     #include "torch/csrc/utils/pybind.h"
@@ -213,17 +213,10 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("mask", &Frame::mask )
     .def_readwrite("frame_idx", &Frame::frame_idx )
     .def_readwrite("cam_id", &Frame::cam_id )
-    #ifdef WITH_TORCH
-        // .def("rgb2tensor", &Frame::rgb2tensor )
-        // .def("depth2tensor", &Frame::depth2tensor )
-        // .def("tensor2rgb", &Frame::tensor2rgb )
-        // .def("tensor2gray", &Frame::tensor2gray )
-        // .def("tensor2depth", &Frame::tensor2depth )
-    #endif
     ;
 
     //convenience functions to transform from mat or eigen to tensors
-    #ifdef WITH_TORCH
+    #ifdef EASYPBR_WITH_TORCH
         m.def("mat2tensor", &mat2tensor);
         m.def("tensor2mat", &tensor2mat);
         m.def("eigen2tensor", &eigen2tensor);

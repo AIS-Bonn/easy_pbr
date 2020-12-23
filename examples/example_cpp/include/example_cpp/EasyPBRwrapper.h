@@ -52,20 +52,21 @@ private:
     EasyPBRwrapper(const std::string& config_file, const std::shared_ptr<Viewer>& view); // we put the constructor as private so as to dissalow creating the object on the stack because we want to only used shared ptr for it
     // SyntheticGenerator(const std::string& config_file);
 
-    std::shared_ptr<Viewer> m_view;
-    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
-
-    gl::Shader m_blur_shader;
-    gl::Texture2D m_blur_tmp_tex;
-
-    std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
-    int m_iter;
-
-
     #ifdef WITH_DIR_WATCHER
         emilib::DelayedDirWatcher dir_watcher;
     #endif
     
+    std::shared_ptr<Viewer> m_view;
+    std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
+
+    gl::Shader m_blur_shader;
+    gl::Shader m_toy_shader;
+    gl::Texture2D m_blur_tmp_tex;
+
+    std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
+
+
+
 
     //params
 
@@ -85,6 +86,7 @@ private:
 
     //fullscreen effects
     void fullscreen_blur(Viewer& view);
+    void toy_shader_example(Viewer& view);
 
     //post draw callbacks
     void post_draw(Viewer& view);

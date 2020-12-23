@@ -474,48 +474,6 @@ Eigen::Vector3f Frame::look_dir() const{
 }
 
 
-// #ifdef WITH_TORCH
-//     torch::Tensor Frame::rgb2tensor(){
-//         CHECK(rgb_32f.data) << "There is no data for the rgb_32f image. Are you sure this frame contains the image?";
 
-//         torch::Tensor img_tensor=torch::from_blob(rgb_32f.data, {rgb_32f.rows, rgb_32f.cols, 3});
-        
-//         return img_tensor;
-//     }
-//     torch::Tensor Frame::depth2tensor(){
-//         CHECK(depth.data) << "There is no data for the depth image. Are you sure this frame contains the image?";
-
-//         torch::Tensor img_tensor=torch::from_blob(depth.data, {depth.rows, depth.cols, 1});
-        
-//         return img_tensor;
-//     }
-//     void Frame::tensor2rgb(const torch::Tensor& tensor){
-
-//         CHECK(tensor.size(2)==3) << "We assuming that the tensor should have fromat H,W,C and the C should be 3. However the tensor has shape " << tensor.sizes();
-        
-//         torch::Tensor tensor_cpu=tensor.to("cpu");
-
-//         rgb_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC3 );
-//         std::memcpy( rgb_32f.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*3*sizeof(float) );
-//     }
-//     void Frame::tensor2gray(const torch::Tensor& tensor){
-
-//         CHECK(tensor.size(2)==1) << "We assuming that the tensor should have fromat H,W,C and the C should be 1. However the tensor has shape " << tensor.sizes();
-        
-//         torch::Tensor tensor_cpu=tensor.to("cpu");
-
-//         gray_32f=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
-//         std::memcpy( gray_32f.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
-//     }
-//     void Frame::tensor2depth(const torch::Tensor& tensor){
-
-//         CHECK(tensor.size(2)==1) << "We assuming that the tensor should have fromat H,W,C and the C should be 3. However the tensor has shape " << tensor.sizes();
-        
-//         torch::Tensor tensor_cpu=tensor.to("cpu");
-
-//         depth=cv::Mat(tensor.size(0), tensor.size(1), CV_32FC1 );
-//         std::memcpy( depth.data, tensor_cpu.data_ptr<float>(), tensor.size(0)*tensor.size(1)*1*sizeof(float) );
-//     }
-// #endif
 
 } //namespace easy_pbr

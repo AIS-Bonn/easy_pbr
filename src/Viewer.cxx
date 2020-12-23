@@ -62,7 +62,7 @@ namespace easy_pbr{
 Viewer::Viewer(const std::string config_file):
    dummy( init_context() ),
    dummy_glad(gladLoadGL() ),
-    #ifdef WITH_DIR_WATCHER 
+    #ifdef EASYPBR_WITH_DIR_WATCHER
         dir_watcher(std::string(PROJECT_SOURCE_DIR)+"/shaders/",5),
     #endif
     m_scene(new Scene),
@@ -71,6 +71,7 @@ Viewer::Viewer(const std::string config_file):
     m_recorder(new Recorder( this )),
     m_rand_gen(new RandGenerator()),
     m_timer(new Timer()),
+    m_nr_drawn_frames(0),
     m_viewport_size(1920, 1080),
     m_background_color(0.2, 0.2, 0.2),
     // m_background_color(21.0/255.0, 21.0/255.0, 21.0/255.0),
@@ -115,7 +116,7 @@ Viewer::Viewer(const std::string config_file):
     m_record_with_transparency(true),
     m_first_draw(true)
     {
-        // m_timer->start();
+        m_timer->start();
         // m_old_time=m_timer->elapsed_ms();
         m_camera=m_default_camera;
         init_params(config_file); //tries to get the configurations and if not present it will get them from the default cfg
@@ -502,7 +503,7 @@ void Viewer::init_opengl(){
 }
 
 void Viewer::hotload_shaders(){
-    #ifdef WITH_DIR_WATCHER
+    #ifdef EASYPBR_WITH_DIR_WATCHER
 
         std::vector<std::string> changed_files=dir_watcher.poll_files();
         if(changed_files.size()>0){
@@ -648,9 +649,6 @@ void Viewer::configure_auto_params(){
 void Viewer::add_callback_pre_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_pre_draw.push_back(func);
 }
-void Viewer::add_callback_fullscreen_effect(const std::function<void(Viewer& viewer)> func){
-    m_callbacks_fullscreen_effects.push_back(func);
-}
 void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> func){
     m_callbacks_post_draw.push_back(func);
 }
@@ -717,19 +715,14 @@ void Viewer::update(const GLuint fbo_id){
     pre_draw();
     draw(fbo_id);
 
-
-    // fullscreen_callbacks
-    for(size_t i=0; i<m_callbacks_fullscreen_effects.size(); i++){
-        m_callbacks_fullscreen_effects[i](*this);
-    }
-
-
     if(m_show_gui){
         m_gui->update(); //queues the rendering of the widgets but doesnt yet render them. This happens in the post draw with imgui::render. Therefore post_draw callbacks can still add more widgets
     }
 
     post_draw();
     switch_callbacks(m_window);
+
+    m_nr_drawn_frames++;
 }
 
 void Viewer::pre_draw(){

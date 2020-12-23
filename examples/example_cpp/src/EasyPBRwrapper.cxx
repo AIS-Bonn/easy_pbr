@@ -43,9 +43,10 @@ EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared
         dir_watcher(std::string(PROJECT_SOURCE_DIR)+"/shaders/",5),
     #endif
     m_view(view),
-    m_fullscreen_quad(MeshGL::create()),
-    m_iter(0)
+    m_fullscreen_quad(MeshGL::create())
     {
+
+        VLOG(1) << "receives view with ref " << view;
 
         init_params(config_file);
         compile_shaders(); 
@@ -83,6 +84,8 @@ void EasyPBRwrapper::compile_shaders(){
        
     // m_detect_balloon_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_balloon_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_balloon_frag.glsl" ) ;
     // m_detect_copter_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_copter_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_copter_frag.glsl" ) ;
+    m_blur_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_frag.glsl"  );
+    m_toy_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/toy_shader_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/toy_shader_frag.glsl"  );
 }
 
 void EasyPBRwrapper::init_opengl(){
@@ -90,7 +93,6 @@ void EasyPBRwrapper::init_opengl(){
     m_fullscreen_quad->m_core->create_full_screen_quad();
     m_fullscreen_quad->upload_to_gpu();
 
-    m_blur_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_frag.glsl"  );
 }
 
 void EasyPBRwrapper::hotload_shaders(){
@@ -104,30 +106,37 @@ void EasyPBRwrapper::hotload_shaders(){
 
 void EasyPBRwrapper::install_callbacks(const std::shared_ptr<Viewer>& view){
     //pre draw functions (can install multiple functions and they will be called in order)
-    view->add_callback_pre_draw( [this]( Viewer& v ) -> void{ this->pre_draw_animate_mesh(v); }  );
+    // view->add_callback_pre_draw( [this]( Viewer& v ) -> void{ this->pre_draw_animate_mesh(v); }  );
     view->add_callback_pre_draw( [this]( Viewer& v ) -> void{ this->pre_draw_colorize_mesh(v); }  );
 
     //callbacks that are useful for applying efffects on the whole screen without affecting the gui
-    view->add_callback_fullscreen_effect( [this]( Viewer& v ) -> void{ this->fullscreen_blur(v); }  );
+    view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->fullscreen_blur(v); }  );
+    // view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->toy_shader_example(v); }  );
 
     //post draw functions
     view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->post_draw(v); }  );
 }
 
 void EasyPBRwrapper::create_mesh(){
+    // MeshSharedPtr mesh= Mesh::create();
+    // mesh->V.resize(4,3);
+    // mesh->V.row(0)<< -1,-1,0;
+    // mesh->V.row(1)<< 1,-1,0;
+    // mesh->V.row(2)<< -1,1,0;
+    // mesh->V.row(3)<< 1,1,0;
+
+    // mesh->F.resize(2,3);
+    // mesh->F.row(0)<< 0,1,2;
+    // mesh->F.row(1)<< 2,1,3;
+
+    // mesh->m_vis.m_show_wireframe=true;
+    // mesh->m_vis.m_line_width=5.0;
+    // Scene::show(mesh, "mesh");
+
+    //bunny 
     MeshSharedPtr mesh= Mesh::create();
-    mesh->V.resize(4,3);
-    mesh->V.row(0)<< -1,-1,0;
-    mesh->V.row(1)<< 1,-1,0;
-    mesh->V.row(2)<< -1,1,0;
-    mesh->V.row(3)<< 1,1,0;
-
-    mesh->F.resize(2,3);
-    mesh->F.row(0)<< 0,1,2;
-    mesh->F.row(1)<< 2,1,3;
-
-    mesh->m_vis.m_show_wireframe=true;
-    mesh->m_vis.m_line_width=5.0;
+    // mesh->load_from_file("./data/bunny.ply");
+    mesh->load_from_file("./data/dragon.obj");
     Scene::show(mesh, "mesh");
 }
 
@@ -135,19 +144,64 @@ void EasyPBRwrapper::create_mesh(){
 void EasyPBRwrapper::pre_draw_animate_mesh(Viewer& view){
     //get a handle to the mesh from the scene and move it in the x direction
     MeshSharedPtr mesh= Scene::get_mesh_with_name("mesh");
-    mesh->model_matrix_ref().translation().x() = std::sin( m_iter/100.0 ); 
+    mesh->model_matrix_ref().translation().x() = std::sin( view.m_timer->elapsed_s()  )* 0.2; 
+    // mesh->model_matrix_ref().translation().y() = std::sin( view.m_timer->elapsed_s() + 3.14  ); 
 
 }
 
 void EasyPBRwrapper::pre_draw_colorize_mesh(Viewer& view){
     //get a handle to the mesh from the scene and modify its color
     MeshSharedPtr mesh= Scene::get_mesh_with_name("mesh");
-    mesh->m_vis.m_solid_color.x() = std::fabs(std::sin( m_iter/50.0 ));
+    mesh->m_vis.m_solid_color.x() = std::fabs(std::sin( view.m_timer->elapsed_s() ));
+
+}
+
+void EasyPBRwrapper::toy_shader_example(Viewer& view){
+    //blurs the fullscreen image without affecting the gui
+
+
+    hotload_shaders();
+
+    TIME_START("toy_shader");
+
+    gl::Texture2D& img = view.rendered_tex_no_gui(/*with_transparency*/false);
+
+    //dont perform depth checking nor write into the depth buffer 
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+    
+    // Set attributes that the vao will pulll from buffers
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_toy_shader, "position", m_fullscreen_quad->V_buf, 3) );
+    GL_C( m_fullscreen_quad->vao.vertex_attribute(m_toy_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
+    m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
+
+    //shader setup
+    GL_C( m_toy_shader.use() );
+
+
+
+    // m_toy_shader.uniform_bool(view."horizontal");
+    m_toy_shader.draw_into(img, "color_output"); 
+    // draw
+    m_fullscreen_quad->vao.bind(); 
+    glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
+
+
+
+    TIME_END("toy_shader");
+
+    //restore the state
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0.0f , 0.0f, view.m_viewport_size.x()/view.m_subsample_factor, view.m_viewport_size.y()/view.m_subsample_factor );
 
 }
 
 void EasyPBRwrapper::fullscreen_blur(Viewer& view){
     //blurs the fullscreen image without affecting the gui
+
+
+    hotload_shaders();
 
     TIME_START("blur_img");
 
@@ -195,6 +249,7 @@ void EasyPBRwrapper::fullscreen_blur(Viewer& view){
 
 
             m_blur_shader.bind_texture(img,"img");
+            m_blur_shader.bind_texture(view.m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(true,"horizontal");
             m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl); 
@@ -205,6 +260,7 @@ void EasyPBRwrapper::fullscreen_blur(Viewer& view){
 
             //do it in the vertical direction
             m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
+            m_blur_shader.bind_texture(view.m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
             m_blur_shader.uniform_int(mip-start_mip_map_lvl,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
             m_blur_shader.draw_into(img, "blurred_output", mip); 
@@ -249,6 +305,6 @@ void EasyPBRwrapper::post_draw(Viewer& view){
 
     ImGui::End();
 
-    m_iter++;
+    // m_iter++;
 }
 
