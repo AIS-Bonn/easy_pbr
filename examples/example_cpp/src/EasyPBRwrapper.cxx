@@ -46,8 +46,6 @@ EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared
     m_fullscreen_quad(MeshGL::create())
     {
 
-        VLOG(1) << "receives view with ref " << view;
-
         init_params(config_file);
         compile_shaders(); 
         init_opengl();                     
