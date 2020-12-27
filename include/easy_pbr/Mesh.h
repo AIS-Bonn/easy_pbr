@@ -89,7 +89,7 @@ struct VisOptions{
 //when uploading texture from cpu we want a way to say that this is dirty
 struct CvMatCpu {
     cv::Mat mat;
-    bool is_dirty=true;
+    bool is_dirty=false;
 };
 
 

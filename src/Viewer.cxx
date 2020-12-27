@@ -2795,22 +2795,25 @@ void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
         //check that do we do with this drag and drop
         
         //check if maybe we are loading a texture
-        MeshSharedPtr mesh=m_scene->get_mesh_with_idx(m_gui->selected_mesh_idx() );
-        if (m_gui->m_diffuse_tex_hovered){
-            VLOG(1) << "setting diffuse tex from " << paths[i]; 
-            mesh->set_diffuse_tex(paths[i]);
-        }
-        if (m_gui->m_normals_tex_hovered){
-            VLOG(1) << "setting normals tex from " << paths[i]; 
-            mesh->set_normals_tex(paths[i]);
-        }
-        if (m_gui->m_metalness_tex_hovered){
-            VLOG(1) << "setting metalness tex from " << paths[i]; 
-            mesh->set_metalness_tex(paths[i]);
-        }
-        if (m_gui->m_roughness_tex_hovered){
-            VLOG(1) << "setting roughness tex from " << paths[i]; 
-            mesh->set_roughness_tex(paths[i]);
+        if (m_scene->nr_meshes()>0){
+
+            MeshSharedPtr mesh=m_scene->get_mesh_with_idx(m_gui->selected_mesh_idx() );
+            if (m_gui->m_diffuse_tex_hovered){
+                VLOG(1) << "setting diffuse tex from " << paths[i]; 
+                mesh->set_diffuse_tex(paths[i]);
+            }
+            if (m_gui->m_normals_tex_hovered){
+                VLOG(1) << "setting normals tex from " << paths[i]; 
+                mesh->set_normals_tex(paths[i]);
+            }
+            if (m_gui->m_metalness_tex_hovered){
+                VLOG(1) << "setting metalness tex from " << paths[i]; 
+                mesh->set_metalness_tex(paths[i]);
+            }
+            if (m_gui->m_roughness_tex_hovered){
+                VLOG(1) << "setting roughness tex from " << paths[i]; 
+                mesh->set_roughness_tex(paths[i]);
+            }
         }
 
 
