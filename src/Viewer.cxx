@@ -874,67 +874,9 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-    // //attempt 2 
-    // TIME_START("shadow_pass");
-    // //check if any of the objects has moved, and if it has we need to clear all shadow maps and redo them. We need to redo them from scratch because an object moving may have revealed what is behind another object
-    // bool need_shadow_map_update=false;
-    // for(size_t i=0; i<m_meshes_gl.size(); i++){
-    //     MeshGLSharedPtr mesh=m_meshes_gl[i];
-    //     if (mesh->m_core->m_is_shadowmap_dirty){
-    //         need_shadow_map_update=true;
-    //         break;
-    //     }
-    // }
-
-    // //loop through all the mesh and if they need to update the shadow map they do it into their shadow maps as a depth map
-
-
-    // if(!m_enable_edl_lighting){
-    //     for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
-    //         if(m_spot_lights[l_idx]->m_create_shadow){
-    //             m_spot_lights[l_idx]->clear_shadow_map();
-
-    //             //loop through all the meshes
-    //             for(size_t i=0; i<m_meshes_gl.size(); i++){
-    //                 MeshGLSharedPtr mesh=m_meshes_gl[i];
-    //                 VLOG(1) << "Mesh has shadowmap dirtyu set to " << mesh->m_core->name  << mesh->m_core->m_is_shadowmap_dirty; 
-    //                 if(mesh->m_core->m_vis.m_is_visible && mesh->m_core->m_is_shadowmap_dirty && !mesh->m_core->is_empty() ){
-
-    //                     if(mesh->m_core->m_vis.m_show_mesh){
-    //                         m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
-    //                     }
-    //                     if(mesh->m_core->m_vis.m_show_points){
-    //                         m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
-    //                     }
-
-    //                     //if we use a custom shader we try to make an educated guess weather we should render this mesh as a mesh or as point cloud in the shadow map 
-    //                     if(mesh->m_core->m_vis.m_use_custom_shader && mesh->m_core->custom_render_func ){
-    //                         if(mesh->m_core->F.size()){
-    //                             m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
-    //                         }else{
-    //                             m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
-    //                         }
-    //                     }
-
-    //                     mesh->m_core->m_is_shadowmap_dirty=false;
-
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // TIME_END("shadow_pass");
-
-
-
-
-
     TIME_START("gbuffer");
     //set the gbuffer size in case it changed 
     if(m_viewport_size.x()/m_subsample_factor!=m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor!=m_gbuffer.height()){
-        // VLOG(1) << "m+viewpoer size is " << m_viewport_size.transpose();
-        // VLOG(1) << "gbuffer has size " << m_gbuffer.width() << " " << m_gbuffer.height();
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
@@ -1653,28 +1595,7 @@ void Viewer::ssao_pass(){
 
 
 
-
     
-
-
-
-    // //TODO blurring should tak a mip mapped deph_linear so that we dont end up with aliasing issues
-    // //bilateral blur  attempt 2 by having the ao texture also super small. we don do the blur at the full resolution because its too slow and it needs big sigma in spacial in order to work
-    // TIME_START("blur_pass");
-    // // m_ao_blurred_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, new_size.x(), new_size.y()  );
-    // m_ao_blurred_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y()  );
-    // m_depth_linear_tex.generate_mipmap(m_ssao_downsample);
-    // m_bilateral_blur_shader.use();
-    // m_bilateral_blur_shader.bind_texture(m_depth_linear_tex, "depth_linear_tex");
-    // m_bilateral_blur_shader.bind_texture(m_ao_tex, "ao_raw_tex");
-    // m_bilateral_blur_shader.uniform_float(m_sigma_spacial, "sigma_spacial");
-    // m_bilateral_blur_shader.uniform_float(m_sigma_depth, "sigma_depth");
-    // m_bilateral_blur_shader.uniform_int(m_ao_power, "ao_power");
-    // m_bilateral_blur_shader.uniform_int(m_ssao_downsample, "pyr_lvl");
-    // m_bilateral_blur_shader.bind_image(m_ao_blurred_tex, GL_WRITE_ONLY, "ao_blurred_img");
-    // m_bilateral_blur_shader.dispatch(m_ao_blurred_tex.width(), m_ao_blurred_tex.height(), 16 , 16);
-    // TIME_END("blur_pass");
-
 
     //dont perform depth checking nor write into the depth buffer 
     TIME_START("blur_pass");
@@ -1713,19 +1634,6 @@ void Viewer::ssao_pass(){
     // m_bilateral_blur_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"texLinearDepth");
     m_bilateral_blur_shader.bind_texture(m_depth_linear_tex,"texLinearDepth");
 
-
-
-
-    // // glColorMask(false, false, false, true);
-    // m_gbuffer.bind_for_draw();
-    // m_ssao_ao_pass_shader.draw_into(m_gbuffer,
-    //                                 {
-    //                                 // std::make_pair("position_out", "position_gtex"),
-    //                                 std::make_pair("ao_out", "ao_gtex"),
-    //                                 // std::make_pair("specular_out", "specular_gtex"),
-    //                                 // std::make_pair("shininess_out", "shininess_gtex")
-    //                                 }
-    //                                 );
     m_bilateral_blur_shader.draw_into(m_ao_blurred_tex, "out_Color");
 
 
