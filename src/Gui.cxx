@@ -1390,18 +1390,29 @@ void Gui::draw_drag_drop_text(){
 
         // Draw text slightly bigger than normal text
         std::string text= "Drag and drop mesh file to display it";
-        Eigen::Vector3f color;
-        color << 1.0, 1.0, 1.0;
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        drawList->AddText(NULL, 50.0,
-            // ImVec2(m_view->m_viewport_size(0)/2*m_hidpi_scaling , (m_view->m_viewport_size(1) - m_view->m_viewport_size(1)/2 ) *m_hidpi_scaling ),
-            ImVec2(m_view->m_viewport_size(0)/2 - ImGui::CalcTextSize(text.c_str()).x/2 ,  m_view->m_viewport_size(1)/2  ),
-            ImGui::GetColorU32(ImVec4(
-                color(0),
-                color(1),
-                color(2),
-                1.0)),
-        &text[0], &text[0] + text.size());
+        // Eigen::Vector3f color;
+        // color << 1.0, 1.0, 1.0;
+        // ImDrawList* drawList = ImGui::GetWindowDrawList();
+        // drawList->AddText(NULL, 30.0,
+        //     // ImVec2(m_view->m_viewport_size(0)/2*m_hidpi_scaling , (m_view->m_viewport_size(1) - m_view->m_viewport_size(1)/2 ) *m_hidpi_scaling ),
+        //     ImVec2(m_view->m_viewport_size(0)/2 - ImGui::CalcTextSize(text.c_str()).x/2 ,  m_view->m_viewport_size(1)/2  ),
+        //     ImGui::GetColorU32(ImVec4(
+        //         color(0),
+        //         color(1),
+        //         color(2),
+        //         1.0)),
+        // &text[0], &text[0] + text.size());
+
+        //attempt 2
+        float font_size = ImGui::GetFontSize() * text.size() / 2;
+        ImGui::SameLine(
+        ImGui::GetWindowSize().x / 2 -
+        font_size + (font_size / 2)
+        );
+        ImGui::Text(text.c_str());
+
+
+       
 
         ImGui::End();
         ImGui::PopStyleColor();
