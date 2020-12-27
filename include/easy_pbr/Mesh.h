@@ -139,6 +139,7 @@ public:
     //create certain meshes
     void create_full_screen_quad();
     void create_box_ndc(); //makes a 1x1x1 vox in NDC. which has z going into the screen
+    void create_box(const float w, const float l, const float h); //makes a box of a certain width, length and height
     void create_grid(const int nr_segments, const float y_pos, const float scale);
     void create_floor(const float y_pos, const float scale);
     void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.

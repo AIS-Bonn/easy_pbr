@@ -288,6 +288,7 @@ Eigen::Affine3d Mesh::model_matrix(){
     return m_model_matrix;
 }
 Eigen::Affine3d& Mesh::model_matrix_ref(){
+    m_is_shadowmap_dirty=true; //we get a reference to this model matrix and therefore it can be modified from outside. So just to be sure we just set the shadowmap to be dirty
     return m_model_matrix;
 }
 void Mesh::set_model_matrix(const Eigen::Affine3d& new_model_matrix){
@@ -1150,6 +1151,86 @@ void Mesh::create_box_ndc(){
         // 1
     F.row(10) << 6,5,1;
     F.row(11) << 6,1,2;
+}
+
+void Mesh::create_box(const float w, const float l, const float h){
+    V.resize(8,3);
+    //behind face (which has negative Z as the camera is now looking in the positive Z direction and this will be the face that is behind the camera)
+    V.row(0) << -1.0, -1.0, -1.0; //bottom-left
+    V.row(1) << 1.0, -1.0, -1.0; //bottom-right
+    V.row(2) << 1.0, 1.0, -1.0; //top-right
+    V.row(3) << -1.0, 1.0, -1.0; //top-left
+    //front face
+    V.row(4) << -1.0, -1.0, 1.0; //bottom-left
+    V.row(5) << 1.0, -1.0, 1.0; //bottom-right
+    V.row(6) << 1.0, 1.0, 1.0; //top-right
+    V.row(7) << -1.0, 1.0, 1.0; //top-left
+
+    //faces (2 triangles per faces, with 6 faces which makes 12 triangles)
+    F.resize(12,3);
+    F.setZero();
+    //behind //we put them clockwise because we look at them from the outside, all of the other faces are counterclockwise because we see them from inside the cube
+    F.row(0) << 2,1,0;
+    F.row(1) << 2,0,3;
+    //front
+    // 7,6
+    // 4,5
+    F.row(2) << 4,5,6;
+    F.row(3) << 7,4,6;
+    //bottom
+    // 45
+    // 01
+    F.row(4) << 5,0,1;
+    F.row(5) << 4,0,5;
+    //top
+    // 32
+    // 76
+    F.row(6) << 7,6,3;
+    F.row(7) << 3,6,2;
+    //left
+        // 7
+        // 4
+    // 3
+    // 0
+    F.row(8) << 3,0,4;
+    F.row(9) << 3,4,7;
+    // 6
+    // 5
+        // 2
+        // 1
+    F.row(10) << 6,5,1;
+    F.row(11) << 6,1,2;
+
+
+    //the box now has a size of 2 in every direction but we and to have it size of w,l,h
+    V.col(0) = V.col(0)*0.5*w;
+    V.col(1) = V.col(1)*0.5*h;
+    V.col(2) = V.col(2)*0.5*l;
+
+
+
+    //since we want each vertex at the cornet to have multiple normals, we just duplicate them
+    std::vector<Eigen::VectorXd> points;
+    std::vector<Eigen::VectorXi> faces;
+    for(int i=0; i<F.rows(); i++){
+        Eigen::VectorXd p1=V.row( F(i,0) );
+        Eigen::VectorXd p2=V.row( F(i,2) );
+        Eigen::VectorXd p3=V.row( F(i,1) );
+        points.push_back(p1);
+        points.push_back(p2);
+        points.push_back(p3);
+
+        Eigen::VectorXi face;
+        face.resize(3);
+        face << points.size()-1, points.size()-2, points.size()-3;
+        faces.push_back(face);
+    }
+
+    V=radu::utils::vec2eigen(points);
+    F=radu::utils::vec2eigen(faces);
+    recalculate_normals();
+
+
 }
 
 void Mesh::create_grid(const int nr_segments, const float y_pos, const float scale){

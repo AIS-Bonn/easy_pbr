@@ -243,6 +243,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_camera", &Viewer::m_camera )
     .def_readwrite("m_recorder", &Viewer::m_recorder )
     .def_readwrite("m_viewport_size", &Viewer::m_viewport_size )
+    .def_readwrite("m_nr_drawn_frames", &Viewer::m_nr_drawn_frames )
     ;
 
     //Gui
@@ -297,9 +298,11 @@ PYBIND11_MODULE(easypbr, m) {
     // .def_static("show",  py::overload_cast<const Mesh&, const std::string>(&Scene::show) )
     .def_static("show",  py::overload_cast<const std::shared_ptr<Mesh>, const std::string>(&Scene::show) )
     .def_static("get_mesh_with_name",  &Scene::get_mesh_with_name )
+    .def_static("get_mesh_with_idx",  &Scene::get_mesh_with_idx )
     .def_static("does_mesh_with_name_exist",  &Scene::does_mesh_with_name_exist)
     .def_static("add_mesh",  &Scene::add_mesh)
     .def_static("set_floor_visible",  &Scene::set_floor_visible)
+    .def_static("nr_meshes",  &Scene::nr_meshes)
     ;
 
     //LabelMngr
@@ -359,6 +362,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("add", &Mesh::add )
     .def("is_empty", &Mesh::is_empty )
     .def("create_box_ndc", &Mesh::create_box_ndc )
+    .def("create_box", &Mesh::create_box )
     .def("create_floor", &Mesh::create_floor )
     .def_readwrite("id", &Mesh::id)
     .def_readwrite("name", &Mesh::name)
