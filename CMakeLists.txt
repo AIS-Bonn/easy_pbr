@@ -22,7 +22,7 @@ option(CORE_WITH_HALIDE "Compile Halide" OFF)
 option(CORE_WITH_TORCH "Compile Torch" OFF)
 option(CORE_WITH_CUDA "Compile CUDA" OFF)
 option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
-option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
+# option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
 
 
@@ -65,25 +65,52 @@ find_package(LIBIGL REQUIRED)
 find_package(PCL 1.3 REQUIRED)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-if(CORE_WITH_DIR_WATCHER)
-    find_package(kqueue REQUIRED)
-endif()
+# if(CORE_WITH_DIR_WATCHER)
+find_package(kqueue REQUIRED)
+    # if(${KQUEUE_FOUND})
+        # message("awdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+    # endif()
+# endif()
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
 #try to compile with pytorch if you can 
 set(PYTORCH_PATH "/opt/pytorch")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
 find_package(Torch)
-# if(${TORCH_FOUND})
-#     # option(CORE_WITH_TORCH "Compile PyTorch" ON)
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} ") #to avoid https://github.com/pytorch/pytorch/issues/13541
-# else()
-#     # option(CORE_WITH_TORCH "Compile PyTorch" OFF)
-#     # message("TORCH WAS FOUND")
-# endif()
-# message("TORCH_FOUND is ", ${TORCH_FOUND})
-# message("CMAKE_CXX_FLAGS flags are ", ${CMAKE_CXX_FLAGS})
-# message("TORCH_CXX_FLAGS flags are ", ${TORCH_CXX_FLAGS})
+
+
+
+###   INCLUDES   #########################################################
+set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+                        ${PROJECT_SOURCE_DIR}/extern
+                        ${PROJECT_SOURCE_DIR}/deps
+                        ${PROJECT_SOURCE_DIR}/deps/imgui
+                        ${PROJECT_SOURCE_DIR}/deps/imgui_ext
+                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
+                        ${PROJECT_SOURCE_DIR}/deps/loguru
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
+                        ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
+                        ${PROJECT_SOURCE_DIR}/deps/configuru
+                        ${PROJECT_SOURCE_DIR}/deps/libigl/include
+                        ${PROJECT_SOURCE_DIR}/deps/better_enums
+                        ${PROJECT_SOURCE_DIR}/deps/imguizmo
+                        ${PROJECT_SOURCE_DIR}/deps/concurrent_queue
+                        ${PROJECT_SOURCE_DIR}/deps/pybind11/include
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
+                        ${PROJECT_SOURCE_DIR}/deps/tiny_obj
+                        ${PROJECT_SOURCE_DIR}/deps/utils/include
+                        ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
+                        ) # Header folder
+include_directories(${PROJECT_INCLUDE_DIR} )
+include_directories(${GLFW_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${LIBIGL_INCLUDE_DIR})
+include_directories(${KQUEUE_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${TORCH_INCLUDE_DIRS})
 
 
 
@@ -110,7 +137,8 @@ file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/
 )
 #tinyply because libigl readPLY has a memory leak 
 set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
-if(CORE_WITH_DIR_WATCHER)
+# if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
     set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
 endif()
 
@@ -122,11 +150,41 @@ endif()
 add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 
 
+
+
+
+##pybind
+pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
+# target_include_directories(easypbr PUBLIC ${PROJECT_INCLUDE_DIR} )
+# #pybind with a supporting shared library https://github.com/pybind/cmake_example/issues/11
+# # set_target_properties(easypbr PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+# # set_target_properties(easypbr PROPERTIES SKIP_BUILD_RPATH FALSE)
+# set_target_properties(easypbr PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+# # message("--------origin-----------$ORIGIN", ${ORIGIN})
+# # message("--------SHADERS_PATH-----------------------------", ${EASYPBR_SHADERS_PATH})
+# if(UNIX AND NOT APPLE)
+#     # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/relative/path/to/supporting/library_dir")
+#     set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/")
+# elseif(APPLE)
+#     # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/relative/path/to/supporting/library_dir")
+#     set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/")
+# endif()
+# set_target_properties(easypbr PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+###   EXECUTABLE   #######################################
+add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
+
+
+
+
+
 ###   SET ALL THE GLOBAL OPTIONS #########################################
 if(CORE_WITH_VIEWER)
     message("USING GL Viewer")
     # add_definitions(-DWITH_VIEWER)
     target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_VIEWER)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_VIEWER)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_VIEWER)
 else()
     message("USING OFFSCREEN")
 endif()
@@ -134,6 +192,8 @@ if(CORE_WITH_HALIDE)
     message("USING HALIDE")
     # add_definitions(-DWITH_HALIDE)
     target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_HALIDE)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_HALIDE)
 else()
     message("NOT USING HALIDE")
 endif()
@@ -141,6 +201,8 @@ if(${TORCH_FOUND})
     message("USING TORCH")
     # add_definitions(-DWITH_TORCH)
     target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_HALIDE)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_HALIDE)
 else()
     message("NOT USING TORCH")
 endif()
@@ -148,6 +210,8 @@ if(CORE_WITH_CUDA)
     message("USING CUDA")
     # add_definitions(-DWITH_CUDA)
     target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_CUDA)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_CUDA)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_CUDA)
 else()
     message("NOT USING CUDA")
 endif()
@@ -155,78 +219,33 @@ if(CORE_WITH_GLM)
     message("USING GLM")
     # add_definitions(-DWITH_GLM)
     target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_GLM)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_GLM)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_GLM)
 else()
     message("NOT USING GLM")
 endif()
-if(CORE_WITH_DIR_WATCHER)
+# if(if(${KQUEUE_FOUND}))
+if(${KQUEUE_FOUND})
     message("USING DIR_WATCHER")
     # add_definitions(-DWITH_DIR_WATCHER)
-    target_compile_definitions(easypbr_cpp PRIVATE WITH_EASYPBR_DIR_WATCHER)
+    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_DIR_WATCHER)
+    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_DIR_WATCHER)
+    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_DIR_WATCHER)
 else()
     message("NOT USING DIR_WATCHER")
 endif()
 
 
-###   INCLUDES   #########################################################
-set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
-                        ${PROJECT_SOURCE_DIR}/extern
-                        ${PROJECT_SOURCE_DIR}/deps
-                        ${PROJECT_SOURCE_DIR}/deps/imgui
-                        ${PROJECT_SOURCE_DIR}/deps/imgui_ext
-                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
-                        ${PROJECT_SOURCE_DIR}/deps/loguru
-                        ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
-                        ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
-                        ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/libigl/include
-                        ${PROJECT_SOURCE_DIR}/deps/better_enums
-                        ${PROJECT_SOURCE_DIR}/deps/imguizmo
-                        ${PROJECT_SOURCE_DIR}/deps/concurrent_queue
-                        ${PROJECT_SOURCE_DIR}/deps/pybind11/include
-                        ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source
-                        ${PROJECT_SOURCE_DIR}/deps/tiny_obj
-                        ${PROJECT_SOURCE_DIR}/deps/utils/include
-                        ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
-                        ) # Header folder
-target_include_directories(easypbr_cpp PUBLIC ${PROJECT_INCLUDE_DIR} )
-target_include_directories(easypbr_cpp PUBLIC ${GLFW_INCLUDE_DIR})
-# include_directories(${Boost_INCLUDE_DIR})
-target_include_directories(easypbr_cpp PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(easypbr_cpp PUBLIC ${OpenCV_INCLUDE_DIRS})
-target_include_directories(easypbr_cpp PUBLIC ${LIBIGL_INCLUDE_DIR})
-target_include_directories(easypbr_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
-target_include_directories(easypbr_cpp PUBLIC ${PCL_INCLUDE_DIRS})
-target_include_directories(easypbr_cpp PUBLIC ${TORCH_INCLUDE_DIRS})
 
 
 
 
-
-##pybind
-pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
-#pybind with a supporting shared library https://github.com/pybind/cmake_example/issues/11
-# set_target_properties(easypbr PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
-# set_target_properties(easypbr PROPERTIES SKIP_BUILD_RPATH FALSE)
-set_target_properties(easypbr PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
-# message("--------origin-----------$ORIGIN", ${ORIGIN})
-message("--------SHADERS_PATH-----------------------------", ${EASYPBR_SHADERS_PATH})
-if(UNIX AND NOT APPLE)
-    # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/relative/path/to/supporting/library_dir")
-    set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/")
-elseif(APPLE)
-    # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/relative/path/to/supporting/library_dir")
-    set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/")
-endif()
-set_target_properties(easypbr PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-###   EXECUTABLE   #######################################
-add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-if(CORE_WITH_DIR_WATCHER)
+# if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
 if(${TORCH_FOUND})

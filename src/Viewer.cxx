@@ -504,12 +504,13 @@ void Viewer::init_opengl(){
 
 void Viewer::hotload_shaders(){
     #ifdef EASYPBR_WITH_DIR_WATCHER
-
+        // VLOG(1) << "chekcing hotload";
         std::vector<std::string> changed_files=dir_watcher.poll_files();
         if(changed_files.size()>0){
             compile_shaders();
         }
-
+    #else 
+        // VLOG(1) << "not using dirwatcher";
     #endif
 }
 
