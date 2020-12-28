@@ -258,12 +258,16 @@ void Gui::draw_main_menu(){
         //combo of the data list with names for each of them
 
         if ( ImGui::Button("Hide Meshes") )
-            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i)
+            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i){
                 m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=false;
+                m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
+            }
         ImGui::SameLine();
         if ( ImGui::Button("Show Meshes") )
-            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i)
+            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i){
                 m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=true;
+                m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
+            }
         if(ImGui::ListBoxHeader("Scene meshes", m_view->m_meshes_gl.size(), 6)){
             for (int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i) {
 
@@ -293,6 +297,7 @@ void Gui::draw_main_menu(){
                 if(ImGui::Selectable(m_view->m_meshes_gl[i]->m_core->name.c_str(), true, ImGuiSelectableFlags_AllowDoubleClick)){ //we leave selected to true so that the header appears and we can change it's colors
                     if (ImGui::IsMouseDoubleClicked(0)){
                         m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=!m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible;
+                        m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
                     }
                     m_selected_mesh_idx=i;
                 }
@@ -352,23 +357,24 @@ void Gui::draw_main_menu(){
         if(!m_view->m_scene->is_empty() ){ //if the scene is empty there will be no mesh to select
             MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
             ImGui::InputText("Name", mesh->name );
-            ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points); 
+            if( ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points)) { mesh->m_is_shadowmap_dirty=true;  }
                 ImGui::Indent(10.0f*m_hidpi_scaling);  
                 ImGui::Checkbox("Overlay points", &mesh->m_vis.m_overlay_points);  ImGui::SameLine(); help_marker("Draws the points even if they are occluded");
                 ImGui::Checkbox("Points as circle", &mesh->m_vis.m_points_as_circle); ImGui::SameLine(); help_marker("Draws points as circles instad of squares. Moderate performance impact.");
                 ImGui::Unindent(10.0f*m_hidpi_scaling );
-            ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines); 
+            if( ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines) ) { mesh->m_is_shadowmap_dirty=true;  }
                 ImGui::Indent(10.0f*m_hidpi_scaling);  ImGui::Checkbox("Overlay lines", &mesh->m_vis.m_overlay_lines); ImGui::SameLine(); help_marker("Draws the lines even if they are occluded");
                 ImGui::Unindent(10.0f*m_hidpi_scaling );
-            ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh);
-            ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe);
-            ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels);
+            if( ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh) ) {  mesh->m_is_shadowmap_dirty=true;  }
+            if( ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe)) {  mesh->m_is_shadowmap_dirty=true; }
+            if( ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels) ) { mesh->m_is_shadowmap_dirty=true; }
             if( ImGui::Checkbox("Custom shader", &mesh->m_vis.m_use_custom_shader )){
                 //check that we have defined a custom rendering function
                 if(!mesh->custom_render_func){
                     LOG(WARNING) << "There is no custom render function for this mesh. Please assign one by using mesh->custom_render_func=foo";
                     mesh->m_vis.m_use_custom_shader=false;
                 }
+                mesh->m_is_shadowmap_dirty=true;
             }
             ImGui::Checkbox("Show vert ids", &mesh->m_vis.m_show_vert_ids);
             ImGui::SameLine(); help_marker("Shows the indexes that each vertex has within the V matrix, \n i.e. the row index");
@@ -1409,7 +1415,7 @@ void Gui::draw_drag_drop_text(){
         ImGui::GetWindowSize().x / 2 -
         font_size + (font_size / 2)
         );
-        ImGui::Text(text.c_str());
+        ImGui::TextUnformatted(text.c_str());
 
 
        
