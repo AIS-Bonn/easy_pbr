@@ -135,6 +135,18 @@ target_include_directories(easypbr_cpp PUBLIC ${TORCH_INCLUDE_DIRS})
 
 
 
+
+
+
+##pybind
+pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
+
+
+###   EXECUTABLE   #######################################
+add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
+
+
+
 ###   SET ALL THE GLOBAL OPTIONS #########################################
 if(${TORCH_FOUND})
     message("USING TORCH")
@@ -157,18 +169,6 @@ target_compile_definitions(easypbr_cpp PUBLIC -DDEFAULT_CONFIG="${PROJECT_SOURCE
 
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
-
-
-
-
-
-
-##pybind
-pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
-
-
-###   EXECUTABLE   #######################################
-add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 
 
 

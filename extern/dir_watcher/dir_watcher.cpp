@@ -154,7 +154,7 @@ vector<string> DirWatcher::poll_files()
 
 	const struct timespec time_out {0, 0};
 
-	struct kevent event;
+	// struct kevent event;
 	// while (auto nev = kevent(_kqueue, _events.data(), (int)_events.size(), &event, 1, &time_out))
 	// {
 	// 	if (nev == -1) {

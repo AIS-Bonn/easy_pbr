@@ -5,9 +5,11 @@
 
 #include "easy_pbr/Mesh.h"
 
-#ifdef EASYPBR_WITH_TORCH
-    #include "torch/torch.h"
-#endif
+
+// DO NOT USE A IFDEF because other C++ libs may include this Frame.h without the compile definitions and therefore the Frame.h that was used to compile easypbr and the one included will be different leading to issues
+// #ifdef EASYPBR_WITH_TORCH
+    // #include "torch/torch.h"
+// #endif
 
 namespace easy_pbr{
 

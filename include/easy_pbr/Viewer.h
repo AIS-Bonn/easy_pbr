@@ -17,10 +17,11 @@
 #include "CubeMap.h"
 #include "ColorMngr.h"
 
-//dir watcher
-#ifdef EASYPBR_WITH_DIR_WATCHER
-    #include "dir_watcher/dir_watcher.hpp"
-#endif
+//dir watcher 
+// #ifdef EASYPBR_WITH_DIR_WATCHER
+// DO NOT USE A IFDEF because other C++ libs may include this Viewer.h without the compile definitions and therefore the Viewer.h that was used to compile easypbr and the one included will be different leading to issues
+#include "dir_watcher/dir_watcher.hpp"
+// #endif
 
 // pybind
 // #include <pybind11/pybind11.h>
@@ -62,9 +63,10 @@ public:
     bool dummy;  //to initialize the window we provide this dummy variable so we can call initialie context
     bool dummy_glad;
     GLFWwindow* m_window;
-    #ifdef EASYPBR_WITH_DIR_WATCHER
-        emilib::DelayedDirWatcher dir_watcher;
-    #endif
+    // #ifdef EASYPBR_WITH_DIR_WATCHER
+        // emilib::DelayedDirWatcher dir_watcher;
+    // #endif
+    std::shared_ptr<emilib::DelayedDirWatcher> dir_watcher;
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<Camera> m_default_camera;
     std::shared_ptr<Camera> m_camera; //just a point to either the default camera or one of the point light so that we render the view from the point of view of the light

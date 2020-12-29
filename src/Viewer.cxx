@@ -63,7 +63,7 @@ Viewer::Viewer(const std::string config_file):
    dummy( init_context() ),
    dummy_glad(gladLoadGL() ),
     #ifdef EASYPBR_WITH_DIR_WATCHER
-        dir_watcher(std::string(PROJECT_SOURCE_DIR)+"/shaders/",5),
+        dir_watcher( new  emilib::DelayedDirWatcher( std::string(PROJECT_SOURCE_DIR)+"/shaders/",5)  ),
     #endif
     m_scene(new Scene),
     // m_gui(new Gui(this, m_window )),
@@ -116,6 +116,11 @@ Viewer::Viewer(const std::string config_file):
     m_record_with_transparency(true),
     m_first_draw(true)
     {
+        #ifdef EASYPBR_WITH_DIR_WATCHER
+            VLOG(1) << "created viewer with dirwatcher";
+        #else   
+            VLOG(1) << "Created viewer with NOOOO dir watcher";
+        #endif
         m_timer->start();
         // m_old_time=m_timer->elapsed_ms();
         m_camera=m_default_camera;
@@ -505,7 +510,7 @@ void Viewer::init_opengl(){
 void Viewer::hotload_shaders(){
     #ifdef EASYPBR_WITH_DIR_WATCHER
         // VLOG(1) << "chekcing hotload";
-        std::vector<std::string> changed_files=dir_watcher.poll_files();
+        std::vector<std::string> changed_files=dir_watcher->poll_files();
         if(changed_files.size()>0){
             compile_shaders();
         }
