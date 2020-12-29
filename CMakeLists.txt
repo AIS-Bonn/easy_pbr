@@ -1,10 +1,8 @@
-# cmake_minimum_required(VERSION 3.14 FATAL_ERROR) # we need at least 3.11 because we use the FetchContent feature to manage dependencies and at least 3.14 because we use FetchContent_MakeAvailable
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR) # we need at least 3.11 because we use the FetchContent feature to manage dependencies and at least 3.14 because we use FetchContent_MakeAvailable
 
 project(easypbr)
 
 
-# include(FetchContent)
 
 ###   VARIABLES   ##############################################################
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -17,11 +15,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 ####   GLOBAL OPTIONS   ###https://stackoverflow.com/questions/15201064/cmake-conditional-preprocessor-define-on-code
-option(CORE_WITH_VIEWER "Use a GL viewer, or if we don't have it available we will still publish to RViz" ON)
-option(CORE_WITH_HALIDE "Compile Halide" OFF)
-option(CORE_WITH_TORCH "Compile Torch" OFF)
-option(CORE_WITH_CUDA "Compile CUDA" OFF)
-option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
+# option(CORE_WITH_VIEWER "Use a GL viewer, or if we don't have it available we will still publish to RViz" ON)
+# option(CORE_WITH_HALIDE "Compile Halide" OFF)
+# option(CORE_WITH_TORCH "Compile Torch" OFF)
+# option(CORE_WITH_CUDA "Compile CUDA" OFF)
+# option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
 # option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
 
 
@@ -50,13 +48,8 @@ option(LIBIGL_WITH_VIEWER            "Use OpenGL viewer"  OFF)
 option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
 
-# set(Boost_USE_STATIC_LIBS OFF)
-# set(Boost_USE_MULTITHREADED ON)
-# set(Boost_USE_STATIC_RUNTIME OFF)
-# add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 
 ######   PACKAGES   ############################################################
-# find_package(PythonLibs REQUIRED)
 find_package(GLFW REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -65,12 +58,7 @@ find_package(LIBIGL REQUIRED)
 find_package(PCL 1.3 REQUIRED)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-# if(CORE_WITH_DIR_WATCHER)
 find_package(kqueue REQUIRED)
-    # if(${KQUEUE_FOUND})
-        # message("awdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
-    # endif()
-# endif()
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
 #try to compile with pytorch if you can 
@@ -78,6 +66,38 @@ set(PYTORCH_PATH "/opt/pytorch")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
 find_package(Torch)
 
+
+
+
+
+
+###   SOURCES   #################################################################
+set(MY_SRC  
+    ${PROJECT_SOURCE_DIR}/src/Viewer.cxx
+    ${PROJECT_SOURCE_DIR}/src/Gui.cxx
+    ${PROJECT_SOURCE_DIR}/src/Camera.cxx
+    ${PROJECT_SOURCE_DIR}/src/Recorder.cxx
+    ${PROJECT_SOURCE_DIR}/src/Mesh.cxx
+    ${PROJECT_SOURCE_DIR}/src/MeshGL.cxx
+    ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
+    ${PROJECT_SOURCE_DIR}/src/Scene.cxx
+    ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
+    ${PROJECT_SOURCE_DIR}/src/Frame.cxx
+)
+file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
+)
+#tinyply because libigl readPLY has a memory leak 
+set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
+# if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
+    set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
+endif()
+
+
+
+
+###   MAIN LIB  ####################
+add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 
 
 ###   INCLUDES   #########################################################
@@ -102,52 +122,42 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps/utils/include
                         ${PROJECT_SOURCE_DIR}/deps/nanoflann/include
                         ) # Header folder
-include_directories(${PROJECT_INCLUDE_DIR} )
-include_directories(${GLFW_INCLUDE_DIR})
-include_directories(${Boost_INCLUDE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(${LIBIGL_INCLUDE_DIR})
-include_directories(${KQUEUE_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
-include_directories(${TORCH_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${PROJECT_INCLUDE_DIR} )
+target_include_directories(easypbr_cpp PUBLIC ${GLFW_INCLUDE_DIR})
+# include_directories(${Boost_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${OpenCV_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${LIBIGL_INCLUDE_DIR})
+target_include_directories(easypbr_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${PCL_INCLUDE_DIRS})
+target_include_directories(easypbr_cpp PUBLIC ${TORCH_INCLUDE_DIRS})
 
 
 
 
-
-
-
-
-###   SOURCES   #################################################################
-set(MY_SRC  
-    ${PROJECT_SOURCE_DIR}/src/Viewer.cxx
-    ${PROJECT_SOURCE_DIR}/src/Gui.cxx
-    ${PROJECT_SOURCE_DIR}/src/Camera.cxx
-    ${PROJECT_SOURCE_DIR}/src/Recorder.cxx
-    ${PROJECT_SOURCE_DIR}/src/Mesh.cxx
-    ${PROJECT_SOURCE_DIR}/src/MeshGL.cxx
-    ${PROJECT_SOURCE_DIR}/src/SpotLight.cxx
-    ${PROJECT_SOURCE_DIR}/src/Scene.cxx
-    ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
-    ${PROJECT_SOURCE_DIR}/src/Frame.cxx
-)
-# file(GLOB IMGUI_SRC ${imgui_SOURCE_DIR}/*.c* ${imgui_SOURCE_DIR}/examples/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp)
-file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
-)
-#tinyply because libigl readPLY has a memory leak 
-set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
-# if(CORE_WITH_DIR_WATCHER)
+###   SET ALL THE GLOBAL OPTIONS #########################################
+if(${TORCH_FOUND})
+    message("USING TORCH")
+    target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_WITH_HALIDE)
+else()
+    message("NOT USING TORCH")
+endif()
 if(${KQUEUE_FOUND})
-    set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/extern/dir_watcher/dir_watcher.cpp)
+    message("USING DIR_WATCHER")
+    target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_WITH_DIR_WATCHER)
+else()
+    message("NOT USING DIR_WATCHER")
 endif()
 
+#definitions for cmake variables that are necesarry during runtime
+target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_SHADERS_PATH="${PROJECT_SOURCE_DIR}/shaders")
+target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(easypbr_cpp PUBLIC -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
+
+target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
-
-###   MAIN LIB  ####################
-# add_library( easy_pbr ${MY_SRC}  deps/glad/glad.c ${DEPS_SRC} ${IMGUI_SRC}  )
-add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGUI_SRC}  )
 
 
 
@@ -155,86 +165,10 @@ add_library( easypbr_cpp SHARED ${MY_SRC} extern/glad/glad.c ${DEPS_SRC}  ${IMGU
 
 ##pybind
 pybind11_add_module(easypbr ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
-# target_include_directories(easypbr PUBLIC ${PROJECT_INCLUDE_DIR} )
-# #pybind with a supporting shared library https://github.com/pybind/cmake_example/issues/11
-# # set_target_properties(easypbr PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
-# # set_target_properties(easypbr PROPERTIES SKIP_BUILD_RPATH FALSE)
-# set_target_properties(easypbr PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
-# # message("--------origin-----------$ORIGIN", ${ORIGIN})
-# # message("--------SHADERS_PATH-----------------------------", ${EASYPBR_SHADERS_PATH})
-# if(UNIX AND NOT APPLE)
-#     # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/relative/path/to/supporting/library_dir")
-#     set_target_properties(easypbr PROPERTIES INSTALL_RPATH "$ORIGIN/")
-# elseif(APPLE)
-#     # set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/relative/path/to/supporting/library_dir")
-#     set_target_properties(easypbr PROPERTIES INSTALL_RPATH "@loader_path/")
-# endif()
-# set_target_properties(easypbr PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 
 ###   EXECUTABLE   #######################################
 add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
-
-
-
-
-
-###   SET ALL THE GLOBAL OPTIONS #########################################
-if(CORE_WITH_VIEWER)
-    message("USING GL Viewer")
-    # add_definitions(-DWITH_VIEWER)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_VIEWER)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_VIEWER)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_VIEWER)
-else()
-    message("USING OFFSCREEN")
-endif()
-if(CORE_WITH_HALIDE)
-    message("USING HALIDE")
-    # add_definitions(-DWITH_HALIDE)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_HALIDE)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_HALIDE)
-else()
-    message("NOT USING HALIDE")
-endif()
-if(${TORCH_FOUND})
-    message("USING TORCH")
-    # add_definitions(-DWITH_TORCH)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_HALIDE)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_HALIDE)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_HALIDE)
-else()
-    message("NOT USING TORCH")
-endif()
-if(CORE_WITH_CUDA)
-    message("USING CUDA")
-    # add_definitions(-DWITH_CUDA)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_CUDA)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_CUDA)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_CUDA)
-else()
-    message("NOT USING CUDA")
-endif()
-if(CORE_WITH_GLM)
-    message("USING GLM")
-    # add_definitions(-DWITH_GLM)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_GLM)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_GLM)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_GLM)
-else()
-    message("NOT USING GLM")
-endif()
-# if(if(${KQUEUE_FOUND}))
-if(${KQUEUE_FOUND})
-    message("USING DIR_WATCHER")
-    # add_definitions(-DWITH_DIR_WATCHER)
-    target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_WITH_DIR_WATCHER)
-    target_compile_definitions(easypbr PRIVATE EASYPBR_WITH_DIR_WATCHER)
-    target_compile_definitions(run_easypbr PRIVATE EASYPBR_WITH_DIR_WATCHER)
-else()
-    message("NOT USING DIR_WATCHER")
-endif()
-
 
 
 
@@ -244,7 +178,6 @@ endif()
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-# if(CORE_WITH_DIR_WATCHER)
 if(${KQUEUE_FOUND})
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
@@ -258,55 +191,12 @@ if(${TORCH_FOUND})
         set(LIBS ${LIBS} ${TORCH_PYTHON_LIBRARY} )
     endif()
 endif()
-# message ( "  PCL_LIBRARIES ------------------------",  ${PCL_LIBRARIES} )
 # set(LIBS ${LIBS} Eigen3::Eigen  ${Boost_LIBRARIES}  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
 set(LIBS ${LIBS} Eigen3::Eigen  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
-# set(LIBS ${LIBS} Eigen3::Eigen  igl::core   ${GLFW_LIBRARIES} ${PCL_LIBRARIES}  )
-# message("boost libs is "  ${Boost_LIBRARIES}  )
-# message("all libs is "   ${LIBS}   )
 
 
 target_link_libraries(easypbr_cpp PUBLIC ${LIBS} )
 target_link_libraries(easypbr PRIVATE easypbr_cpp)
 target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
-
-
-#definitions for cmake variables that are necesarry during runtime
-# target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-# target_compile_definitions(easypbr_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
-# target_compile_definitions(easypbr_cpp PRIVATE AWESOMEFONT_DIR="${PROJECT_SOURCE_DIR}/extern/imgui_ext/fontawesome-webfont.ttf")
-# target_compile_definitions(easypbr_cpp PRIVATE PROGGY_DIR="${imgui_SOURCE_DIR}/misc/fonts/ProggyClean.ttf")
-
-#  target_compile_definitions(easypbr_cpp PRIVATE DATA_DIR="${DATA_DIR}")
-# target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${EASYPBR_SHADERS_PATH}")
-
-target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
-target_compile_definitions(easypbr_cpp PRIVATE EASYPBR_SHADERS_PATH="${PROJECT_SOURCE_DIR}/shaders")
-# target_compile_definitions(easypbr_cpp PRIVATE DEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg")
-target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-# add_definitions( -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
-target_compile_definitions(easypbr_cpp PUBLIC -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
-
-target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
-
-
-#install the libraries in a default search path
-# message("INSTALLING IN " ${CMAKE_INSTALL_LIBDIR})
-# install(TARGETS easypbr DESTINATION ${CMAKE_INSTALL_LIBDIR})
-# install(TARGETS easypbr_cpp DESTINATION ${CMAKE_INSTALL_LIBDIR})
-# install(TARGETS run_easypbr DESTINATION bin)
-
-
-# install(TARGETS easypbr
-#     LIBRARY DESTINATION lib
-# )
-# install(TARGETS easypbr_cpp
-#     LIBRARY DESTINATION lib
-# )
-# install(DIRECTORY
-#     include/easy_pbr/
-#     DESTINATION include/easy_pbr
-# )
-
 
 

@@ -18,7 +18,9 @@
 #include "ColorMngr.h"
 
 //dir watcher
-#include "dir_watcher/dir_watcher.hpp"
+#ifdef EASYPBR_WITH_DIR_WATCHER
+    #include "dir_watcher/dir_watcher.hpp"
+#endif
 
 // pybind
 // #include <pybind11/pybind11.h>
