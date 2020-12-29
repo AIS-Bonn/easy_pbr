@@ -17,8 +17,6 @@ mesh.set_normals_tex("./data/textured/lantern/textures/lantern_Normal_OpenGL.jpg
 mesh.set_metalness_tex("./data/textured/lantern/textures/lantern_Metallic.jpg")
 mesh.set_roughness_tex("./data/textured/lantern/textures/lantern_Roughness.jpg")
 
-
-mesh.m_vis.set_color_texture()
 Scene.show(mesh,"mesh")
 
 #hide the gird floor

@@ -15,7 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 ####   GLOBAL OPTIONS   ###https://stackoverflow.com/questions/15201064/cmake-conditional-preprocessor-define-on-code
-option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
+# option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" ON)
 
 
 ######   PACKAGES   ############################################################
@@ -23,32 +23,20 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(OpenCV REQUIRED)
 find_package(EasyPBR REQUIRED)
-if(CORE_WITH_DIR_WATCHER)
-    find_package(kqueue REQUIRED)
-endif()
+find_package(kqueue REQUIRED)
 add_subdirectory(${EASYPBR_SRC_PATH}/deps/pybind11  [EXCLUDE_FROM_ALL])
 
 
 
 
-###   INCLUDES   #########################################################
-set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
-                        ${PROJECT_SOURCE_DIR}/deps
-                        ${PROJECT_SOURCE_DIR}/deps/json/include
-                        ) # Header folder
-include_directories(${PROJECT_INCLUDE_DIR} )
-include_directories(${GLFW_INCLUDE_DIR})
-include_directories(${Boost_INCLUDE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${EASYPBR_INCLUDE_DIR})
-include_directories(${KQUEUE_INCLUDE_DIRS})
+
 
 
 ###   SOURCES   #################################################################
 set(MY_SRC  
     ${PROJECT_SOURCE_DIR}/src/EasyPBRwrapper.cxx
 )
-if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
     set(DEPS_SRC ${DEPS_SRC} ${EASYPBR_SRC_PATH}/extern/dir_watcher/dir_watcher.cpp)
 endif()
 
@@ -60,6 +48,18 @@ add_library( easypbr_wrapper_cpp SHARED ${MY_SRC}  ${DEPS_SRC}  )
 
 
 
+###   INCLUDES   #########################################################
+set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+                        ${PROJECT_SOURCE_DIR}/deps
+                        ${PROJECT_SOURCE_DIR}/deps/json/include
+                        ) # Header folder
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${PROJECT_INCLUDE_DIR} )
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${GLFW_INCLUDE_DIR})
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${Boost_INCLUDE_DIR})
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${EASYPBR_INCLUDE_DIR})
+target_include_directories(easypbr_wrapper_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
+
 
 ##pybind
 pybind11_add_module(easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
@@ -70,18 +70,28 @@ add_executable(run_easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/main.cxx
 
 
 
+
 ###   SET ALL THE GLOBAL OPTIONS #########################################
-if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
     message("USING DIR_WATCHER")
-    target_compile_definitions(easypbr_wrapper_cpp PRIVATE WITH_DIR_WATCHER)
+    target_compile_definitions(easypbr_wrapper_cpp PUBLIC WITH_DIR_WATCHER)
 else()
     message("NOT USING DIR_WATCHER")
 endif()
 
+#definitions for cmake variables that are necesarry during runtime
+target_compile_definitions(easypbr_wrapper_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+target_compile_definitions(easypbr_wrapper_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
+target_compile_definitions(run_easypbr_wrapper PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+
+
+
+
+
 
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
-if(CORE_WITH_DIR_WATCHER)
+if(${KQUEUE_FOUND})
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
 set(LIBS ${LIBS} ${OpenCV_LIBS}  ${Boost_LIBRARIES}  ${EASYPBR_LIBRARY}  )
@@ -91,10 +101,4 @@ target_link_libraries(easypbr_wrapper_cpp ${LIBS} )
 target_link_libraries(easypbr_wrapper PRIVATE easypbr_wrapper_cpp )
 target_link_libraries(run_easypbr_wrapper PRIVATE easypbr_wrapper_cpp  )
 
-
-
-#definitions for cmake variables that are necesarry during runtime
-target_compile_definitions(easypbr_wrapper_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
-target_compile_definitions(easypbr_wrapper_cpp PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}") # points to the CMakeList folder of whichever project included easy_pbr
-target_compile_definitions(run_easypbr_wrapper PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 

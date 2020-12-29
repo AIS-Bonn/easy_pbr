@@ -12,14 +12,16 @@
 //opencv
 // #include "opencv2/opencv.hpp"
 
-//dir watcher
-#ifdef WITH_DIR_WATCHER
-    #include "dir_watcher/dir_watcher.hpp"
-#endif
+// dir watcher
+#include "dir_watcher/dir_watcher.hpp"
+
 
 //gl
 #include "Texture2D.h"
 #include "Shader.h"
+
+
+
 
 
 namespace radu { namespace utils { 
@@ -52,9 +54,10 @@ private:
     EasyPBRwrapper(const std::string& config_file, const std::shared_ptr<Viewer>& view); // we put the constructor as private so as to dissalow creating the object on the stack because we want to only used shared ptr for it
     // SyntheticGenerator(const std::string& config_file);
 
-    #ifdef WITH_DIR_WATCHER
-        emilib::DelayedDirWatcher dir_watcher;
-    #endif
+    // #ifdef WITH_DIR_WATCHER
+        // emilib::DelayedDirWatcher dir_watcher;
+    // #endif
+    std::shared_ptr<emilib::DelayedDirWatcher> dir_watcher;
     
     std::shared_ptr<Viewer> m_view;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;

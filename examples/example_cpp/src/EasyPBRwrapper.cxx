@@ -40,7 +40,7 @@ using namespace radu::utils;
 // SyntheticGenerator::SyntheticGenerator(const std::string& config_file):
 EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared_ptr<Viewer>& view):
     #ifdef WITH_DIR_WATCHER 
-        dir_watcher(std::string(PROJECT_SOURCE_DIR)+"/shaders/",5),
+        dir_watcher( new  emilib::DelayedDirWatcher( std::string(PROJECT_SOURCE_DIR)+"/shaders/",5)  ),
     #endif
     m_view(view),
     m_fullscreen_quad(MeshGL::create())
@@ -95,7 +95,7 @@ void EasyPBRwrapper::init_opengl(){
 
 void EasyPBRwrapper::hotload_shaders(){
     #ifdef WITH_DIR_WATCHER
-        std::vector<std::string> changed_files=dir_watcher.poll_files();
+        std::vector<std::string> changed_files=dir_watcher->poll_files();
         if(changed_files.size()>0){
             compile_shaders();
         }
@@ -112,7 +112,7 @@ void EasyPBRwrapper::install_callbacks(const std::shared_ptr<Viewer>& view){
     // view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->toy_shader_example(v); }  );
 
     //post draw functions
-    view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->post_draw(v); }  );
+    // view->add_callback_post_draw( [this]( Viewer& v ) -> void{ this->post_draw(v); }  );
 }
 
 void EasyPBRwrapper::create_mesh(){
