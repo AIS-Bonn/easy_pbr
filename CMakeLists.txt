@@ -150,7 +150,7 @@ add_executable(run_easypbr ${PROJECT_SOURCE_DIR}/src/main.cxx  )
 ###   SET ALL THE GLOBAL OPTIONS #########################################
 if(${TORCH_FOUND})
     message("USING TORCH")
-    target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_WITH_HALIDE)
+    target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_WITH_TORCH)
 else()
     message("NOT USING TORCH")
 endif()
