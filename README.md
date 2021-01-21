@@ -1,5 +1,15 @@
 # EasyPBR
 
+
+### [Project Page](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/) | [Video](https://www.youtube.com/watch?v=N20l6dqFcHw) | [Paper](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR.pdf) | [Poster](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR_Poster.pdf)
+
+[EasyPBR: A Lightweight Physically-Based Renderer](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/)  
+ [Radu Alexandru Rosu](https://www.ais.uni-bonn.de/%7Erosu/) <sup>1</sup>,
+ [Sven Behnke](https://www.ais.uni-bonn.de/behnke/) <sup>1</sup>,
+ <br>
+ <sup>1</sup>University of Bonn, Autonomous Intelligent Systems
+   
+
 <p align="middle">
   <!-- <img src="imgs/anatomy_crop_2.png" width="250" /> -->
   <img src="imgs/goliath_1_crop.png" width="240"/>
@@ -107,4 +117,15 @@ Various examples can be found in the ./examples folder. A short description of e
 | Deferred Physically based rendering | ![PBR demo preview](imgs/pbr_multiscatter.jpg) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. <br /> Run with [./examples/pbr.py](./examples/pbr.py) |
 | Shadows and Ambient Occlusion | ![Shadows and Ambient Occlusion](imgs/shadows2.jpg) <br /> Run with [./examples/shadows.py](./examples/shadows.py) |
 | Bloom | ![Bloom](imgs/bloom_head.jpg) <br /> Run with [./examples/bloom.py](./examples/bloom.py)  |
-| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br /> Eye-dome lighting and SSAO for shading |
+| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br /> Eye-dome lighting and SSAO for shading | 
+
+## Citation
+
+```
+@inproceedings{rosu2021easypbr,
+  title={EasyPBR: A Lightweight Physically-Based Renderer},
+  author={Rosu, Radu Alexandru and Behnke, Sven},
+  booktitle={Proc. of 16th International Conference on Computer Graphics Theory and Applications (GRAPP)},
+  year={2021}
+}
+```
