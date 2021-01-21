@@ -115,6 +115,9 @@ public:
     // void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
     // void apply_transform(const Eigen::Affine3d& tf, const bool update_cpu_data, const bool transform_points_at_zero=false); //if we update the CPU data we move directly the V vertices but the model matrix does not get updates and it will stay as whatever it was set before. That means that the origin around which rotations will be applied subsequently may not lie anymore where you expected. If we have update_cpu_data to false, we only modify the model matrix therefore the model matrix 
 
+    Eigen::Affine3d cur_pose();
+    Eigen::Affine3d& cur_pose_ref();
+    void set_cur_pose(const Eigen::Affine3d& new_model_matrix);
     Eigen::Affine3d model_matrix();
     Eigen::Affine3d& model_matrix_ref();
     void set_model_matrix(const Eigen::Affine3d& new_model_matrix);

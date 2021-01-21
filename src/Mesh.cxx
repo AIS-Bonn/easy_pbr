@@ -284,6 +284,19 @@ void Mesh::transform_vertices_cpu(const Eigen::Affine3d& trans, const bool trans
 }
 
 
+
+
+Eigen::Affine3d Mesh::cur_pose(){
+    return m_cur_pose;
+}
+Eigen::Affine3d& Mesh::cur_pose_ref(){
+    m_is_shadowmap_dirty=true; //we get a reference to this model matrix and therefore it can be modified from outside. So just to be sure we just set the shadowmap to be dirty
+    return m_cur_pose;
+}
+void Mesh::set_cur_pose(const Eigen::Affine3d& new_cur_pose){
+    m_cur_pose=new_cur_pose;
+    m_is_shadowmap_dirty=true;
+}
 Eigen::Affine3d Mesh::model_matrix(){
     return m_model_matrix;
 }
@@ -1871,6 +1884,13 @@ float Mesh::get_scale(){
     Eigen::VectorXd centroid = (0.5*(min_point + max_point)).eval();
 
     float scale = (max_point-min_point).array().abs().maxCoeff();
+
+    //sanity check 
+    if(std::isnan(scale)){
+        LOG(ERROR) << "V is " << V;
+        LOG(ERROR) << "The scale of mesh " << name << " is nan ";
+        LOG(FATAL) << "min point is " << min_point << " max point is " << max_point;
+    }
 
     return scale;
 

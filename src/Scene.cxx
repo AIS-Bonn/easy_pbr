@@ -24,6 +24,11 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
 
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
 
+    //sanity check 
+    if (mesh->V.cols()!=3){
+        LOG(FATAL) << "The V matrix should be Nx3 but it has shape " << mesh->V.rows() <<"x" << mesh->V.cols();
+    }
+
     //check if there is already a mesh with the same name 
     bool found=false;
     int idx_found=-1;

@@ -65,6 +65,7 @@ public:
     std::shared_ptr<Mesh> pixels2_euler_angles_mesh() const; //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
     std::shared_ptr<Mesh>  assign_color(std::shared_ptr<Mesh>& cloud) const; //grabs a point cloud in world coordinates and assings colors to the points by projecting it into the current color frame
     cv::Mat rgb_with_valid_depth(const Frame& frame_depth) const; //returns a color Mat which the color set to 0 for pixels that have no depth info
+    Eigen::MatrixXd  compute_uv(std::shared_ptr<Mesh>& cloud) const; //projects the cloud into the frame and returns the uv coordinates that index into the frame, The uv is in range [0,1] with the zero being top left (so like the opencv and not the opengl)
 
 
     //getters that are nice to have for python bindings
