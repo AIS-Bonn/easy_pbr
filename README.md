@@ -122,7 +122,7 @@ Various examples can be found in the ./examples folder. A short description of e
 ## Citation
 
 ```
-@inproceedings{rosu2021easypbr,
+@inproceedings{rosu2020easypbr,
   title={EasyPBR: A Lightweight Physically-Based Renderer},
   author={Rosu, Radu Alexandru and Behnke, Sven},
   booktitle={Proc. of 16th International Conference on Computer Graphics Theory and Applications (GRAPP)},
