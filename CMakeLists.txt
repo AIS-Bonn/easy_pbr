@@ -128,9 +128,11 @@ target_include_directories(easypbr_cpp PUBLIC ${GLFW_INCLUDE_DIR})
 target_include_directories(easypbr_cpp PUBLIC ${EIGEN3_INCLUDE_DIR})
 target_include_directories(easypbr_cpp PUBLIC ${OpenCV_INCLUDE_DIRS})
 target_include_directories(easypbr_cpp PUBLIC ${LIBIGL_INCLUDE_DIR})
-target_include_directories(easypbr_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
 target_include_directories(easypbr_cpp PUBLIC ${PCL_INCLUDE_DIRS})
 target_include_directories(easypbr_cpp PUBLIC ${TORCH_INCLUDE_DIRS})
+if(${KQUEUE_FOUND})
+    target_include_directories(easypbr_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
+endif()
 
 
 
