@@ -58,7 +58,7 @@ find_package(LIBIGL REQUIRED)
 find_package(PCL 1.3 REQUIRED)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-find_package(kqueue REQUIRED)
+find_package(kqueue)
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
 #try to compile with pytorch if you can 
