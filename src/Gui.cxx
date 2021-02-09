@@ -258,18 +258,21 @@ void Gui::draw_main_menu(){
         //combo of the data list with names for each of them
 
         if ( ImGui::Button("Hide Meshes") )
-            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i){
-                m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=false;
-                m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
+            for ( int i = 0; i < Scene::nr_meshes(); ++i){
+                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
+                mesh->m_vis.m_is_visible=false;
+                mesh->m_is_shadowmap_dirty=true;
             }
         ImGui::SameLine();
         if ( ImGui::Button("Show Meshes") )
-            for ( int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i){
-                m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=true;
-                m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
+            for ( int i = 0; i < Scene::nr_meshes(); ++i){
+                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
+                mesh->m_vis.m_is_visible=true;
+                mesh->m_is_shadowmap_dirty=true;
             }
-        if(ImGui::ListBoxHeader("Scene meshes", m_view->m_meshes_gl.size(), 6)){
-            for (int i = 0; i < (int)m_view->m_meshes_gl.size(); ++i) {
+        if(ImGui::ListBoxHeader("Scene meshes", Scene::nr_meshes(), 6)){
+            for (int i = 0; i < Scene::nr_meshes(); ++i) {
+                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
 
                 //it's the one we have selected so we change the header color to a whiter value
                 if(i==m_selected_mesh_idx){
@@ -280,11 +283,11 @@ void Gui::draw_main_menu(){
 
 
                 //if the mesh is empty we display it in grey
-                if(m_view->m_meshes_gl[i]->m_core->is_empty() ){
+                if(mesh->is_empty() ){
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.00f));  //gray text
                 }else{
                     //visibility changes the text color from green to red
-                    if(m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible){
+                    if(mesh->m_vis.m_is_visible){
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.7f, 0.1f, 1.00f));  //green text
                     }else{
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.00f)); //red text
@@ -294,10 +297,10 @@ void Gui::draw_main_menu(){
 
 
 
-                if(ImGui::Selectable(m_view->m_meshes_gl[i]->m_core->name.c_str(), true, ImGuiSelectableFlags_AllowDoubleClick)){ //we leave selected to true so that the header appears and we can change it's colors
+                if(ImGui::Selectable(mesh->name.c_str(), true, ImGuiSelectableFlags_AllowDoubleClick)){ //we leave selected to true so that the header appears and we can change it's colors
                     if (ImGui::IsMouseDoubleClicked(0)){
-                        m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible=!m_view->m_meshes_gl[i]->m_core->m_vis.m_is_visible;
-                        m_view->m_meshes_gl[i]->m_core->m_is_shadowmap_dirty=true;
+                        mesh->m_vis.m_is_visible=!mesh->m_vis.m_is_visible;
+                        mesh->m_is_shadowmap_dirty=true;
                     }
                     m_selected_mesh_idx=i;
                 }
@@ -316,7 +319,7 @@ void Gui::draw_main_menu(){
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                     // ImGui::TextUnformatted(info.c_str());
 
-                    auto &m = m_view->m_meshes_gl[i]->m_core;
+                    auto &m = mesh;
 
                     ImGui::PushFont(m_roboto_regular);
                     // ImGui::Text(m->name.c_str());
@@ -1250,8 +1253,8 @@ void Gui::draw_overlays(){
         | ImGuiWindowFlags_NoSavedSettings
         | ImGuiWindowFlags_NoInputs);
 
-    for (int i = 0; i < (int)m_view->m_meshes_gl.size(); i++) {
-        MeshSharedPtr mesh= m_view->m_meshes_gl[i]->m_core;
+    for (int i = 0; i < Scene::nr_meshes(); i++) {
+        MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
         //draw vert ids
         if(mesh->m_vis.m_is_visible && mesh->m_vis.m_show_vert_ids){
             for (int i = 0; i < mesh->V.rows(); ++i){

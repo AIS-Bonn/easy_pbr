@@ -985,7 +985,7 @@ void Viewer::update_meshes_gl(){
     //Check if we need to upload to gpu
     for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
-        if(mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty() ) { //the mesh gl needs updating
+        if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty()) ) { //the mesh gl needs updating
 
             //find the meshgl  with the same name
             bool found=false;
