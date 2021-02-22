@@ -83,6 +83,15 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
         m=tf*m;
         return m;
     } )
+    .def("orbit_y_around_point", [](Class &m, const Eigen::Matrix<T, 3, 1>& point, const float angle_degrees) { 
+        Eigen::Matrix<T, 3, 1> axis_y;
+        axis_y << 0,1,0; 
+        Eigen::Quaternion<T> q_y = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees*M_PI/180.0 ,  axis_y.normalized() ) );
+        //we apply rotations around the lookat point so we have to substract, apply rotation and then add back the lookat point
+        Eigen::Transform<T,3,Eigen::Affine> model_matrix_rotated = Eigen::Translation< T, 3 >(point) * q_y * Eigen::Translation< T, 3 >(-point) * m  ;
+        m=model_matrix_rotated;
+        return model_matrix_rotated; 
+    } )
     //cast
     .def("to_float", [](const Class &m) {  return m.template cast<float>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
     .def("to_double", [](const Class &m) {  return m.template cast<double>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
