@@ -155,6 +155,54 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
 }
 
+Frame Frame::subsample(const int subsample_factor){
+    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+
+    cv::Mat rgb_8u;
+    cv::Mat rgb_32f; // becasue some algorithms like the cnns require floating point tensors
+    // cv::Mat_<cv::Vec4b> rgba_8u; //Opengl likes 4 channels images
+    // cv::Mat_<cv::Vec4f> rgba_32f; //Opengl likes 4 channels images
+    cv::Mat gray_8u;
+    cv::Mat gray_32f;
+    cv::Mat grad_x_32f;
+    cv::Mat grad_y_32f;
+    cv::Mat gray_with_gradients; //gray image and grad_x and grad_y into one RGB32F image, ready to be uploaded to opengl
+
+    cv::Mat thermal_16u;
+    cv::Mat thermal_32f;
+    cv::Mat thermal_vis_32f; //for showing only we make the thermal into a 3 channel one so imgui shows it in black and white
+
+    cv::Mat img_original_size; //the image in the original size, iwthout any subsampling. Usefult for texturing
+
+    cv::Mat mask;
+    cv::Mat depth;
+
+    if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!gray_8u.empty()) cv::resize(gray_8u, new_frame.gray_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!gray_32f.empty()) cv::resize(gray_32f, new_frame.gray_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!grad_x_32f.empty()) cv::resize(grad_x_32f, new_frame.grad_x_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!grad_y_32f.empty()) cv::resize(grad_y_32f, new_frame.grad_y_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!gray_with_gradients.empty()) cv::resize(gray_with_gradients, new_frame.gray_with_gradients, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!thermal_16u.empty()) cv::resize(thermal_16u, new_frame.thermal_16u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!thermal_32f.empty()) cv::resize(thermal_32f, new_frame.thermal_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    if(!thermal_vis_32f.empty()) cv::resize(thermal_vis_32f, new_frame.thermal_vis_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+    //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
+    if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+    if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+
+
+    //deal with the other things that changed now that the image is smaller
+    new_frame.K/=subsample_factor;
+    new_frame.K(2,2)=1.0; 
+    new_frame.height=height/subsample_factor;
+    new_frame.width=width/subsample_factor;
+
+    //copy all stuff;
+    return new_frame;
+}
+
 cv::Mat Frame::depth2world_xyz_mat() const{
 
     CHECK(width!=-1) << "Width was not set";
