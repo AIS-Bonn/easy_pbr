@@ -159,24 +159,24 @@ Frame Frame::subsample(const int subsample_factor){
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
 
-    cv::Mat rgb_8u;
-    cv::Mat rgb_32f; // becasue some algorithms like the cnns require floating point tensors
-    // cv::Mat_<cv::Vec4b> rgba_8u; //Opengl likes 4 channels images
-    // cv::Mat_<cv::Vec4f> rgba_32f; //Opengl likes 4 channels images
-    cv::Mat gray_8u;
-    cv::Mat gray_32f;
-    cv::Mat grad_x_32f;
-    cv::Mat grad_y_32f;
-    cv::Mat gray_with_gradients; //gray image and grad_x and grad_y into one RGB32F image, ready to be uploaded to opengl
+    // cv::Mat rgb_8u;
+    // cv::Mat rgb_32f; // becasue some algorithms like the cnns require floating point tensors
+    // // cv::Mat_<cv::Vec4b> rgba_8u; //Opengl likes 4 channels images
+    // // cv::Mat_<cv::Vec4f> rgba_32f; //Opengl likes 4 channels images
+    // cv::Mat gray_8u;
+    // cv::Mat gray_32f;
+    // cv::Mat grad_x_32f;
+    // cv::Mat grad_y_32f;
+    // cv::Mat gray_with_gradients; //gray image and grad_x and grad_y into one RGB32F image, ready to be uploaded to opengl
 
-    cv::Mat thermal_16u;
-    cv::Mat thermal_32f;
-    cv::Mat thermal_vis_32f; //for showing only we make the thermal into a 3 channel one so imgui shows it in black and white
+    // cv::Mat thermal_16u;
+    // cv::Mat thermal_32f;
+    // cv::Mat thermal_vis_32f; //for showing only we make the thermal into a 3 channel one so imgui shows it in black and white
 
-    cv::Mat img_original_size; //the image in the original size, iwthout any subsampling. Usefult for texturing
+    // cv::Mat img_original_size; //the image in the original size, iwthout any subsampling. Usefult for texturing
 
-    cv::Mat mask;
-    cv::Mat depth;
+    // cv::Mat mask;
+    // cv::Mat depth;
 
     if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
     if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
@@ -196,8 +196,8 @@ Frame Frame::subsample(const int subsample_factor){
     //deal with the other things that changed now that the image is smaller
     new_frame.K/=subsample_factor;
     new_frame.K(2,2)=1.0; 
-    new_frame.height=height/subsample_factor;
-    new_frame.width=width/subsample_factor;
+    new_frame.height=std::round( (float)height/subsample_factor);
+    new_frame.width=std::round( (float)width/subsample_factor);
 
     //copy all stuff;
     return new_frame;
@@ -358,6 +358,35 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
     directions_mesh->m_height=height;
 
     return directions_mesh;
+
+}
+
+std::shared_ptr<Mesh> Frame::pixels2coords() const{
+    CHECK(width>0) <<"Width of this frame was not assigned";
+    CHECK(height>0) <<"Height of this frame was not assigned";
+
+    MeshSharedPtr points_mesh=Mesh::create();
+    points_mesh->V.resize(width*height, 3);
+
+    int idx_insert=0;
+    for(int y=0; y<height; y++){
+        for(int x=0; x<width; x++){
+            Eigen::Vector3f point_screen;
+            //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
+            point_screen << x,height-y,1.0;
+
+            points_mesh->V.row(idx_insert)= point_screen.cast<double>();
+
+            idx_insert++;
+        
+        }
+    }
+
+    points_mesh->m_vis.m_show_points=true;
+    points_mesh->m_width=width;
+    points_mesh->m_height=height;
+
+    return points_mesh;
 
 }
 
