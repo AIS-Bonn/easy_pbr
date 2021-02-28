@@ -277,8 +277,8 @@ float Scene::get_scale(const bool use_mutex){
         if(m_meshes[i]->name=="grid_floor"){
             continue;
         }
-        min_point_per_mesh.row(i) = m_meshes[i]->V.colwise().minCoeff();   
-        max_point_per_mesh.row(i) = m_meshes[i]->V.colwise().maxCoeff();   
+        min_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().minCoeff());   
+        max_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().maxCoeff());   
     }
 
     //absolute minimum between all meshes
