@@ -275,13 +275,7 @@ void Gui::draw_main_menu(){
         ImGui::SameLine();
         if ( ImGui::Button("Clone") ){
             MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
-            mesh->m_is_dirty=true;
-            mesh->m_is_shadowmap_dirty=true;
-            mesh->m_diffuse_mat.is_dirty=true;
-            mesh->m_metalness_mat.is_dirty=true;
-            mesh->m_roughness_mat.is_dirty=true;
-            mesh->m_normals_mat.is_dirty=true;
-            MeshSharedPtr clone = std::make_shared<Mesh>(*mesh);
+            MeshSharedPtr clone  =  std::make_shared<Mesh>(mesh->clone());
             //find a name for it
             int clone_nr=1;
             for (int i=0; i<1000; i++){
