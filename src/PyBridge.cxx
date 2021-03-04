@@ -54,6 +54,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     //TODO euler
     //TODO to_xyz_quat_vec
     //setters
+    .def("set_identity", [](Class &m) {  m.setIdentity(); return m; } )
     .def("set_translation", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()=t; return m; } )
     .def("set_linear", [](Class &m, const Eigen::Matrix<T, 3, 3>& r) {  m.linear()=r; return m; } )
     .def("set_quat", [](Class &m, const Eigen::Matrix<T, 4, 1>& q_vec) { 
@@ -64,6 +65,9 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     } )
     //convenience functions
     .def("translate", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()+=t; return m; } )
+    .def("flip_x", [](Class &m) {  m.matrix()(0,0)= -m.matrix()(0,0);  return m; } )
+    .def("flip_y", [](Class &m) {  m.matrix()(1,1)= -m.matrix()(1,1);  return m; } )
+    .def("flip_z", [](Class &m) {  m.matrix()(2,2)= -m.matrix()(2,2);  return m; } )
     .def("rotate_axis_angle", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
         Eigen::Quaternion<T> q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
         Class tf;
