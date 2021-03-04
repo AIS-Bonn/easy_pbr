@@ -96,7 +96,8 @@ Gui::Gui( const std::string config_file,
 
     m_imgui_context = ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, false);
-    const char* glsl_version = "#version 440";
+    // const char* glsl_version = "#version 440";
+    const char* glsl_version = "#version 330";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     init_style();

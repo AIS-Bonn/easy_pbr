@@ -1,4 +1,5 @@
-#version 430
+#version 330 core
+#extension GL_ARB_separate_shader_objects : require
 #extension GL_ARB_explicit_attrib_location : require
 
 layout(location=1) in vec2 texCoord;
@@ -12,11 +13,11 @@ const float KERNEL_RADIUS = 7;
 // layout(location=0) uniform float g_Sharpness=0;
 uniform float sigma_spacial;
 uniform float sigma_depth;
-layout(location=1) uniform vec2  g_InvResolutionDirection; // either set x to 1/width or y to 1/height
+uniform vec2  g_InvResolutionDirection; // either set x to 1/width or y to 1/height
 uniform int ao_power;
 
-layout(binding=0) uniform sampler2D texSource;
-layout(binding=1) uniform sampler2D texLinearDepth;
+uniform sampler2D texSource;
+uniform sampler2D texLinearDepth;
 
 
 

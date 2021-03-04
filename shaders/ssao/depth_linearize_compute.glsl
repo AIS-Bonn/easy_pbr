@@ -1,4 +1,5 @@
-#version 430
+#version 330 core
+#extension GL_ARB_separate_shader_objects : require
 #extension GL_ARB_explicit_attrib_location : require
 
 layout (local_size_x = 16, local_size_y = 16) in;
