@@ -257,19 +257,47 @@ void Gui::draw_main_menu(){
     if (ImGui::CollapsingHeader("Viewer") ) {
         //combo of the data list with names for each of them
 
-        if ( ImGui::Button("Hide Meshes") )
+        if ( ImGui::Button("Hide all") ){
             for ( int i = 0; i < Scene::nr_meshes(); ++i){
                 MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
                 mesh->m_vis.m_is_visible=false;
                 mesh->m_is_shadowmap_dirty=true;
             }
+        }
         ImGui::SameLine();
-        if ( ImGui::Button("Show Meshes") )
+        if ( ImGui::Button("Show all") ){
             for ( int i = 0; i < Scene::nr_meshes(); ++i){
                 MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
                 mesh->m_vis.m_is_visible=true;
                 mesh->m_is_shadowmap_dirty=true;
             }
+        }
+        ImGui::SameLine();
+        if ( ImGui::Button("Clone") ){
+            MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
+            mesh->m_is_dirty=true;
+            mesh->m_is_shadowmap_dirty=true;
+            mesh->m_diffuse_mat.is_dirty=true;
+            mesh->m_metalness_mat.is_dirty=true;
+            mesh->m_roughness_mat.is_dirty=true;
+            mesh->m_normals_mat.is_dirty=true;
+            MeshSharedPtr clone = std::make_shared<Mesh>(*mesh);
+            //find a name for it
+            int clone_nr=1;
+            for (int i=0; i<1000; i++){
+                std::string clone_name=mesh->name+"_clone_"+std::to_string(clone_nr);
+                // VLOG(1) << "checking ame" << clone_name;
+                if (Scene::does_mesh_with_name_exist(clone_name)){
+                    clone_nr++;
+                }else{
+                    //a mesh with this name doesnt exist so we just add it
+                    VLOG(1) << "cloned with name "<<clone_name;
+                    Scene::show(clone, clone_name);
+                    break;
+                }
+            }
+            
+        }
         if(ImGui::ListBoxHeader("Scene meshes", Scene::nr_meshes(), 6)){
             for (int i = 0; i < Scene::nr_meshes(); ++i) {
                 MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
