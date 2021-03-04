@@ -153,6 +153,7 @@ void Viewer::init_params(const std::string config_file){
     Config default_cfg = configuru::parse_file(std::string(DEFAULT_CONFIG), CFG);
     Config default_vis_cfg=default_cfg["visualization"];
     Config default_cam_cfg=default_cfg["visualization"]["cam"];
+    Config default_scene_cfg=default_cfg["visualization"]["scene"];
     Config default_ssao_cfg=default_cfg["visualization"]["ssao"];
     Config default_bloom_cfg=default_cfg["visualization"]["bloom"];
     Config default_edl_cfg=default_cfg["visualization"]["edl"];
@@ -164,6 +165,7 @@ void Viewer::init_params(const std::string config_file){
     Config cfg = configuru::parse_file(config_file_abs, CFG);
     Config vis_cfg=cfg.get_or("visualization", default_cfg);
     Config cam_cfg=vis_cfg.get_or("cam",default_vis_cfg);
+    Config scene_cfg=vis_cfg.get_or("scene",default_vis_cfg);
     Config ssao_cfg=vis_cfg.get_or("ssao",default_vis_cfg);
     Config bloom_cfg=vis_cfg.get_or("bloom",default_vis_cfg);
     Config edl_cfg=vis_cfg.get_or("edl",default_vis_cfg);
@@ -243,6 +245,13 @@ void Viewer::init_params(const std::string config_file){
     m_camera->m_near=cam_cfg.get_float_else_default_else_nan("near",default_cam_cfg);
     m_camera->m_far=cam_cfg.get_float_else_default_else_nan("far",default_cam_cfg);
     m_camera->m_exposure=cam_cfg.get_float_else_default_else_nan("exposure",default_cam_cfg);
+
+    //scene 
+    bool floor_visible= scene_cfg.get_or("floor_visible", default_scene_cfg);
+    bool floor_metric= scene_cfg.get_or("floor_metric", default_scene_cfg);
+    Scene::set_floor_visible(floor_visible);
+    Scene::set_floor_metric(floor_metric);
+
 
 
     // //ssao

@@ -34,6 +34,7 @@ public:
     static bool is_empty(const bool use_mutex=true);
 
     static void set_floor_visible(const bool val);
+    static void set_floor_metric(const bool val);
 
 
 
@@ -42,6 +43,7 @@ private:
     static std::mutex m_mesh_mutex; // when adding a new mesh to the scene, we need to lock them so it can be thread safe
 
     static bool m_floor_visible; //storing if the user wants the floor visible or not. We store it here because the user might set it before we even added a floor
+    static bool m_floor_metric; // is this is true. the floor will be metric in the sense that each square will have edge being one unit. If this is false, then the floor will be dynamic to the size of the scene
 
 };
 
