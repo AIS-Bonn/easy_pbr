@@ -24,6 +24,7 @@ uniform samplerCube environment_cubemap_tex;
 uniform samplerCube irradiance_cubemap_tex;
 uniform samplerCube prefilter_cubemap_tex;
 uniform sampler2D brdf_lut_tex;
+//WARNING: currently we cannot create more texture samplers because then we would have more than 16 texture samplers and some gpu drivers don't like. We might want to put same sampler in a sampler array for later
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
@@ -66,7 +67,7 @@ struct SpotLight {
     sampler2D shadow_map;
     bool create_shadow;
 };
-uniform SpotLight spot_lights[3];
+uniform SpotLight spot_lights[3]; //cannot create more than 3 light because then we would have more than 16 texture samplers and some gpu drivers don't like. We might want to put same sampler in a sampler array for later
 // uniform Light omni_lights[8]; //At the moment I drop support for omni light at least partially until I have a class that can draw shadow maps into a omni light
 uniform int nr_active_spot_lights;
 
