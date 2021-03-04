@@ -21,7 +21,7 @@ FIND_PATH(PCL_INCLUDE_DIR "pcl/pcl_base.h"
   /opt/local # DarwinPorts
   /opt/csw # Blastwave
   /opt
-  PATH_SUFFIXES pcl-1.9 pcl-1.8 pcl-1.7 pcl
+  PATH_SUFFIXES pcl-1.10 pcl-1.9 pcl-1.8 pcl-1.7 pcl
   DOC "PCL - Headers"
 )
 
