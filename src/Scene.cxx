@@ -57,7 +57,8 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
 
         MeshSharedPtr mesh_grid=Mesh::create();
         // mesh_grid->create_grid(8, mesh->V.col(1).minCoeff(), get_scale());
-        mesh_grid->create_grid(8, 0.0, get_scale(false));
+        // mesh_grid->create_grid(8, 0.0, get_scale(false));
+        mesh_grid->create_grid(8, 0.0, 1.0 );
         mesh_grid->m_vis.m_is_visible=m_floor_visible;
         // m_meshes.push_back(mesh_grid); 
         m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added 
