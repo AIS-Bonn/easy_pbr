@@ -66,7 +66,7 @@ struct SpotLight {
     sampler2D shadow_map;
     bool create_shadow;
 };
-uniform SpotLight spot_lights[8];
+uniform SpotLight spot_lights[3];
 // uniform Light omni_lights[8]; //At the moment I drop support for omni light at least partially until I have a class that can draw shadow maps into a omni light
 uniform int nr_active_spot_lights;
 
