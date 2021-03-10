@@ -111,6 +111,7 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<cv::Mat> (m, "Mat")
     .def_readonly("rows", &cv::Mat::rows )
     .def_readonly("cols", &cv::Mat::cols )
+    .def("empty", &cv::Mat::empty )
     // .def("rows", [](const cv::Mat &m) {  return m.rows;  }  )
     ;
     // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
