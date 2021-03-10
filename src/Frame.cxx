@@ -196,8 +196,11 @@ Frame Frame::subsample(const int subsample_factor){
     //deal with the other things that changed now that the image is smaller
     new_frame.K/=subsample_factor;
     new_frame.K(2,2)=1.0; 
-    new_frame.height=std::round( (float)height/subsample_factor);
-    new_frame.width=std::round( (float)width/subsample_factor);
+    // new_frame.height=std::round( (float)height/subsample_factor);
+    // new_frame.width=std::round( (float)width/subsample_factor);
+    //need to use the cvround because the cv::resize uses that one to compute teh new size of the image and std::round gives different results
+    new_frame.height=cvRound( (float)height/subsample_factor);
+    new_frame.width=cvRound( (float)width/subsample_factor);
 
     //copy all stuff;
     return new_frame;
