@@ -1338,7 +1338,6 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
 
 }
 
-
 void Mesh::create_floor(const float y_pos, const float scale){
 
     //make 4 vertices
@@ -1371,6 +1370,18 @@ void Mesh::create_floor(const float y_pos, const float scale){
     m_vis.m_roughness=1.0;
 
 }
+
+void Mesh::create_sphere(const Eigen::Vector3d& center, const double radius){
+    load_from_file( std::string(EASYPBR_DATA_DIR)+"/sphere.obj" );
+    V/= 0.0751893; //normalize by the radius of this sphere that we loaded so not we have a radius of 1.0
+    for (int i = 0; i < V.rows(); i++) {
+        // V.row(i) =V.row(i)*radius+center;
+        V.row(i) = Eigen::Vector3d(V.row(i))*radius+center;
+    }
+}
+
+
+
 
 void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){
     CHECK(m_label_mngr) << "Mesh does not have a label_mngr so we cannot assign colors to it through the labels_indices";

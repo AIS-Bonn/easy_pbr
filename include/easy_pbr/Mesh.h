@@ -145,6 +145,7 @@ public:
     void create_box(const float w, const float l, const float h); //makes a box of a certain width, length and height
     void create_grid(const int nr_segments, const float y_pos, const float scale);
     void create_floor(const float y_pos, const float scale);
+    void create_sphere(const Eigen::Vector3d& center, const double radius);
     void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.
 
     //lots of mesh ops 

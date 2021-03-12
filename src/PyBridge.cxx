@@ -384,6 +384,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("create_box_ndc", &Mesh::create_box_ndc )
     .def("create_box", &Mesh::create_box )
     .def("create_floor", &Mesh::create_floor )
+    .def("create_sphere", &Mesh::create_sphere )
     .def_readwrite("id", &Mesh::id)
     .def_readwrite("name", &Mesh::name)
     .def_readwrite("m_width", &Mesh::m_width)
