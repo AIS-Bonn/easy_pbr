@@ -2446,7 +2446,7 @@ void Mesh::read_obj(const std::string file_path){
 
 void Mesh::sanity_check() const{
     // LOG_IF_S(ERROR, F.rows()!=NF.rows()) << name << ": F and NF don't coincide in size, they are " << F.rows() << " and " << NF.rows(); // no need to check for this as I actually don't usually use NF
-    LOG_IF_S(ERROR, V.rows()!=NV.rows() && F.size()) << name << ": V and NV don't coincide in size, they are " << V.rows() << " and " << NV.rows();
+    if (NV.size()) LOG_IF_S(ERROR, V.rows()!=NV.rows() && F.size()) << name << ": V and NV don't coincide in size, they are " << V.rows() << " and " << NV.rows();
     LOG_IF_S(ERROR, V.size() && D.size() && V.rows()!=D.rows() ) << name << ": V and D don't coincide " << V.rows() << " and " << D.rows();
     LOG_IF_S(ERROR, V.size() && I.size() && V.rows()!=I.rows() ) << name << ": V and I don't coincide " << V.rows() << " and " << I.rows();
     LOG_IF_S(ERROR, V.size() && C.size() && V.rows()!=C.rows() ) << name << ": V and C don't coincide " << V.rows() << " and " << C.rows();
