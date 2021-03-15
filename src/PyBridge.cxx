@@ -229,6 +229,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("grad_x_32f", &Frame::grad_x_32f )
     .def_readwrite("grad_y_32f", &Frame::grad_y_32f )
     .def_readwrite("depth", &Frame::depth )
+    .def_readwrite("normal_32f", &Frame::normal_32f )
     .def_readwrite("mask", &Frame::mask )
     .def_readwrite("frame_idx", &Frame::frame_idx )
     .def_readwrite("cam_id", &Frame::cam_id )

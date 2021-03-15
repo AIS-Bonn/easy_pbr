@@ -35,6 +35,8 @@ public:
     cv::Mat thermal_32f;
     cv::Mat thermal_vis_32f; //for showing only we make the thermal into a 3 channel one so imgui shows it in black and white
 
+    cv::Mat normal_32f;
+
     cv::Mat img_original_size; //the image in the original size, iwthout any subsampling. Usefult for texturing
 
     cv::Mat mask;
