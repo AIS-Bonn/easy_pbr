@@ -321,6 +321,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("get_mesh_with_idx",  &Scene::get_mesh_with_idx )
     .def_static("get_scale", &Scene::get_scale, py::arg("use_mutex") = true )
     .def_static("does_mesh_with_name_exist",  &Scene::does_mesh_with_name_exist)
+    .def_static("remove_meshes_starting_with_name",  &Scene::remove_meshes_starting_with_name)
     .def_static("add_mesh",  &Scene::add_mesh)
     .def_static("set_floor_visible",  &Scene::set_floor_visible)
     .def_static("nr_meshes",  &Scene::nr_meshes)

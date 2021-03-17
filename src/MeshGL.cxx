@@ -56,7 +56,10 @@ MeshGL::MeshGL():
 }
 
 void MeshGL::assign_core(std::shared_ptr<Mesh> mesh_core){
-    if(m_first_core_assignment || mesh_core->m_force_vis_update ){
+
+    bool visualization_changed= m_core->m_vis!=mesh_core->m_vis;
+
+    if(m_first_core_assignment || mesh_core->m_force_vis_update || visualization_changed ){
         //asign the whole core together with all the options like m_show_points and so on
         m_core=mesh_core;
         m_first_core_assignment=false;

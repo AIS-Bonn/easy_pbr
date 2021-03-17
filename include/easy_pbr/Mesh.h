@@ -83,6 +83,35 @@ struct VisOptions{
         m_color_type=MeshColorType::Intensity;
     }
 
+    bool operator==(const VisOptions& rhs) const{
+        return 
+        this->m_is_visible == rhs.m_is_visible &&
+        this->m_show_points == rhs.m_show_points && 
+        this->m_show_lines == rhs.m_show_lines &&
+        this->m_show_mesh == rhs.m_show_mesh &&
+        this->m_show_wireframe == rhs.m_show_wireframe &&
+        this->m_show_surfels == rhs.m_show_surfels &&
+        this->m_show_vert_ids == rhs.m_show_vert_ids &&
+        this->m_show_vert_coords == rhs.m_show_vert_coords &&
+        this->m_use_custom_shader == rhs.m_use_custom_shader &&
+        this->m_overlay_points == rhs.m_overlay_points &&
+        this->m_overlay_lines == rhs.m_overlay_lines &&
+        this->m_points_as_circle == rhs.m_points_as_circle &&
+        this->m_point_size == rhs.m_point_size &&
+        this->m_line_width == rhs.m_line_width &&
+        this->m_color_type == rhs.m_color_type &&
+        this->m_point_color == rhs.m_point_color &&
+        this->m_line_color == rhs.m_line_color &&
+        this->m_solid_color == rhs.m_solid_color &&
+        this->m_label_color == rhs.m_label_color &&
+        this->m_metalness == rhs.m_metalness &&
+        this->m_roughness == rhs.m_roughness
+        ;
+    }
+    bool operator!=(const VisOptions& rhs) const{
+        return !(*this==rhs);
+    }
+
 
 };
 
