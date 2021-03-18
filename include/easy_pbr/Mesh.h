@@ -102,6 +102,7 @@ struct VisOptions{
         this->m_points_as_circle == rhs.m_points_as_circle &&
         this->m_point_size == rhs.m_point_size &&
         this->m_line_width == rhs.m_line_width &&
+        this->m_normals_scale == rhs.m_normals_scale &&
         this->m_color_type == rhs.m_color_type &&
         this->m_point_color == rhs.m_point_color &&
         this->m_line_color == rhs.m_line_color &&
