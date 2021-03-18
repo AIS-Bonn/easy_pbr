@@ -32,6 +32,7 @@ struct VisOptions{
     bool m_is_visible=true;
     bool m_show_points=false;
     bool m_show_lines=false;
+    bool m_show_normals=false;
     bool m_show_mesh=true;
     bool m_show_wireframe=false;
     bool m_show_surfels=false;
@@ -48,6 +49,7 @@ struct VisOptions{
 
     float m_point_size=4.0;
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering
+    float m_normals_scale=-1.0; //the scale of the arrows for the normal. It starts at -1.0 but it gets set during the first render to something depending on the mesh scale
     MeshColorType m_color_type=MeshColorType::Solid;
     // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0); 
     Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0); 
@@ -88,6 +90,7 @@ struct VisOptions{
         this->m_is_visible == rhs.m_is_visible &&
         this->m_show_points == rhs.m_show_points && 
         this->m_show_lines == rhs.m_show_lines &&
+        this->m_show_normals == rhs.m_show_normals &&
         this->m_show_mesh == rhs.m_show_mesh &&
         this->m_show_wireframe == rhs.m_show_wireframe &&
         this->m_show_surfels == rhs.m_show_surfels &&

@@ -100,6 +100,7 @@ public:
     void render_points(const std::shared_ptr<MeshGL> mesh);
     void render_points_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_lines(const std::shared_ptr<MeshGL> mesh);
+    void render_normals(const std::shared_ptr<MeshGL> mesh);
     void render_wireframe(const std::shared_ptr<MeshGL> mesh);
     void render_mesh_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_surfels_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
@@ -146,6 +147,7 @@ public:
 
     gl::Shader m_draw_points_shader;
     gl::Shader m_draw_lines_shader;
+    gl::Shader m_draw_normals_shader;
     gl::Shader m_draw_mesh_shader;
     gl::Shader m_draw_wireframe_shader;
     gl::Shader m_draw_surfels_shader;

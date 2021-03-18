@@ -402,6 +402,7 @@ void Viewer::compile_shaders(){
     m_draw_mesh_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/mesh_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/mesh_frag.glsl"  );
     m_draw_wireframe_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/wireframe_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/wireframe_frag.glsl"  );
     m_draw_surfels_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_frag.glsl" , std::string(EASYPBR_SHADERS_PATH)+"/render/surfels_geom.glsl" );
+    m_draw_normals_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/render/normals_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/normals_frag.glsl" , std::string(EASYPBR_SHADERS_PATH)+"/render/normals_geom.glsl" );
     m_compose_final_quad_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/compose_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/compose_frag.glsl"  );
     m_blur_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/blur_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/blur_frag.glsl"  );
     m_apply_postprocess_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/apply_postprocess_frag.glsl"  );
@@ -971,6 +972,9 @@ void Viewer::draw(const GLuint fbo_id){
             if(mesh->m_core->m_vis.m_show_wireframe){
                 render_wireframe(mesh);
             }
+            if(mesh->m_core->m_vis.m_show_normals){
+                render_normals(mesh);
+            }
         }
     }
     TIME_END("forward_render");
@@ -1214,6 +1218,58 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     glLineWidth( 1.0f );
     glDepthFunc(GL_LESS);
     
+}
+
+void Viewer::render_normals(const MeshGLSharedPtr mesh){
+
+    if (mesh->m_core->m_vis.m_normals_scale==-1.0){
+        mesh->m_core->m_vis.m_normals_scale=mesh->m_core->get_scale()*0.1;
+    }
+
+    gl::Shader& shader = m_draw_normals_shader;
+
+    if(mesh->m_core->V.size()){
+        mesh->vao.vertex_attribute(shader, "position", mesh->V_buf, 3);
+    }
+    if(mesh->m_core->NV.size()){
+        mesh->vao.vertex_attribute(shader, "normal", mesh->NV_buf, 3);
+    }
+
+
+    Eigen::Matrix4f M=mesh->m_core->model_matrix().cast<float>().matrix();
+    Eigen::Matrix4f V = m_camera->view_matrix();
+    Eigen::Matrix4f P = m_camera->proj_matrix(m_viewport_size);
+    Eigen::Matrix4f MVP = P*V*M;
+
+
+    //shader setup
+    shader.use();
+    // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
+    shader.uniform_4x4(MVP, "MVP");
+    shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
+    shader.uniform_float(mesh->m_core->m_vis.m_normals_scale , "normals_scale");
+    glLineWidth( std::max(mesh->m_core->m_vis.m_line_width, 0.0001f) ); //a line width of 0.0 causes it to crash
+
+    shader.draw_into(m_final_fbo_no_gui,
+                                    {
+                                    // std::make_pair("position_out", "position_gtex"),
+                                    std::make_pair("out_color", "color_with_transparency_gtex"),
+                                    }
+                                    ); //makes the shaders draw into the buffers we defines in the gbuffer
+
+
+    // draw
+    mesh->vao.bind(); 
+    if(mesh->m_core->m_vis.m_overlay_lines){
+        glDepthFunc(GL_ALWAYS);
+    }
+    // glDrawElements(GL_LINES, mesh->m_core->E.size(), GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
+
+    glLineWidth( 1.0f );
+    glDepthFunc(GL_LESS);
+
+
 }
 
 void Viewer::render_wireframe(const MeshGLSharedPtr mesh){

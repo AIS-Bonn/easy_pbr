@@ -392,6 +392,7 @@ void Gui::draw_main_menu(){
                 ImGui::Indent(10.0f*m_hidpi_scaling);  ImGui::Checkbox("Overlay lines", &mesh->m_vis.m_overlay_lines); ImGui::SameLine(); help_marker("Draws the lines even if they are occluded");
                 ImGui::Unindent(10.0f*m_hidpi_scaling );
             if( ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh) ) {  mesh->m_is_shadowmap_dirty=true;  }
+            if( ImGui::Checkbox("Show normals", &mesh->m_vis.m_show_normals) ) {  mesh->m_is_shadowmap_dirty=true;  }
             if( ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe)) {  mesh->m_is_shadowmap_dirty=true; }
             if( ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels) ) { mesh->m_is_shadowmap_dirty=true; }
             if( ImGui::Checkbox("Custom shader", &mesh->m_vis.m_use_custom_shader )){
