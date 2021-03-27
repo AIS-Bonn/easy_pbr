@@ -44,6 +44,9 @@ Camera::Camera():
 Eigen::Matrix4f Camera::model_matrix(){
     return m_model_matrix.matrix();
 }
+Eigen::Affine3f Camera::model_matrix_affine(){
+    return m_model_matrix;
+}
 Eigen::Matrix4f Camera::view_matrix(){
     return model_matrix().inverse().matrix();
 }
@@ -117,6 +120,10 @@ Eigen::Matrix3f Camera::cam_axes(){
 
 
 //seters
+void Camera::set_model_matrix(const Eigen::Affine3f & model_matrix){
+    m_model_matrix.setIdentity();
+    transform_model_matrix(model_matrix);
+}
 void Camera::set_lookat(const Eigen::Vector3f& lookat){
     m_lookat=lookat;
 
@@ -130,6 +137,19 @@ void Camera::set_position(const Eigen::Vector3f& pos){
 
     recalculate_orientation();
     
+    m_position_initialized=true;
+}
+void Camera::set_quat(const Eigen::Vector4f& quat){
+    float dist=dist_to_lookat();
+
+    Eigen::Quaternion<float> q;  
+    q.coeffs()=quat;
+    m_model_matrix.linear()=q.toRotationMatrix();
+
+    m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist);
+
+    m_is_initialized=true;
+    m_lookat_initialized=true;
     m_position_initialized=true;
 }
 void Camera::set_up(const Eigen::Vector3f& up){

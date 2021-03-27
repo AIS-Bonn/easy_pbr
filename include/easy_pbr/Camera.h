@@ -36,6 +36,7 @@ public:
 
     //getters
     Eigen::Matrix4f model_matrix(); //return the model matrix that places the camera in the world. Equivalent to tf_world_cam (maps from the camera coordinates to the world coordinates)
+    Eigen::Affine3f model_matrix_affine(); //return the model matrix that places the camera in the world. Equivalent to tf_world_cam (maps from the camera coordinates to the world coordinates)
     Eigen::Matrix4f view_matrix(); //returns the view matrix which moves the world into the camera coordinate system. Equivalent to tf_cam_world
     Eigen::Affine3f view_matrix_affine(); //returns the view matrix which moves the world into the camera coordinate system. Equivalent to tf_cam_world
     Eigen::Matrix4f proj_matrix(const Eigen::Vector2f viewport_size);
@@ -50,8 +51,10 @@ public:
 
 
     //setters
+    void set_model_matrix(const Eigen::Affine3f & delta);
     void set_lookat(const Eigen::Vector3f& lookat); //updates the orientation according to the up vector so that it points towards lookat
     void set_position(const Eigen::Vector3f& pos); //updates the orientation according to the up vector so that it keeps pointing towards lookat
+    void set_quat(const Eigen::Vector4f& quat); //sets the quaternion of the model matrix (tf_world_cam)
     void set_up(const Eigen::Vector3f& up);
     void set_dist_to_lookat(const float dist); //sets the lookat at a certain distance along the negative z axis
 

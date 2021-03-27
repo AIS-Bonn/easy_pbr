@@ -45,6 +45,15 @@ public:
     Eigen::Matrix3f K = Eigen::Matrix3f::Identity();
     Eigen::Matrix<float, 5, 1> distort_coeffs;
     Eigen::Affine3f tf_cam_world = Eigen::Affine3f::Identity();
+    int subsample_factor=1; //the subsample factor (eg, 2,4,8) between the img_original size and the rgb_32f and so on
+
+    //paths of the images in case we don't want to load them because it takes too much time. In this case the frame is like a shell of a frame
+    bool is_shell; // if the frame is a shell it contains all the parameters of that frame (intrinsics, extrinsics, etc) but NOT the images. The images can be loaded on demand with load_images
+    std::string rgb_path;
+    std::string thermal_path;
+    std::string mask_path;
+    std::string depth_path;
+    std::function<void(Frame& frame)> load_images; //function which when called, will read the paths and fill the corresponding mats
 
     int cam_id; //id of the camera depending on how many cameras we have (it gos from 0 to 1 in the case of stereo)
     int frame_idx; //frame idx monotonically increasing
