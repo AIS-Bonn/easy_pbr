@@ -129,3 +129,6 @@ Various examples can be found in the ./examples folder. A short description of e
   year={2021}
 }
 ```
+
+# License
+EasyPBR is provided under the terms of the MIT license (see LICENSE). We bundle various other libraries (see ./deps) which may have different licenses.
