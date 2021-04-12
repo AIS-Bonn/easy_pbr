@@ -256,36 +256,21 @@ void Camera::flip_around_x(){
     m_model_matrix.linear().col(2)=-m_model_matrix.linear().col(2);
 }
 
-// void Camera::from_frame(const Frame& frame, const int debug){
-//     // float dist=dist_to_lookat();
-//     // m_model_matrix=frame.tf_cam_world.inverse();
-//     // m_lookat= position() + direction()*dist;
+void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
 
+    m_model_matrix=frame.tf_cam_world.inverse();
 
-//     // Eigen::Matrix3f cam_axes;
-//     // cam_axes=m_model_matrix.linear();
-//     // cam_axes.col(2)=-cam_axes.col(2);
-//     // m_model_matrix.linear()= cam_axes;
+    if (flip_z_axis){
+        Eigen::Matrix3f cam_axes;
+        cam_axes=m_model_matrix.linear();
+        cam_axes.col(2)=-cam_axes.col(2);
+        m_model_matrix.linear()= cam_axes;
+    }
 
-//     //attempt 2
-//     VLOG(1) << "frame pos tf_cam_world " << frame.tf_cam_world;
-//     VLOG(1) << "frame pos tf_world_cam " << frame.tf_cam_world.inverse();
-//     VLOG(1) << "frame pos in world is " << frame.pos_in_world();
-//     if (debug==0){
-//         set_position(frame.pos_in_world());
-//     }
-
-//     if(debug==1){
-//         m_model_matrix=frame.tf_cam_world.inverse();
-//         // m_model_matrix=frame.tf_cam_world;
-//     }
-//     VLOG(1) << " positon after setting is " << this->position();
-
-
-//     // m_is_initialized=true;
-//     // m_lookat_initialized=true;
-//     // m_position_initialized=true;
-// }
+    // m_is_initialized=true; //we don't set the initialized because the m_near and m_far are still not valid and the viewer loop should initialize them to a reasonable value
+    // m_lookat_initialized=true; //lookat is also not initialized when we set the camera from a frame
+    m_position_initialized=true;
+}
 
 
 //computations
