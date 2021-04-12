@@ -255,6 +255,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_static("create",  &Viewer::create<const std::string>, py::arg("config_file") = DEFAULT_CONFIG ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("update", &Viewer::update, py::arg("fbo_id") = 0)
     .def("draw", &Viewer::draw, py::arg("fbo_id") = 0)
+    .def("clear_framebuffers", &Viewer::clear_framebuffers)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
@@ -299,6 +300,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("push_away_by_dist", &Camera::push_away_by_dist )
     .def("orbit_y", &Camera::orbit_y )
     .def("flip_around_x", &Camera::flip_around_x )
+    // .def("from_frame", &Camera::from_frame )
     .def("from_string", &Camera::from_string )
     .def("create_frustum_mesh", &Camera::create_frustum_mesh)
     .def("transform_model_matrix", &Camera::transform_model_matrix)
@@ -376,6 +378,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_color_normalvector", &VisOptions::set_color_normalvector )
     .def("set_color_height", &VisOptions::set_color_height )
     .def("set_color_intensity", &VisOptions::set_color_intensity )
+    .def("set_color_uv", &VisOptions::set_color_uv )
     ;
 
 

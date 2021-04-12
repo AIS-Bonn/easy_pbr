@@ -4,6 +4,8 @@
 
 #include <Eigen/Geometry>
 
+#include "easy_pbr/Frame.h"
+
 //to his the fact that Spotlight derives this and both inherit from enabled_shared_from https://www.codeproject.com/Articles/286304/Solution-for-multiple-enable-shared-from-this-in-i
 #include "shared_ptr/EnableSharedFromThis.h"
 #include "shared_ptr/SmartPtrBuilder.h"
@@ -72,6 +74,7 @@ public:
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera
     void flip_around_x(); //some cameras assume you look in the positive Z direction so we may need to flip them to look backwards. This rotates 180 degrees around the x axis
+    // void from_frame(const Frame& frame, const int debug); // initialized the camera to have the parameters of the frame
 
 
     //writing the current camera pose to string so we can use it later

@@ -96,5 +96,7 @@ void main(){
         color_per_vertex_out=colorize_height(height_normalized);
     }else if(color_type==7){ //intensity
         color_per_vertex_out=vec3(intensity_per_vertex);
+    }else if(color_type==8){ //uv
+        color_per_vertex_out=vec3(uv,0.0);
     }
 }

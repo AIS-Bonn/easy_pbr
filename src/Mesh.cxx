@@ -173,6 +173,7 @@ void Mesh::add(const Mesh& new_mesh) {
 
 
     m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
 }
 
 // void MeshCore::assign(const MeshCore& new_core){
@@ -2174,6 +2175,12 @@ void Mesh::read_ply(const std::string file_path){
     bool has_texcoords=true;
     try { texcoords = file.request_properties_from_element("vertex", { "u", "v" }, 2); }
     catch(const std::exception & e)  { has_texcoords=false; }
+    //if we don't find uv coordinates, maybe they are named s and t
+    if (!has_texcoords){
+        has_texcoords=true;
+        try { texcoords = file.request_properties_from_element("vertex", { "s", "t" }, 2); }
+        catch(const std::exception & e)  { has_texcoords=false; }
+    }
 
     bool has_color=true;
     try { color = file.request_properties_from_element("vertex", { "red", "green", "blue" }, 3); }

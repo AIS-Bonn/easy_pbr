@@ -412,7 +412,7 @@ void Gui::draw_main_menu(){
 
             std::string current_selected_str=mesh->m_vis.m_color_type._to_string();
             MeshColorType current_selected=mesh->m_vis.m_color_type;
-            if (ImGui::BeginCombo("Mesh color type", current_selected_str.c_str())) { // The second parameter is the label previewed before opening the combo.
+            if (ImGui::BeginCombo("Mesh color type", current_selected_str.c_str(), ImGuiComboFlags_HeightLarge  )) { // The second parameter is the label previewed before opening the combo.
                 for (size_t n = 0; n < MeshColorType::_size(); n++) {
                     bool is_selected = ( current_selected == MeshColorType::_values()[n] );
                     if (ImGui::Selectable( MeshColorType::_names()[n], is_selected)){
