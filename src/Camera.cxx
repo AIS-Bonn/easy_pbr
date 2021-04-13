@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "string_utils.h"
+#include "numerical_utils.h"
 #include "RandGenerator.h"
 #include "UtilsGL.h"
 
@@ -266,6 +267,10 @@ void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
         cam_axes.col(2)=-cam_axes.col(2);
         m_model_matrix.linear()= cam_axes;
     }
+    
+    //set fov in x direction 
+    float fx=frame.K(0,0);
+    m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
 
     // m_is_initialized=true; //we don't set the initialized because the m_near and m_far are still not valid and the viewer loop should initialize them to a reasonable value
     // m_lookat_initialized=true; //lookat is also not initialized when we set the camera from a frame
