@@ -109,6 +109,8 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
 PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
+    .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
+    .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )
     .def_readonly("rows", &cv::Mat::rows )
     .def_readonly("cols", &cv::Mat::cols )
     .def("empty", &cv::Mat::empty )
