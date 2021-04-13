@@ -239,6 +239,7 @@ void Viewer::init_params(const std::string config_file){
     m_show_gui = vis_cfg.get_or("show_gui", default_vis_cfg);
     m_subsample_factor = vis_cfg.get_or("subsample_factor", default_vis_cfg);
     m_enable_culling = vis_cfg.get_or("enable_culling", default_vis_cfg);
+    m_render_uv_to_gbuffer= vis_cfg.get_or("render_uv_to_gbuffer", default_vis_cfg);
 
     //cam
     m_camera->m_fov=cam_cfg.get_float_else_default_else_nan("fov", default_cam_cfg)  ;
@@ -431,6 +432,9 @@ void Viewer::init_opengl(){
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
     GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) ); 
     GL_C( m_gbuffer.add_depth("depth_gtex") );
+    if (m_render_uv_to_gbuffer){
+        GL_C( m_gbuffer.add_texture("uv_gtex", GL_RG32F, GL_RG, GL_FLOAT) );  
+    }
     m_gbuffer.sanity_check();
 
     //we compose the gbuffer into this fbo, together with a bloom texture for storing the birght areas
@@ -1361,6 +1365,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
  
     //shader setup
     m_draw_mesh_shader.use();
+    m_draw_mesh_shader.uniform_bool(m_render_uv_to_gbuffer, "render_uv_to_gbuffer");
     m_draw_mesh_shader.uniform_4x4(M, "M");
     m_draw_mesh_shader.uniform_4x4(MV, "MV");
     m_draw_mesh_shader.uniform_4x4(MVP, "MVP");
@@ -1393,19 +1398,17 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_bool(mesh->m_normals_tex.storage_initialized(), "has_normals_tex");
 
     m_gbuffer.bind_for_draw();
-    m_draw_mesh_shader.draw_into(m_gbuffer,
-                                    {
-                                    // std::make_pair("position_out", "position_gtex"),
-                                    std::make_pair("normal_out", "normal_gtex"),
-                                    std::make_pair("diffuse_out", "diffuse_gtex"),
-                                    std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
-                                    std::make_pair("mesh_id_out", "mesh_id_gtex"),
-                                    // std::make_pair("specular_out", "specular_gtex"),
-                                    // std::make_pair("shininess_out", "shininess_gtex")
-                                //   std::make_pair("normal_world_out", "normal_world_gtex")
-                                    }
-                                    ); //makes the shaders draw into the buffers we defines in the gbuffer
-    // m_draw_mesh_shader.uniform_v2_float(m_viewport_size, "viewport_size");
+    std::vector<  std::pair<std::string, std::string> > draw_list=
+        {
+        std::make_pair("normal_out", "normal_gtex"),
+        std::make_pair("diffuse_out", "diffuse_gtex"),
+        std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
+        std::make_pair("mesh_id_out", "mesh_id_gtex"),
+    };
+    if(m_render_uv_to_gbuffer){
+        draw_list.push_back(std::make_pair("uv_out", "uv_gtex"));
+    }
+    m_draw_mesh_shader.draw_into(m_gbuffer, draw_list ); //makes the shaders draw into the buffers we defines in the gbuffer
 
     // draw
     mesh->vao.bind(); 

@@ -189,6 +189,7 @@ public:
     //params
     bool m_show_gui;
     float m_subsample_factor; // subsample factor for the whole viewer so that when it's fullscreen it's not using the full resolution of the screen
+    bool m_render_uv_to_gbuffer; // usually we don't need to render the uv to the gbuffer but for some applications it's nice to have so we can enable it here and it will create a new render target in the gbuffer
     int m_ssao_downsample;
     int m_nr_samples;
     float m_kernel_radius;

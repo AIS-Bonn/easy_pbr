@@ -22,9 +22,11 @@ layout(location = 1) out vec4 diffuse_out;
 layout(location = 3) out vec3 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
 layout(location = 5) out int mesh_id_out;
+layout(location = 6) out vec2 uv_out;
 
 
 // //uniform
+uniform bool render_uv_to_gbuffer;
 uniform int color_type;
 uniform sampler2D diffuse_tex; 
 uniform sampler2D metalness_tex; 
@@ -147,6 +149,10 @@ void main(){
     normal_out=encode_normal(normal_to_encode);
 
     mesh_id_out=mesh_id;
+
+    if(render_uv_to_gbuffer){
+        uv_out=uv_in;
+    }
 
     // position_out = vec4(position_cam_coords_in, 1.0);
 }

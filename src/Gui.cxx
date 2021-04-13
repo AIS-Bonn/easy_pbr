@@ -1103,6 +1103,9 @@ void Gui::draw_main_menu(){
         show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").tex_id(), "normal_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").tex_id(), "depth_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").tex_id(), "metalness_and_roughness_gtex", true);
+        if (m_view->m_render_uv_to_gbuffer){
+            show_gl_texture(m_view->m_gbuffer.tex_with_name("uv_gtex").tex_id(), "uv_gtex", true);
+        }
         show_gl_texture(m_view->m_depth_linear_tex.tex_id(), "depth_linear_tex", true);
         show_gl_texture(m_view->m_ao_tex.tex_id(), "ao_tex", true);
         show_gl_texture(m_view->m_ao_blurred_tex.tex_id(), "ao_blurred_tex", true);
