@@ -541,29 +541,29 @@ void Viewer::configure_auto_params(){
     // std::cout << " scene scale " << scale << std::endl;
 
 
-    //CAMERA------------
-    if (!m_camera->m_is_initialized){
-        if (!m_camera->m_lookat_initialized){
-            m_camera->set_lookat(centroid);
-        }
-        if (!m_camera->m_position_initialized){
-            m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
-        }
-        if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
-            m_camera->m_fov=30 ;
-        }
-        if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
-            m_camera->m_near=( (centroid-m_camera->position()).norm()*0.01 ) ;
-        }
-        if (std::isnan(m_camera->m_far) ){
-            m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
-        }
-        if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
-            m_camera->m_exposure=1.0;
-         } 
+    // //CAMERA------------
+    // if (!m_camera->m_is_initialized){
+    //     if (!m_camera->m_lookat_initialized){
+    //         m_camera->set_lookat(centroid);
+    //     }
+    //     if (!m_camera->m_position_initialized){
+    //         m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+    //     }
+    //     if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
+    //         m_camera->m_fov=30 ;
+    //     }
+    //     if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
+    //         m_camera->m_near=( (centroid-m_camera->position()).norm()*0.01 ) ;
+    //     }
+    //     if (std::isnan(m_camera->m_far) ){
+    //         m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
+    //     }
+    //     if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
+    //         m_camera->m_exposure=1.0;
+    //      } 
         
-        m_camera->m_is_initialized=true;
-    }
+    //     m_camera->m_is_initialized=true;
+    // }
 
     //SSAO---------------
     if(m_auto_ssao){
@@ -663,6 +663,38 @@ void Viewer::configure_auto_params(){
             // rim->m_color<< 100.0/255.0, 210.0/255.0, 255.0/255.0;
             rim->m_color<< 157.0/255.0, 227.0/255.0, 255.0/255.0;
         }
+    }
+}
+
+void Viewer::configure_camera(){
+    if (m_scene->is_empty()){
+        return;
+    }
+
+    //CAMERA------------
+    if (!m_camera->m_is_initialized){
+        Eigen::Vector3f centroid = m_scene->get_centroid();
+        float scale = m_scene->get_scale();
+        if (!m_camera->m_lookat_initialized){
+            m_camera->set_lookat(centroid);
+        }
+        if (!m_camera->m_position_initialized){
+            m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
+        }
+        if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_fov=30 ;
+        }
+        if (std::isnan(m_camera->m_near) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_near=( (centroid-m_camera->position()).norm()*0.01 ) ;
+        }
+        if (std::isnan(m_camera->m_far) ){
+            m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
+        }
+        if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
+            m_camera->m_exposure=1.0;
+         } 
+        
+        m_camera->m_is_initialized=true;
     }
 }
 
@@ -839,6 +871,8 @@ void Viewer::draw(const GLuint fbo_id){
         m_first_draw=false;
         configure_auto_params(); //automatically sets parameters that were left as "auto" in the config file
     }
+    configure_camera(); //we configure the camera (if needed) on every loop. this is because we might change to another camera during rendering and therefore we need to configure new camera even if it's not the first rendering we make
+
 
 
     TIME_START("update_meshes");

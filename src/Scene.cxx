@@ -106,6 +106,23 @@ void Scene::clear(){
     m_meshes.clear();
 }
 
+void Scene::hide_all(){
+    std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    for (size_t i = 0; i < m_meshes.size(); i++) {
+        m_meshes[i]->m_vis.m_is_visible=false;
+        m_meshes[i]->m_is_shadowmap_dirty=true;
+    }
+
+}
+void Scene::show_all(){
+    std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
+    for (size_t i = 0; i < m_meshes.size(); i++) {
+        m_meshes[i]->m_vis.m_is_visible=true;
+        m_meshes[i]->m_is_shadowmap_dirty=true;
+    }
+
+}
+
 int Scene::nr_meshes(){
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     return m_meshes.size();

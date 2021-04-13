@@ -259,19 +259,11 @@ void Gui::draw_main_menu(){
         //combo of the data list with names for each of them
 
         if ( ImGui::Button("Hide all") ){
-            for ( int i = 0; i < Scene::nr_meshes(); ++i){
-                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
-                mesh->m_vis.m_is_visible=false;
-                mesh->m_is_shadowmap_dirty=true;
-            }
+            Scene::hide_all();
         }
         ImGui::SameLine();
         if ( ImGui::Button("Show all") ){
-            for ( int i = 0; i < Scene::nr_meshes(); ++i){
-                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
-                mesh->m_vis.m_is_visible=true;
-                mesh->m_is_shadowmap_dirty=true;
-            }
+            Scene::show_all();
         }
         ImGui::SameLine();
         if ( ImGui::Button("Clone") ){

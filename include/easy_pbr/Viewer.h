@@ -256,6 +256,7 @@ private:
 
     // float try_float_else_nan(const configuru::Config& cfg); //tries to parse a float and if it fails, returns signaling nan
     void configure_auto_params();
+    void configure_camera();
     void read_background_img(gl::Texture2D& tex, const std::string img_path);
     void equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture2D& equirectangular_tex);
     void radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap& radiance_tex); //precomputes the irradiance around a hemisphere given the radiance
