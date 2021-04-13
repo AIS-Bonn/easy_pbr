@@ -258,6 +258,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("clear_framebuffers", &Viewer::clear_framebuffers)
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
+    .def("gbuffer_mat_with_name", &Viewer::gbuffer_mat_with_name )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
     .def_readwrite("m_enable_culling", &Viewer::m_enable_culling )
     .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting )

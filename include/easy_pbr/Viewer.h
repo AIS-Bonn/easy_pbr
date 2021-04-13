@@ -118,6 +118,7 @@ public:
     //rendering passes 
     void ssao_pass();
     void compose_final_image(const GLuint fbo_id);
+    cv::Mat gbuffer_mat_with_name(const std::string name);
 
     //other
     void create_random_samples_hemisphere();

@@ -2276,6 +2276,9 @@ gl::Texture2D& Viewer::rendered_tex_no_gui(const bool with_transparency){
 gl::Texture2D& Viewer::rendered_tex_with_gui(){
     return m_final_fbo_with_gui.tex_with_name("color_gtex");
 }
+cv::Mat Viewer::gbuffer_mat_with_name(const std::string name){
+    return m_gbuffer.tex_with_name(name).download_to_cv_mat();
+}
 
 void Viewer::load_environment_map(const std::string path){
 
