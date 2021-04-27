@@ -114,7 +114,8 @@ Viewer::Viewer(const std::string config_file):
     m_snapshot_name("img.png"),
     m_record_gui(false),
     m_record_with_transparency(true),
-    m_first_draw(true)
+    m_first_draw(true),
+    m_swap_buffers(true)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             VLOG(1) << "created viewer with dirwatcher";
@@ -827,7 +828,9 @@ void Viewer::post_draw(){
     glBlitFramebuffer(0, 0, m_final_fbo_with_gui.width(), m_final_fbo_with_gui.height(), 0, 0, m_viewport_size.x(), m_viewport_size.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
-    glfwSwapBuffers(m_window);
+    if (m_swap_buffers){
+        glfwSwapBuffers(m_window);
+    }
 
     // m_recorder->update();
     if (m_recorder->is_recording()){
@@ -1037,6 +1040,8 @@ void Viewer::update_meshes_gl(){
     for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
         if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty()) ) { //the mesh gl needs updating
+
+            // VLOG(1) << "mesh with name " << mesh_core->name << " needs updating is dirty is " << mesh_core->m_is_dirty << "texture dirty is " << mesh_core->is_any_texture_dirty();
 
             //find the meshgl  with the same name
             bool found=false;

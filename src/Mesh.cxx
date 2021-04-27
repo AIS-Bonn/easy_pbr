@@ -65,7 +65,9 @@ Mesh::Mesh():
         m_height(0),
         m_view_direction(-1),
         m_force_vis_update(false),
-        m_rand_gen(new RandGenerator())
+        m_rand_gen(new RandGenerator()),
+        m_is_preallocated(false),
+        V_blob(V)
     {   
     clear();
 
@@ -107,10 +109,10 @@ Mesh Mesh::clone(){
     cloned.m_metalness_mat.mat=m_metalness_mat.mat.clone();
     cloned.m_roughness_mat.mat=m_roughness_mat.mat.clone();
     cloned.m_normals_mat.mat=m_normals_mat.mat.clone();
-    cloned.m_diffuse_mat.is_dirty=true;
-    cloned.m_metalness_mat.is_dirty=true;
-    cloned.m_roughness_mat.is_dirty=true;
-    cloned.m_normals_mat.is_dirty=true;
+    if(!m_diffuse_mat.mat.empty()) cloned.m_diffuse_mat.is_dirty=true;
+    if(!m_metalness_mat.mat.empty()) cloned.m_metalness_mat.is_dirty=true;
+    if(!m_roughness_mat.mat.empty()) cloned.m_roughness_mat.is_dirty=true;
+    if(!m_normals_mat.mat.empty()) cloned.m_normals_mat.is_dirty=true;
     cloned.m_label_mngr=m_label_mngr; //this is just a shallow copy!
     cloned.t=t;
     cloned.id=id;
@@ -127,53 +129,114 @@ Mesh Mesh::clone(){
 }
 
 
-void Mesh::add(const Mesh& new_mesh) {
+void Mesh::add(Mesh& new_mesh) {
 
-    Eigen::MatrixXd V_new(V.rows() + new_mesh.V.rows(), 3);
-    V_new << V, new_mesh.V;
-    Eigen::MatrixXi F_new(F.rows() + new_mesh.F.rows(), 3);
-    F_new << F, (new_mesh.F.array() + V.rows());
-    Eigen::MatrixXd C_new(C.rows() + new_mesh.C.rows(), 3);
-    C_new << C, new_mesh.C;
-    Eigen::MatrixXi E_new(E.rows() + new_mesh.E.rows(), 2);
-    E_new << E, (new_mesh.E.array() + V.rows());
-    Eigen::MatrixXd D_new(D.rows() + new_mesh.D.rows(), 1);
-    D_new << D, new_mesh.D;
-    Eigen::MatrixXd NF_new(NF.rows() + new_mesh.NF.rows(), 3);
-    NF_new << NF, new_mesh.NF;
-    Eigen::MatrixXd NV_new(NV.rows() + new_mesh.NV.rows(), 3);
-    NV_new << NV, new_mesh.NV;
-    Eigen::MatrixXd UV_new(UV.rows() + new_mesh.UV.rows(), 2);
-    UV_new << UV, new_mesh.UV;
-    Eigen::MatrixXd V_tangent_u_new(V_tangent_u.rows() + new_mesh.V_tangent_u.rows(), 4);
-    V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
-    Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 4);
-    V_lenght_v_new << V_length_v, new_mesh.V_length_v;
-    Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
-    L_pred_new << L_pred, new_mesh.L_pred;
-    Eigen::MatrixXi L_gt_new(L_gt.rows() + new_mesh.L_gt.rows(), 1);
-    L_gt_new << L_gt, new_mesh.L_gt;
-    Eigen::MatrixXd I_new(I.rows() + new_mesh.I.rows(), 1);
-    I_new << I, new_mesh.I;
+    new_mesh.apply_model_matrix_to_cpu(true);
+
+    if(V_blob.is_preallocated() ){ //if the mesh is preallocated, then we try to just copy to the matrices in the first empty space that has enough contiguous memory
+        // V.block<p,q>(i,j)
+        // radu::utils::eigen_copy_in_preallocated(V, new_mesh.V); 
+        
+        //V 
+        // Eigen::MatrixXd V_new(V.rows() + new_mesh.V.rows(), 3);
+        // V_new << V, new_mesh.V;
+        V_blob.copy_in_first_empty_block(new_mesh.V);
 
 
-    V = V_new;
-    F = F_new;
-    C = C_new;
-    E = E_new;
-    D = D_new;
-    NF=NF_new;
-    NV=NV_new;
-    UV=UV_new;
-    V_tangent_u=V_tangent_u_new;
-    V_length_v=V_lenght_v_new;
-    L_pred=L_pred_new;
-    L_gt=L_gt_new;
-    I=I_new;
+        Eigen::MatrixXi F_new(F.rows() + new_mesh.F.rows(), 3);
+        F_new << F, (new_mesh.F.array() + V.rows());
+        Eigen::MatrixXd C_new(C.rows() + new_mesh.C.rows(), 3);
+        C_new << C, new_mesh.C;
+        Eigen::MatrixXi E_new(E.rows() + new_mesh.E.rows(), 2);
+        E_new << E, (new_mesh.E.array() + V.rows());
+        Eigen::MatrixXd D_new(D.rows() + new_mesh.D.rows(), 1);
+        D_new << D, new_mesh.D;
+        Eigen::MatrixXd NF_new(NF.rows() + new_mesh.NF.rows(), 3);
+        NF_new << NF, new_mesh.NF;
+        Eigen::MatrixXd NV_new(NV.rows() + new_mesh.NV.rows(), 3);
+        NV_new << NV, new_mesh.NV;
+        Eigen::MatrixXd UV_new(UV.rows() + new_mesh.UV.rows(), 2);
+        UV_new << UV, new_mesh.UV;
+        Eigen::MatrixXd V_tangent_u_new(V_tangent_u.rows() + new_mesh.V_tangent_u.rows(), 4);
+        V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
+        Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 4);
+        V_lenght_v_new << V_length_v, new_mesh.V_length_v;
+        Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
+        L_pred_new << L_pred, new_mesh.L_pred;
+        Eigen::MatrixXi L_gt_new(L_gt.rows() + new_mesh.L_gt.rows(), 1);
+        L_gt_new << L_gt, new_mesh.L_gt;
+        Eigen::MatrixXd I_new(I.rows() + new_mesh.I.rows(), 1);
+        I_new << I, new_mesh.I;
 
 
-    m_is_dirty=true;
-    m_is_shadowmap_dirty=true;
+        // V = V_new;
+        F = F_new;
+        C = C_new;
+        E = E_new;
+        D = D_new;
+        NF=NF_new;
+        NV=NV_new;
+        UV=UV_new;
+        V_tangent_u=V_tangent_u_new;
+        V_length_v=V_lenght_v_new;
+        L_pred=L_pred_new;
+        L_gt=L_gt_new;
+        I=I_new;
+
+
+        // m_is_dirty=true;
+
+
+
+    }else{
+
+        Eigen::MatrixXd V_new(V.rows() + new_mesh.V.rows(), 3);
+        V_new << V, new_mesh.V;
+        Eigen::MatrixXi F_new(F.rows() + new_mesh.F.rows(), 3);
+        F_new << F, (new_mesh.F.array() + V.rows());
+        Eigen::MatrixXd C_new(C.rows() + new_mesh.C.rows(), 3);
+        C_new << C, new_mesh.C;
+        Eigen::MatrixXi E_new(E.rows() + new_mesh.E.rows(), 2);
+        E_new << E, (new_mesh.E.array() + V.rows());
+        Eigen::MatrixXd D_new(D.rows() + new_mesh.D.rows(), 1);
+        D_new << D, new_mesh.D;
+        Eigen::MatrixXd NF_new(NF.rows() + new_mesh.NF.rows(), 3);
+        NF_new << NF, new_mesh.NF;
+        Eigen::MatrixXd NV_new(NV.rows() + new_mesh.NV.rows(), 3);
+        NV_new << NV, new_mesh.NV;
+        Eigen::MatrixXd UV_new(UV.rows() + new_mesh.UV.rows(), 2);
+        UV_new << UV, new_mesh.UV;
+        Eigen::MatrixXd V_tangent_u_new(V_tangent_u.rows() + new_mesh.V_tangent_u.rows(), 4);
+        V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
+        Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 4);
+        V_lenght_v_new << V_length_v, new_mesh.V_length_v;
+        Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
+        L_pred_new << L_pred, new_mesh.L_pred;
+        Eigen::MatrixXi L_gt_new(L_gt.rows() + new_mesh.L_gt.rows(), 1);
+        L_gt_new << L_gt, new_mesh.L_gt;
+        Eigen::MatrixXd I_new(I.rows() + new_mesh.I.rows(), 1);
+        I_new << I, new_mesh.I;
+
+
+        V = V_new;
+        F = F_new;
+        C = C_new;
+        E = E_new;
+        D = D_new;
+        NF=NF_new;
+        NV=NV_new;
+        UV=UV_new;
+        V_tangent_u=V_tangent_u_new;
+        V_length_v=V_lenght_v_new;
+        L_pred=L_pred_new;
+        L_gt=L_gt_new;
+        I=I_new;
+
+
+        m_is_dirty=true;
+    }
+    
+        m_is_shadowmap_dirty=true;
 }
 
 // void MeshCore::assign(const MeshCore& new_core){
@@ -248,6 +311,30 @@ void Mesh::clear_C() {
     m_is_shadowmap_dirty=true;
 
 }
+
+void Mesh::set_all_matrices_to_zero(){
+    V.setZero();
+    F.setZero();
+    C.setZero();
+    E.setZero();
+    D.setZero();
+    NF.setZero();
+    NV.setZero();
+    UV.setZero();
+    V_tangent_u.setZero();
+    V_length_v.setZero();
+    L_pred.setZero();
+    L_gt.setZero();
+    I.setZero();
+}
+
+void Mesh::preallocate_V(size_t max_nr_verts){
+    // V.resize(max_nr_verts,3);
+    // V.setZero();
+    // m_is_preallocated=true;
+    V_blob.preallocate(max_nr_verts,3);
+}
+
 
 
 bool Mesh::is_empty() const {

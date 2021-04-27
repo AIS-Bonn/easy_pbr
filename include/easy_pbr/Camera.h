@@ -69,7 +69,9 @@ public:
     void push_away_by_dist(const float new_dist); //pueshes the camera backwards or forwards until the distance to lookat point matches the new_dist 
     void orbit(const Eigen::Quaternionf& q); //Orbit around the m_lookat by an amount specified by q
     void orbit_y(const float angle_degrees); //orbit around the y axis of the world a certain amount of degrees
+    void orbit_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees); //orbit around the chosen axis of the world a certain amount of degrees
     void rotate(const Eigen::Quaternionf& q); //rotates around the central camera position by a quaternion q
+    void rotate_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees); //same as rotate but using a axis_angle
     Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
     Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera

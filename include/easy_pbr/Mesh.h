@@ -12,6 +12,9 @@
 //better enums
 #include <enum.h>
 
+#include <loguru.hpp>
+
+
 namespace radu { namespace utils { 
     class RandGenerator; 
     }}
@@ -128,6 +131,62 @@ struct CvMatCpu {
     bool is_dirty=false;
 };
 
+//for matrices bookkeeping
+template <typename T> 
+struct DataBlob {
+    public:
+        DataBlob(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& data):
+            m_data(data){
+        }
+
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& data(){return m_data;} //get a reference to the internal matrix
+
+        void preallocate(size_t rows, size_t cols){ 
+            m_data.resize(rows,cols);
+            m_data.setZero();
+            m_is_preallocated=true;
+        }
+        void copy_in_first_empty_block(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& new_data){
+            //WARNING , cannot be used to append E and F because they also need to be reindexed
+            static_assert(std::is_same<T, double>::value, "We only allow appending to matrices that are of type double. If the matrix of type int it means it is E or F and therefore would need to be reindexed after appending which is no supported in the streaming API");
+            //other checks 
+            CHECK(m_is_preallocated) << "Can only use this appening API when the data has been preallocated";
+            CHECK(m_data.cols()==new_data.cols()) << "Data cols and new_data cols do not coincide. m_data cols is " << m_data.cols() << " and new_data cols is " << new_data.cols();
+
+
+            //find a block that can fit the new data size
+            //check at the finale of the unallocated data or the beggining
+            int nr_empty_rows_finale= m_data.rows()-m_end_row_allocated;
+            int nr_empty_rows_start= m_start_row_allocated;
+            int start_new_block=-1;
+            //try first to insert at the finale, if not, at the beggining and if not then we deem that we don't have enough space
+            if(nr_empty_rows_finale>=new_data.rows()){
+                start_new_block= m_end_row_allocated;
+            }else if(nr_empty_rows_start>=new_data.rows()){
+                start_new_block=0;
+            }else{
+                LOG(WARNING) << "Dropping, cannot append anywhere inside this data matrix. We are trying to append a new matrix of rows " << new_data.rows() << ". The preallocated data has rows " << m_data.rows() << " the m_start_row_allocated is " << m_start_row_allocated << " m_end_row_allocated " <<m_end_row_allocated;
+            }
+
+            //copy in the empty block
+            // m_data.block< new_data.rows(), new_data.cols() >(start_new_block,0)=new_data;
+            m_data.block(start_new_block,0, new_data.rows(), new_data.cols() )=new_data;
+            m_end_row_allocated+= new_data.rows();
+
+        } 
+        void recycle_block(size_t start_row, size_t end_row){
+
+        }
+
+        bool is_preallocated(){ return m_is_preallocated; }
+
+
+    private:
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& m_data;
+        bool m_is_preallocated=false;
+        size_t m_start_row_allocated=0;
+        size_t m_end_row_allocated=0;
+};
 
 class Mesh : public std::enable_shared_from_this<Mesh>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
@@ -141,8 +200,9 @@ public:
     ~Mesh()=default; 
 
     Mesh clone();
-    void add(const Mesh& new_mesh); //Adds another mesh to this one and combines it into one
-    void clear();
+    void add(Mesh& new_mesh); //Adds another mesh to this one and combines it into one
+    void clear(); //empties all vectors makes them have size (0,0)
+    void set_all_matrices_to_zero();
     void assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu); //assigns the pointer to the gpu implementation of this mesh
     bool load_from_file(const std::string file_path); //return sucess or failure
     void save_to_file(const std::string file_path);
@@ -169,6 +229,23 @@ public:
     // Eigen::VectorXd model_matrix_as_xyz_and_rpy();
     // void premultiply_model_matrix(const Eigen::VectorXd& xyz_q);
     // void postmultiply_model_matrix(const Eigen::VectorXd& xyz_q);
+
+    //preallocation things 
+    void preallocate_V(size_t max_nr_verts); //we preallocate a certain nr of vertices,
+    void preallocate_F(size_t max_nr_faces); 
+    void preallocate_C(size_t max_nr_verts); 
+    void preallocate_E(size_t max_nr_lines); 
+    void preallocate_D(size_t max_nr_verts); 
+    void preallocate_NF(size_t max_nr_faces); 
+    void preallocate_NV(size_t max_nr_verts); 
+    void preallocate_UV(size_t max_nr_verts); 
+    void preallocate_V_tangent_u(size_t max_nr_verts); 
+    void preallocate_V_length_v(size_t max_nr_verts); 
+    void preallocate_L_pred(size_t max_nr_verts); 
+    void preallocate_L_gt(size_t max_nr_verts); 
+    void preallocate_I(size_t max_nr_verts); 
+  
+
 
 
     void clear_C();
@@ -277,6 +354,7 @@ public:
     Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation 
     Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation 
     Eigen::MatrixXd I; //intensity value of each point in the cloud. Useful for laser scanner
+    DataBlob<double> V_blob;
 
 
     int m_seg_label_pred; // for classification we will have a lable for the whole cloud
@@ -324,6 +402,9 @@ private:
 
     Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
     Eigen::Affine3d m_cur_pose; 
+
+    //preallocation stuff 
+    bool m_is_preallocated;
 
 
 };

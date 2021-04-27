@@ -80,6 +80,7 @@ public:
     //params
     Eigen::Vector2f m_viewport_size;
     Eigen::Vector3f m_background_color;
+    bool m_swap_buffers;
 
     void init_params(const std::string config_file);
     bool init_context();

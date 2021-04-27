@@ -215,6 +215,14 @@ void Camera::orbit_y(const float angle_degrees){
 
     m_position_initialized=true;
 }
+void Camera::orbit_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees){
+
+    Eigen::Quaternionf q = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees*M_PI/180.0 ,  axis.normalized() ) );
+
+    orbit(q);
+
+    m_position_initialized=true;
+}
 void Camera::rotate(const Eigen::Quaternionf& q){
     // Eigen::Vector3f lookat_in_cam_coords=view_matrix() * lookat(); //gets the lookat position which is in world and puts it in cam coords
     // lookat_in_cam_coords=q.toRotationMatrix()*lookat_in_cam_coords;
@@ -234,6 +242,11 @@ void Camera::rotate(const Eigen::Quaternionf& q){
     m_position_initialized=true;
 }
 
+void Camera::rotate_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees){
+    Eigen::Quaternionf q = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
+    rotate(q);
+}
+
 void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
 {
     //we get here the distance to the lookat point and after rotating we should have a lookat position that is at the same distance
@@ -243,7 +256,7 @@ void Camera::transform_model_matrix(const Eigen::Affine3f & delta)
     //update the lookat point
     m_lookat= Eigen::Affine3f(model_matrix()) * (-Eigen::Vector3f::UnitZ() * dist); //goes in the negative z direction for an amount equal to the distance to lookat so we get a point in cam coords. Afterwards we multiply with the model matrix to get it in world coords
 
-    //CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
+    // CHECK( std::fabs(dist_to_lookat() - dist)<0.0001 ) <<"The distance to lookat point changed to much. Something went wrong. Previous dist was " << dist << " now distance is " << dist_to_lookat();
 
     // m_up=cam_axes().col(1);
 
