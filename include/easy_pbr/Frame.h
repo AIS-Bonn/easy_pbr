@@ -5,6 +5,8 @@
 
 #include "easy_pbr/Mesh.h"
 
+#include <any>
+
 
 // DO NOT USE A IFDEF because other C++ libs may include this Frame.h without the compile definitions and therefore the Frame.h that was used to compile easypbr and the one included will be different leading to issues
 // #ifdef EASYPBR_WITH_TORCH
@@ -85,6 +87,24 @@ public:
     Eigen::Vector3f pos_in_world() const;
     Eigen::Vector3f look_dir() const;
 
+    //adding extra field to this can eb done through https://stackoverflow.com/a/50956105
+    std::map<std::string, std::any> extra_fields;
+    template <typename T>
+    void add_extra_field(const std::string name, const T data){
+        extra_fields[name] = data;
+    }
+    bool has_extra_field(const std::string name){
+        if ( extra_fields.find(name) == extra_fields.end() ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    template <typename T>
+    T get_extra_field(const std::string name){
+        CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        return std::any_cast<T>(extra_fields[name]);
+    }
 
 
 };

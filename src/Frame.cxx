@@ -687,6 +687,11 @@ Eigen::Vector3f Frame::look_dir() const{
     return dir;
 }
 
+// template <typename T>
+// void Frame::add_field(const std::string name, const T data){
+//     // extra_field[name] = data;
+// }
+
 
 
 
