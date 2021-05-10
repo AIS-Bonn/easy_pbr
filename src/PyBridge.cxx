@@ -250,6 +250,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("mask", &Frame::mask )
     .def_readwrite("frame_idx", &Frame::frame_idx )
     .def_readwrite("cam_id", &Frame::cam_id )
+    .def_readwrite("rgb_path", &Frame::rgb_path )
     ;
 
     //convenience functions to transform from mat or eigen to tensors

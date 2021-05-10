@@ -2836,6 +2836,17 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 }
                 break;
             }
+            case GLFW_KEY_R :{
+                VLOG(1) << "Record";
+                 if(m_recorder->is_recording()){ 
+                    VLOG(1) << "Stopping recording";
+                    m_recorder->stop_recording();
+                }else{
+                    VLOG(1) << "Starting recording";
+                    m_recorder->start_recording();
+                }
+                break;
+            }
 
         }
 
