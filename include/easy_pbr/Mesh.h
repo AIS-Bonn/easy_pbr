@@ -2,6 +2,8 @@
 
 #include <memory>
 #include<stdarg.h>
+#include <any>
+
 
 //eigen
 #include <Eigen/Geometry>
@@ -385,6 +387,27 @@ public:
 
     //identification
     std::string name;
+
+
+
+    //adding extra field to this can eb done through https://stackoverflow.com/a/50956105
+    std::map<std::string, std::any> extra_fields;
+    template <typename T>
+    void add_extra_field(const std::string name, const T data){
+        extra_fields[name] = data;
+    }
+    bool has_extra_field(const std::string name){
+        if ( extra_fields.find(name) == extra_fields.end() ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    template <typename T>
+    T get_extra_field(const std::string name){
+        CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        return std::any_cast<T>(extra_fields[name]);
+    }
 
   
 
