@@ -1193,7 +1193,7 @@ void Gui::draw_profiler(){
 void Gui::show(const cv::Mat cv_mat, const std::string name){
 
     if(!cv_mat.data){
-        VLOG(3) << "Showing empty image, discaring";
+        VLOG(3) << "Showing empty image, discaring with name "<< name;
         return;
     }
 
