@@ -23,6 +23,7 @@
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Frame.h"
+#include "UtilsGL.h"
 #include "Profiler.h"
 
 
@@ -519,6 +520,10 @@ PYBIND11_MODULE(easypbr, m) {
     .def("plasma_color", &radu::utils::ColorMngr::plasma_color )
     .def("viridis_color", &radu::utils::ColorMngr::viridis_color )
     ;
+
+    //utilsgl 
+    m.def("intrinsics_to_opengl_proj", &intrinsics_to_opengl_proj );
+    m.def("opengl_proj_to_intrinsics", &opengl_proj_to_intrinsics );
 
 
 }
