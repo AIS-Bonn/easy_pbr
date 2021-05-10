@@ -379,6 +379,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_is_visible", &VisOptions::m_is_visible)
     .def_readwrite("m_show_points", &VisOptions::m_show_points)
     .def_readwrite("m_show_lines", &VisOptions::m_show_lines)
+    .def_readwrite("m_show_normals", &VisOptions::m_show_normals)
     .def_readwrite("m_show_mesh", &VisOptions::m_show_mesh)
     .def_readwrite("m_show_wireframe", &VisOptions::m_show_wireframe)
     .def_readwrite("m_show_surfels", &VisOptions::m_show_surfels)
