@@ -115,7 +115,8 @@ Viewer::Viewer(const std::string config_file):
     m_record_gui(false),
     m_record_with_transparency(true),
     m_first_draw(true),
-    m_swap_buffers(true)
+    m_swap_buffers(true),
+    m_camera_translation_speed_multiplier(1.0)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             VLOG(1) << "created viewer with dirwatcher";
@@ -2771,11 +2772,11 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
     
 }
 void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
-    m_camera->mouse_move(x, y, m_viewport_size );
+    m_camera->mouse_move(x, y, m_viewport_size, m_camera_translation_speed_multiplier);
     //only move if we are controlling the main camera and only if we rotating
     if(m_lights_follow_camera && m_camera==m_default_camera && m_camera->mouse_mode==Camera::MouseMode::Rotation){
         for(size_t i=0; i<m_spot_lights.size(); i++){
-            m_spot_lights[i]->mouse_move(x, y, m_viewport_size );
+            m_spot_lights[i]->mouse_move(x, y, m_viewport_size, m_camera_translation_speed_multiplier);
         }
     }
         

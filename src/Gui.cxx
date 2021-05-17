@@ -707,6 +707,8 @@ void Gui::draw_main_menu(){
         ImGui::SliderFloat("near", &m_view->m_camera->m_near, 0.01, 10.0);
         ImGui::SliderFloat("far", &m_view->m_camera->m_far, 100.0, 5000.0);
         ImGui::SliderFloat("Exposure", &m_view->m_camera->m_exposure, 0.1, 10.0);
+
+        ImGui::SliderFloat("Translation_speed", &m_view->m_camera_translation_speed_multiplier, 0.0, 10);
         
     }
 

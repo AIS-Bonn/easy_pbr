@@ -348,7 +348,7 @@ void Camera::mouse_pressed(const MouseButton mb, const int modifier){
 
 }
 
-void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f viewport_size){
+void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f viewport_size, const float speed_multiplier){
 
     ///attemp2 using https://github.com/libigl/libigl-examples/blob/master/scene-rotation/example.cpp
     m_current_mouse << x,y;
@@ -374,6 +374,7 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
 
 
             Eigen::Vector3f diff = pos1 - pos0;
+            diff.array()*=speed_multiplier;
             Eigen::Vector3f new_pos=m_model_matrix.translation() - Eigen::Vector3f(diff[0],diff[1],diff[2]);
             move_cam_and_lookat(new_pos);
 

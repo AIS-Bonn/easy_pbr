@@ -247,6 +247,10 @@ public:
     bool m_record_gui;
     bool m_record_with_transparency;
 
+
+    //camera speed multiplier 
+    float m_camera_translation_speed_multiplier;
+
 private:
     Viewer(const std::string config_file=std::string(DEFAULT_CONFIG) ); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();
@@ -268,6 +272,7 @@ private:
     void blend_bg(); //takes the post_processed image and blends a solid background color into it if needed.
 
     bool m_using_fat_gbuffer; //surfel splatting starts requires to use a gbuffer with half floats, this makes is so that there is no need for encoding an decoding normals, we can just sum them
+
 
 };
 

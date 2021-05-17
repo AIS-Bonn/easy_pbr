@@ -86,7 +86,7 @@ public:
 
     //callbacks
     void mouse_pressed(const MouseButton mb, const int modifier);
-    void mouse_move(const float x, const float y, Eigen::Vector2f viewport_size);
+    void mouse_move(const float x, const float y, Eigen::Vector2f viewport_size, const float speed_multiplier);
     void mouse_released(const MouseButton mb, const int modifier);
     void mouse_scroll(const float x, const float y);
     void wheel_event();
