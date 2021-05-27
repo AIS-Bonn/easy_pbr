@@ -117,6 +117,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readonly("cols", &cv::Mat::cols )
     .def("channels", &cv::Mat::channels )
     .def("empty", &cv::Mat::empty )
+    .def("to_cv8u", [](cv::Mat &m) {  cv::Mat out; m.convertTo(out, CV_8U, 255, 0);  m=out; return out;  } )
+    .def("to_file", [](cv::Mat &m, const std::string path) {  cv::imwrite(path,m);  } )
     // .def("rows", [](const cv::Mat &m) {  return m.rows;  }  )
     ;
     // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
