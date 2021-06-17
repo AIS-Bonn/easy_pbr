@@ -1059,6 +1059,7 @@ void Viewer::update_meshes_gl(){
             if(found){
                 // VLOG(1) << "found";
                 m_meshes_gl[idx_found]->assign_core(mesh_core);
+                mesh_core->assign_mesh_gpu(m_meshes_gl[idx_found]); // cpu data points to the gpu implementation
                 m_meshes_gl[idx_found]->upload_to_gpu();
                 m_meshes_gl[idx_found]->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
             }else{
