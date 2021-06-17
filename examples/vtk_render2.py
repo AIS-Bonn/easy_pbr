@@ -95,7 +95,7 @@ def GetTexture(file_name):
 def ReadHDR(path):
 
     # hdr_equilateral=GetTexture(path)
-    
+
 
     #read hdr https://blog.kitware.com/pbrj1/
     reader=vtk.vtkHDRReader()
@@ -241,7 +241,7 @@ for i in range(1):
     # transform.Translate(i*0.5, 0, 0)
     # head_actor.SetUserTransform(transform)
     # jacket_actor.SetUserTransform(transform)
-  
+
     renderer.AddActor(head_actor)
     # renderer.AddActor(jacket_actor)
 
@@ -321,7 +321,7 @@ renderer.SetPass(toneMappingP)
 
 
 
-#lights 
+#lights
 # view.spotlight_with_idx(0).from_string("1.28357 1.02985 1.09627 -0.219563  0.406239   0.10122 0.881201        0 0.132991        0 40 0.191147 19.1147")
 # view.spotlight_with_idx(0).m_power=11
 # view.spotlight_with_idx(0).m_color=[160/255, 225/255, 225/255]
@@ -354,13 +354,13 @@ light_2.SetColor(90/255, 221/255, 255/255)
 light_2.SetIntensity(40/1)
 
 
-#assign lights to renderer 
+#assign lights to renderer
 renderer.AddLight(light_0)
 renderer.AddLight(light_1)
 renderer.AddLight(light_2)
 
 
-#Set camera 
+#Set camera
 # view.m_camera.from_string("-0.614212  0.293787  0.377881 -0.0415488  -0.463654 -0.0217731 0.884773 -0.00559545    0.224117  -0.0433487 32 0.0320167 32.0167")
 # renderer.GetActiveCamera().SetPosition(-0.614212,  0.293787,  0.377881)
 # renderer.GetActiveCamera().SetUseHorizontalViewAngle(40)
@@ -372,12 +372,12 @@ renderer.AddObserver( vtk.vtkCommand.EndEvent , CallbackFunction)
 
 
 
-#make rnederer render constantly as fast as it can 
+#make rnederer render constantly as fast as it can
 # renderer.InteractiveOff()
 # renderer.SetSwapControl(0)
 
 
-#set ssao 
+#set ssao
 # renderer.SetUseSSAO(True)
 # renderer.SetSSAORadius(0.035)
 # renderer.SetSSAOBlur(True)

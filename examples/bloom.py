@@ -8,7 +8,7 @@ from easypbr  import *
 
 config_file="./config/bloom.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 
 mesh=Mesh("./data/head.obj")
 Scene.show(mesh,"mesh")
@@ -27,5 +27,3 @@ Scene.set_floor_visible(False)
 
 while True:
     view.update()
-
-

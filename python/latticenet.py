@@ -11,7 +11,7 @@ from easypbr  import *
 from easypbr  import *
 from os import listdir
 from os.path import isfile, join
-import natsort 
+import natsort
 
 config_file="./config/default_params.cfg"
 
@@ -56,4 +56,3 @@ while True:
     recorder.record(view, str(idx)+".jpeg", "/media/rosu/Data/phd/c_ws/src/easy_pbr/recordings/latticenet_seq")
 
     idx+=1
-

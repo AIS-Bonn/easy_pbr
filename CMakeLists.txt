@@ -24,7 +24,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 
-# libigl 
+# libigl
 # libigl options: choose between header only and compiled static library
 # Header-only is preferred for small projects. For larger projects the static build
 # considerably reduces the compilation times
@@ -61,7 +61,7 @@ add_definitions(${PCL_DEFINITIONS})
 find_package(kqueue)
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
-#try to compile with pytorch if you can 
+#try to compile with pytorch if you can
 set(PYTORCH_PATH "/opt/pytorch")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
 find_package(Torch)
@@ -72,7 +72,7 @@ find_package(Torch)
 
 
 ###   SOURCES   #################################################################
-set(MY_SRC  
+set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/Viewer.cxx
     ${PROJECT_SOURCE_DIR}/src/Gui.cxx
     ${PROJECT_SOURCE_DIR}/src/Camera.cxx
@@ -86,7 +86,7 @@ set(MY_SRC
 )
 file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
 )
-#tinyply because libigl readPLY has a memory leak 
+#tinyply because libigl readPLY has a memory leak
 set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
 # if(CORE_WITH_DIR_WATCHER)
 if(${KQUEUE_FOUND})
@@ -200,5 +200,3 @@ set(LIBS ${LIBS} Eigen3::Eigen  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${P
 target_link_libraries(easypbr_cpp PUBLIC ${LIBS} )
 target_link_libraries(easypbr PRIVATE easypbr_cpp)
 target_link_libraries(run_easypbr PRIVATE easypbr_cpp )
-
-

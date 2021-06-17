@@ -41,5 +41,3 @@ Scene.show(cloud,"cloud")
 view=Viewer.create(config_file) #first because it needs to init context
 while True:
     view.update()
-
-

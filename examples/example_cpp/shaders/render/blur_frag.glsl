@@ -7,7 +7,7 @@ layout(location=1) in vec2 uv_in;
 //out
 layout(location = 0) out vec4 blurred_output;
 
-//uniform 
+//uniform
 uniform sampler2D img;
 uniform sampler2D depth_tex;
 uniform bool horizontal;

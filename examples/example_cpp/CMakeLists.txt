@@ -33,7 +33,7 @@ add_subdirectory(${EASYPBR_SRC_PATH}/deps/pybind11  [EXCLUDE_FROM_ALL])
 
 
 ###   SOURCES   #################################################################
-set(MY_SRC  
+set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/EasyPBRwrapper.cxx
 )
 if(${KQUEUE_FOUND})
@@ -65,7 +65,7 @@ target_include_directories(easypbr_wrapper_cpp PUBLIC ${KQUEUE_INCLUDE_DIRS})
 pybind11_add_module(easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/PyBridge.cxx )
 
 ###   EXECUTABLE   #######################################
-add_executable(run_easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/main.cxx 
+add_executable(run_easypbr_wrapper ${PROJECT_SOURCE_DIR}/src/main.cxx
 )
 
 
@@ -100,5 +100,3 @@ set(LIBS ${LIBS} ${OpenCV_LIBS}  ${Boost_LIBRARIES}  ${EASYPBR_LIBRARY}  )
 target_link_libraries(easypbr_wrapper_cpp ${LIBS} )
 target_link_libraries(easypbr_wrapper PRIVATE easypbr_wrapper_cpp )
 target_link_libraries(run_easypbr_wrapper PRIVATE easypbr_wrapper_cpp  )
-
-

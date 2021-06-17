@@ -8,7 +8,7 @@ from easypbr  import *
 
 config_file="./config/balls.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 
 mesh=Mesh("./data/sphere.obj")
 

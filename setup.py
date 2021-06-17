@@ -53,7 +53,7 @@ class CMakeBuild(build_ext):
             if cmake_version < '3.1.0':
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
 
-        #check if we have all dependencies 
+        #check if we have all dependencies
         check_file(os.path.join(os.getcwd(), 'deps', 'libigl', 'CMakeLists.txt'))
 
         for ext in self.extensions:
@@ -324,4 +324,3 @@ setup(
 #         },
 #     },
 # )
-

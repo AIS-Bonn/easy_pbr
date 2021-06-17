@@ -8,9 +8,7 @@ from easypbr  import *
 
 config_file="./config/default_params.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 
 while True:
     view.update()
-
-

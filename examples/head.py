@@ -8,7 +8,7 @@ from easypbr  import *
 
 config_file="./config/head.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 #hide the gird floor
 Scene.set_floor_visible(False)
 

@@ -13,11 +13,11 @@ layout(location = 0) out vec4 color_output;
 
 void main(){
 
-   
+
     vec4 result = vec4(1.0, 1.0, 0.0, 1.0);
- 
+
 
     color_output=result;
-   
+
 
 }

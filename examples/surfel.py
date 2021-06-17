@@ -8,14 +8,14 @@ from easypbr  import *
 
 config_file="./config/surfel.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 
 #puts the camera in a nicer view than default. You can also comment these two lines and EasyPBR will place the camera by default for you so that the scene is fully visible
 view.m_camera.set_position([0.353818,  0.45987, 0.869124   ])
 view.m_camera.set_lookat([  -0.023013,  0.0821874, -0.0281476    ])
 view.m_camera.m_fov=30
 
-#bunny 
+#bunny
 mesh=Mesh("/media/rosu/Data/phd/c_ws/src/easy_pbr/data/bunny.ply")
 mesh.recalculate_normals()
 surfel_size=0.003

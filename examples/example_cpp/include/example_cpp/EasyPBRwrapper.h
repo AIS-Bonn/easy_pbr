@@ -24,8 +24,8 @@
 
 
 
-namespace radu { namespace utils { 
-    class RandGenerator; 
+namespace radu { namespace utils {
+    class RandGenerator;
     }}
 
 namespace easy_pbr{
@@ -47,7 +47,7 @@ public:
         return std::shared_ptr<EasyPBRwrapper>( new EasyPBRwrapper(std::forward<Args>(args)...) );
     }
     ~EasyPBRwrapper();
-    
+
 
 
 private:
@@ -58,7 +58,7 @@ private:
         // emilib::DelayedDirWatcher dir_watcher;
     // #endif
     std::shared_ptr<emilib::DelayedDirWatcher> dir_watcher;
-    
+
     std::shared_ptr<Viewer> m_view;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
 

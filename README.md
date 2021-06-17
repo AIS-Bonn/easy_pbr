@@ -3,12 +3,12 @@
 
 ### [Project Page](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/) | [Video](https://www.youtube.com/watch?v=N20l6dqFcHw) | [Paper](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR.pdf) | [Poster](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR_Poster.pdf)
 
-[EasyPBR: A Lightweight Physically-Based Renderer](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/)  
+[EasyPBR: A Lightweight Physically-Based Renderer](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/)
  [Radu Alexandru Rosu](https://www.ais.uni-bonn.de/%7Erosu/) <sup>1</sup>,
  [Sven Behnke](https://www.ais.uni-bonn.de/behnke/) <sup>1</sup>,
  <br>
  <sup>1</sup>University of Bonn, Autonomous Intelligent Systems
-   
+
 
 <p align="middle">
   <!-- <img src="imgs/anatomy_crop_2.png" width="250" /> -->
@@ -16,7 +16,7 @@
   <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/buburuza_crop_2.png" width="250" />  -->
   <!-- <img src="imgs/lucy_pc_crop.png" width="210" />  -->
-  <img src="imgs/lantern_1_crop.png" width="250" /> 
+  <img src="imgs/lantern_1_crop.png" width="250" />
   <!-- <figcaption> Your text </figcaption> -->
   <!-- <img src="imgs/house_crop_2.png" width="250" /> -->
   <img src="imgs/shader_ball_crop.png" width="250" />
@@ -40,7 +40,7 @@ An example of a python3 script which shows a single mesh using the default viewi
 
     config_file="./config/default_params.cfg"
 
-    view=Viewer.create(config_file) 
+    view=Viewer.create(config_file)
     lucy = Mesh("./data/lucy.obj")
     Scene.show(lucy, "lucy")
 
@@ -51,7 +51,7 @@ Alternatively, one can also start an empty viewer and dragging and dropping mesh
 
     ./python/empty.py
 
-One can also define their own mesh by filling up the vertices and faces vector: 
+One can also define their own mesh by filling up the vertices and faces vector:
 
     view=Viewer.create()   #a viewer with no argument reads by default the parameters from "./config/default_params.cfg"
 
@@ -76,31 +76,31 @@ An example of using EasyPBR from an external C++ application can be seen in [./e
 
 
 # Features
-- Deferred rendering 
+- Deferred rendering
 - Physically-based shading
 - Screen Space Ambient Occlusion (SSAO)
 - Shadow Mapping with Percentage Closer Filtering for soft shadows
 - Image Based Lighting (IBL) using HDR maps
 - Eye Dome Lighting for point cloud rendering
 - Various tonemapping operators (Rheinhard, Unreal, ACES)
-- Shader hotloading 
+- Shader hotloading
 - Various modes of visualization (mesh, wireframe, point cloud, surfel)
 - Loading of multiple meshes formats (.obj, .ply, .pcd, .off)
 - Drag and drop of meshes and HDR maps directly in the viewer
 - Easy extension and usage from other packages
 
-# Install 
+# Install
 ### Dependencies:
 ```sh
 $ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-dev libeigen3-dev libpcl-dev libopencv-dev
 ```
-### Optional dependencies: 
+### Optional dependencies:
 Allow for shader hotloading, so changes to .glsl files are automatically recompiled and used while the program is running:
-```sh   
+```sh
 $ sudo apt-get install libkqueue-dev
 ```
 
-### Build and install: 
+### Build and install:
 ```sh
 $ git clone --recursive https://github.com/RaduAlexandru/easy_pbr.git
 $ cd easy_pbr
@@ -117,7 +117,7 @@ Various examples can be found in the ./examples folder. A short description of e
 | Deferred Physically based rendering | ![PBR demo preview](imgs/pbr_multiscatter.jpg) Real-time rendering of a scene with 'physically-based' materials (GGX BRDF introduced in *Microfacet Models for Refraction through Rough Surfaces*, Walter et al., 2007), using deferred rendering and an HDR pipeline with bloom and SSAO. <br /> Run with [./examples/pbr.py](./examples/pbr.py) |
 | Shadows and Ambient Occlusion | ![Shadows and Ambient Occlusion](imgs/shadows2.jpg) <br /> Run with [./examples/shadows.py](./examples/shadows.py) |
 | Bloom | ![Bloom](imgs/bloom_head.jpg) <br /> Run with [./examples/bloom.py](./examples/bloom.py)  |
-| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br /> Eye-dome lighting and SSAO for shading | 
+| Cloud render | ![Cloud render](imgs/cloud_medusa.jpeg) <br /> Eye-dome lighting and SSAO for shading |
 
 ## Citation
 

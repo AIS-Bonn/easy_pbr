@@ -8,7 +8,7 @@ from easypbr  import *
 
 config_file="./config/textures.cfg"
 
-view=Viewer.create(config_file) 
+view=Viewer.create(config_file)
 
 #lantern
 mesh=Mesh("./data/textured/lantern/lantern_obj.obj")

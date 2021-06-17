@@ -10,7 +10,7 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
-//My stuff 
+//My stuff
 #include "UtilsGL.h"
 #include "easy_pbr/Viewer.h"
 #include "easy_pbr/Gui.h"
@@ -21,7 +21,7 @@
 
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define ENABLE_GL_PROFILING 1
-#include "Profiler.h" 
+#include "Profiler.h"
 
 
 //configuru
@@ -39,7 +39,7 @@ using namespace radu::utils;
 
 // SyntheticGenerator::SyntheticGenerator(const std::string& config_file):
 EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared_ptr<Viewer>& view):
-    #ifdef WITH_DIR_WATCHER 
+    #ifdef WITH_DIR_WATCHER
         dir_watcher( new  emilib::DelayedDirWatcher( std::string(PROJECT_SOURCE_DIR)+"/shaders/",5)  ),
     #endif
     m_view(view),
@@ -47,8 +47,8 @@ EasyPBRwrapper::EasyPBRwrapper(const std::string& config_file, const std::shared
     {
 
         init_params(config_file);
-        compile_shaders(); 
-        init_opengl();                     
+        compile_shaders();
+        init_opengl();
         install_callbacks(view);
 
         //creates a mesh and adds it to the scene
@@ -79,7 +79,7 @@ void EasyPBRwrapper::init_params(const std::string config_file){
 
 
 void EasyPBRwrapper::compile_shaders(){
-       
+
     // m_detect_balloon_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_balloon_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_balloon_frag.glsl" ) ;
     // m_detect_copter_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_copter_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/detect_copter_frag.glsl" ) ;
     m_blur_shader.compile( std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_vert.glsl", std::string(PROJECT_SOURCE_DIR)+"/shaders/render/blur_frag.glsl"  );
@@ -131,7 +131,7 @@ void EasyPBRwrapper::create_mesh(){
     // mesh->m_vis.m_line_width=5.0;
     // Scene::show(mesh, "mesh");
 
-    //bunny 
+    //bunny
     MeshSharedPtr mesh= Mesh::create();
     // mesh->load_from_file("./data/bunny.ply");
     mesh->load_from_file("./data/dragon.obj");
@@ -142,8 +142,8 @@ void EasyPBRwrapper::create_mesh(){
 void EasyPBRwrapper::pre_draw_animate_mesh(Viewer& view){
     //get a handle to the mesh from the scene and move it in the x direction
     MeshSharedPtr mesh= Scene::get_mesh_with_name("mesh");
-    mesh->model_matrix_ref().translation().x() = std::sin( view.m_timer->elapsed_s()  )* 0.2; 
-    // mesh->model_matrix_ref().translation().y() = std::sin( view.m_timer->elapsed_s() + 3.14  ); 
+    mesh->model_matrix_ref().translation().x() = std::sin( view.m_timer->elapsed_s()  )* 0.2;
+    // mesh->model_matrix_ref().translation().y() = std::sin( view.m_timer->elapsed_s() + 3.14  );
 
 }
 
@@ -164,10 +164,10 @@ void EasyPBRwrapper::toy_shader_example(Viewer& view){
 
     gl::Texture2D& img = view.rendered_tex_no_gui(/*with_transparency*/false);
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-    
+
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_toy_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_toy_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
@@ -179,9 +179,9 @@ void EasyPBRwrapper::toy_shader_example(Viewer& view){
 
 
     // m_toy_shader.uniform_bool(view."horizontal");
-    m_toy_shader.draw_into(img, "color_output"); 
+    m_toy_shader.draw_into(img, "color_output");
     // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -208,10 +208,10 @@ void EasyPBRwrapper::fullscreen_blur(Viewer& view){
     int max_mip_map_lvl=1;
     int bloom_blur_iters=20;
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-    
+
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
@@ -250,9 +250,9 @@ void EasyPBRwrapper::fullscreen_blur(Viewer& view){
             m_blur_shader.bind_texture(view.m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(true,"horizontal");
-            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl); 
+            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl);
             // draw
-            m_fullscreen_quad->vao.bind(); 
+            m_fullscreen_quad->vao.bind();
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -261,16 +261,16 @@ void EasyPBRwrapper::fullscreen_blur(Viewer& view){
             m_blur_shader.bind_texture(view.m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
             m_blur_shader.uniform_int(mip-start_mip_map_lvl,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
-            m_blur_shader.draw_into(img, "blurred_output", mip); 
+            m_blur_shader.draw_into(img, "blurred_output", mip);
             // draw
-            m_fullscreen_quad->vao.bind(); 
+            m_fullscreen_quad->vao.bind();
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
         }
 
 
     }
-    
+
     // view.m_gui->show_gl_texture(m_blur_tmp_tex.tex_id(), "blur_tmp_tex", true);
     // view.m_gui->show_gl_texture(img.tex_id(), "blur1_tex", true);
 
@@ -293,7 +293,7 @@ void EasyPBRwrapper::post_draw(Viewer& view){
     // cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
     // Gui::show(mat, "mat");
 
-    //draw some gui elements 
+    //draw some gui elements
     ImGuiWindowFlags window_flags = 0;
     ImGui::Begin("WrapperGui", nullptr, window_flags);
 
@@ -305,4 +305,3 @@ void EasyPBRwrapper::post_draw(Viewer& view){
 
     // m_iter++;
 }
-
