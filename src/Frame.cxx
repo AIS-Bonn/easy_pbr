@@ -228,8 +228,8 @@ cv::Mat Frame::depth2world_xyz_mat() const{
             if(depth_val!=0.0){
 
                 Eigen::Vector3d point_2D;
-                //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-                point_2D << x, depth.rows-y, 1.0;
+                //the point is not at x,y but at x, heght-1-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-1-y
+                point_2D << x, depth.rows-1-y, 1.0;
                 Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D;
                 point_3D_camera_coord*=depth_val;
                 Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
@@ -339,7 +339,7 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
         for(int x=0; x<width; x++){
             Eigen::Vector3f point_screen;
             //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-            point_screen << x,height-y,1.0;
+            point_screen << x,height-1-y,1.0;
 
             Eigen::Vector3f point_cam_coords;
             point_cam_coords=K.inverse()*point_screen;
@@ -377,7 +377,7 @@ std::shared_ptr<Mesh> Frame::pixels2coords() const{
         for(int x=0; x<width; x++){
             Eigen::Vector3f point_screen;
             //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-            point_screen << x,height-y,1.0;
+            point_screen << x,height-1-y,1.0;
 
             points_mesh->V.row(idx_insert)= point_screen.cast<double>();
 
@@ -462,9 +462,9 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         V_transformed(i,1)/=V_transformed(i,2);
         // V_transformed(i,2)=1.0;
 
-        //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
+        //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-1-V_transformed(i,1)
         int x=V_transformed(i,0);
-        int y=height-V_transformed(i,1);
+        int y=height-1-V_transformed(i,1);
         if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
             continue;
         }
@@ -632,7 +632,7 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
         //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
         int x=V_transformed(i,0);
-        int y=height-V_transformed(i,1);
+        int y=height-1-V_transformed(i,1);
         if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
             continue;
         }
