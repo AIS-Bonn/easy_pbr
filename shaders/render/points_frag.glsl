@@ -13,7 +13,7 @@ layout(location = 3) in vec2 uv_in;
 
 //out
 //the locations are irrelevant because the link between the frag output and the texture is established at runtime by the shader function draw_into(). They just have to be different locations for each output
-// layout(location = 0) out vec4 position_out; 
+// layout(location = 0) out vec4 position_out;
 layout(location = 1) out vec4 diffuse_out;
 layout(location = 2) out vec3 normal_out;
 layout(location = 3) out vec2 metalness_and_roughness_out;
@@ -21,10 +21,10 @@ layout(location = 3) out vec2 metalness_and_roughness_out;
 // //uniform
 uniform int color_type;
 // uniform sampler2D tex; //the rgb tex that is used for coloring
-uniform sampler2D diffuse_tex; 
-uniform sampler2D metalness_tex; 
-uniform sampler2D roughness_tex; 
-uniform sampler2D normals_tex; 
+uniform sampler2D diffuse_tex;
+uniform sampler2D metalness_tex;
+uniform sampler2D roughness_tex;
+uniform sampler2D normals_tex;
 uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
@@ -87,7 +87,7 @@ void main(){
         // gl_FragDepthEXT = depth;
 
     }
-    
+
 
 
     if(color_type==2){ //TEXTURE
@@ -122,6 +122,5 @@ void main(){
 
     normal_out=encode_normal(normal_in);
     metalness_and_roughness_out=vec2(metalness_out, roughness_out);
-  
-}
 
+}

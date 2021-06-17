@@ -38,14 +38,14 @@ LabelMngr::LabelMngr(const int nr_classes, const int unlabeled_idx ){
     m_nr_classes=nr_classes;
 
 
-    //init all the internal stuff 
+    //init all the internal stuff
     for (int i=0; i<nr_classes; i++){
         std::string class_name="class_" + std::to_string(i);
         m_idx2label.push_back( class_name );
         m_label2idx[class_name]=i;
     }
 
-    //colorscheme 
+    //colorscheme
     m_C_per_class.resize(nr_classes,3);
     m_C_per_class.setRandom(); //fill with random in range [-1,1]
     m_C_per_class=(m_C_per_class+ Eigen::MatrixXd::Constant(nr_classes,3, 1.0) )*0.5;
@@ -53,7 +53,7 @@ LabelMngr::LabelMngr(const int nr_classes, const int unlabeled_idx ){
         m_C_per_class.row(unlabeled_idx).setZero(); //unlabeled index is always black
     }
 
-    //freq 
+    //freq
     m_frequency_per_class.resize(nr_classes);
     m_frequency_per_class.setZero();
 
@@ -134,7 +134,7 @@ void LabelMngr::read_data(const std::string labels_file, const std::string color
                                              atoi( trim_copy(rgb_vec[1]).c_str()),
                                              atoi( trim_copy(rgb_vec[2]).c_str()); //range [0,255]
             idx_insert++;
-            
+
         }
     }
     m_C_per_class.array()/=255.0;
@@ -274,7 +274,7 @@ void LabelMngr::compact(const std::string label_to_remove){
     }
 
 
-    //assign all the new things 
+    //assign all the new things
     m_nr_classes=new_nr_classes;
     m_idx2label=new_idx2label;
     m_label2idx=new_label2idx;
@@ -347,4 +347,3 @@ cv::Mat LabelMngr::apply_color_map(cv::Mat classes){
 
 
 } //namespace easy_pbr
-

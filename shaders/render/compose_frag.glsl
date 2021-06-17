@@ -28,7 +28,7 @@ uniform sampler2D brdf_lut_tex;
 
 //uniform
 uniform mat4 V_inv; //project from pos_cam_coords back to world coordinates
-// uniform mat4 V; //from projecting a light position from world into the main camera 
+// uniform mat4 V; //from projecting a light position from world into the main camera
 uniform vec3 eye_pos;
 uniform int color_type;
 uniform vec3 solid_color;
@@ -54,16 +54,16 @@ uniform int prefilter_nr_mipmaps;
 uniform bool using_fat_gbuffer;
 
 
-//for edl 
+//for edl
 const int neighbour_count=8;
 uniform vec2 neighbours[neighbour_count];
 
-//support for maximum 8 lights 
+//support for maximum 8 lights
 struct SpotLight {
     vec3 pos;
     vec3 color; //the color of the light
     float power; // how much strenght does the light have
-    mat4 VP; //projects world coordinates into the light 
+    mat4 VP; //projects world coordinates into the light
     sampler2D shadow_map;
     bool create_shadow;
 };
@@ -156,12 +156,12 @@ vec3 position_cam_coords_from_depth(float depth){
 float radius=1;
 float response(float depth){
 	vec2 uvRadius = radius / vec2(viewport_size.x, viewport_size.y);
-	
+
 	float sum = 0.0;
-	
+
 	for(int i = 0; i < neighbour_count; i++){
 		vec2 uvNeighbor = uv_in + uvRadius * neighbours[i];
-		
+
 		// float neighbourDepth = texture(log_depth_tex, uvNeighbor).x;
 		float neighbourDepth = texture(depth_tex, uvNeighbor).x;
         neighbourDepth=linear_depth(neighbourDepth);
@@ -179,7 +179,7 @@ float response(float depth){
 			}
 		}
 	}
-	
+
 	return sum / float(neighbour_count);
 }
 
@@ -197,11 +197,11 @@ float DistributionGGX(vec3 N, vec3 H, float roughness){
     float a2     = a*a;
     float NdotH  = max(dot(N, H), 0.0);
     float NdotH2 = NdotH*NdotH;
-	
+
     float num   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
-	
+
     return num / denom;
 }
 
@@ -211,7 +211,7 @@ float GeometrySchlickGGX(float NdotV, float roughness){
 
     float num   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
-	
+
     return num / denom;
 }
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness){
@@ -219,15 +219,15 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness){
     float NdotL = max(dot(N, L), 0.0);
     float ggx2  = GeometrySchlickGGX(NdotV, roughness);
     float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-	
+
     return ggx1 * ggx2;
 }
 vec3 fresnelSchlick(float cosTheta, vec3 F0){
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}  
+}
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness){
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-}   
+}
 
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
@@ -277,7 +277,7 @@ vec3 Tonemap_ACES(const vec3 x) {
     return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-//trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
+//trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better
 mat3 aces_input = mat3(
    0.59719, 0.35458, 0.04823, // first column (not row!)
    0.07600, 0.90834, 0.01566, // second column
@@ -348,7 +348,7 @@ void main(){
             // color = Tonemap_Reinhard(color);
             // gamma correct
             // color=color*exposure;
-            // color = pow(color, vec3(1.0/2.2)); 
+            // color = pow(color, vec3(1.0/2.2));
 
             out_color = vec4(color, 1.0);
 
@@ -409,7 +409,7 @@ void main(){
             //     // color+=color*(brightness-bloom_threshold);
             // }
             //gamma correct
-            // color = pow(color, vec3(1.0/2.2)); 
+            // color = pow(color, vec3(1.0/2.2));
             out_color = vec4(color, 1.0);
             // bloom_color = vec4(1.0);
             // out_color = vec4(1.0);
@@ -440,7 +440,7 @@ void main(){
         discard;
 
 
-        //attempt 2 
+        //attempt 2
         // if(show_prefiltered_environment_map){
             // color=vec3(0.0, 1.0, 0.0);
         // }else{
@@ -458,7 +458,7 @@ void main(){
             color_with_weight.xyz/=color_with_weight.w;
         }
         vec3 albedo=pow( color_with_weight.xyz, vec3(2.2) );
-        vec3 N= decode_normal(texture(normal_tex, uv_in).xyz ); 
+        vec3 N= decode_normal(texture(normal_tex, uv_in).xyz );
 
         // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
         if(enable_edl_lighting  || N==vec3(0)){ //if we have no normal we may be in a point cloud with no normals and then we can just do edl, no IBL is possible
@@ -470,7 +470,7 @@ void main(){
                 float res = response(depth);
                 // float edl_strength=16.0;
                 float shade = exp(-res * 300.0 * edl_strength);
-                float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+                float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
                 color = albedo* shade * ao;
             }
         }else{
@@ -479,21 +479,21 @@ void main(){
             vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
             vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
             vec3 V = normalize( eye_pos -P_w ); //view vector that goes from position of the fragment towards the camera
-            vec3 R = reflect(-V, N); 
+            vec3 R = reflect(-V, N);
             float metalness=texture(metalness_and_roughness_tex, uv_in).x;
             float roughness=texture(metalness_and_roughness_tex, uv_in).y;
             if(color_with_weight.w!=0.0){
                 metalness/=color_with_weight.w;
                 roughness/=color_with_weight.w;
             }
-            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0; 
+            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
             float NdotV = max(dot(N, V), 0.0);
 
 
 
-            // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-            // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-            // vec3 F0 = vec3(0.04); 
+            // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
+            // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
+            // vec3 F0 = vec3(0.04);
             // F0 = mix(F0, albedo, metalness);
 
             // Dielectrics have a constant low coeff, metals use the baseColor (ie reflections are tinted).
@@ -503,10 +503,10 @@ void main(){
 
             // reflectance equation
             vec3 Lo = vec3(0.0);
-            for(int i = 0; i < nr_active_spot_lights; ++i) 
+            for(int i = 0; i < nr_active_spot_lights; ++i)
             {
 
-                
+
                 //check if the current fragment in in the fov of the light by pojecting from world back into the light
                 vec4 pos_light_space=spot_lights[i].VP * vec4(P_w, 1.0);
                 // perform perspective divide https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
@@ -514,7 +514,7 @@ void main(){
                 // transform to [0,1] range because the proj_in_light is now in normalized device coordinates [-1,1] and we want it in [0,1] https://community.khronos.org/t/shadow-mapping-bias-before-the-w-divide/63877/6
                 proj_in_light = proj_in_light * 0.5 + 0.5;
                 //check if we are outside the image or behind it
-                if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) { 
+                if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) {
                     // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
                 }
 
@@ -531,7 +531,7 @@ void main(){
                             vec2 Offsets = vec2(x * xOffset, y * yOffset);
                             vec2 UV = proj_in_light.xy + Offsets;
                             float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
-                            float current_depth = proj_in_light.z;  
+                            float current_depth = proj_in_light.z;
                             float epsilon = 0.0001;
                             if (closest_depth + epsilon < current_depth){
                                 continue; //in shadow
@@ -549,12 +549,12 @@ void main(){
 
                 // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
                 // float closest_depth = texture(spot_lights[i].shadow_map, proj_in_light.xy).x;
-                // float current_depth = proj_in_light.z;  
+                // float current_depth = proj_in_light.z;
                 // float epsilon = 0.0001;
                 // if (closest_depth + epsilon < current_depth){
                 //     continue;
                 // }
-                
+
 
                 // calculate per-light radiance
                 vec3 L = normalize(spot_lights[i].pos - P_w);
@@ -564,54 +564,54 @@ void main(){
                 vec3 radiance = spot_lights[i].color *spot_lights[i].power * attenuation;
 
                 // Cook-Torrance BRDF
-                float NDF = DistributionGGX(N, H, roughness);   
-                float G   = GeometrySmith(N, V, L, roughness);      
+                float NDF = DistributionGGX(N, H, roughness);
+                float G   = GeometrySmith(N, V, L, roughness);
                 vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-                
-                vec3 nominator    = NDF * G * F; 
+
+                vec3 nominator    = NDF * G * F;
                 float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
                 vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
                 // specular=specular* vec3(0.1, 0.8, 0.8);
-                
+
                 // kS is equal to Fresnel
                 vec3 kS = F;
                 // for energy conservation, the diffuse and specular light can't
                 // be above 1.0 (unless the surface emits light); to preserve this
                 // relationship the diffuse component (kD) should equal 1.0 - kS.
                 vec3 kD = vec3(1.0) - kS;
-                // multiply kD by the inverse metalness such that only non-metals 
+                // multiply kD by the inverse metalness such that only non-metals
                 // have diffuse lighting, or a linear blend if partly metal (pure metals
                 // have no diffuse light).
-                kD *= 1.0 - metalness;	  
+                kD *= 1.0 - metalness;
 
                 // scale light by NdotL
-                float NdotL = max(dot(N, L), 0.0);        
+                float NdotL = max(dot(N, L), 0.0);
 
                 // add to outgoing radiance Lo
                 Lo += (kD * albedo / PI + specular) * radiance * NdotL * Factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
                 // Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-            }   
-            
+            }
+
             // ambient lighting (we now use IBL as the ambient term)
             vec3 ambient=vec3(0.0);
             if (enable_ibl){
-                // vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+                // vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
                 // Adjust Fresnel absed on roughness.
                 vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
                 vec3 Fs = F0 + Fr * pow(1.0 - NdotV, 5.0);
-                // vec3 kS = F; 
+                // vec3 kS = F;
                 // vec3 kD = 1.0 - kS;
-                // kD *= 1.0 - metalness;	  
+                // kD *= 1.0 - metalness;
                 vec3 irradiance = texture(irradiance_cubemap_tex, N).rgb;
                 // vec3 radiance = radiance(N, V, roughness);
-                vec3 radiance = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
+                vec3 radiance = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;
                 // vec3 diffuse      = irradiance * albedo;
 
                 // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
                 // const float MAX_REFLECTION_LOD = 4.0;
                 // const float MAX_REFLECTION_LOD = ;
-                // vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;    
+                // vec3 prefilteredColor = textureLod(prefilter_cubemap_tex, R,  roughness * prefilter_nr_mipmaps).rgb;
                 // Specular single scattering contribution (preintegrated).
                 vec2 brdf  = texture(brdf_lut_tex, vec2(NdotV, roughness)).rg;
                 // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
@@ -629,7 +629,7 @@ void main(){
                 // Diffuse contribution. Metallic materials have no diffuse contribution.
                 vec3 single = (1.0 - metalness) * albedo * (1.0 - F0);
                 vec3 diffuse = single * (1.0 - specular - multi) + multi;
-                
+
                 // fragColor = ao * (diffuse * irradiance + specular * radiance);
                 ambient=ao * (diffuse * irradiance + specular * radiance);
 
@@ -639,7 +639,7 @@ void main(){
             }else{
                 ambient = vec3(ambient_color_power) * ambient_color * ao;
             }
-        
+
 
             color = ambient + Lo;
 
@@ -665,5 +665,5 @@ void main(){
     out_color = vec4(color, pixel_weight);
 
 
-   
+
 }

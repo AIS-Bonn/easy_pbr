@@ -8,8 +8,8 @@ in vec3 normal;
 
 //out
 layout(location = 0) out vec3 normal_out;
-layout(location = 1) out vec3 position_cam_coords_out; //position of the vertex in the camera coordinate system 
-layout(location = 2) out vec3 normal_cam_coords_out; //normal of the vertex in the camera coordinate system 
+layout(location = 1) out vec3 position_cam_coords_out; //position of the vertex in the camera coordinate system
+layout(location = 2) out vec3 normal_cam_coords_out; //normal of the vertex in the camera coordinate system
 
 
 //uniforms

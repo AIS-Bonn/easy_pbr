@@ -8,9 +8,9 @@ layout(triangle_strip, max_vertices = 4) out;
 //in
 layout(location = 0) in vec3 v_pos_in[];
 layout(location = 1) in vec3 v_normal_in[];
-layout(location = 2) in vec3 tangent_u_in[]; 
-layout(location = 3) in float length_v_in[]; 
-layout(location = 4) in vec3 color_per_vertex_in[]; 
+layout(location = 2) in vec3 tangent_u_in[];
+layout(location = 3) in float length_v_in[];
+layout(location = 4) in vec3 color_per_vertex_in[];
 
 //out
 layout(location=0) out vec3 position_eye_out;

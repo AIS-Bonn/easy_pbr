@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <memory>
 
@@ -42,7 +42,7 @@ public:
     void print_ptr();
 
     float m_power;
-    Eigen::Vector3f m_color; 
+    Eigen::Vector3f m_color;
     bool m_create_shadow;
 
 private:
@@ -53,7 +53,7 @@ private:
     gl::Shader m_shadow_map_shader;
     gl::GBuffer m_shadow_map_fbo; //fbo that contains only depth maps for usage as a shadow map
     int m_shadow_map_resolution;
-  
+
 };
 
 } //namespace easy_pbr

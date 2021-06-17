@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 
-//my stuff 
+//my stuff
 #include "easy_pbr/Mesh.h"
 
 namespace easy_pbr{
@@ -26,7 +26,7 @@ MeshGL::MeshGL():
     // m_thermal_colored_tex(new gl::Texture2D("thermal_colored_tex")),
     // m_cur_tex_ptr(m_rgb_tex),
     m_core(new Mesh)
-    {   
+    {
 
     //Set the parameters for the buffers
     V_buf.set_target(GL_ARRAY_BUFFER);
@@ -72,7 +72,7 @@ void MeshGL::assign_core(std::shared_ptr<Mesh> mesh_core){
 }
 
 void MeshGL::sanity_check() const{
-    m_core->sanity_check(); 
+    m_core->sanity_check();
 }
 
 
@@ -95,37 +95,37 @@ void MeshGL::upload_to_gpu(){
     // }else{
     //     LOG(FATAL) << "Cannot render a mesh with nr of coordinates per point different than 2 or 3. This mesh has V.cols()= " <<m_core->V.cols();
     // }
-    
+
 
 
     RowMatrixXi F_i=m_core->F.cast<unsigned>();
     RowMatrixXf C_f=m_core->C.cast<float>();
     RowMatrixXi E_i=m_core->E.cast<unsigned>();
     RowMatrixXf D_f=m_core->D.cast<float>();
-    RowMatrixXf NF_f=m_core->NF.cast<float>(); 
-    RowMatrixXf NV_f=m_core->NV.cast<float>(); 
-    RowMatrixXf UV_f=m_core->UV.cast<float>(); 
-    RowMatrixXf V_tangent_u_f=m_core->V_tangent_u.cast<float>(); 
-    RowMatrixXf V_lenght_v_f=m_core->V_length_v.cast<float>(); 
+    RowMatrixXf NF_f=m_core->NF.cast<float>();
+    RowMatrixXf NV_f=m_core->NV.cast<float>();
+    RowMatrixXf UV_f=m_core->UV.cast<float>();
+    RowMatrixXf V_tangent_u_f=m_core->V_tangent_u.cast<float>();
+    RowMatrixXf V_lenght_v_f=m_core->V_length_v.cast<float>();
     RowMatrixXi L_pred_i=m_core->L_pred.cast<unsigned>();
     RowMatrixXi L_gt_i=m_core->L_gt.cast<unsigned>();
     RowMatrixXf I_f=m_core->I.cast<float>();
 
 
 
-    V_buf.upload_data(V_f.size()*sizeof(float), V_f.data(), GL_DYNAMIC_DRAW); 
-    F_buf.upload_data(F_i.size()*sizeof(unsigned), F_i.data(), GL_DYNAMIC_DRAW); 
-    C_buf.upload_data(C_f.size()*sizeof(float), C_f.data(), GL_DYNAMIC_DRAW); 
-    E_buf.upload_data(E_i.size()*sizeof(unsigned), E_i.data(), GL_DYNAMIC_DRAW); 
-    D_buf.upload_data(D_f.size()*sizeof(float), D_f.data(), GL_DYNAMIC_DRAW); 
-    NF_buf.upload_data(NF_f.size()*sizeof(float), NF_f.data(), GL_DYNAMIC_DRAW); 
-    NV_buf.upload_data(NV_f.size()*sizeof(float), NV_f.data(), GL_DYNAMIC_DRAW); 
-    UV_buf.upload_data(UV_f.size()*sizeof(float), UV_f.data(), GL_DYNAMIC_DRAW); 
-    V_tangent_u_buf.upload_data(V_tangent_u_f.size()*sizeof(float), V_tangent_u_f.data(), GL_DYNAMIC_DRAW); 
-    V_lenght_v_buf.upload_data(V_lenght_v_f.size()*sizeof(float), V_lenght_v_f.data(), GL_DYNAMIC_DRAW); 
-    L_pred_buf.upload_data(L_pred_i.size()*sizeof(unsigned), L_pred_i.data(), GL_DYNAMIC_DRAW); 
-    L_gt_buf.upload_data(L_gt_i.size()*sizeof(unsigned), L_gt_i.data(), GL_DYNAMIC_DRAW); 
-    I_buf.upload_data(I_f.size()*sizeof(float), I_f.data(), GL_DYNAMIC_DRAW); 
+    V_buf.upload_data(V_f.size()*sizeof(float), V_f.data(), GL_DYNAMIC_DRAW);
+    F_buf.upload_data(F_i.size()*sizeof(unsigned), F_i.data(), GL_DYNAMIC_DRAW);
+    C_buf.upload_data(C_f.size()*sizeof(float), C_f.data(), GL_DYNAMIC_DRAW);
+    E_buf.upload_data(E_i.size()*sizeof(unsigned), E_i.data(), GL_DYNAMIC_DRAW);
+    D_buf.upload_data(D_f.size()*sizeof(float), D_f.data(), GL_DYNAMIC_DRAW);
+    NF_buf.upload_data(NF_f.size()*sizeof(float), NF_f.data(), GL_DYNAMIC_DRAW);
+    NV_buf.upload_data(NV_f.size()*sizeof(float), NV_f.data(), GL_DYNAMIC_DRAW);
+    UV_buf.upload_data(UV_f.size()*sizeof(float), UV_f.data(), GL_DYNAMIC_DRAW);
+    V_tangent_u_buf.upload_data(V_tangent_u_f.size()*sizeof(float), V_tangent_u_f.data(), GL_DYNAMIC_DRAW);
+    V_lenght_v_buf.upload_data(V_lenght_v_f.size()*sizeof(float), V_lenght_v_f.data(), GL_DYNAMIC_DRAW);
+    L_pred_buf.upload_data(L_pred_i.size()*sizeof(unsigned), L_pred_i.data(), GL_DYNAMIC_DRAW);
+    L_gt_buf.upload_data(L_gt_i.size()*sizeof(unsigned), L_gt_i.data(), GL_DYNAMIC_DRAW);
+    I_buf.upload_data(I_f.size()*sizeof(float), I_f.data(), GL_DYNAMIC_DRAW);
 
     // if(m_core->m_rgb_tex_cpu.data){
         // GL_C(m_rgb_tex->upload_from_cv_mat(m_core->m_rgb_tex_cpu) );

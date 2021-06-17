@@ -1,12 +1,12 @@
 #include "easy_pbr/Viewer.h"
 
-//opengl stuff 
+//opengl stuff
 #include <glad/glad.h> // Initialize with gladLoadGL()
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h" 
+#include "imgui_impl_opengl3.h"
 
 #include <string> //find_last_of
 #include <limits> //signaling_nan
@@ -20,8 +20,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h> //glfw3.h after our OpenGL definitions
- 
-//My stuff 
+
+//My stuff
 #include "UtilsGL.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/Camera.h"
@@ -38,7 +38,7 @@
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define PROFILER_IMPLEMENTATION 1
 #define ENABLE_GL_PROFILING 1
-#include "Profiler.h" 
+#include "Profiler.h"
 
 
 //configuru
@@ -120,7 +120,7 @@ Viewer::Viewer(const std::string config_file):
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             VLOG(1) << "created viewer with dirwatcher";
-        #else   
+        #else
             VLOG(1) << "Created viewer with no dir watcher";
         #endif
         m_timer->start();
@@ -128,8 +128,8 @@ Viewer::Viewer(const std::string config_file):
         m_camera=m_default_camera;
         init_params(config_file); //tries to get the configurations and if not present it will get them from the default cfg
 
-        compile_shaders(); 
-        init_opengl();                     
+        compile_shaders();
+        init_opengl();
         m_gui=std::make_shared<Gui>(config_file, this, m_window); //needs to be initialized here because here we have done a gladloadgl
 
 }
@@ -226,7 +226,7 @@ void Viewer::init_params(const std::string config_file){
 
     // //create the spot lights
     // int nr_spot_lights=vis_config["lights"]["nr_spot_lights"];
-    // for(int i=0; i<nr_spot_lights; i++){   
+    // for(int i=0; i<nr_spot_lights; i++){
     //     Config light_cfg=vis_config["lights"]["spot_light_"+std::to_string(i)];
     //     // std::shared_ptr<SpotLight> light= std::make_shared<SpotLight>(light_cfg);
     //     std::shared_ptr<SpotLight> light=  Generic::SmartPtrBuilder::CreateSharedPtr< SpotLight, Camera >(new SpotLight(light_cfg));
@@ -249,7 +249,7 @@ void Viewer::init_params(const std::string config_file){
     m_camera->m_far=cam_cfg.get_float_else_default_else_nan("far",default_cam_cfg);
     m_camera->m_exposure=cam_cfg.get_float_else_default_else_nan("exposure",default_cam_cfg);
 
-    //scene 
+    //scene
     bool floor_visible= scene_cfg.get_or("floor_visible", default_scene_cfg);
     bool floor_metric= scene_cfg.get_or("floor_metric", default_scene_cfg);
     Scene::set_floor_visible(floor_visible);
@@ -295,7 +295,7 @@ void Viewer::init_params(const std::string config_file){
 
     //create the spot lights
     int nr_spot_lights = lights_cfg.get_or("nr_spot_lights", default_lights_cfg);
-    for(int i=0; i<nr_spot_lights; i++){   
+    for(int i=0; i<nr_spot_lights; i++){
         Config light_cfg=lights_cfg.get_or("spot_light_"+std::to_string(i), default_lights_cfg);
         std::shared_ptr<SpotLight> light=  Generic::SmartPtrBuilder::CreateSharedPtr< SpotLight, Camera >(new SpotLight(light_cfg));
         m_spot_lights.push_back(light);
@@ -321,19 +321,19 @@ bool Viewer::init_context(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     m_window = glfwCreateWindow(window_width, window_height, "Renderer",nullptr,nullptr);
     if (!m_window){
-        LOG(FATAL) << "GLFW window creation failed. It may be that you are requesting a too high version of opengl that is not supported by your drivers. It may happen especially if you are running mesa drivers instead of nvidia.";        
+        LOG(FATAL) << "GLFW window creation failed. It may be that you are requesting a too high version of opengl that is not supported by your drivers. It may happen especially if you are running mesa drivers instead of nvidia.";
         glfwTerminate();
     }
     glfwMakeContextCurrent(m_window);
     // Load OpenGL and its extensions
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)){
-        LOG(FATAL) << "GLAD failed to load";        
+        LOG(FATAL) << "GLAD failed to load";
     }
     // glfwSwapInterval(1); // Enable vsync
 
     glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
 
-    //window will be resized to the screen so we can return the actual widnow values now 
+    //window will be resized to the screen so we can return the actual widnow values now
     glfwGetWindowSize(m_window, &window_width, &window_height);
     m_viewport_size<< window_width, window_height;
 
@@ -348,12 +348,12 @@ bool Viewer::init_context(){
         // https://stackoverflow.com/a/28660673
         auto mouse_pressed_func = [](GLFWwindow* w, int button, int action, int modifier) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_mouse_pressed( w, button, action, modifier );     };
         auto mouse_move_func = [](GLFWwindow* w, double x, double y) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_mouse_move( w, x, y );     };
-        auto mouse_scroll_func = [](GLFWwindow* w, double x, double y) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_mouse_scroll( w, x, y );     }; 
-        auto key_func = [](GLFWwindow* w, int key, int scancode, int action, int modifier) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_key( w, key, scancode, action, modifier );     }; 
-        auto char_mods_func  = [](GLFWwindow* w, unsigned int codepoint, int modifier) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_char_mods( w, codepoint, modifier );     }; 
-        auto resize_func = [](GLFWwindow* w, int width, int height) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_resize( w, width, height );     };   
-        auto drop_func = [](GLFWwindow* w, int count, const char** paths) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_drop( w, count, paths );     };   
-        
+        auto mouse_scroll_func = [](GLFWwindow* w, double x, double y) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_mouse_scroll( w, x, y );     };
+        auto key_func = [](GLFWwindow* w, int key, int scancode, int action, int modifier) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_key( w, key, scancode, action, modifier );     };
+        auto char_mods_func  = [](GLFWwindow* w, unsigned int codepoint, int modifier) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_char_mods( w, codepoint, modifier );     };
+        auto resize_func = [](GLFWwindow* w, int width, int height) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_resize( w, width, height );     };
+        auto drop_func = [](GLFWwindow* w, int count, const char** paths) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->glfw_drop( w, count, paths );     };
+
 
         glfwSetMouseButtonCallback(window, mouse_pressed_func);
         glfwSetCursorPosCallback(window, mouse_move_func);
@@ -366,7 +366,7 @@ bool Viewer::init_context(){
 }
 
 void Viewer::setup_callbacks_imgui(GLFWwindow* window){
-    auto imgui_drop_func = [](GLFWwindow* w, int count, const char** paths) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->imgui_drop( w, count, paths );     };   
+    auto imgui_drop_func = [](GLFWwindow* w, int count, const char** paths) {   static_cast<Viewer*>(glfwGetWindowUserPointer(w))->imgui_drop( w, count, paths );     };
 
     glfwSetMouseButtonCallback(window, ImGui_ImplGlfw_MouseButtonCallback);
     glfwSetCursorPosCallback(window, nullptr);
@@ -394,12 +394,12 @@ void Viewer::switch_callbacks(GLFWwindow* window) {
     if (using_imgui) {
         setup_callbacks_imgui(window);
     } else {
-        setup_callbacks_viewer(window);   
+        setup_callbacks_viewer(window);
     }
 }
 
 void Viewer::compile_shaders(){
-       
+
     m_draw_points_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/points_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/points_frag.glsl" ) ;
     m_draw_lines_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/lines_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/lines_frag.glsl"  );
     m_draw_mesh_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/mesh_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/mesh_frag.glsl"  );
@@ -421,39 +421,39 @@ void Viewer::compile_shaders(){
     m_prefilter_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/prefilter_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/prefilter_frag.glsl");
     m_integrate_brdf_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ibl/integrate_brdf_frag.glsl");
 
-    //debugging shaders 
+    //debugging shaders
     m_decode_gbuffer_debugging.compile( std::string(EASYPBR_SHADERS_PATH)+"/debug/decode_gbuffer_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/debug/decode_gbuffer_frag.glsl"  );
 }
 
 void Viewer::init_opengl(){
-    // //initialize the g buffer with some textures 
+    // //initialize the g buffer with some textures
     GL_C( m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
     // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
-    GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );  
-    GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) ); 
+    GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
+    GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) );
+    GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) );
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     if (m_render_uv_to_gbuffer){
-        GL_C( m_gbuffer.add_texture("uv_gtex", GL_RG32F, GL_RG, GL_FLOAT) );  
+        GL_C( m_gbuffer.add_texture("uv_gtex", GL_RG32F, GL_RG, GL_FLOAT) );
     }
     m_gbuffer.sanity_check();
 
     //we compose the gbuffer into this fbo, together with a bloom texture for storing the birght areas
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
-    m_composed_fbo.add_texture("composed_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT); 
-    m_composed_fbo.add_texture("bloom_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);  
+    m_composed_fbo.add_texture("composed_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    m_composed_fbo.add_texture("bloom_gtex", GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     m_composed_fbo.sanity_check();
 
     //initialize the final fbo
     GL_C( m_final_fbo_no_gui.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo_no_gui.add_texture("color_with_transparency_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
-    GL_C( m_final_fbo_no_gui.add_texture("color_without_transparency_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_no_gui.add_texture("color_with_transparency_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) );
+    GL_C( m_final_fbo_no_gui.add_texture("color_without_transparency_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
     GL_C( m_final_fbo_no_gui.add_depth("depth_gtex") ); //we need a depth for this one too because in this buffer we do all the forward rendering of lines and things like that
     m_final_fbo_no_gui.sanity_check();
     //initilize the final_fbo which also has the gui
     GL_C( m_final_fbo_with_gui.set_size(m_viewport_size.x(), m_viewport_size.y() ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_final_fbo_with_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); 
+    GL_C( m_final_fbo_with_gui.add_texture("color_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) );
     m_final_fbo_with_gui.sanity_check();
 
 
@@ -463,7 +463,7 @@ void Viewer::init_opengl(){
 
 
 
-    //cubemaps 
+    //cubemaps
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //to linearly filter across faces of the cube
     m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
     m_irradiance_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution);
@@ -472,12 +472,12 @@ void Viewer::init_opengl(){
     m_prefilter_cubemap_tex.set_filter_mode_mag(GL_LINEAR);
     m_prefilter_cubemap_tex.generate_mipmap_full();
 
-    //brdf_lut_tex 
+    //brdf_lut_tex
     m_brdf_lut_tex.allocate_storage(GL_RG16F, GL_RG, GL_HALF_FLOAT, m_brdf_lut_resolution, m_brdf_lut_resolution);
 
     m_rvec_tex.set_wrap_mode(GL_REPEAT); //so we repeat the random vectors specified in this 4x4 matrix over the whole image
 
-    // make a 4x4 texture for the random vectors that will be used for rotating the hemisphere 
+    // make a 4x4 texture for the random vectors that will be used for rotating the hemisphere
     int rvec_tex_size=4;
     cv::Mat rvec_mat=cv::Mat(rvec_tex_size, rvec_tex_size, CV_32FC4);
     for(int x=0; x<rvec_tex_size; x++){
@@ -490,11 +490,11 @@ void Viewer::init_opengl(){
             rvec_mat.at<cv::Vec4f>(y, x)[0]=rvec.x();
             rvec_mat.at<cv::Vec4f>(y, x)[1]=rvec.y();
             rvec_mat.at<cv::Vec4f>(y, x)[2]=0.0; //set to 0 because we rotate along the z axis of the hemisphere
-            rvec_mat.at<cv::Vec4f>(y, x)[3]=1.0; //not actually used but we only use textures of channels 1,2 and 4 
+            rvec_mat.at<cv::Vec4f>(y, x)[3]=1.0; //not actually used but we only use textures of channels 1,2 and 4
         }
     }
     GL_C( m_rvec_tex.upload_from_cv_mat(rvec_mat,false) );
-    //make some random samples in a hemisphere 
+    //make some random samples in a hemisphere
     create_random_samples_hemisphere();
 
 
@@ -503,20 +503,20 @@ void Viewer::init_opengl(){
     m_fullscreen_quad->m_core->create_full_screen_quad();
     GL_C( m_fullscreen_quad->upload_to_gpu() );
 
-    //add the background image 
+    //add the background image
     if(m_show_background_img){
         read_background_img(m_background_tex, m_background_img_path);
     }
 
 
 
-    //initialize a cubemap 
+    //initialize a cubemap
     integrate_brdf(m_brdf_lut_tex); //we leave it outside the if because when we drag some hdr map into the viewer we don't want to integrate the brdf every time
-    if(m_enable_ibl){ 
+    if(m_enable_ibl){
         load_environment_map(m_environment_map_path);
     }
 
-    //load a dummy uv_checkermap 
+    //load a dummy uv_checkermap
     cv::Mat mat = cv::imread(std::string(EASYPBR_DATA_DIR)+"/uv_checker.png");
     m_uv_checker_tex.upload_from_cv_mat(mat, false);
 
@@ -530,7 +530,7 @@ void Viewer::hotload_shaders(){
         if(changed_files.size()>0){
             compile_shaders();
         }
-    #else 
+    #else
         // VLOG(1) << "not using dirwatcher";
     #endif
 }
@@ -562,8 +562,8 @@ void Viewer::configure_auto_params(){
     //     }
     //     if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
     //         m_camera->m_exposure=1.0;
-    //      } 
-        
+    //      }
+
     //     m_camera->m_is_initialized=true;
     // }
 
@@ -595,7 +595,7 @@ void Viewer::configure_auto_params(){
             }
         }
     }
-    
+
 
     //LIGHTS-----------------------
     //key light
@@ -694,8 +694,8 @@ void Viewer::configure_camera(){
         }
         if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
             m_camera->m_exposure=1.0;
-         } 
-        
+         }
+
         m_camera->m_is_initialized=true;
     }
 }
@@ -708,7 +708,7 @@ void Viewer::add_callback_post_draw(const std::function<void(Viewer& viewer)> fu
 }
 
 void Viewer::update(const GLuint fbo_id){
-    // //make some fuzzy timer updates like in https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75 
+    // //make some fuzzy timer updates like in https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75
     // // if(!m_timer->is_running() && !m_first_draw){ // we do not start the timer on the first draw because the first frame always takes the longest
     // if(!m_timer->is_running()){ // we do not start the timer on the first draw because the first frame always takes the longest
     //     m_timer->start();
@@ -719,7 +719,7 @@ void Viewer::update(const GLuint fbo_id){
     // double current_time=m_timer->elapsed_s();
     // double delta_time = current_time-m_old_time;
     // m_old_time = current_time;
-    // m_accumulator_time += delta_time;    
+    // m_accumulator_time += delta_time;
     // if(m_accumulator_time>8.0/60.0) m_accumulator_time=8.0/60.0; //cam the maximum accumulator time so that it doeesnt become arbitartly large and make the code spend all the time in the internal while loop
 
 
@@ -749,7 +749,7 @@ void Viewer::update(const GLuint fbo_id){
     // }
 
 
-    // //test the intrincis to proj and back 
+    // //test the intrincis to proj and back
     // std::cout.precision(11);
     // std::setprecision(20);
     // Eigen::Matrix3f K;
@@ -818,7 +818,7 @@ void Viewer::post_draw(){
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    
+
     // finally just blit the final fbo to the default framebuffer
     glViewport(0.0f , 0.0f, m_viewport_size.x(), m_viewport_size.y() );
     // m_final_fbo_no_gui.bind_for_read();
@@ -868,9 +868,9 @@ void Viewer::draw(const GLuint fbo_id){
     clear_framebuffers();
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     glEnable(GL_DEPTH_TEST);
-    
 
-    //set the camera to that it sees the whole scene 
+
+    //set the camera to that it sees the whole scene
     if(m_first_draw && !m_scene->is_empty() ){
         m_first_draw=false;
         configure_auto_params(); //automatically sets parameters that were left as "auto" in the config file
@@ -912,7 +912,7 @@ void Viewer::draw(const GLuint fbo_id){
                             m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
                         }
 
-                        //if we use a custom shader we try to make an educated guess weather we should render this mesh as a mesh or as point cloud in the shadow map 
+                        //if we use a custom shader we try to make an educated guess weather we should render this mesh as a mesh or as point cloud in the shadow map
                         if(mesh->m_core->m_vis.m_use_custom_shader && mesh->m_core->custom_render_func ){
                             if(mesh->m_core->F.size()){
                                 m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
@@ -933,7 +933,7 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     TIME_START("gbuffer");
-    //set the gbuffer size in case it changed 
+    //set the gbuffer size in case it changed
     if(m_viewport_size.x()/m_subsample_factor!=m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor!=m_gbuffer.height()){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
@@ -966,7 +966,7 @@ void Viewer::draw(const GLuint fbo_id){
         }
     }
     TIME_END("geom_pass");
-    
+
     //ao_pass
     if(m_enable_ssao){
         ssao_pass();
@@ -976,7 +976,7 @@ void Viewer::draw(const GLuint fbo_id){
     // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
 
 
- 
+
 
 
 
@@ -994,7 +994,7 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-    //attempt 3 at forward rendering 
+    //attempt 3 at forward rendering
     TIME_START("blit");
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     //blit the depth from the gbuffer to the final_fbo_no_gui so that we can forward render stuff into it
@@ -1003,7 +1003,7 @@ void Viewer::draw(const GLuint fbo_id){
     glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
     TIME_END("blit");
 
-    //forward render the lines and edges 
+    //forward render the lines and edges
     TIME_START("forward_render");
     for(size_t i=0; i<m_meshes_gl.size(); i++){
         MeshGLSharedPtr mesh=m_meshes_gl[i];
@@ -1035,7 +1035,7 @@ void Viewer::draw(const GLuint fbo_id){
 
 void Viewer::update_meshes_gl(){
 
-  
+
 
     //Check if we need to upload to gpu
     for(int i=0; i<m_scene->nr_meshes(); i++){
@@ -1054,13 +1054,15 @@ void Viewer::update_meshes_gl(){
                     break;
                 }
             }
-            
+
 
             if(found){
+                // VLOG(1) << "found";
                 m_meshes_gl[idx_found]->assign_core(mesh_core);
                 m_meshes_gl[idx_found]->upload_to_gpu();
                 m_meshes_gl[idx_found]->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
             }else{
+                // VLOG(1) << "not found";
                 MeshGLSharedPtr mesh_gpu=MeshGL::create();
                 mesh_gpu->assign_core(mesh_core); //GPU implementation points to the cpu data
                 mesh_core->assign_mesh_gpu(mesh_gpu); // cpu data points to the gpu implementation
@@ -1071,7 +1073,7 @@ void Viewer::update_meshes_gl(){
 
 
 
-        }        
+        }
     }
 
 
@@ -1115,7 +1117,7 @@ void Viewer::clear_framebuffers(){
 
 void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
 
-    //sanity checks 
+    //sanity checks
     if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
         LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
     }
@@ -1143,10 +1145,10 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     }
     if(mesh->m_core->L_pred.size()){
         mesh->vao.vertex_attribute(shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    } 
+    }
     if(mesh->m_core->L_gt.size()){
         mesh->vao.vertex_attribute(shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
-    } 
+    }
 
 
     //matrices setuo
@@ -1156,7 +1158,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
- 
+
     //shader setup
     shader.use();
     shader.uniform_4x4(M, "M");
@@ -1176,10 +1178,10 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     }
 
     //pbr textures
-    // if(mesh->m_cur_tex_ptr->storage_initialized() ){ 
+    // if(mesh->m_cur_tex_ptr->storage_initialized() ){
     //     shader.bind_texture(*mesh->m_cur_tex_ptr, "tex");
     // }
-    
+
      //pbr textures
     if(mesh->m_diffuse_tex.storage_initialized() ){  shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
     if(mesh->m_metalness_tex.storage_initialized() ){  shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
@@ -1203,7 +1205,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     glPointSize(point_size);
 
     // draw
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     if(mesh->m_core->m_vis.m_overlay_points){
         glDepthFunc(GL_ALWAYS);
     }
@@ -1253,7 +1255,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
 
     // draw
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     if(mesh->m_core->m_vis.m_overlay_lines){
         glDepthFunc(GL_ALWAYS);
     }
@@ -1261,7 +1263,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
     glLineWidth( 1.0f );
     glDepthFunc(GL_LESS);
-    
+
 }
 
 void Viewer::render_normals(const MeshGLSharedPtr mesh){
@@ -1303,7 +1305,7 @@ void Viewer::render_normals(const MeshGLSharedPtr mesh){
 
 
     // draw
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     if(mesh->m_core->m_vis.m_overlay_lines){
         glDepthFunc(GL_ALWAYS);
     }
@@ -1338,14 +1340,14 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
 
     //openglsetup
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines 
+    glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines
     glPolygonOffset(-2.0, -10.0);
     // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
     glLineWidth( mesh->m_core->m_vis.m_line_width );
 
 
     // draw
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -1354,12 +1356,12 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     // glDisable( GL_LINE_SMOOTH );
     glLineWidth( 1.0f );
-    
+
 }
 
 void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
 
-    // //sanity checks 
+    // //sanity checks
     // if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
     //     LOG(WARNING) << "We are trying to show the semantic gt but we have no label manager set for this mesh";
     // }
@@ -1387,10 +1389,10 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     }
     if(mesh->m_core->L_pred.size()){
         mesh->vao.vertex_attribute(m_draw_mesh_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    } 
+    }
     if(mesh->m_core->L_gt.size()){
         mesh->vao.vertex_attribute(m_draw_mesh_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
-    } 
+    }
     if(mesh->m_core->F.size()){
         mesh->vao.indices(mesh->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
     }
@@ -1402,7 +1404,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
- 
+
     //shader setup
     m_draw_mesh_shader.use();
     m_draw_mesh_shader.uniform_bool(m_render_uv_to_gbuffer, "render_uv_to_gbuffer");
@@ -1451,7 +1453,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.draw_into(m_gbuffer, draw_list ); //makes the shaders draw into the buffers we defines in the gbuffer
 
     // draw
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -1477,13 +1479,13 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     }
 
 
-    
+
 
 
     //we disable surfel rendering for the moment because I changed the gbuffer diffuse texture from Half float to RGBA8 because it's a lot faster. This however means that the color accumulation cannot happen anymore in that render target. Also I didn't modify the surfel shader to output the encoded normals as per the CryEngine3 pipeline. Due to all these reasons I will disable for now the surfel rendering
     // LOG(FATAL) << "Surfel rendering disabled because we disabled the accumulation of color into the render target. this makes the rest of the program way faster. Also we would need to modify the surfel fragment shader to output encoded normals";
 
-    //sanity checks 
+    //sanity checks
     CHECK(mesh->m_core->V.rows()==mesh->m_core->V_tangent_u.rows() ) << "Mesh does not have tangent for each vertex. We cannot render surfels without the tangent" << mesh->m_core->V.rows() << " " << mesh->m_core->V_tangent_u.rows();
     CHECK(mesh->m_core->V.rows()==mesh->m_core->V_length_v.rows() ) << "Mesh does not have lenght_u for each vertex. We cannot render surfels without the V_lenght_u" << mesh->m_core->V.rows() << " " << mesh->m_core->V_length_v.rows();
     if( (mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticGT || mesh->m_core->m_vis.m_color_type==+MeshColorType::SemanticPred) && !mesh->m_core->m_label_mngr  ){
@@ -1510,7 +1512,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     }
     if(mesh->m_core->L_pred.size()){
         mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_pred_per_vertex", mesh->L_pred_buf, 1);
-    } 
+    }
     if(mesh->m_core->L_gt.size()){
         mesh->vao.vertex_attribute(m_draw_surfels_shader, "label_gt_per_vertex", mesh->L_gt_buf, 1);
     }
@@ -1540,7 +1542,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     // glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
     // glBlendEquationSeparate(GL_FUNC_ADD,GL_FUNC_ADD); //add the rgb and alpha components
- 
+
     //shader setup
     if(m_gbuffer.width()!= m_viewport_size.x() || m_gbuffer.height()!=m_viewport_size.y() ){
         m_gbuffer.set_size(m_viewport_size.x(), m_viewport_size.y());
@@ -1563,7 +1565,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     // m_draw_mesh_shader.uniform_float(mesh->m_ambient_color_power , "ambient_color_power");
     // m_draw_surfels_shader.uniform_float(m_shininess , "shininess");
 
-    
+
     // //pbr textures
     // if(mesh->m_diffuse_tex.storage_initialized() ){  m_draw_surfels_shader.bind_texture(mesh->m_diffuse_tex, "diffuse_tex");   }
     // if(mesh->m_metalness_tex.storage_initialized() ){  m_draw_surfels_shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
@@ -1578,7 +1580,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
     //draw only into depth map
     m_draw_surfels_shader.uniform_bool(true , "enable_visibility_test");
     m_draw_surfels_shader.draw_into( m_gbuffer,{} );
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
@@ -1599,7 +1601,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
                                     // std::make_pair("shininess_out", "shininess_gtex")
                                     }
                                     );
-    mesh->vao.bind(); 
+    mesh->vao.bind();
     glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 
 
@@ -1620,7 +1622,7 @@ void Viewer::ssao_pass(){
     //furthermore we only need the linearized depth map. So we first downsample the depthmap, then we linearize it and we run the ao shader and then the bilateral blurring
 
     //SETUP-------------------------
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
     //viewport setup. We render into a smaller viewport so tha the ao_tex is a bit smaller
@@ -1629,7 +1631,7 @@ void Viewer::ssao_pass(){
     //deal with the textures
     m_ao_tex.allocate_or_resize(GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
     m_ao_tex.clear();
-    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample); 
+    m_gbuffer.tex_with_name("depth_gtex").generate_mipmap(m_ssao_downsample);
 
 
 
@@ -1649,7 +1651,7 @@ void Viewer::ssao_pass(){
     m_depth_linearize_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_depth_linearize_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_depth_linearize_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"), "depth_tex");
-   
+
     m_depth_linearize_shader.draw_into(m_depth_linear_tex, "depth_linear_out");
 
     // draw
@@ -1693,7 +1695,7 @@ void Viewer::ssao_pass(){
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("depth_gtex"),"depth_tex");
     m_ssao_ao_pass_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
     m_ssao_ao_pass_shader.bind_texture(m_rvec_tex,"rvec_tex");
-   
+
     m_ssao_ao_pass_shader.draw_into(m_ao_tex, "ao_out");
 
     // // draw
@@ -1709,9 +1711,9 @@ void Viewer::ssao_pass(){
 
 
 
-    
 
-    //dont perform depth checking nor write into the depth buffer 
+
+    //dont perform depth checking nor write into the depth buffer
     TIME_START("blur_pass");
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
@@ -1719,7 +1721,7 @@ void Viewer::ssao_pass(){
     //viewport setup. We render into a smaller viewport so tha the ao_tex is a bit smaller
     new_viewport_size=calculate_mipmap_size(m_gbuffer.width(), m_gbuffer.height(), m_ssao_downsample);
     glViewport(0.0f , 0.0f, new_viewport_size.x(), new_viewport_size.y() );
-            
+
 
     // m_ao_blurred_tex.allocate_or_resize(GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() ); //either fully allocates it or resizes if the size changes
     m_ao_blurred_tex.allocate_or_resize( GL_R8, GL_RED, GL_UNSIGNED_BYTE, new_viewport_size.x(), new_viewport_size.y() );
@@ -1753,7 +1755,7 @@ void Viewer::ssao_pass(){
 
 
     // // draw
-    // m_fullscreen_quad->vao.bind(); 
+    // m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     // glColorMask(true, true, true, true);
     TIME_END("blur_pass");
@@ -1805,7 +1807,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(m_camera->view_matrix()).inverse().linear(); //used for getting the view rays from the cam coords to the world coords so we can sample the cubemap
 
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
 
@@ -1813,8 +1815,8 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
      //shader setup
     GL_C( m_compose_final_quad_shader.use() );
     m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"),"normal_tex");
@@ -1845,10 +1847,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_ssao , "enable_ssao");
     // m_compose_final_quad_shader.uniform_float(m_shading_factor , "shading_factor");
     // m_compose_final_quad_shader.uniform_float(m_light_factor , "light_factor");
-    m_compose_final_quad_shader.uniform_v2_float(m_viewport_size , "viewport_size"); //for eye dome lighing 
+    m_compose_final_quad_shader.uniform_v2_float(m_viewport_size , "viewport_size"); //for eye dome lighing
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
-    m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img");
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     // VLOG(1) << "m_show_prefiltered_environment_map is " << m_show_prefiltered_environment_map;
     m_compose_final_quad_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
@@ -1860,7 +1862,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
 
 
-    //fill up the vector of spot lights 
+    //fill up the vector of spot lights
     m_compose_final_quad_shader.uniform_int(m_spot_lights.size(), "nr_active_spot_lights");
     for(size_t i=0; i<m_spot_lights.size(); i++){
 
@@ -1874,24 +1876,24 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         //position in cam coords
         std::string uniform_pos_name =  uniform_name +"["+std::to_string(i)+"]"+".pos";
         GLint uniform_pos_loc=m_compose_final_quad_shader.get_uniform_location(uniform_pos_name);
-        glUniform3fv(uniform_pos_loc, 1, m_spot_lights[i]->position().data()); 
+        glUniform3fv(uniform_pos_loc, 1, m_spot_lights[i]->position().data());
 
         //color
         std::string uniform_color_name = uniform_name +"["+std::to_string(i)+"]"+".color";
         GLint uniform_color_loc=m_compose_final_quad_shader.get_uniform_location(uniform_color_name);
-        glUniform3fv(uniform_color_loc, 1, m_spot_lights[i]->m_color.data()); 
+        glUniform3fv(uniform_color_loc, 1, m_spot_lights[i]->m_color.data());
 
         //power
         std::string uniform_power_name =  uniform_name +"["+std::to_string(i)+"]"+".power";
         GLint uniform_power_loc=m_compose_final_quad_shader.get_uniform_location(uniform_power_name);
         glUniform1f(uniform_power_loc, m_spot_lights[i]->m_power);
 
-        //VP matrix that project world coordinates into the light 
+        //VP matrix that project world coordinates into the light
         std::string uniform_VP_name =  uniform_name +"["+std::to_string(i)+"]"+".VP";
         GLint uniform_VP_loc=m_compose_final_quad_shader.get_uniform_location(uniform_VP_name);
         glUniformMatrix4fv(uniform_VP_loc, 1, GL_FALSE, VP.data());
 
-        //sampler for shadow map 
+        //sampler for shadow map
         if (m_spot_lights[i]->has_shadow_map() ){ //have to check because the light might not yet have a shadow map at the start of the app when no mesh is there to be rendered
             std::string sampler_shadow_map_name =  uniform_name +"["+std::to_string(i)+"]"+".shadow_map";
             m_compose_final_quad_shader.bind_texture(m_spot_lights[i]->get_shadow_map_ref(), sampler_shadow_map_name );
@@ -1912,7 +1914,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     neighbours.resize(neighbours_count, 2);
     neighbours.setZero();
     for(int i=0; i<neighbours_count; i++){
-        float x = std::cos(2 * i * M_PI / neighbours_count); 
+        float x = std::cos(2 * i * M_PI / neighbours_count);
         float y = std::sin(2 * i * M_PI / neighbours_count);
         neighbours.row(i) <<x,y;
     }
@@ -1927,10 +1929,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
                                     std::make_pair("out_color", "composed_gtex"),
                                     std::make_pair("bloom_color", "bloom_gtex"),
                                     }
-                                    ); 
+                                    );
 
     // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     TIME_END("compose");
 
@@ -1957,7 +1959,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     // m_blur_tmp_tex.clear();
 
 
-    // //dont perform depth checking nor write into the depth buffer 
+    // //dont perform depth checking nor write into the depth buffer
     // glDepthMask(false);
     // glDisable(GL_DEPTH_TEST);
 
@@ -1965,8 +1967,8 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "position", m_fullscreen_quad->V_buf, 3) );
     // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_compose_final_quad_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
     // //shader setup
     // GL_C( m_blur_shader.use() );
 
@@ -1977,9 +1979,9 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     //     m_blur_shader.bind_texture(img,"img");
     //     m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
     //     m_blur_shader.uniform_bool(true,"horizontal");
-    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
+    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output");
     //     // draw
-    //     m_fullscreen_quad->vao.bind(); 
+    //     m_fullscreen_quad->vao.bind();
     //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -1987,12 +1989,12 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     //     m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
     //     m_blur_shader.uniform_int(0,"mip_map_lvl");
     //     m_blur_shader.uniform_bool(false,"horizontal");
-    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl);
     //     // draw
-    //     m_fullscreen_quad->vao.bind(); 
+    //     m_fullscreen_quad->vao.bind();
     //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     // }
-    
+
 
     // TIME_END("blur_img");
 
@@ -2008,10 +2010,10 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
 
     TIME_START("blur_img");
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
-    
+
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blur_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
@@ -2049,9 +2051,9 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
             m_blur_shader.bind_texture(img,"img");
             m_blur_shader.uniform_int(mip,"mip_map_lvl");
             m_blur_shader.uniform_bool(true,"horizontal");
-            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl); 
+            m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output",mip-start_mip_map_lvl);
             // draw
-            m_fullscreen_quad->vao.bind(); 
+            m_fullscreen_quad->vao.bind();
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -2059,25 +2061,25 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
             m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
             m_blur_shader.uniform_int(mip-start_mip_map_lvl,"mip_map_lvl");
             m_blur_shader.uniform_bool(false,"horizontal");
-            m_blur_shader.draw_into(img, "blurred_output", mip); 
+            m_blur_shader.draw_into(img, "blurred_output", mip);
             // draw
-            m_fullscreen_quad->vao.bind(); 
+            m_fullscreen_quad->vao.bind();
             glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
         }
 
 
     }
-    
-
-    
 
 
 
 
 
-    
-    
+
+
+
+
+
 
 
     // // int iters=2;
@@ -2086,9 +2088,9 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     //     m_blur_shader.bind_texture(img,"img");
     //     m_blur_shader.uniform_int(mip_map_lvl,"mip_map_lvl");
     //     m_blur_shader.uniform_bool(true,"horizontal");
-    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output"); 
+    //     m_blur_shader.draw_into(m_blur_tmp_tex, "blurred_output");
     //     // draw
-    //     m_fullscreen_quad->vao.bind(); 
+    //     m_fullscreen_quad->vao.bind();
     //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -2096,12 +2098,12 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     //     m_blur_shader.bind_texture(m_blur_tmp_tex,"img");
     //     m_blur_shader.uniform_int(0,"mip_map_lvl");
     //     m_blur_shader.uniform_bool(false,"horizontal");
-    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl); 
+    //     m_blur_shader.draw_into(m_composed_fbo.tex_with_name("bloom_gtex"), "blurred_output", mip_map_lvl);
     //     // draw
-    //     m_fullscreen_quad->vao.bind(); 
+    //     m_fullscreen_quad->vao.bind();
     //     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     // }
-    
+
 
     TIME_END("blur_img");
 
@@ -2131,18 +2133,18 @@ void Viewer::apply_postprocess(){
     size_final_image << m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height();
 
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
     // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_apply_postprocess_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_apply_postprocess_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
     //shader setup
     GL_C( m_apply_postprocess_shader.use() );
 
@@ -2159,7 +2161,7 @@ void Viewer::apply_postprocess(){
     }
 
     m_apply_postprocess_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
-    m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    m_apply_postprocess_shader.uniform_bool(m_show_background_img , "show_background_img");
     m_apply_postprocess_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
     m_apply_postprocess_shader.uniform_bool(m_enable_bloom, "enable_bloom");
@@ -2173,12 +2175,12 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_width, "multichannel_line_width");
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_angle, "multichannel_line_angle");
     m_apply_postprocess_shader.uniform_float(m_multichannel_start_x, "multichannel_start_x");
-    m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), "out_color"); 
+    m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), "out_color");
     // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
-   
+
 
     TIME_END("apply_postprocess");
     //BLEND BACKGROUND -------------------------------------------------------------------------------------------------------------------
@@ -2192,18 +2194,18 @@ void Viewer::apply_postprocess(){
     // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
     // GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     // m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
+
     // // //shader setup
     // GL_C( m_blend_bg_shader.use() );
 
     // m_blend_bg_shader.bind_texture(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"),"color_with_transparency_tex");
-    // // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    // // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img");
     // // m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     // // m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
     // m_blend_bg_shader.uniform_v3_float(m_background_color, "background_color");
-    // m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color"); 
+    // m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color");
     // // // draw
-    // m_fullscreen_quad->vao.bind(); 
+    // m_fullscreen_quad->vao.bind();
     // glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
     // TIME_END("blend_bg");
@@ -2229,7 +2231,7 @@ void Viewer::blend_bg(){
     size_final_image << m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height();
 
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
 
@@ -2237,18 +2239,18 @@ void Viewer::blend_bg(){
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(m_blend_bg_shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
+
     // //shader setup
     GL_C( m_blend_bg_shader.use() );
 
     m_blend_bg_shader.bind_texture(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"),"color_with_transparency_tex");
-    // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img"); 
+    // m_blend_bg_shader.uniform_bool(m_show_background_img , "show_background_img");
     // m_blend_bg_shader.uniform_bool(m_show_environment_map, "show_environment_map");
     // m_blend_bg_shader.uniform_bool(m_show_prefiltered_environment_map, "show_prefiltered_environment_map");
     m_blend_bg_shader.uniform_v3_float(m_background_color, "background_color");
-    m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color"); 
+    m_blend_bg_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), "out_color");
     // // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
     //restore the state
@@ -2259,7 +2261,7 @@ void Viewer::blend_bg(){
 
 }
 // cv::Mat Viewer::download_to_cv_mat(){
-//     // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+//     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     // int w=m_viewport_size.x()*m_subsample_factor;
 //     // int h=m_viewport_size.y()*m_subsample_factor;
 //     // cv::Mat cv_mat(h, w, CV_8UC4);
@@ -2274,7 +2276,7 @@ void Viewer::blend_bg(){
 
 //     M=mesh->m_core->m_model_matrix.cast<float>().matrix();
 //     V=m_camera->view_matrix();
-//     P=m_camera->proj_matrix(m_viewport_size); 
+//     P=m_camera->proj_matrix(m_viewport_size);
 //     MVP=P*V*M;
 //     return MVP;
 // }
@@ -2295,12 +2297,12 @@ void Viewer::create_random_samples_hemisphere(){
         m_random_samples.row(i) << m_rand_gen->rand_float(-1.0, 1.0),
                                    m_rand_gen->rand_float(-1.0, 1.0),
                                    m_rand_gen->rand_float(0.0 ,1.0);
-        m_random_samples.row(i).normalize(); //this will make all the samples le on the SURFACE of the hemisphere. We will have to scale the samples so that 
+        m_random_samples.row(i).normalize(); //this will make all the samples le on the SURFACE of the hemisphere. We will have to scale the samples so that
     }
     for(int i=0; i<m_nr_samples; i++){
         float scale = float(i) / float(m_nr_samples);
         // scale = lerp(scale*scale, 0.0, 1.0, 0.1, 1.0);
-        //try another form of lerp 
+        //try another form of lerp
         scale= 0.1 + scale*scale * (1.0 - 0.1);
         m_random_samples.row(i) *= scale;
     }
@@ -2322,7 +2324,7 @@ cv::Mat Viewer::gbuffer_mat_with_name(const std::string name){
 
 void Viewer::load_environment_map(const std::string path){
 
-    //check if the path is relative 
+    //check if the path is relative
     std::string path_trim=radu::utils::trim_copy(path);
     std::string path_abs;
     if (fs::path(path_trim).is_relative()){
@@ -2389,11 +2391,11 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     up_vectors[3] << 0,0,-1; //down
     up_vectors[4] << 0,-1,0; //backwards
     up_vectors[5] << 0,-1,0; //forward
-   
 
-    //render this cube 
+
+    //render this cube
     GL_C( glDisable(GL_CULL_FACE) );
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     GL_C( glDepthMask(false) );
     GL_C( glDisable(GL_DEPTH_TEST) );
 
@@ -2402,15 +2404,15 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
     // //shader setup
     GL_C( shader.use() );
 
     for(int i=0; i<6; i++){
-        //move the camera to look at the corresponding face of the cube 
-        cam.set_lookat(lookat_vectors[i]); 
-        cam.set_up(up_vectors[i]); 
+        //move the camera to look at the corresponding face of the cube
+        cam.set_lookat(lookat_vectors[i]);
+        cam.set_up(up_vectors[i]);
         Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
 
 
@@ -2420,9 +2422,9 @@ void Viewer::equirectangular2cubemap(gl::CubeMap& cubemap_tex, const gl::Texture
         shader.draw_into(cubemap_tex, "out_color", i);
 
         // draw
-        GL_C( m_fullscreen_quad->vao.bind() ); 
+        GL_C( m_fullscreen_quad->vao.bind() );
         GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
-    
+
     }
 
     //generate mip map so we cna show as background some blurred versions of it
@@ -2444,7 +2446,7 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     viewport_size<< m_irradiance_cubemap_resolution, m_irradiance_cubemap_resolution;
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
-   
+
     //create cam
     Camera cam;
     cam.m_fov=90;
@@ -2474,11 +2476,11 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     up_vectors[3] << 0,0,-1; //down
     up_vectors[4] << 0,-1,0; //backwards
     up_vectors[5] << 0,-1,0; //forward
-   
 
-    //render this cube 
+
+    //render this cube
     GL_C( glDisable(GL_CULL_FACE) );
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     GL_C( glDepthMask(false) );
     GL_C( glDisable(GL_DEPTH_TEST) );
 
@@ -2487,15 +2489,15 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
     // //shader setup
     GL_C( shader.use() );
 
     for(int i=0; i<6; i++){
-        //move the camera to look at the corresponding face of the cube 
-        cam.set_lookat(lookat_vectors[i]); 
-        cam.set_up(up_vectors[i]); 
+        //move the camera to look at the corresponding face of the cube
+        cam.set_lookat(lookat_vectors[i]);
+        cam.set_up(up_vectors[i]);
         Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
 
 
@@ -2505,9 +2507,9 @@ void Viewer::radiance2irradiance(gl::CubeMap& irradiance_tex, const gl::CubeMap&
         shader.draw_into(irradiance_tex, "out_color", i);
 
         // draw
-        GL_C( m_fullscreen_quad->vao.bind() ); 
+        GL_C( m_fullscreen_quad->vao.bind() );
         GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
-    
+
     }
 
     // //restore the state
@@ -2546,11 +2548,11 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     up_vectors[3] << 0,0,-1; //down
     up_vectors[4] << 0,-1,0; //backwards
     up_vectors[5] << 0,-1,0; //forward
-   
 
-    //render this cube 
+
+    //render this cube
     GL_C( glDisable(GL_CULL_FACE) );
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     GL_C( glDepthMask(false) );
     GL_C( glDisable(GL_DEPTH_TEST) );
 
@@ -2559,8 +2561,8 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
     // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf) ); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
     // //shader setup
     GL_C( shader.use() );
     GL_C( shader.bind_texture(radiance_tex,"radiance_cubemap_tex") );
@@ -2575,9 +2577,9 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
 
 
         for(int i=0; i<6; i++){
-            //move the camera to look at the corresponding face of the cube 
-            cam.set_lookat(lookat_vectors[i]); 
-            cam.set_up(up_vectors[i]); 
+            //move the camera to look at the corresponding face of the cube
+            cam.set_lookat(lookat_vectors[i]);
+            cam.set_up(up_vectors[i]);
             Eigen::Matrix3f V_inv_rot=Eigen::Affine3f(cam.view_matrix()).inverse().linear();
             P_inv=cam.proj_matrix(viewport_size).inverse();
 
@@ -2588,9 +2590,9 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
             shader.draw_into(prefilter_tex, "out_color", i, mip);
 
             // draw
-            GL_C( m_fullscreen_quad->vao.bind() ); 
+            GL_C( m_fullscreen_quad->vao.bind() );
             GL_C( glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0) );
-        
+
         }
     }
 
@@ -2603,7 +2605,7 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 
     TIME_START("compose");
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
 
@@ -2612,20 +2614,20 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
     glViewport(0.0f , 0.0f, viewport_size.x(), viewport_size.y() );
 
 
-    gl::Shader& shader=m_integrate_brdf_shader;    
+    gl::Shader& shader=m_integrate_brdf_shader;
 
      // Set attributes that the vao will pulll from buffers
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
-    
+
+
      //shader setup
     GL_C( shader.use() );
     shader.draw_into(brdf_lut_tex, "out_color");
 
     // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     TIME_END("compose");
 
@@ -2656,7 +2658,7 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 
 void Viewer::write_gbuffer_to_folder(){
     //read the normals and dencode them for writing to file
-    // gl::Texture2D normals_deencoded_debugging; 
+    // gl::Texture2D normals_deencoded_debugging;
     // gl::Texture2D metalness_roughness_triple_channel_debugging; //metalness and roughness are stored as a RG but Opencv Cannot write rg so we make a rgb texture
     // gl::Texture2D depth_float_debugging;  //the depth is type depth component
     // normals_deencoded_debugging.allocate_or_resize(GL_RGB32F, GL_RGB, GL_FLOAT, m_gbuffer.width(), m_gbuffer.height());
@@ -2665,7 +2667,7 @@ void Viewer::write_gbuffer_to_folder(){
 
     gl::GBuffer debug_gbuffer;
     GL_C( debug_gbuffer.set_size(m_gbuffer.width(), m_gbuffer.height() ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( debug_gbuffer.add_texture("normals_debug_gtex", GL_RGB32F, GL_RGB, GL_FLOAT) ); 
+    GL_C( debug_gbuffer.add_texture("normals_debug_gtex", GL_RGB32F, GL_RGB, GL_FLOAT) );
     GL_C( debug_gbuffer.add_texture("metalness_and_roughness_debug_gtex", GL_RGB32F, GL_RGB, GL_FLOAT) ); //metalness and roughness are stored as a RG but Opencv Cannot write rg so we make a rgb texture
     GL_C( debug_gbuffer.add_texture("depth_debug_gtex", GL_R32F, GL_RED, GL_FLOAT) ); //the depth is stored as depth_component which cannot be easily convertible to opencv so we record it here as R32F
     debug_gbuffer.sanity_check();
@@ -2674,7 +2676,7 @@ void Viewer::write_gbuffer_to_folder(){
     glViewport(0.0f , 0.0f, m_gbuffer.width(), m_gbuffer.height() );
     gl::Shader& shader =m_decode_gbuffer_debugging;
 
-    //dont perform depth checking nor write into the depth buffer 
+    //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
 
@@ -2682,7 +2684,7 @@ void Viewer::write_gbuffer_to_folder(){
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "position", m_fullscreen_quad->V_buf, 3) );
     GL_C( m_fullscreen_quad->vao.vertex_attribute(shader, "uv", m_fullscreen_quad->UV_buf, 2) );
     m_fullscreen_quad->vao.indices(m_fullscreen_quad->F_buf); //Says the indices with we refer to vertices, this gives us the triangles
-    
+
     //shader setup
     GL_C( shader.use() );
     shader.bind_texture(m_gbuffer.tex_with_name("normal_gtex"), "normals_encoded_tex");
@@ -2697,7 +2699,7 @@ void Viewer::write_gbuffer_to_folder(){
                     }
                     ); //makes the shaders draw into the buffers we defines in the gbuffer
     // draw
-    m_fullscreen_quad->vao.bind(); 
+    m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
 
     //restore the state
@@ -2708,7 +2710,7 @@ void Viewer::write_gbuffer_to_folder(){
 
 
     // glFinish();
-    //get all the textures as cv::mats 
+    //get all the textures as cv::mats
     cv::Mat mat, normal_mat, diffuse_mat, depth_mat, metalness_and_roughness_mat, ao_blurred_mat;
     //normal
     mat=debug_gbuffer.tex_with_name("normals_debug_gtex").download_to_cv_mat();
@@ -2769,7 +2771,7 @@ void Viewer::glfw_mouse_pressed(GLFWwindow* window, int button, int action, int 
             }
         }
     }
-    
+
 }
 void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
     m_camera->mouse_move(x, y, m_viewport_size, m_camera_translation_speed_multiplier);
@@ -2779,7 +2781,7 @@ void Viewer::glfw_mouse_move(GLFWwindow* window, double x, double y){
             m_spot_lights[i]->mouse_move(x, y, m_viewport_size, m_camera_translation_speed_multiplier);
         }
     }
-        
+
 }
 void Viewer::glfw_mouse_scroll(GLFWwindow* window, double x, double y){
     m_camera->mouse_scroll(x,y);
@@ -2789,7 +2791,7 @@ void Viewer::glfw_mouse_scroll(GLFWwindow* window, double x, double y){
     //         m_spot_lights[i]->mouse_scroll(x,y);
     //     }
     // }
-    
+
 }
 void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int modifier){
 
@@ -2800,7 +2802,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
             //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
             //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_rgb_tex;
             //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-            //             // m_light_factor=0.0; 
+            //             // m_light_factor=0.0;
             //     }
             //     break;
             // }
@@ -2809,7 +2811,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
             //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
             //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_tex;
             //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-            //             // m_light_factor=0.0; 
+            //             // m_light_factor=0.0;
             //     }
             //     break;
             // }
@@ -2818,7 +2820,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
             //     if (auto mesh_gpu =  m_scene->get_mesh_with_name("mesh_test")->m_mesh_gpu.lock()) {
             //             mesh_gpu->m_cur_tex_ptr=mesh_gpu->m_thermal_colored_tex;
             //             m_scene->get_mesh_with_name("mesh_test")->m_vis.m_color_type=MeshColorType::Texture;
-            //             // m_light_factor=0.0; 
+            //             // m_light_factor=0.0;
             //     }
             //     break;
             // }
@@ -2839,7 +2841,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
             }
             case GLFW_KEY_R :{
                 VLOG(1) << "Record";
-                 if(m_recorder->is_recording()){ 
+                 if(m_recorder->is_recording()){
                     VLOG(1) << "Stopping recording";
                     m_recorder->stop_recording();
                 }else{
@@ -2855,7 +2857,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
 
     }
 
-    //handle ctrl c and ctrl v for camera pose copying and pasting 
+    //handle ctrl c and ctrl v for camera pose copying and pasting
     if (key == GLFW_KEY_C && modifier==GLFW_MOD_CONTROL && action == GLFW_PRESS){
         VLOG(1) << "Pressed ctrl-c, copying current pose of the camera to clipoard";
         glfwSetClipboardString(window, m_camera->to_string().c_str());
@@ -2873,10 +2875,10 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
 
     // __viewer->key_down(key, modifier);
     // __viewer->key_up(key, modifier);
-    
+
 }
 void Viewer::glfw_char_mods(GLFWwindow* window, unsigned int codepoint, int modifier){
-    
+
 }
 void Viewer::glfw_resize(GLFWwindow* window, int width, int height){
     glfwSetWindowSize(window, width, height);
@@ -2890,7 +2892,7 @@ void Viewer::glfw_resize(GLFWwindow* window, int width, int height){
 
 void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
     for(int i=0; i<count; i++){
-        VLOG(1) << "loading from path " << paths[i]; 
+        VLOG(1) << "loading from path " << paths[i];
 
         std::string file_ext = std::string(paths[i]).substr(std::string(paths[i]).find_last_of(".") + 1);
         trim(file_ext); //remove whitespaces from beggining and end
@@ -2907,7 +2909,7 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
             if (success){
                 std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
                 m_scene->add_mesh(mesh,name);
-                //select the newest mesh I added 
+                //select the newest mesh I added
                 m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
             }
         }
@@ -2918,28 +2920,28 @@ void Viewer::glfw_drop(GLFWwindow* window, int count, const char** paths){
 
 void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
     for(int i=0; i<count; i++){
-        // VLOG(1) << "loading from path " << paths[i]; 
+        // VLOG(1) << "loading from path " << paths[i];
 
         //check that do we do with this drag and drop
-        
+
         //check if maybe we are loading a texture
         if (m_scene->nr_meshes()>0){
 
             MeshSharedPtr mesh=m_scene->get_mesh_with_idx(m_gui->selected_mesh_idx() );
             if (m_gui->m_diffuse_tex_hovered){
-                VLOG(1) << "setting diffuse tex from " << paths[i]; 
+                VLOG(1) << "setting diffuse tex from " << paths[i];
                 mesh->set_diffuse_tex(paths[i]);
             }
             if (m_gui->m_normals_tex_hovered){
-                VLOG(1) << "setting normals tex from " << paths[i]; 
+                VLOG(1) << "setting normals tex from " << paths[i];
                 mesh->set_normals_tex(paths[i]);
             }
             if (m_gui->m_metalness_tex_hovered){
-                VLOG(1) << "setting metalness tex from " << paths[i]; 
+                VLOG(1) << "setting metalness tex from " << paths[i];
                 mesh->set_metalness_tex(paths[i]);
             }
             if (m_gui->m_roughness_tex_hovered){
-                VLOG(1) << "setting roughness tex from " << paths[i]; 
+                VLOG(1) << "setting roughness tex from " << paths[i];
                 mesh->set_roughness_tex(paths[i]);
             }
         }
@@ -2959,7 +2961,7 @@ void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
         //     mesh->load_from_file(std::string(paths[i]));
         //     std::string name= "mesh_" + std::to_string(m_scene->nr_meshes());
         //     m_scene->add_mesh(mesh,name);
-        //     //select the newest mesh I added 
+        //     //select the newest mesh I added
         //     m_gui->select_mesh_with_idx( m_scene->nr_meshes()-1 );
         // }
 
@@ -2976,7 +2978,7 @@ void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
 //     //     ros::init(dummy_remappings, name);
 //     //  } );
 
-//     pybind11::class_<Viewer> (m, "Viewer") 
+//     pybind11::class_<Viewer> (m, "Viewer")
 //     .def(pybind11::init<const std::string>())
 //     .def("update", &Viewer::update, pybind11::arg("fbo_id") = 0)
 //     .def_readwrite("m_gui", &Viewer::m_gui)

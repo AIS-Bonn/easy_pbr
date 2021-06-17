@@ -9,7 +9,7 @@
 // #include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
 
-//libigl 
+//libigl
 #include "igl/per_face_normals.h"
 #include "igl/per_vertex_normals.h"
 #include "igl/readOFF.h"
@@ -68,7 +68,7 @@ Mesh::Mesh():
         m_rand_gen(new RandGenerator()),
         m_is_preallocated(false),
         V_blob(V)
-    {   
+    {
     clear();
 
 }
@@ -135,9 +135,9 @@ void Mesh::add(Mesh& new_mesh) {
 
     if(V_blob.is_preallocated() ){ //if the mesh is preallocated, then we try to just copy to the matrices in the first empty space that has enough contiguous memory
         // V.block<p,q>(i,j)
-        // radu::utils::eigen_copy_in_preallocated(V, new_mesh.V); 
-        
-        //V 
+        // radu::utils::eigen_copy_in_preallocated(V, new_mesh.V);
+
+        //V
         // Eigen::MatrixXd V_new(V.rows() + new_mesh.V.rows(), 3);
         // V_new << V, new_mesh.V;
         V_blob.copy_in_first_empty_block(new_mesh.V);
@@ -235,7 +235,7 @@ void Mesh::add(Mesh& new_mesh) {
 
         m_is_dirty=true;
     }
-    
+
         m_is_shadowmap_dirty=true;
 }
 
@@ -261,7 +261,7 @@ void Mesh::add(Mesh& new_mesh) {
 //     m_solid_color = new_core.m_solid_color;
 //     m_specular_color = new_core.m_specular_color;
 //     m_shininess = new_core.m_shininess;
-   
+
 //     V = new_core.V;
 //     F = new_core.F;
 //     C = new_core.C;
@@ -270,8 +270,8 @@ void Mesh::add(Mesh& new_mesh) {
 //     NF=new_core.NF;
 //     NV=new_core.NV;
 //     UV=new_core.UV;
-//     V_tangent_u=new_core.V_tangent_u; 
-//     V_length_v=new_core.V_length_v; 
+//     V_tangent_u=new_core.V_tangent_u;
+//     V_length_v=new_core.V_length_v;
 
 //     t = new_core.t;
 //     m_height = new_core.m_height;
@@ -364,7 +364,7 @@ void Mesh::transform_vertices_cpu(const Eigen::Affine3d& trans, const bool trans
     if (NF.size())  NF.transpose() = (trans.linear() * NF.transpose());
     if (NV.size())  NV.transpose() = (trans.linear() * NV.transpose());
 
-    //we have to also rotat the tangent vector 
+    //we have to also rotat the tangent vector
     if (V_tangent_u.size())  V_tangent_u.transpose() = (trans.linear() * V_tangent_u.transpose());
 
     m_is_dirty=true;
@@ -491,7 +491,7 @@ void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
 //     out[5]=q.z();
 //     out[6]=q.w();
 
-//     return out; 
+//     return out;
 // }
 
 // Eigen::VectorXd Mesh::model_matrix_as_xyz_and_rpy(){
@@ -529,7 +529,7 @@ void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
 //     // m.getRPY(r, p, y, 2);
 
 
-//     return out; 
+//     return out;
 // }
 
 // void Mesh::premultiply_model_matrix(const Eigen::VectorXd& xyz_q){
@@ -648,7 +648,7 @@ bool Mesh::load_from_file(const std::string file_path){
                 V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
                 C.row(i) << (float)cloud->points[i].r/255.0 , (float)cloud->points[i].g/255.0, (float)cloud->points[i].b/255.0;
             }
-        
+
         }else if (has_rgb && has_intensity){
             LOG(FATAL) << "We do not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
 
@@ -661,20 +661,20 @@ bool Mesh::load_from_file(const std::string file_path){
                 //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
                 V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
                 I.row(i) << cloud->points[i].intensity;
-            } 
+            }
         }
         LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
 
-        //set the width and height from the pcd file 
+        //set the width and height from the pcd file
         m_width=cloud_blob.width;
         m_height=cloud_blob.height;
-        
+
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
         return false;
     }
 
-    //set some sensible things to see 
+    //set some sensible things to see
     if(!F.size()){
         m_vis.m_show_points=true;
         m_vis.m_show_mesh=false;
@@ -684,7 +684,7 @@ bool Mesh::load_from_file(const std::string file_path){
     }
 
     //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-    //if we have texture coordinates and normal vectors, we will be able to load a normal map from file and therefore we will need the TBN matrix. 
+    //if we have texture coordinates and normal vectors, we will be able to load a normal map from file and therefore we will need the TBN matrix.
     //we precompute here the tangent vector and leave the bitangent in the vertex shader
     recalculate_normals();
     if(NV.size()&&UV.size()){
@@ -756,7 +756,7 @@ void Mesh::add_child(std::shared_ptr<Mesh>& mesh){
         }
     }
 
-     
+
     m_child_meshes.push_back(mesh);
     // VLOG(1) << "children nr is now " <<m_child_meshes.size();
 
@@ -778,12 +778,12 @@ void Mesh::remove_marked_vertices(const std::vector<bool>& mask, const bool keep
     I=filter(I, mask, keep, /*do_checks*/ false);
 
     //deal with faces
-    std::vector<bool> F_kept; //says for each face if it has been kept after their indices have been reordered to point to the new V matrix 
+    std::vector<bool> F_kept; //says for each face if it has been kept after their indices have been reordered to point to the new V matrix
     F=filter_apply_indirection_return_mask(F_kept, V_indir, F);
     NF=filter(NF, F_kept, true, /*do_checks*/ false); //removes the NF that are no longer corresponding to a face
 
     //deal with edges
-    std::vector<bool> E_kept; //says for each edge if it has been kept after their indices have been reordered to point to the new V matrix 
+    std::vector<bool> E_kept; //says for each edge if it has been kept after their indices have been reordered to point to the new V matrix
     E=filter_apply_indirection_return_mask(E_kept, V_indir, E);
 
     m_is_dirty=true;
@@ -807,17 +807,17 @@ void Mesh::set_marked_vertices_to_zero(const std::vector<bool>& mask, const bool
     I=filter_set_zero(I, mask, keep, /*do_checks*/ false);
 
     //deal with faces
-    std::vector<bool> F_kept; //says for each face if it has been kept after their indices have been reordered to point to the new V matrix 
+    std::vector<bool> F_kept; //says for each face if it has been kept after their indices have been reordered to point to the new V matrix
     F=filter_apply_indirection_return_mask(F_kept, V_indir, F);
     NF=filter(NF, F_kept, true, /*do_checks*/ false); //removes the NF that are no longer corresponding to a face
 
     //deal with edges
-    std::vector<bool> E_kept; //says for each edge if it has been kept after their indices have been reordered to point to the new V matrix 
+    std::vector<bool> E_kept; //says for each edge if it has been kept after their indices have been reordered to point to the new V matrix
     E=filter_apply_indirection_return_mask(E_kept, V_indir, E);
 
     m_is_dirty=true;
     m_is_shadowmap_dirty=true;
- 
+
 
 }
 
@@ -860,7 +860,7 @@ void Mesh::remove_duplicate_vertices(){
     Eigen::MatrixXi inverse_indirection; // size of V_new , says for each point where the original one was in mesh.V
 
     igl::remove_duplicate_vertices(V, 1e-7, V_new, indirection, inverse_indirection);
-    
+
     V=V_new;
 }
 
@@ -873,7 +873,7 @@ void Mesh::set_duplicate_verts_to_zero(){
     Eigen::MatrixXi inverse_indirection; // size of V_new , says for each point where the original one was in mesh.V
 
     igl::remove_duplicate_vertices(V, 1e-7, V_new, indirection, inverse_indirection);
-    
+
     VLOG(1) << "size of indirection is" <<indirection.rows();
     VLOG(1) << "size of inverse_indirection is" <<inverse_indirection.rows();
 
@@ -946,7 +946,7 @@ void Mesh::worldROS2worldGL(){
 
 
 //subsamples the point cloud a certain nr of times by randomly dropping points. If percentage_removal is 1 then we remove all the points, if it's 0 then we keep all points
-void Mesh::random_subsample(const float percentage_removal){ 
+void Mesh::random_subsample(const float percentage_removal){
 
     float prob_of_death=percentage_removal;
     int vertices_marked_for_removal=0;
@@ -1339,7 +1339,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     int nr_segments_even= round(nr_segments / 2) * 2; // so we have an even number of segments on each side and then one running thgou th emiddle
     int half_size=nr_segments_even/2;
     int nr_points_per_side=nr_segments_even+1;// the +1 is because we will have 3 lines if we choose 2 segments, we have to consider the one that runs through the middle of the scene
-    V.resize( (nr_points_per_side)*(nr_points_per_side), 3 ); 
+    V.resize( (nr_points_per_side)*(nr_points_per_side), 3 );
     int idx=0;
     for(int x=-half_size; x<=half_size; x++){
         for(int y=-half_size; y<=half_size; y++){
@@ -1349,7 +1349,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     }
     //make edges horizontally
     int nr_edges=half_size*2*nr_points_per_side*2; // we will have half_size*2 for each line, and we have nr_points_per_size lines and since we both hotiz and ertical we multiply by 2
-    E.resize( nr_edges, 2 ); 
+    E.resize( nr_edges, 2 );
     idx=0;
     int idx_prev_point=-1;
     for(int y=-half_size; y<=half_size; y++){
@@ -1362,7 +1362,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
             idx_prev_point=idx_cur_point;
         }
         idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
-    } 
+    }
 
     //maked edges vertically
     idx_prev_point=-1;
@@ -1378,7 +1378,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
             idx_prev_point=idx_cur_point;
         }
         idx_prev_point=-1; //we start a new row so invalidate the previous one so we dont connect with the points in the row above
-    } 
+    }
 
 
     //make some faces in case the grid is used for something else except as a floor for the scene
@@ -1405,16 +1405,16 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
 
     //scale it to be in range [-1, 1]
     V.array()/=half_size;
-    //scale to be in the range of the mesh 
+    //scale to be in the range of the mesh
     V.array()*=scale;
 
-    //find the minimal point in y of the mesh so we put the grid there 
+    //find the minimal point in y of the mesh so we put the grid there
     Eigen::Affine3d trans=Eigen::Affine3d::Identity();
     Eigen::Vector3d t;
     t<< 0, y_pos, 0;
     trans.translate(t);
     transform_vertices_cpu(trans,true);
- 
+
     recalculate_normals(); //just so we have them in case the grid is used for something else except as a floor for the scene
 
     name="grid_floor";
@@ -1429,28 +1429,28 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
 void Mesh::create_floor(const float y_pos, const float scale){
 
     //make 4 vertices
-    V.resize( 4, 3 ); 
+    V.resize( 4, 3 );
     V.row(0) << -1, 0, -1;
     V.row(1) << 1, 0, -1;
     V.row(2) << 1, 0, 1;
     V.row(3) << -1, 0, 1;
 
     //make 2 faces
-    F.resize( 2, 3 ); 
+    F.resize( 2, 3 );
     F.row(0) << 2, 1, 0;
     F.row(1) << 3, 2, 0;
     recalculate_normals();
 
-    //scale to be in the range of the mesh 
+    //scale to be in the range of the mesh
     V.array()*=2*get_scale();
 
-    //find the minimal point in y of the mesh so we put the grid there 
+    //find the minimal point in y of the mesh so we put the grid there
     Eigen::Affine3d trans=Eigen::Affine3d::Identity();
     Eigen::Vector3d t;
     t<< 0, y_pos, 0;
     trans.translate(t);
     transform_vertices_cpu(trans,true);
- 
+
 
     name="grid_floor";
     m_vis.m_show_mesh=true;
@@ -1488,7 +1488,7 @@ void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){
 }
 
 Eigen::Vector3d Mesh::centroid(){
-    Eigen::Vector3d min_point = V.colwise().minCoeff(); 
+    Eigen::Vector3d min_point = V.colwise().minCoeff();
     Eigen::Vector3d max_point = V.colwise().maxCoeff();
     Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
@@ -1634,7 +1634,7 @@ void Mesh::to_image(Eigen::Affine3d tf_world_vel) {
 
     CHECK(m_view_direction!=-1) << "View direction has to be set. It indicates where the gap in the point cloud is so that we can unwrap it from there. Make sure the data_loader has do_random_gap_removal to true";
 
-    //make a frame in which it is easier to make a unwrap to image. This new frame will be called algorithm frame 
+    //make a frame in which it is easier to make a unwrap to image. This new frame will be called algorithm frame
     Eigen::Affine3d tf_alg_vel;
     tf_alg_vel.setIdentity();
     Eigen::Matrix3d alg_vel_rot;
@@ -1715,7 +1715,7 @@ void Mesh::to_mesh(Eigen::Affine3d tf_world_vel) {
     // apply_transform(tf_vel_alg);
     // apply_transform(tf_world_vel);
 
-    Eigen::Affine3d tf_world_alg=tf_world_vel * tf_vel_alg; 
+    Eigen::Affine3d tf_world_alg=tf_world_vel * tf_vel_alg;
 
     for (int i = 0; i < V.rows(); i++) {
         if(!V.row(i).isZero()){
@@ -1744,7 +1744,7 @@ void Mesh::restrict_around_azimuthal_angle(const float angle, const float range)
     CHECK(angle<=2*M_PI && angle>=0) << "Azimuthal angle should be in the range [0,2pi]. However it is " << angle;
     CHECK(range<=2*M_PI && angle>=0) << "Azimuthal range should be in the range [0,2pi]. However it is " << range;
 
-    //make a frame in which it is easier to make a unwrap to image. This new frame will be called algorithm frame 
+    //make a frame in which it is easier to make a unwrap to image. This new frame will be called algorithm frame
     Eigen::Affine3d tf_alg_vel;
     tf_alg_vel.setIdentity();
     Eigen::Matrix3d alg_vel_rot;
@@ -1774,7 +1774,7 @@ void Mesh::restrict_around_azimuthal_angle(const float angle, const float range)
                 phi += 2 * M_PI;
             }
 
-            //set to zero all the points that are outside the range 
+            //set to zero all the points that are outside the range
             if(phi < angle - range || phi> angle+range){
                 V.row(i).setZero();
             }
@@ -1849,12 +1849,12 @@ void Mesh::compute_tangents(const float tangent_length){
             Eigen::Vector3d tangent = (deltaPos1 * deltaUV2.y()   - deltaPos2 * deltaUV1.y() )*r;
             Eigen::Vector3d  bitangent = (deltaPos2 * deltaUV1.x()   - deltaPos1 * deltaUV2.x() )*r;
 
-            V_tangent_u.row(F(f,0)) += tangent; 
-            V_tangent_u.row(F(f,1)) += tangent; 
-            V_tangent_u.row(F(f,2)) += tangent; 
-            V_bitangent.row(F(f,0)) += bitangent; 
-            V_bitangent.row(F(f,1)) += bitangent; 
-            V_bitangent.row(F(f,2)) += bitangent; 
+            V_tangent_u.row(F(f,0)) += tangent;
+            V_tangent_u.row(F(f,1)) += tangent;
+            V_tangent_u.row(F(f,2)) += tangent;
+            V_bitangent.row(F(f,0)) += bitangent;
+            V_bitangent.row(F(f,1)) += bitangent;
+            V_bitangent.row(F(f,2)) += bitangent;
         }
 
         //average the tangent and bitangent per vector and then normalize then
@@ -1900,7 +1900,7 @@ void Mesh::compute_tangents(const float tangent_length){
                 }
             } while (diff<eps);
 
-            //cross product to get the tangent 
+            //cross product to get the tangent
 
             Eigen::Vector3d tangent = n.cross(vec).normalized();
             V_tangent_u.row(i) = tangent*tangent_length;
@@ -1910,7 +1910,7 @@ void Mesh::compute_tangents(const float tangent_length){
 
 
     }
-    
+
 
 
 }
@@ -1964,27 +1964,27 @@ Mesh Mesh::interpolate(const Mesh& target_mesh, const float factor){
 
 }
 float Mesh::get_scale(){
-    //if the mesh is empty just return the scale 1.0 
+    //if the mesh is empty just return the scale 1.0
     if(is_empty()){
-       return 1.0; 
+       return 1.0;
     }
     // VLOG(1) << "get scale";
 
 
-    // Eigen::VectorXd min_point; // each row stores the minimum point of the corresponding mesh. 
-    // Eigen::VectorXd max_point; // each row stores the minimum point of the corresponding mesh. 
+    // Eigen::VectorXd min_point; // each row stores the minimum point of the corresponding mesh.
+    // Eigen::VectorXd max_point; // each row stores the minimum point of the corresponding mesh.
     // min_point.resize(3);
     // max_point.resize(3);
     // min_point.setConstant(std::numeric_limits<float>::max());
     // max_point.setConstant(std::numeric_limits<float>::lowest());
-    Eigen::VectorXd min_point = V.colwise().minCoeff();   
-    Eigen::VectorXd max_point = V.colwise().maxCoeff();   
+    Eigen::VectorXd min_point = V.colwise().minCoeff();
+    Eigen::VectorXd max_point = V.colwise().maxCoeff();
 
     Eigen::VectorXd centroid = (0.5*(min_point + max_point)).eval();
 
     float scale = (max_point-min_point).array().abs().maxCoeff();
 
-    //sanity check 
+    //sanity check
     if(std::isnan(scale)){
         LOG(ERROR) << "V is " << V;
         LOG(ERROR) << "The scale of mesh " << name << " is nan ";
@@ -2085,7 +2085,7 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
 
 
 
-    //brute force 
+    //brute force
     int nr_matches_brute=0;
     for(int i=0; i<V.rows(); i++){
         Eigen::Vector3d p = Eigen::Vector3d(V.row(i));
@@ -2104,8 +2104,8 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
     // return ret_matches;
 }
 Eigen::MatrixXd Mesh::compute_distance_to_mesh(const MeshSharedPtr& target_mesh){
-    //we use the point_mesh_squared_distance.h 
-    //it computes the distances to a mesh, so if the target mesh doesnt have F then we make F for each vertex, a degenerate triangle with [0,0,0] 
+    //we use the point_mesh_squared_distance.h
+    //it computes the distances to a mesh, so if the target mesh doesnt have F then we make F for each vertex, a degenerate triangle with [0,0,0]
     Eigen::MatrixXi F=target_mesh->F;
     if (!F.size()){
         F.resize(target_mesh->V.rows(),3);
@@ -2187,7 +2187,7 @@ void Mesh::set_roughness_tex(const cv::Mat& mat, const int subsample){
     m_roughness_mat.is_dirty=true;
 }
 void Mesh::set_gloss_tex(const cv::Mat& mat, const int subsample){
-    CHECK(mat.data) << "Gloss mat is empty"; 
+    CHECK(mat.data) << "Gloss mat is empty";
     CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
     cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
     //resize if necessary
@@ -2250,8 +2250,8 @@ void Mesh::read_ply(const std::string file_path){
     std::shared_ptr<tinyply::PlyData> vertices, normals, texcoords, color,  faces;
 
     // The header information can be used to programmatically extract properties on elements
-    // known to exist in the header prior to reading the data. For brevity of this sample, properties 
-    // like vertex position are hard-coded: 
+    // known to exist in the header prior to reading the data. For brevity of this sample, properties
+    // like vertex position are hard-coded:
     try { vertices = file.request_properties_from_element("vertex", { "x", "y", "z" }, 3); }
     catch (const std::exception & e) { LOG(FATAL) <<  e.what();  }
 
@@ -2273,8 +2273,8 @@ void Mesh::read_ply(const std::string file_path){
     try { color = file.request_properties_from_element("vertex", { "red", "green", "blue" }, 3); }
     catch (const std::exception & e) { has_color=false; }
 
-    // Providing a list size hint (the last argument) is a 2x performance improvement. If you have 
-    // arbitrary ply files, it is best to leave this 0. 
+    // Providing a list size hint (the last argument) is a 2x performance improvement. If you have
+    // arbitrary ply files, it is best to leave this 0.
     bool has_faces=true;
     try { faces = file.request_properties_from_element("face", { "vertex_indices" }, 3); }
     catch (const std::exception & e) { has_faces=false; }
@@ -2359,12 +2359,12 @@ void Mesh::read_ply(const std::string file_path){
     }
 
 
-   
+
 
 
 
     //doubles
-    // if (vertices->t == tinyply::Type::FLOAT64) { 
+    // if (vertices->t == tinyply::Type::FLOAT64) {
     //     Eigen::Map<RowMatrixXd> mf( (double*)vertices->buffer.get(), vertices->count, 3);
     //     V=mf.cast<double>();
     // }
@@ -2383,14 +2383,14 @@ void Mesh::write_ply(const std::string file_path){
 
     tinyply::PlyFile ply_file;
 
-    //get all the matrices to row major float 
+    //get all the matrices to row major float
     typedef Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXf;
     typedef Eigen::Matrix<unsigned,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> RowMatrixXi;
     RowMatrixXf V_f=V.cast<float>();
     RowMatrixXi F_i=F.cast<unsigned>();
     RowMatrixXf C_f=C.cast<float>();
-    RowMatrixXf NV_f=NV.cast<float>(); 
-    RowMatrixXf UV_f=UV.cast<float>(); 
+    RowMatrixXf NV_f=NV.cast<float>();
+    RowMatrixXf UV_f=UV.cast<float>();
 
     //vertices
     ply_file.add_properties_to_element("vertex", { "x", "y", "z" },  tinyply::Type::FLOAT32, V_f.rows(), reinterpret_cast<uint8_t*>(V_f.data()), tinyply::Type::INVALID, 0);
@@ -2410,12 +2410,12 @@ void Mesh::write_ply(const std::string file_path){
         ply_file.add_properties_to_element("vertex", { "red", "green", "blue" }, tinyply::Type::FLOAT32, C_f.rows(), reinterpret_cast<uint8_t*>(C_f.data()), tinyply::Type::INVALID, 0);
     }
 
-    //faces 
+    //faces
     if(F.size()){
         CHECK(F.cols()==3) << "We only support writing of triangles right now";
         ply_file.add_properties_to_element("face", { "vertex_indices" }, tinyply::Type::UINT32, F_i.rows(), reinterpret_cast<uint8_t*>(F_i.data()), tinyply::Type::UINT8, 3);
     }
-    
+
 
     ply_file.get_comments().push_back("generated by tinyply 2.2");
 
@@ -2443,9 +2443,9 @@ void Mesh::read_obj(const std::string file_path){
         }
     };
 
- 
 
-    //attempt 2 
+
+    //attempt 2
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -2581,6 +2581,6 @@ std::ostream& operator<<(std::ostream& os, const Mesh& m)
 
     return os;
 }
- 
+
 
 } //namespace easy_pbr

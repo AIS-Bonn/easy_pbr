@@ -49,7 +49,7 @@ public:
     int selected_mesh_idx(); //get the index of the mesh we have selected
     void toggle_main_menu();
 
-    //dragging and dropping textures 
+    //dragging and dropping textures
     bool m_diffuse_tex_hovered;
     bool m_normals_tex_hovered;
     bool m_metalness_tex_hovered;
@@ -68,7 +68,7 @@ private:
 
 
     int m_selected_mesh_idx; //index of the selected mesh from the scene, we will use this index to modify properties of the selected mesh
-    int m_selected_spot_light_idx; 
+    int m_selected_spot_light_idx;
     int m_mesh_tex_idx;
     bool m_show_debug_textures;
     ImGuizmo::OPERATION m_guizmo_operation=ImGuizmo::ROTATE;
@@ -79,9 +79,9 @@ private:
     ImFont* m_roboto_bold;
 
     static std::mutex m_cv_mats_mutex; //adding or registering images for viewing must be thread safe
-    //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context 
+    //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context
     static std::unordered_map<std::string, cv::Mat> m_cv_mats_map;
-    static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it 
+    static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it
     //for showing images we store a list of their opengl textures implemented as a map between their name and the gltexture
     std::unordered_map<std::string, gl::Texture2D> m_textures_map;
 
@@ -95,7 +95,7 @@ private:
     float m_subsample_factor;
     int m_decimate_nr_target_faces;
 
-    //debug stuff 
+    //debug stuff
     ImVec2 m_curve_points[10];
 
     // trajectory follower:
@@ -119,7 +119,7 @@ private:
     void edit_transform(const std::shared_ptr<Mesh>& mesh);
     void edit_trajectory(const std::shared_ptr<Camera> & cam);
     void help_marker(const char* desc);
-    void show_images(); // uplaod all cv mats to gl textures and displays them 
+    void show_images(); // uplaod all cv mats to gl textures and displays them
     void draw_overlays(); //draw all the overlays like the vert ids above each vertex of the meshes that are visible
     void draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f model_matrix, const std::string text, const Eigen::Vector3f color); //draw any type of overlaid text to the viewer
     void draw_label_mngr_legend();

@@ -108,4 +108,3 @@ void main(){
        color_per_vertex_out=vec3(intensity_per_vertex);
     }
 }
-

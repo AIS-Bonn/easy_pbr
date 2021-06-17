@@ -16,7 +16,7 @@ layout(location = 6) in mat3 TBN_in;
 
 //out
 //the locations are irrelevant because the link between the frag output and the texture is established at runtime by the shader function draw_into(). They just have to be different locations for each output
-layout(location = 0) out vec4 position_out; 
+layout(location = 0) out vec4 position_out;
 layout(location = 1) out vec4 diffuse_out;
 // layout(location = 3) out vec4 normal_out;
 layout(location = 3) out vec3 normal_out;
@@ -28,10 +28,10 @@ layout(location = 6) out vec2 uv_out;
 // //uniform
 uniform bool render_uv_to_gbuffer;
 uniform int color_type;
-uniform sampler2D diffuse_tex; 
-uniform sampler2D metalness_tex; 
-uniform sampler2D roughness_tex; 
-uniform sampler2D normals_tex; 
+uniform sampler2D diffuse_tex;
+uniform sampler2D metalness_tex;
+uniform sampler2D roughness_tex;
+uniform sampler2D normals_tex;
 uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
@@ -100,11 +100,11 @@ void main(){
     float roughness_out=roughness;
     vec3 normal_to_encode=normal_in;
 
-    //if we have a normal map texture we get the normal from there 
+    //if we have a normal map texture we get the normal from there
     if (has_normals_tex){
         vec3 normal = texture(normals_tex, uv_in).rgb;
-        normal = normal * 2.0 - 1.0;   
-        normal = normalize(TBN_in * normal); 
+        normal = normal * 2.0 - 1.0;
+        normal = normalize(TBN_in * normal);
         normal_to_encode=normal;
     }
 

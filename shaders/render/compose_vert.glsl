@@ -7,11 +7,11 @@
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 uv;
 
-//uniforms 
+//uniforms
 uniform mat4 P_inv;
 uniform mat3 V_inv_rot;
 
-//out 
+//out
 layout (location = 1) out vec2 uv_out;
 layout (location = 2) out vec3 view_ray_out;
 layout (location = 3) out vec3 world_view_ray_out;

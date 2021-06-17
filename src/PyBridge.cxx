@@ -13,7 +13,7 @@
 #include <pybind11/operators.h>
 #include <functional>
 
-//my stuff 
+//my stuff
 #include "easy_pbr/Viewer.h"
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/Mesh.h"
@@ -28,14 +28,14 @@
 
 
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
-// PYBIND11_MAKE_OPAQUE(std::vector<int>); //to be able to pass vectors by reference to functions and have things like push back actually work 
+// PYBIND11_MAKE_OPAQUE(std::vector<int>); //to be able to pass vectors by reference to functions and have things like push back actually work
 // PYBIND11_MAKE_OPAQUE(std::vector<float>, std::allocator<float> >);
 
 namespace py = pybind11;
 
 
 namespace easy_pbr{
-    
+
 //way to declare multiple templaded class with the same functions that are exposed through pybind11 https://stackoverflow.com/a/47749076
 template<typename T>
 void eigen_affine_bindings(py::module &m, const std::string typestr) {
@@ -59,8 +59,8 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     .def("set_identity", [](Class &m) {  m.setIdentity(); return m; } )
     .def("set_translation", [](Class &m, const Eigen::Matrix<T, 3, 1>& t) {  m.translation()=t; return m; } )
     .def("set_linear", [](Class &m, const Eigen::Matrix<T, 3, 3>& r) {  m.linear()=r; return m; } )
-    .def("set_quat", [](Class &m, const Eigen::Matrix<T, 4, 1>& q_vec) { 
-        Eigen::Quaternion<T> q;  
+    .def("set_quat", [](Class &m, const Eigen::Matrix<T, 4, 1>& q_vec) {
+        Eigen::Quaternion<T> q;
         q.coeffs()=q_vec;
         m.linear()=q.toRotationMatrix();
         return m;
@@ -70,7 +70,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
     .def("flip_x", [](Class &m) {  m.matrix().col(0)= -m.matrix().col(0);  return m; } )
     .def("flip_y", [](Class &m) {  m.matrix().col(1)= -m.matrix().col(1);  return m; } )
     .def("flip_z", [](Class &m) {  m.matrix().col(2)= -m.matrix().col(2);  return m; } )
-    .def("rotate_axis_angle", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
+    .def("rotate_axis_angle", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) {
         Eigen::Quaternion<T> q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
         Class tf;
         tf.setIdentity();
@@ -79,7 +79,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
         m=tf*m;
         return m;
     } )
-    .def("rotate_axis_angle_local", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) { 
+    .def("rotate_axis_angle_local", [](Class &m, const Eigen::Matrix<T, 3, 1>& axis, const float angle_degrees) {
         Eigen::Quaternion<T>  q = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
         Class rot;
         rot.setIdentity();
@@ -89,14 +89,14 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
         m=tf*m;
         return m;
     } )
-    .def("orbit_y_around_point", [](Class &m, const Eigen::Matrix<T, 3, 1>& point, const float angle_degrees) { 
+    .def("orbit_y_around_point", [](Class &m, const Eigen::Matrix<T, 3, 1>& point, const float angle_degrees) {
         Eigen::Matrix<T, 3, 1> axis_y;
-        axis_y << 0,1,0; 
+        axis_y << 0,1,0;
         Eigen::Quaternion<T> q_y = Eigen::Quaternion<T>( Eigen::AngleAxis<T>( angle_degrees*M_PI/180.0 ,  axis_y.normalized() ) );
         //we apply rotations around the lookat point so we have to substract, apply rotation and then add back the lookat point
         Eigen::Transform<T,3,Eigen::Affine> model_matrix_rotated = Eigen::Translation< T, 3 >(point) * q_y * Eigen::Translation< T, 3 >(-point) * m  ;
         m=model_matrix_rotated;
-        return model_matrix_rotated; 
+        return model_matrix_rotated;
     } )
     //cast
     .def("to_float", [](const Class &m) {  return m.template cast<float>();  }  ) //template case es needed because of https://stackoverflow.com/a/48029026
@@ -158,13 +158,13 @@ PYBIND11_MODULE(easypbr, m) {
     // //setters
     // .def("set_translation", [](Eigen::Affine3d &m, const Eigen::Vector3d& t) {  m.translation()=t;  } )
     // .def("set_linear", [](Eigen::Affine3d &m, const Eigen::Matrix3d& t) {  m.linear()=t;  } )
-    // .def("set_quat", [](Eigen::Affine3d &m, const Eigen::Vector4d& q_vec) { 
-    //     Eigen::Quaterniond q;  
+    // .def("set_quat", [](Eigen::Affine3d &m, const Eigen::Vector4d& q_vec) {
+    //     Eigen::Quaterniond q;
     //     q.coeffs()=q_vec;
     //     m.linear()=q.toRotationMatrix();
     // } )
     // //convenience functions
-    // .def("rotate_axis_angle", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) { 
+    // .def("rotate_axis_angle", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) {
     //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
     //     Eigen::Affine3d tf;
     //     tf.setIdentity();
@@ -172,7 +172,7 @@ PYBIND11_MODULE(easypbr, m) {
     //     //compose the old transform with this new one
     //     m=tf*m;
     // } )
-    // .def("rotate_axis_angle_local", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) { 
+    // .def("rotate_axis_angle_local", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) {
     //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
     //     Eigen::Affine3d rot;
     //     rot.setIdentity();
@@ -187,7 +187,7 @@ PYBIND11_MODULE(easypbr, m) {
 
 
 
-        
+
     // template<typename T>
     // void declare_array(py::module &m, std::string &typestr) {
     //     // using Class = Array2D<T>;
@@ -199,7 +199,7 @@ PYBIND11_MODULE(easypbr, m) {
     //     // .def("width",     &Class::width)
     //     // .def("height",    &Class::height);
     // }
-   
+
     eigen_affine_bindings<float>(m, "f");
     eigen_affine_bindings<double>(m, "d");
 
@@ -266,7 +266,7 @@ PYBIND11_MODULE(easypbr, m) {
         m.def("vec2tensor", &vec2tensor);
         m.def("cuda_clear_cache", &cuda_clear_cache);
     #endif
- 
+
     //Viewer
     py::class_<Viewer, std::shared_ptr<Viewer>> (m, "Viewer")
     // .def(py::init<const std::string>())
@@ -292,7 +292,7 @@ PYBIND11_MODULE(easypbr, m) {
     ;
 
     //Gui
-    py::class_<Gui, std::shared_ptr<Gui> > (m, "Gui") 
+    py::class_<Gui, std::shared_ptr<Gui> > (m, "Gui")
     // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
     .def_static("show", &Gui::show )
     ;
@@ -346,7 +346,7 @@ PYBIND11_MODULE(easypbr, m) {
     ;
 
     //Scene
-    py::class_<Scene> (m, "Scene") 
+    py::class_<Scene> (m, "Scene")
     .def(py::init<>())
     // .def_static("show",  py::overload_cast<const Mesh&, const std::string>(&Scene::show) )
     .def_static("show",  py::overload_cast<const std::shared_ptr<Mesh>, const std::string>(&Scene::show) )
@@ -365,8 +365,8 @@ PYBIND11_MODULE(easypbr, m) {
     //LabelMngr
     py::class_<LabelMngr, std::shared_ptr<LabelMngr>> (m, "LabelMngr")
     // .def(py::init<>()) //canot initialize it because it required in the construction a configuru::Config object and that is not exposed in python
-    .def(py::init<const std::string, const std::string, const std::string, const int>()) 
-    .def(py::init<const int, const int>() ) 
+    .def(py::init<const std::string, const std::string, const std::string, const int>())
+    .def(py::init<const int, const int>() )
     .def("nr_classes", &LabelMngr::nr_classes )
     .def("get_idx_unlabeled", &LabelMngr::get_idx_unlabeled )
     .def("class_frequencies", &LabelMngr::class_frequencies )
@@ -528,7 +528,7 @@ PYBIND11_MODULE(easypbr, m) {
     ;
 
     //Profiler
-    py::class_<radu::utils::Profiler_ns::Profiler> (m, "Profiler") 
+    py::class_<radu::utils::Profiler_ns::Profiler> (m, "Profiler")
     .def_static("is_profiling_gpu", &radu::utils::Profiler_ns::is_profiling_gpu )
     .def_static("set_profile_gpu", &radu::utils::Profiler_ns::set_profile_gpu )
     .def_static("start",  []( std::string name ) { TIME_START(name); })
@@ -548,7 +548,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("viridis_color", &radu::utils::ColorMngr::viridis_color )
     ;
 
-    //utilsgl 
+    //utilsgl
     m.def("intrinsics_to_opengl_proj", &intrinsics_to_opengl_proj );
     m.def("opengl_proj_to_intrinsics", &opengl_proj_to_intrinsics );
 

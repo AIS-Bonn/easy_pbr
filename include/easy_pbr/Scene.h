@@ -31,7 +31,7 @@ public:
     static void remove_mesh_with_idx(const unsigned int idx);
 
     //more high level operations on the meshes in the scene
-    static Eigen::Vector3f get_centroid(const bool use_mutex=true); //returns the aproximate center of our scene which consists of all meshes 
+    static Eigen::Vector3f get_centroid(const bool use_mutex=true); //returns the aproximate center of our scene which consists of all meshes
     static float get_scale(const bool use_mutex=true); //returns how big the scene is as a measure betwen the min and the coefficient of the vertices
     static bool is_empty(const bool use_mutex=true);
 

@@ -8,7 +8,7 @@ in vec3 normal;
 
 //out
 layout(location = 0) out vec3 v_pos_out; //position in world coords
-layout(location = 1) out vec3 v_normal_out; 
+layout(location = 1) out vec3 v_normal_out;
 
 
 //uniforms

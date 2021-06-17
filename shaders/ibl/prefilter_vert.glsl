@@ -5,11 +5,11 @@
 
 layout (location = 0) in vec3 position;
 
-//uniforms 
+//uniforms
 uniform mat4 P_inv;
 uniform mat3 V_inv_rot;
 
-//out 
+//out
 layout (location = 0) out vec3 world_view_ray_out;
 
 void main(){

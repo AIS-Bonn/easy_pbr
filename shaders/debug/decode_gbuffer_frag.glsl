@@ -37,7 +37,7 @@ void main(){
 
     //normal
     vec3 normal_encoded=texture(normals_encoded_tex, uv_in).xyz;
-    vec3 normal_decoded=decode_normal(normal_encoded); 
+    vec3 normal_decoded=decode_normal(normal_encoded);
     normal_decoded= (normal_decoded+1.0)*0.5;
     vec2 metalnes_and_roughness=texture(metalness_and_roughness_tex, uv_in).xy;
     float depth = texture(depth_tex, uv_in).x;

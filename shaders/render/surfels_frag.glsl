@@ -6,15 +6,15 @@
 
 //in
 layout(location = 0) in vec3 position_eye_in;
-layout(location = 1) in vec3 normal_in; 
-layout(location = 2) in vec2 tex_coord_in; 
-layout(location = 3) in vec3 color_per_vertex_in; 
+layout(location = 1) in vec3 normal_in;
+layout(location = 2) in vec2 tex_coord_in;
+layout(location = 3) in vec3 color_per_vertex_in;
 // layout(location = 4) in vec2 uv_in
 
 
 //out
 //the locations are irrelevant because the link between the frag output and the texture is established at runtime by the shader function draw_into(). They just have to be different locations for each output
-// layout(location = 0) out vec4 position_out; 
+// layout(location = 0) out vec4 position_out;
 layout(location = 1) out vec4 diffuse_out;
 // layout(location = 3) out vec4 specular_out;
 // layout(location = 4) out vec4 shininess_out;
@@ -31,10 +31,10 @@ uniform float shininess;
 uniform float metalness;
 uniform float roughness;
 uniform bool enable_visibility_test;
-// uniform sampler2D diffuse_tex; 
-// uniform sampler2D metalness_tex; 
-// uniform sampler2D roughness_tex; 
-// uniform sampler2D normals_tex; 
+// uniform sampler2D diffuse_tex;
+// uniform sampler2D metalness_tex;
+// uniform sampler2D roughness_tex;
+// uniform sampler2D normals_tex;
 // uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 // uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 // uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
@@ -107,7 +107,7 @@ void main(){
     //         // normal_to_encode+=normal_deviation;
     //         // normal_to_encode=normalize(normal_to_encode);
     //     // }
-        
+
     // }else{
     //     diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     // }
@@ -141,7 +141,7 @@ void main(){
         //         // normal_to_encode+=normal_deviation;
         //         // normal_to_encode=normalize(normal_to_encode);
         //     // }
-            
+
         // }else{
         //     diffuse_out=vec4(color_per_vertex_in*surface_confidence,surface_confidence); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
         // }
@@ -156,6 +156,6 @@ void main(){
         // position_out = vec4(position_eye_in*surface_confidence, 1.0);
     }
 
-   
+
 
 }

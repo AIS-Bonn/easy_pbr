@@ -11,7 +11,7 @@ in vec3 color_per_vertex;
 //out
 flat layout(location = 0) out vec3 color_per_vertex_out;
 
-//uniform 
+//uniform
 uniform int color_type;
 uniform mat4 MVP;
 uniform vec3 line_color;

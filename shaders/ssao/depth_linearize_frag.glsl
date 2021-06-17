@@ -8,7 +8,7 @@ layout(location=0) in vec2 uv_in;
 //out
 layout(location = 0) out float depth_linear_out;
 
-//uniforms 
+//uniforms
 uniform sampler2D depth_tex;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;

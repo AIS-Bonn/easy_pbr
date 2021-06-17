@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <memory>
 
@@ -10,8 +10,8 @@
 #include "shared_ptr/EnableSharedFromThis.h"
 #include "shared_ptr/SmartPtrBuilder.h"
 
-namespace radu { namespace utils { 
-    class RandGenerator; 
+namespace radu { namespace utils {
+    class RandGenerator;
     }}
 
 namespace easy_pbr{
@@ -23,7 +23,7 @@ class Camera : public Generic::EnableSharedFromThis< Camera >
 {
 public:
     // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    // UI Enumerations 
+    // UI Enumerations
     enum class MouseButton {Left, Middle, Right};
     enum class MouseMode { None, Rotation, Zoom, Pan, Translation} mouse_mode;
 
@@ -66,14 +66,14 @@ public:
     void move_cam_and_lookat(const Eigen::Vector3f& pos); //moves the camera together with the lookat point
     void dolly(const Eigen::Vector3f& dv); //moves the camera along a certain displacement vector dv expressed in world coordinates
     void push_away(const float s); //moves the camera closer or further from the lookup point. A 's' values of 1 means no movement s>1 means going further and s<1 means closer
-    void push_away_by_dist(const float new_dist); //pueshes the camera backwards or forwards until the distance to lookat point matches the new_dist 
+    void push_away_by_dist(const float new_dist); //pueshes the camera backwards or forwards until the distance to lookat point matches the new_dist
     void orbit(const Eigen::Quaternionf& q); //Orbit around the m_lookat by an amount specified by q
     void orbit_y(const float angle_degrees); //orbit around the y axis of the world a certain amount of degrees
     void orbit_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees); //orbit around the chosen axis of the world a certain amount of degrees
     void rotate(const Eigen::Quaternionf& q); //rotates around the central camera position by a quaternion q
     void rotate_axis_angle(const Eigen::Vector3f& axis, const float angle_degrees); //same as rotate but using a axis_angle
-    Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
-    Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport); 
+    Eigen::Vector3f project(const Eigen::Vector3f point_world, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport);
+    Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport);
     Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera
     void flip_around_x(); //some cameras assume you look in the positive Z direction so we may need to flip them to look backwards. This rotates 180 degrees around the x axis
     void from_frame(const Frame& frame, const bool flip_z_axis); // initialized the camera to have the parameters of the frame
@@ -111,7 +111,7 @@ private:
 
     //mouse things
     bool m_is_mouse_down;
-    Eigen::Vector2f m_current_mouse; //position of the mouse when it was clicked 
+    Eigen::Vector2f m_current_mouse; //position of the mouse when it was clicked
     Eigen::Vector2f m_prev_mouse; //position of the mouse at the previous timestep
     Eigen::Vector3f m_prev_translation; //translation of the camera at the previous timestmap
     Eigen::Quaternionf m_prev_rotation; // rotation fo the camera at the previous timestep

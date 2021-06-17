@@ -40,13 +40,13 @@ public:
     void sanity_check() const; //check that all the data inside the mesh is valid, there are enough normals for each face, faces don't idx invalid points etc.
 
 
-    //GL functions 
+    //GL functions
     void upload_to_gpu();
 
     bool m_first_core_assignment;
 
-    //GL buffers 
-    gl::VertexArrayObject vao; 
+    //GL buffers
+    gl::VertexArrayObject vao;
     gl::Buf V_buf;
     gl::Buf F_buf;
     gl::Buf C_buf;
@@ -62,9 +62,9 @@ public:
     gl::Buf I_buf;
 
     //we store the textures then as shared ptr so we can have a weak ptr that selects the one we sho
-    // std::shared_ptr<gl::Texture2D> m_rgb_tex; 
-    // std::shared_ptr<gl::Texture2D> m_thermal_tex; 
-    // std::shared_ptr<gl::Texture2D> m_thermal_colored_tex; 
+    // std::shared_ptr<gl::Texture2D> m_rgb_tex;
+    // std::shared_ptr<gl::Texture2D> m_thermal_tex;
+    // std::shared_ptr<gl::Texture2D> m_thermal_colored_tex;
     // std::shared_ptr<gl::Texture2D> m_cur_tex_ptr; //points to the texture that is currently being displayed
 
     //texture used for PBR

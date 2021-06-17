@@ -12,8 +12,8 @@ namespace easy_pbr{
 //redeclared things here so we can use them from this file even though they are static
 std::vector<MeshSharedPtr>  Scene::m_meshes;
 std::mutex Scene::m_mesh_mutex;
-bool Scene::m_floor_visible =true; 
-bool Scene::m_floor_metric =false; 
+bool Scene::m_floor_visible =true;
+bool Scene::m_floor_metric =false;
 
 
 Scene::Scene()
@@ -25,12 +25,12 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
 
     std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
 
-    //sanity check 
+    //sanity check
     if (mesh->V.cols()!=3){
         LOG(FATAL) << "The V matrix should be Nx3 but it has shape " << mesh->V.rows() <<"x" << mesh->V.cols();
     }
 
-    //check if there is already a mesh with the same name 
+    //check if there is already a mesh with the same name
     bool found=false;
     int idx_found=-1;
     for(size_t i = 0; i < m_meshes.size(); i++){
@@ -53,7 +53,7 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     }
 
 
-    //if that was the first mesh that was added, add also a grid for the ground 
+    //if that was the first mesh that was added, add also a grid for the ground
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
         MeshSharedPtr mesh_grid=Mesh::create();
@@ -66,11 +66,11 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
             mesh_grid->create_grid(m_grid_nr_segments, 0.0, get_scale(false));
         }
         mesh_grid->m_vis.m_is_visible=m_floor_visible;
-        // m_meshes.push_back(mesh_grid); 
-        m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added 
+        // m_meshes.push_back(mesh_grid);
+        m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added
 
     }
-    
+
 }
 
 // void Scene::show(const Mesh& mesh, const std::string name){
@@ -88,7 +88,7 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
         m_meshes.back()->recalculate_normals();
     }
 
-    //if that was the first mesh that was added, add also a grid for the ground 
+    //if that was the first mesh that was added, add also a grid for the ground
     if(m_meshes.size()==1 && !m_meshes.back()->is_empty()){
 
         MeshSharedPtr mesh_grid=Mesh::create();
@@ -98,10 +98,10 @@ void Scene::add_mesh(const std::shared_ptr<Mesh> mesh, const std::string name){
             mesh_grid->create_grid(m_grid_nr_segments, 0.0, get_scale(false));
         }
         // m_meshes.push_back(mesh_grid);
-        m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added 
-      
+        m_meshes.insert(m_meshes.begin(), mesh_grid); //we insert it at the begginng of the vector so the mesh we added with show would appear as the last one we added
+
     }
-    
+
 }
 
 void Scene::clear(){
@@ -247,41 +247,41 @@ Eigen::Vector3f Scene::get_centroid(const bool use_mutex){
         std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     }
 
-    //if the scene is empty just return the 0.0.0 
+    //if the scene is empty just return the 0.0.0
     if(is_empty(false)){ //don't use mutex because we either locked in the the previous line or whoever called this function ensured us that the lock is already locked
         return Eigen::Vector3f::Zero();
     }
 
 
-    Eigen::MatrixXd min_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 
-    Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 
+    Eigen::MatrixXd min_point_per_mesh; // each row stores the minimum point of the corresponding mesh.
+    Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh.
     min_point_per_mesh.resize(m_meshes.size(), 3);
     max_point_per_mesh.resize(m_meshes.size(), 3);
     min_point_per_mesh.setZero();
     max_point_per_mesh.setZero();
     for(size_t i=0; i<m_meshes.size(); i++){
-        if(m_meshes[i]->is_empty()){ continue; }  
-        min_point_per_mesh.row(i) = m_meshes[i]->V.colwise().minCoeff();   
-        max_point_per_mesh.row(i) = m_meshes[i]->V.colwise().maxCoeff();   
+        if(m_meshes[i]->is_empty()){ continue; }
+        min_point_per_mesh.row(i) = m_meshes[i]->V.colwise().minCoeff();
+        max_point_per_mesh.row(i) = m_meshes[i]->V.colwise().maxCoeff();
     }
 
     //absolute minimum between all meshes
-    Eigen::Vector3d min_point = min_point_per_mesh.colwise().minCoeff(); 
+    Eigen::Vector3d min_point = min_point_per_mesh.colwise().minCoeff();
     Eigen::Vector3d max_point = max_point_per_mesh.colwise().maxCoeff();
     Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
     return centroid.cast<float>();
 }
-  
+
 float Scene::get_scale(const bool use_mutex){
 
     if(use_mutex){
         std::lock_guard<std::mutex> lock(m_mesh_mutex);  // so that accesed to the map are thread safe
     }
 
-    //if the scene is empty just return the scale 1.0 
+    //if the scene is empty just return the scale 1.0
     if(is_empty(false)){ //don't use mutex because we either locked in the the previous line or whoever called this function ensured us that the lock is already locked
-       return 1.0; 
+       return 1.0;
     }
 
     if(m_meshes.size()==1){
@@ -293,23 +293,23 @@ float Scene::get_scale(const bool use_mutex){
     }
 
 
-    Eigen::MatrixXd min_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 
-    Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh. 
+    Eigen::MatrixXd min_point_per_mesh; // each row stores the minimum point of the corresponding mesh.
+    Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh.
     min_point_per_mesh.resize(m_meshes.size(), 3);
     max_point_per_mesh.resize(m_meshes.size(), 3);
     min_point_per_mesh.setConstant(std::numeric_limits<float>::max());
     max_point_per_mesh.setConstant(std::numeric_limits<float>::lowest());
     for(size_t i=0; i<m_meshes.size(); i++){
-        if(m_meshes[i]->is_empty()){ continue; }  
+        if(m_meshes[i]->is_empty()){ continue; }
         if(m_meshes[i]->name=="grid_floor"){
             continue;
         }
-        min_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().minCoeff());   
-        max_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().maxCoeff());   
+        min_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().minCoeff());
+        max_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().maxCoeff());
     }
 
     //absolute minimum between all meshes
-    Eigen::Vector3d min_point = min_point_per_mesh.colwise().minCoeff(); 
+    Eigen::Vector3d min_point = min_point_per_mesh.colwise().minCoeff();
     Eigen::Vector3d max_point = max_point_per_mesh.colwise().maxCoeff();
     // Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
@@ -347,7 +347,7 @@ void Scene::set_floor_visible(const bool val){
 void Scene::set_floor_metric(const bool val){
     m_floor_metric=val;
 
-    //recreate the mesh grid if it's already created 
+    //recreate the mesh grid if it's already created
     if(does_mesh_with_name_exist("grid_floor")){
         MeshSharedPtr mesh_grid=Mesh::create();
         if(m_floor_metric){

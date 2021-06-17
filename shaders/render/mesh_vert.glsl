@@ -54,7 +54,7 @@ void main(){
 
    gl_Position = MVP*vec4(position, 1.0);
 
-   //tbn matrix 
+   //tbn matrix
    vec3 bitangent = cross(normal, tangent);  //calculate the bitgent in the object coordinate system. The tangent and normal are also in the object coordinate system
 
    //get the tbn vectors from the model to the world coordinate system

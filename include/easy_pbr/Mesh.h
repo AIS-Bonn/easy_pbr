@@ -17,8 +17,8 @@
 #include <loguru.hpp>
 
 
-namespace radu { namespace utils { 
-    class RandGenerator; 
+namespace radu { namespace utils {
+    class RandGenerator;
     }}
 
 namespace easy_pbr{
@@ -56,8 +56,8 @@ struct VisOptions{
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering
     float m_normals_scale=-1.0; //the scale of the arrows for the normal. It starts at -1.0 but it gets set during the first render to something depending on the mesh scale
     MeshColorType m_color_type=MeshColorType::Solid;
-    // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0); 
-    Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0); 
+    // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0);
+    Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0);
     Eigen::Vector3f m_line_color = Eigen::Vector3f(1.0, 0.0, 0.0);   //used for lines and wireframes
     Eigen::Vector3f m_solid_color = Eigen::Vector3f(1.0, 206.0/255.0, 143.0/255.0);
     Eigen::Vector3f m_label_color = Eigen::Vector3f(1.0, 160.0/255.0, 0.0);
@@ -94,9 +94,9 @@ struct VisOptions{
     }
 
     bool operator==(const VisOptions& rhs) const{
-        return 
+        return
         this->m_is_visible == rhs.m_is_visible &&
-        this->m_show_points == rhs.m_show_points && 
+        this->m_show_points == rhs.m_show_points &&
         this->m_show_lines == rhs.m_show_lines &&
         this->m_show_normals == rhs.m_show_normals &&
         this->m_show_mesh == rhs.m_show_mesh &&
@@ -134,7 +134,7 @@ struct CvMatCpu {
 };
 
 //for matrices bookkeeping
-template <typename T> 
+template <typename T>
 struct DataBlob {
     public:
         DataBlob(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& data):
@@ -143,7 +143,7 @@ struct DataBlob {
 
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& data(){return m_data;} //get a reference to the internal matrix
 
-        void preallocate(size_t rows, size_t cols){ 
+        void preallocate(size_t rows, size_t cols){
             m_data.resize(rows,cols);
             m_data.setZero();
             m_is_preallocated=true;
@@ -151,7 +151,7 @@ struct DataBlob {
         void copy_in_first_empty_block(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& new_data){
             //WARNING , cannot be used to append E and F because they also need to be reindexed
             static_assert(std::is_same<T, double>::value, "We only allow appending to matrices that are of type double. If the matrix of type int it means it is E or F and therefore would need to be reindexed after appending which is no supported in the streaming API");
-            //other checks 
+            //other checks
             CHECK(m_is_preallocated) << "Can only use this appening API when the data has been preallocated";
             CHECK(m_data.cols()==new_data.cols()) << "Data cols and new_data cols do not coincide. m_data cols is " << m_data.cols() << " and new_data cols is " << new_data.cols();
 
@@ -175,7 +175,7 @@ struct DataBlob {
             m_data.block(start_new_block,0, new_data.rows(), new_data.cols() )=new_data;
             m_end_row_allocated+= new_data.rows();
 
-        } 
+        }
         void recycle_block(size_t start_row, size_t end_row){
 
         }
@@ -199,7 +199,7 @@ public:
     }
     Mesh();
     Mesh(const std::string file_path);
-    ~Mesh()=default; 
+    ~Mesh()=default;
 
     Mesh clone();
     void add(Mesh& new_mesh); //Adds another mesh to this one and combines it into one
@@ -211,7 +211,7 @@ public:
     bool is_empty()const;
     // void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
     // void transform_model_matrix(const Eigen::Affine3d& trans); //updates the model matrix but does not change the vertex data V on the CPU
-    // void apply_transform(const Eigen::Affine3d& tf, const bool update_cpu_data, const bool transform_points_at_zero=false); //if we update the CPU data we move directly the V vertices but the model matrix does not get updates and it will stay as whatever it was set before. That means that the origin around which rotations will be applied subsequently may not lie anymore where you expected. If we have update_cpu_data to false, we only modify the model matrix therefore the model matrix 
+    // void apply_transform(const Eigen::Affine3d& tf, const bool update_cpu_data, const bool transform_points_at_zero=false); //if we update the CPU data we move directly the V vertices but the model matrix does not get updates and it will stay as whatever it was set before. That means that the origin around which rotations will be applied subsequently may not lie anymore where you expected. If we have update_cpu_data to false, we only modify the model matrix therefore the model matrix
 
     Eigen::Affine3d cur_pose();
     Eigen::Affine3d& cur_pose_ref();
@@ -232,21 +232,21 @@ public:
     // void premultiply_model_matrix(const Eigen::VectorXd& xyz_q);
     // void postmultiply_model_matrix(const Eigen::VectorXd& xyz_q);
 
-    //preallocation things 
+    //preallocation things
     void preallocate_V(size_t max_nr_verts); //we preallocate a certain nr of vertices,
-    void preallocate_F(size_t max_nr_faces); 
-    void preallocate_C(size_t max_nr_verts); 
-    void preallocate_E(size_t max_nr_lines); 
-    void preallocate_D(size_t max_nr_verts); 
-    void preallocate_NF(size_t max_nr_faces); 
-    void preallocate_NV(size_t max_nr_verts); 
-    void preallocate_UV(size_t max_nr_verts); 
-    void preallocate_V_tangent_u(size_t max_nr_verts); 
-    void preallocate_V_length_v(size_t max_nr_verts); 
-    void preallocate_L_pred(size_t max_nr_verts); 
-    void preallocate_L_gt(size_t max_nr_verts); 
-    void preallocate_I(size_t max_nr_verts); 
-  
+    void preallocate_F(size_t max_nr_faces);
+    void preallocate_C(size_t max_nr_verts);
+    void preallocate_E(size_t max_nr_lines);
+    void preallocate_D(size_t max_nr_verts);
+    void preallocate_NF(size_t max_nr_faces);
+    void preallocate_NV(size_t max_nr_verts);
+    void preallocate_UV(size_t max_nr_verts);
+    void preallocate_V_tangent_u(size_t max_nr_verts);
+    void preallocate_V_length_v(size_t max_nr_verts);
+    void preallocate_L_pred(size_t max_nr_verts);
+    void preallocate_L_gt(size_t max_nr_verts);
+    void preallocate_I(size_t max_nr_verts);
+
 
 
 
@@ -263,7 +263,7 @@ public:
     void create_sphere(const Eigen::Vector3d& center, const double radius);
     void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.
 
-    //lots of mesh ops 
+    //lots of mesh ops
     void remove_marked_vertices(const std::vector<bool>& mask, const bool keep);
     void set_marked_vertices_to_zero(const std::vector<bool>& mask, const bool keep); //useful for when the actual removal of verts will destroy the organized structure
     void remove_vertices_at_zero(); // zero is used to denote the invalid vertex, we can remove them and rebuild F, E and the rest of indices with this function
@@ -278,7 +278,7 @@ public:
     void worldROS2worldGL();
     // void rotate_x_axis(const float degrees);
     // void rotate_y_axis(const float degrees);
-    void random_subsample(const float percentage_removal); 
+    void random_subsample(const float percentage_removal);
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();
     void normalize_size(); //normalize the size of the mesh between [-1,1]
@@ -301,7 +301,7 @@ public:
     void color_solid2pervert(); //makes the solid color into a per vert color by allocating a C vector. It is isefult when merging meshes of different colors.
     void estimate_normals_from_neighbourhood(const float radius);
     Eigen::MatrixXd compute_distance_to_mesh(const std::shared_ptr<Mesh>& target_mesh); //compute for each point in this cloud, the distance to another one, returns a D vector of distances which is of size Nx1 where N is the vertices in this mesh
-    
+
 
     //nanoflann options for querying points in a certain radius or querying neighbiurs
     int radius_search(const Eigen::Vector3d& query_point, const double radius); //returns touples of (index in V of the point, distance to it)
@@ -319,7 +319,7 @@ public:
     float min_y();
     float max_y();
 
-    //set textures for pbr 
+    //set textures for pbr
     void set_diffuse_tex(const std::string file_path, const int subsample=1);
     void set_metalness_tex(const std::string file_path, const int subsample=1);
     void set_roughness_tex(const std::string file_path, const int subsample=1);
@@ -343,7 +343,7 @@ public:
     bool m_force_vis_update; //sometimes we want the m_vis stored in the this MeshCore to go into the MeshGL, sometimes we don't. The default is to not propagate, setting this flag to true will force the update of m_vis inside the MeshGL
 
 
-    Eigen::MatrixXd V; 
+    Eigen::MatrixXd V;
     Eigen::MatrixXi F;
     Eigen::MatrixXd C;
     Eigen::MatrixXi E;
@@ -353,8 +353,8 @@ public:
     Eigen::MatrixXd UV; //UV for each vertex
     Eigen::MatrixXd V_tangent_u; //for surfel rendering each vertex has a 2 vectors that are tangent defining the span of the elipsoid. For memory usage we don't store the 2 vectors directly because we alreayd have a normal vector, rather we store one tangent vector in full (vec3) and the other one we store only the norm of it because it's dirrection can be inferred as the cross product between the normal and the first tangent vector
     Eigen::MatrixXd V_length_v;
-    Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation 
-    Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation 
+    Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation
+    Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation
     Eigen::MatrixXd I; //intensity value of each point in the cloud. Useful for laser scanner
     DataBlob<double> V_blob;
 
@@ -409,12 +409,12 @@ public:
         return std::any_cast<T>(extra_fields[name]);
     }
 
-  
+
 
 private:
 
     std::string named(const std::string msg) const{
-        return name.empty()? msg : name + ": " + msg;    
+        return name.empty()? msg : name + ": " + msg;
     }
 
 
@@ -423,10 +423,10 @@ private:
     void write_ply(const std::string file_path);
     void read_obj(const std::string file_path);
 
-    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world. 
-    Eigen::Affine3d m_cur_pose; 
+    Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world.
+    Eigen::Affine3d m_cur_pose;
 
-    //preallocation stuff 
+    //preallocation stuff
     bool m_is_preallocated;
 
 

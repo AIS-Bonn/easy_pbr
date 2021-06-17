@@ -137,13 +137,13 @@ void Camera::set_position(const Eigen::Vector3f& pos){
     m_model_matrix.translation()=pos;
 
     recalculate_orientation();
-    
+
     m_position_initialized=true;
 }
 void Camera::set_quat(const Eigen::Vector4f& quat){
     float dist=dist_to_lookat();
 
-    Eigen::Quaternion<float> q;  
+    Eigen::Quaternion<float> q;
     q.coeffs()=quat;
     m_model_matrix.linear()=q.toRotationMatrix();
 
@@ -208,7 +208,7 @@ void Camera::orbit(const Eigen::Quaternionf& q){
 void Camera::orbit_y(const float angle_degrees){
 
     Eigen::Vector3f axis_y;
-    axis_y << 0,1,0; 
+    axis_y << 0,1,0;
     Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees*M_PI/180.0 ,  axis_y.normalized() ) );
 
     orbit(q_y);
@@ -280,8 +280,8 @@ void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
         cam_axes.col(2)=-cam_axes.col(2);
         m_model_matrix.linear()= cam_axes;
     }
-    
-    //set fov in x direction 
+
+    //set fov in x direction
     float fx=frame.K(0,0);
     m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
 
@@ -389,14 +389,14 @@ void Camera::mouse_move(const float x, const float y, const Eigen::Vector2f view
 
 
 Eigen::Quaternionf Camera::two_axis_rotation(const Eigen::Vector2f viewport_size, const float speed, const Eigen::Vector2f prev_mouse, const Eigen::Vector2f current_mouse){
-  
+
     Eigen::Quaternionf rot_output;
 
     // rotate around Y axis of the world (the vector 0,1,0)
     Eigen::Vector3f axis_y;
-    axis_y << 0,1,0; 
+    axis_y << 0,1,0;
     Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( M_PI*(prev_mouse.x()-current_mouse.x())/viewport_size.x()*speed,  axis_y.normalized() ) );
-    q_y.normalize(); 
+    q_y.normalize();
 
     // //rotate around x axis of the camera coordinate
     Eigen::Vector3f axis_x;
@@ -444,7 +444,7 @@ Eigen::Vector3f Camera::unproject(const Eigen::Vector3f win, const Eigen::Matrix
     Eigen::Vector3f scene;
 
 
-    Eigen::Matrix4f Inverse = 
+    Eigen::Matrix4f Inverse =
       (proj * view).inverse();
 
     Eigen::Vector4f tmp;
@@ -465,7 +465,7 @@ Eigen::Vector3f Camera::unproject(const Eigen::Vector3f win, const Eigen::Matrix
 Eigen::Vector3f Camera::random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y){
     //the viewport grid of pixels from which we can sample from
 
-    // Eigen::Matrix4f P=proj_matrix(viewport_size); 
+    // Eigen::Matrix4f P=proj_matrix(viewport_size);
     int rand_x=m_rand_gen->rand_int(restrict_x, viewport_size.x()-restrict_x);
     int rand_y=m_rand_gen->rand_int(restrict_y, viewport_size.y()-restrict_y);
     // VLOG(1) << "viewport size is " << viewport_size << "x and y random is " << rand_x << " " <<rand_y;
@@ -489,7 +489,7 @@ Eigen::Vector3f Camera::random_direction_in_frustum(const Eigen::Vector2f viewpo
 }
 
 void Camera::print(){
-   VLOG(1) << "Camera m_translation and m_rotation of the model_matrix: " << to_string(); 
+   VLOG(1) << "Camera m_translation and m_rotation of the model_matrix: " << to_string();
 }
 
 std::string Camera::to_string(){
@@ -500,7 +500,7 @@ std::string Camera::to_string(){
 }
 
 void Camera::from_string(const std::string pose){
-    std::vector<std::string> tokens = split(pose, " "); 
+    std::vector<std::string> tokens = split(pose, " ");
 
     CHECK(tokens.size()==13) << "We should have 13 components to the pose. The components  are: tx ty tz qx qy qz qw lx ly lz fov znear zfar. We have nr of components: " << tokens.size();
 
@@ -591,7 +591,7 @@ MeshSharedPtr Camera::create_frustum_mesh( const float scale_multiplier, const E
     frustum_mesh->m_vis.m_show_lines=true;
 
     //since we want somtimes to see the axes of the camera, we actually make the vertices be at the origin an then use the model matrix to trasnform them while rendering. And then through the imguimzo i can check the axes
-    //transform from world to camera 
+    //transform from world to camera
     Eigen::Affine3d tf_cam_world=Eigen::Affine3d(view.cast<double>());
     frustum_mesh->transform_vertices_cpu(tf_cam_world.cast<double>(), true);
     frustum_mesh->set_model_matrix( tf_cam_world.cast<double>().inverse() );
@@ -608,5 +608,3 @@ std::shared_ptr<Camera> Camera::clone()
 }
 
 } //namespace easy_pbr
-
-

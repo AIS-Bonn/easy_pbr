@@ -81,14 +81,14 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
     frustum_mesh->m_vis.m_show_lines=true;
 
     //since we want somtimes to see the axes of the camera, we actually make the vertices be at the origin an then use the model matrix to trasnform them while rendering. And then through the imguimzo i can check the axes
-    //transform from world to camera 
+    //transform from world to camera
     frustum_mesh->transform_vertices_cpu(tf_cam_world.cast<double>(), true);
     frustum_mesh->set_model_matrix( tf_cam_world.cast<double>().inverse() );
 
 
     //make also a mesh from the far face so that we can display a texture
     if(show_texture){
-        
+
         //try to get a mat that has texture
         cv::Mat tex;
         if(tex.empty() && !rgb_8u.empty()){  tex=rgb_8u;  }
@@ -96,14 +96,15 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
         if(tex.empty() && !rgb_32f.empty()){  tex=rgb_32f;  }
         if(tex.empty() && !gray_32f.empty()){  tex=gray_32f;  }
 
-        //if we found a texture 
+        //if we found a texture
         if(!tex.empty()){
+
 
             Eigen::MatrixXi F(2,3);
             F << 4,5,6,
                 4,6,7;
             Eigen::MatrixXd NV(8,3);
-            NV << 
+            NV <<
                 // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
                 0, 0, 1,
                 0, 0, 1,
@@ -117,22 +118,22 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
             //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
             Eigen::MatrixXd UV(8,2);
-            UV << 
+            UV <<
                 // near face (doesnt actually need uvs)
                 1, 1, //top right
                 0, 1, // top left
                 0, 0, //bottom left
                 1, 0, //bottom right
                 //far face
-                1, 1, //top right 
+                1, 1, //top right
                 0, 1, // top left corner of ndc
                 0, 0, //bottom left
                 1, 0; //bottom right
             frustum_mesh->F=F;
             frustum_mesh->NV=NV;
             frustum_mesh->UV=UV;
-        
-            //resize 
+
+            //resize
             int max_size=256.0;
             if(tex.cols>max_size || tex.rows> max_size){
                 int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
@@ -195,7 +196,7 @@ Frame Frame::subsample(const int subsample_factor){
 
     //deal with the other things that changed now that the image is smaller
     new_frame.K/=subsample_factor;
-    new_frame.K(2,2)=1.0; 
+    new_frame.K(2,2)=1.0;
     // new_frame.height=std::round( (float)height/subsample_factor);
     // new_frame.width=std::round( (float)width/subsample_factor);
     //need to use the cvround because the cv::resize uses that one to compute teh new size of the image and std::round gives different results
@@ -223,13 +224,13 @@ cv::Mat Frame::depth2world_xyz_mat() const{
         for(int x=0; x<depth.cols; x++){
             // int idx_insert= y*depth.cols + x;
 
-            float depth_val = depth.at<float>(y,x); 
+            float depth_val = depth.at<float>(y,x);
             if(depth_val!=0.0){
 
                 Eigen::Vector3d point_2D;
                 //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-                point_2D << x, depth.rows-y, 1.0;  
-                Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D; 
+                point_2D << x, depth.rows-y, 1.0;
+                Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D;
                 point_3D_camera_coord*=depth_val;
                 Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
 
@@ -290,7 +291,7 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
 
     cv::Mat depth_xyz=depth2world_xyz_mat();
 
-    //Make a series of point in sensor frame 
+    //Make a series of point in sensor frame
     Eigen::MatrixXd V;
     // Eigen::MatrixXd D;
     V.resize(depth_xyz.rows*depth_xyz.cols,3);
@@ -299,20 +300,20 @@ std::shared_ptr<Mesh> Frame::depth2world_xyz_mesh() const{
     for(int y=0; y<depth_xyz.rows; y++){
         for(int x=0; x<depth_xyz.cols; x++){
             int idx_insert= y*depth_xyz.cols + x;
-            V.row(idx_insert) << depth_xyz.at<cv::Vec3f>(y, x) [0], depth_xyz.at<cv::Vec3f>(y, x) [1], depth_xyz.at<cv::Vec3f>(y, x) [2]; 
+            V.row(idx_insert) << depth_xyz.at<cv::Vec3f>(y, x) [0], depth_xyz.at<cv::Vec3f>(y, x) [1], depth_xyz.at<cv::Vec3f>(y, x) [2];
         }
     }
 
-    // //puts it in camera frame 
-    // V=V*K.cast<double>().inverse().transpose(); 
+    // //puts it in camera frame
+    // V=V*K.cast<double>().inverse().transpose();
     // // V=V.rowwise()*D.array();
     // for(int i=0; i<V.rows(); i++){
-    //     V(i,0)=V(i,0)*D(i,0); 
-    //     V(i,1)=V(i,1)*D(i,0); 
-    //     V(i,2)=V(i,2)*D(i,0); 
+    //     V(i,0)=V(i,0)*D(i,0);
+    //     V(i,1)=V(i,1)*D(i,0);
+    //     V(i,2)=V(i,2)*D(i,0);
     // }
 
- 
+
 
     MeshSharedPtr cloud=Mesh::create();
     cloud->V=V;
@@ -352,7 +353,7 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
             directions_mesh->V.row(idx_insert)= dir.cast<double>();
 
             idx_insert++;
-        
+
         }
     }
 
@@ -381,7 +382,7 @@ std::shared_ptr<Mesh> Frame::pixels2coords() const{
             points_mesh->V.row(idx_insert)= point_screen.cast<double>();
 
             idx_insert++;
-        
+
         }
     }
 
@@ -454,7 +455,7 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
 
 
     //project
-    V_transformed=V_transformed*K.cast<double>().transpose(); 
+    V_transformed=V_transformed*K.cast<double>().transpose();
     int nr_points_projected=0;
     for (int i = 0; i < cloud->V.rows(); i++) {
         V_transformed(i,0)/=V_transformed(i,2);
@@ -471,7 +472,7 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
 
         // // VLOG(1) << "accessing at y,x" << y << " " << x;
         // // store Color in C as RGB
-        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ]; 
+        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
         cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
         cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
 
@@ -555,7 +556,7 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
 
     // //project
-    // V_transformed=V_transformed*K.cast<double>().transpose(); 
+    // V_transformed=V_transformed*K.cast<double>().transpose();
     // int nr_points_projected=0;
     // for (int i = 0; i < cloud->V.rows(); i++) {
     //     V_transformed(i,0)/=V_transformed(i,2);
@@ -622,7 +623,7 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
 
     //project
-    V_transformed=V_transformed*K.cast<double>().transpose(); 
+    V_transformed=V_transformed*K.cast<double>().transpose();
     int nr_points_projected=0;
     for (int i = 0; i < cloud->V.rows(); i++) {
         V_transformed(i,0)/=V_transformed(i,2);
@@ -639,7 +640,7 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
         // // VLOG(1) << "accessing at y,x" << y << " " << x;
         // // store Color in C as RGB
-        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ]; 
+        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
         cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
         cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
 
@@ -664,7 +665,7 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 //     tf_rot = Eigen::AngleAxisf(rads*M_PI, Eigen::Vector3f::UnitY());
 //     tf.matrix().block<3,3>(0,0)=tf_rot;
 
-//     //transform 
+//     //transform
 //     Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
 //     Eigen::Affine3f tf_world_cam_rotated= tf*tf_world_cam; //cam goes to world, and then cam rotates
 //     tf_cam_world=tf_world_cam_rotated.inverse();
@@ -682,7 +683,7 @@ Eigen::Vector3f Frame::pos_in_world() const{
 Eigen::Vector3f Frame::look_dir() const{
     // return tf_cam_world.inverse().translation();
     Eigen::Matrix3f rot= tf_cam_world.inverse().linear();
-    Eigen::Vector3f dir= rot.col(2); 
+    Eigen::Vector3f dir= rot.col(2);
     dir=dir.normalized();
     return dir;
 }

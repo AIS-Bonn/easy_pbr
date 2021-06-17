@@ -5,7 +5,7 @@
 
 // #include "imgui.h"
 // #include "imgui_impl_glfw.h"
-// #include "imgui_impl_opengl3.h" 
+// #include "imgui_impl_opengl3.h"
 // #include <glad/glad.h> // Initialize with gladLoadGL()
 // // Include glfw3.h after our OpenGL definitions
 // #include <GLFW/glfw3.h>
@@ -17,7 +17,7 @@
 #include "CubeMap.h"
 #include "ColorMngr.h"
 
-//dir watcher 
+//dir watcher
 // #ifdef EASYPBR_WITH_DIR_WATCHER
 // DO NOT USE A IFDEF because other C++ libs may include this Viewer.h without the compile definitions and therefore the Viewer.h that was used to compile easypbr and the one included will be different leading to issues
 #include "dir_watcher/dir_watcher.hpp"
@@ -29,9 +29,9 @@
 // #include <pybind11/eigen.h>
 class GLFWwindow;
 
-namespace radu { namespace utils { 
-    class RandGenerator; 
-    class Timer; 
+namespace radu { namespace utils {
+    class RandGenerator;
+    class Timer;
     }}
 
 namespace easy_pbr{
@@ -59,7 +59,7 @@ public:
     // ~Viewer()=default;
     ~Viewer();
 
-    
+
     bool dummy;  //to initialize the window we provide this dummy variable so we can call initialie context
     bool dummy_glad;
     GLFWwindow* m_window;
@@ -89,7 +89,7 @@ public:
     void switch_callbacks(GLFWwindow* window);
     void add_callback_pre_draw(const std::function<void(Viewer& viewer)> func);
     void add_callback_post_draw(const std::function<void(Viewer& viewer)> func);
-    void update(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer) 
+    void update(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer)
     void pre_draw();
     void post_draw();
     void draw(const GLuint fbo_id=0); //draw into a certain framebuffer, by default its the screen (default framebuffer)
@@ -116,7 +116,7 @@ public:
     void write_gbuffer_to_folder();
 
 
-    //rendering passes 
+    //rendering passes
     void ssao_pass();
     void compose_final_image(const GLuint fbo_id);
     cv::Mat gbuffer_mat_with_name(const std::string name);
@@ -124,7 +124,7 @@ public:
     //other
     void create_random_samples_hemisphere();
 
-    //getters 
+    //getters
     gl::Texture2D& rendered_tex_no_gui(const bool with_transparency);
     gl::Texture2D& rendered_tex_with_gui();
 
@@ -140,7 +140,7 @@ public:
     void imgui_drop(GLFWwindow* window, int count, const char** paths);
 
     radu::utils::ColorMngr m_colormngr;
-    
+
     //timing for having fuzzy time updates at 30fps https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75
     std::shared_ptr<radu::utils::Timer> m_timer;
     double m_old_time;
@@ -197,8 +197,8 @@ public:
     float m_kernel_radius;
     int m_ao_power;
     float m_sigma_spacial;
-    float m_sigma_depth;    
-    Eigen::Vector3f m_ambient_color;   
+    float m_sigma_depth;
+    Eigen::Vector3f m_ambient_color;
     float m_ambient_color_power;
     bool m_enable_culling;
     bool m_auto_ssao;
@@ -241,14 +241,14 @@ public:
     // Eigen::Matrix4f compute_mvp_matrix(const std::shared_ptr<MeshGL>& mesh);
     bool m_first_draw;
 
-    //recorder stuff 
+    //recorder stuff
     std::string m_recording_path;
     std::string m_snapshot_name;
     bool m_record_gui;
     bool m_record_with_transparency;
 
 
-    //camera speed multiplier 
+    //camera speed multiplier
     float m_camera_translation_speed_multiplier;
 
 private:

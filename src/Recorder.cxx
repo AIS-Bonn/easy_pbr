@@ -24,7 +24,7 @@ Recorder::Recorder(Viewer* view):
     // m_snapshot_name("img.png")
 {
 
-    
+
     // //initialize the pbo used for reading the default framebuffer
     // m_pbo_storages_initialized.resize(m_nr_pbos,false);
     // m_pbo_ids.resize(m_nr_pbos);
@@ -87,7 +87,7 @@ bool Recorder::record(gl::Texture2D& tex, const std::string name, const std::str
         if (is_recording()){
             m_nr_images_recorded++;
         }
-    
+
 
         return true;
     }else{
@@ -127,11 +127,11 @@ void Recorder::snapshot(const std::string name, const std::string path){
     //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
     write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
 }
-    
+
 
 // void Recorder::write_viewer_to_png(){
 
-//     //make the dirs 
+//     //make the dirs
 //     fs::path root (std::string(PROJECT_SOURCE_DIR));
 //     fs::path dir (m_results_path);
 //     fs::path png_name (m_single_png_filename);
@@ -178,7 +178,7 @@ void Recorder::snapshot(const std::string name, const std::string path){
 
 // void Recorder::record_viewer(){
 
-//     //make the dirs 
+//     //make the dirs
 //     fs::path root (std::string(PROJECT_SOURCE_DIR));
 //     fs::path dir (m_results_path);
 //     fs::path png_name (std::to_string(m_nr_frames_recorded)+".png");
@@ -194,7 +194,7 @@ void Recorder::snapshot(const std::string name, const std::string path){
 //     int height=m_view->m_viewport_size.y()*m_view->m_subsample_factor;
 //     TIME_START("record_write_pbo");
 //     GL_C( glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids[m_idx_pbo_write]) );
-//     //if the pbo write is not initialized, initialize it 
+//     //if the pbo write is not initialized, initialize it
 //     int size_bytes=width*height*4*1; //4 channels of 1 byte each
 //     if(!m_pbo_storages_initialized[m_idx_pbo_write]){
 //         GL_C (glBufferData(GL_PIXEL_PACK_BUFFER, size_bytes, NULL, GL_STATIC_READ) ); //allocate storage for pbo
@@ -236,7 +236,7 @@ void Recorder::snapshot(const std::string name, const std::string path){
 //     m_idx_pbo_read = (m_idx_pbo_read + 1) % m_nr_pbos;
 
 
-   
+
 
 // }
 

@@ -13,10 +13,10 @@ in int label_gt_per_vertex;
 
 //out
 layout(location = 0) out vec3 v_pos_out; //position in world coords
-layout(location = 1) out vec3 v_normal_out; 
-layout(location = 2) out vec3 tangent_u_out; 
-layout(location = 3) out float lenght_v_out; 
-layout(location = 4) out vec3 color_per_vertex_out; 
+layout(location = 1) out vec3 v_normal_out;
+layout(location = 2) out vec3 tangent_u_out;
+layout(location = 3) out float lenght_v_out;
+layout(location = 4) out vec3 color_per_vertex_out;
 
 
 //uniforms

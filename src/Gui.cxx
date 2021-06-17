@@ -1,6 +1,6 @@
 #include "easy_pbr/Gui.h"
 
-//opengl stuff 
+//opengl stuff
 #include <glad/glad.h> // Initialize with gladLoadGL()
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
@@ -21,7 +21,7 @@
 //boost
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-		
+
 
 //My stuff
 #include "Profiler.h"
@@ -39,7 +39,7 @@ namespace fs = boost::filesystem;
 // //imgui
 // #include "imgui.h"
 // #include "imgui_impl_glfw.h"
-// #include "imgui_impl_opengl3.h" 
+// #include "imgui_impl_opengl3.h"
 // #include "imgui_ext/curve.hpp"
 // #include "imgui_ext/ImGuiUtils.h"
 // #include <glad/glad.h> // Initialize with gladLoadGL()
@@ -187,14 +187,14 @@ void Gui::toggle_main_menu(){
 void Gui::help_marker(const char* desc){
     // ImGui::TextDisabled("(?)");
     // ImGuiStyle *style = &ImGui::GetStyle();
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.34f, 0.33f, 0.39f, 1.00f) ); 
-    // ImGui::Text("(?)"); 
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.34f, 0.33f, 0.39f, 1.00f) );
+    // ImGui::Text("(?)");
     ImVec2 pos = ImGui::GetCursorPos();
     pos.x -= 7;
     pos.y += 3;
     ImGui::SetCursorPos(pos);
-    ImGui::Text(ICON_FA_QUESTION_CIRCLE); 
-        
+    ImGui::Text(ICON_FA_QUESTION_CIRCLE);
+
     ImGui::PopStyleColor();
     if (ImGui::IsItemHovered())
     {
@@ -252,7 +252,7 @@ void Gui::draw_main_menu(){
     ImGui::PushItemWidth(135*m_hidpi_scaling);
 
 
-  
+
 
 
     if (ImGui::CollapsingHeader("Viewer") ) {
@@ -283,7 +283,7 @@ void Gui::draw_main_menu(){
                     break;
                 }
             }
-            
+
         }
         if(ImGui::ListBoxHeader("Scene meshes", Scene::nr_meshes(), 6)){
             for (int i = 0; i < Scene::nr_meshes(); ++i) {
@@ -376,7 +376,7 @@ void Gui::draw_main_menu(){
             MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
             ImGui::InputText("Name", mesh->name );
             if( ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points)) { mesh->m_is_shadowmap_dirty=true;  }
-                ImGui::Indent(10.0f*m_hidpi_scaling);  
+                ImGui::Indent(10.0f*m_hidpi_scaling);
                 ImGui::Checkbox("Overlay points", &mesh->m_vis.m_overlay_points);  ImGui::SameLine(); help_marker("Draws the points even if they are occluded");
                 ImGui::Checkbox("Points as circle", &mesh->m_vis.m_points_as_circle); ImGui::SameLine(); help_marker("Draws points as circles instad of squares. Moderate performance impact.");
                 ImGui::Unindent(10.0f*m_hidpi_scaling );
@@ -421,11 +421,11 @@ void Gui::draw_main_menu(){
                         }
                         if( mesh->m_vis.m_color_type==+MeshColorType::NormalVector && !mesh->NV.size() ){
                             LOG(WARNING) << "There is no normal per vertex associated to the mesh. Please assign some data to the mesh.NV matrix.";
-                        }    
+                        }
                         if( mesh->m_vis.m_color_type==+MeshColorType::Intensity && !mesh->I.size() ){
                             LOG(WARNING) << "There is no intensity per vertex associated to the mesh. Please assign some data to the mesh.I matrix.";
-                        }  
-                        //check if we actually have a texture 
+                        }
+                        //check if we actually have a texture
                         if( mesh->m_vis.m_color_type==+MeshColorType::Texture){
                             std::shared_ptr<MeshGL> mesh_gl = mesh->m_mesh_gpu.lock();
                             if(mesh_gl && !mesh_gl->m_diffuse_tex.storage_initialized() ){
@@ -442,7 +442,7 @@ void Gui::draw_main_menu(){
                 }
                 ImGui::EndCombo();
             }
-            // //if its texture then we cna choose the texture type 
+            // //if its texture then we cna choose the texture type
             // if( ImGui::SliderInt("texture_type", &m_mesh_tex_idx, 0, 2) ){
             //     if (auto mesh_gpu =  mesh->m_mesh_gpu.lock()) {
             //         if(m_mesh_tex_idx==0){
@@ -504,7 +504,7 @@ void Gui::draw_main_menu(){
                 if (ImGui::IsItemHovered()){ m_roughness_tex_hovered=true; }
 
                 // ImGui::SetNextItemWidth(51);
-                
+
                 ImGui::Text(  "Diffuse"  ); ImGui::NextColumn();
                 ImGui::Text(  "Normals"  ); ImGui::NextColumn();
                 ImGui::Text(  "Metal"  ); ImGui::NextColumn();
@@ -537,12 +537,12 @@ void Gui::draw_main_menu(){
 
         ImGui::SliderFloat("surfel_blend_factor", &m_view->m_surfel_blend_factor, -300, 300 );
         ImGui::SliderFloat("surfel_blend_scale", &m_view->m_surfel_blend_scale, -300, 300 );
-       
+
 
         ImGui::ColorEdit3("BG color",m_view->m_background_color.data());
         ImGui::ColorEdit3("Ambient color",m_view->m_ambient_color.data());
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
- 
+
 
         ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
@@ -575,12 +575,12 @@ void Gui::draw_main_menu(){
             if (ImGui::RadioButton("Scale", m_guizmo_operation == ImGuizmo::SCALE)) { m_guizmo_operation = ImGuizmo::SCALE; }  // is fucked up because after rotating I cannot hover over the handles
 
             if (ImGui::RadioButton("Local", m_guizmo_mode == ImGuizmo::LOCAL)) { m_guizmo_mode = ImGuizmo::LOCAL; } ImGui::SameLine();
-            if (ImGui::RadioButton("World", m_guizmo_mode == ImGuizmo::WORLD)) { m_guizmo_mode = ImGuizmo::WORLD; } 
+            if (ImGui::RadioButton("World", m_guizmo_mode == ImGuizmo::WORLD)) { m_guizmo_mode = ImGuizmo::WORLD; }
 
             edit_transform(m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx));
         }
 
-      
+
     }
 
     ImGui::Separator();
@@ -608,7 +608,7 @@ void Gui::draw_main_menu(){
         }
 
         if (ImGui::Button("Merge all meshes")){
-            //go through every mesh, apply the model matrix transform to the cpu vertices and then set the model matrix to identity, 
+            //go through every mesh, apply the model matrix transform to the cpu vertices and then set the model matrix to identity,
             //afterards recrusivelly run .add() on the first mesh with all the others
 
             MeshSharedPtr mesh_merged= Mesh::create();
@@ -626,7 +626,7 @@ void Gui::draw_main_menu(){
 
             // m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
         }
-        
+
 
     }
 
@@ -673,7 +673,7 @@ void Gui::draw_main_menu(){
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Camera")) {
-        //select the camera, either the defalt camera or one of the point lights 
+        //select the camera, either the defalt camera or one of the point lights
         if(ImGui::ListBoxHeader("Enabled camera", m_view->m_spot_lights.size()+1, 6)){ //all the spot
 
             //push the text for the default camera
@@ -681,7 +681,7 @@ void Gui::draw_main_menu(){
                 ImGui::PushStyleColor(ImGuiCol_Header,ImVec4(0.3f, 0.3f, 0.3f, 1.00f));
             }else{
                 ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
-            }  
+            }
             if(ImGui::Selectable("Default cam", true)){
                 m_view->m_camera=m_view->m_default_camera;
             }
@@ -693,8 +693,8 @@ void Gui::draw_main_menu(){
                     ImGui::PushStyleColor(ImGuiCol_Header,ImVec4(0.3f, 0.3f, 0.3f, 1.00f));
                 }else{
                     ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
-                }      
-                if(ImGui::Selectable( ("SpotLight_"+std::to_string(i)).c_str(), true ) ){ 
+                }
+                if(ImGui::Selectable( ("SpotLight_"+std::to_string(i)).c_str(), true ) ){
                     m_view->m_camera=m_view->m_spot_lights[i];
                 }
                 ImGui::PopStyleColor(1);
@@ -709,7 +709,7 @@ void Gui::draw_main_menu(){
         ImGui::SliderFloat("Exposure", &m_view->m_camera->m_exposure, 0.1, 10.0);
 
         ImGui::SliderFloat("Translation_speed", &m_view->m_camera_translation_speed_multiplier, 0.0, 10);
-        
+
     }
 
     ImGui::Separator();
@@ -1010,8 +1010,8 @@ void Gui::draw_main_menu(){
                     ImGui::PushStyleColor(ImGuiCol_Header,ImVec4(0.3f, 0.3f, 0.3f, 1.00f));
                 }else{
                     ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyle().Colors[ImGuiCol_Header]);
-                }      
-                if(ImGui::Selectable( ("SpotLight_"+std::to_string(i)).c_str(), true ) ){ 
+                }
+                if(ImGui::Selectable( ("SpotLight_"+std::to_string(i)).c_str(), true ) ){
                     m_selected_spot_light_idx=i;
                 }
                 ImGui::PopStyleColor(1);
@@ -1024,7 +1024,7 @@ void Gui::draw_main_menu(){
 
 
         }
-        
+
     }
 
 
@@ -1059,7 +1059,7 @@ void Gui::draw_main_menu(){
         ImVec2 button_size(25*m_hidpi_scaling,25*m_hidpi_scaling);
         const char* icon_recording = m_view->m_recorder->is_recording() ? ICON_FA_PAUSE : ICON_FA_CIRCLE;
         if(ImGui::Button(icon_recording, button_size) ){
-            if(m_view->m_recorder->is_recording()){ 
+            if(m_view->m_recorder->is_recording()){
                m_view->m_recorder->stop_recording();
             }else{
                m_view->m_recorder->start_recording();
@@ -1113,7 +1113,7 @@ void Gui::draw_main_menu(){
         show_gl_texture(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex").tex_id(), "fbo_with_transparency_no_gui", true);
         show_gl_texture(m_view->m_final_fbo_with_gui.tex_with_name("color_gtex").tex_id(), "fbo_with_gui", true);
     }
- 
+
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Misc")) {
@@ -1127,7 +1127,7 @@ void Gui::draw_main_menu(){
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 
-  
+
     if (ImGui::Button("Test Window")) m_show_demo_window ^= 1;
     if (ImGui::Button("Profiler Window")) m_show_profiler_window ^= 1;
     if (ImGui::Button("Player Window")) m_show_player_window ^= 1;
@@ -1174,7 +1174,7 @@ void Gui::draw_profiler(){
             const std::string name = Profiler_ns::m_ordered_timers[i];
             auto stats=Profiler_ns::m_stats[name];
             auto times=Profiler_ns::m_timings[name];
-       
+
             std::stringstream stream_exp_mean;
             std::stringstream stream_mean;
             // stream_cma << std::fixed <<  std::setprecision(1) << stats.exp_mean;
@@ -1189,7 +1189,7 @@ void Gui::draw_profiler(){
         }
         ImGui::PopItemWidth();
         ImGui::End();
-    } 
+    }
 }
 
 void Gui::show(const cv::Mat cv_mat, const std::string name){
@@ -1218,7 +1218,7 @@ void Gui::show_images(){
         //check if it's dirty, if the cv mat changed since last time we displayed it
         if(m_cv_mats_dirty_map[name]){
             m_cv_mats_dirty_map[name]=false;
-            //check if there is already a texture with the same name 
+            //check if there is already a texture with the same name
             auto got= m_textures_map.find(name);
             if(got==m_textures_map.end() ){
                 //the first time we shot this texture so we add it to the map otherwise there is already a texture there so we just update it
@@ -1251,7 +1251,7 @@ void Gui::show_gl_texture(const int tex_id, const std::string window_name, const
     if(flip){ //framebuffer in gpu are stored upside down  for some reson
         ImGui::Image((ImTextureID)(uintptr_t)tex_id, ImGui::GetContentRegionAvail(), ImVec2(0,1), ImVec2(1,0) );  //the double cast is needed to avoid compiler warning for casting int to void  https://stackoverflow.com/a/30106751
     }else{
-        ImGui::Image((ImTextureID)(uintptr_t)tex_id, ImGui::GetContentRegionAvail()); 
+        ImGui::Image((ImTextureID)(uintptr_t)tex_id, ImGui::GetContentRegionAvail());
     }
     ImGui::End();
 }
@@ -1335,7 +1335,7 @@ void Gui::draw_overlay_text(const Eigen::Vector3d pos, const Eigen::Matrix4f mod
 }
 
 void Gui::draw_label_mngr_legend(){
-    //get the selected mesh 
+    //get the selected mesh
     //for the selected mesh we show the label mngr labels and color
 
     if(Scene::nr_meshes()!=0){
@@ -1387,15 +1387,15 @@ void Gui::draw_label_mngr_legend(){
                     ImGui::Dummy(ImVec2(218.0f-total_size, 0.0f));
                     ImGui::SameLine();
                 }
-            
+
             }
         }
         // ImGui::ColorEdit3("Color", m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->m_vis.m_solid_color.data(), ImGuiColorEditFlags_NoInputs);
 
         ImGui::End();
     }
-   
-    
+
+
 }
 
 void Gui::draw_drag_drop_text(){
@@ -1442,7 +1442,7 @@ void Gui::draw_drag_drop_text(){
         ImGui::TextUnformatted(text.c_str());
 
 
-       
+
 
         ImGui::End();
         ImGui::PopStyleColor();
@@ -1467,7 +1467,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     Eigen::Matrix4f delta;
     delta.setIdentity();
 
-    Eigen::Affine3d model_matrix=mesh->model_matrix(); 
+    Eigen::Affine3d model_matrix=mesh->model_matrix();
     ImGuizmo::Manipulate(view.data(), proj.data(), m_guizmo_operation, m_guizmo_mode, model_matrix.cast<float>().data(), delta.data() );
     if(m_guizmo_operation==ImGuizmo::SCALE){
         delta=Eigen::Matrix4f::Identity()-(Eigen::Matrix4f::Identity()-delta)*0.1; //scaling is for some reason very fast, make it a bit slower
@@ -1481,7 +1481,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     }
     // Eigen::Matrix4f new_model_matrix;
     // new_model_matrix=mesh->m_model_matrix.matrix().cast<float>();
-    // new_model_matrix=delta*mesh->m_model_matrix.cast<float>().matrix();    
+    // new_model_matrix=delta*mesh->m_model_matrix.cast<float>().matrix();
     // mesh->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
 
     //update all children
@@ -1491,7 +1491,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
 
     //     Eigen::Matrix4f new_model_matrix;
     //     new_model_matrix=child->m_model_matrix.matrix().cast<float>();
-    //     new_model_matrix=delta*child->m_model_matrix.cast<float>().matrix();    
+    //     new_model_matrix=delta*child->m_model_matrix.cast<float>().matrix();
     //     child->m_model_matrix=Eigen::Affine3d(new_model_matrix.cast<double>());
     // }
 

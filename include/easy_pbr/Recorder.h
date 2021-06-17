@@ -45,7 +45,7 @@ public:
     Viewer* m_view;
     // std::shared_ptr<Viewer> m_view;
 
-    //params 
+    //params
     // std::string m_recording_path;
     // std::string m_snapshot_name;
 
@@ -59,7 +59,7 @@ private:
     // int m_nr_pbos;
     // std::vector<GLuint> m_pbo_ids;
     // std::vector<std::string> m_full_paths; //each time we write into a pbo, we also store the full path where it would be written to the hard disk. This is so that we can use reset() at any time
-    // std::vector<bool> m_pbo_storages_initialized;  
+    // std::vector<bool> m_pbo_storages_initialized;
     // int m_idx_pbo_write;
     // int m_idx_pbo_read;
 
@@ -67,7 +67,7 @@ private:
     // //cv mats are buffered here and they await for the thread that writes them to file
     moodycamel::ConcurrentQueue<MatWithFilePath> m_cv_mats_queue;
     // std::unordered_map<std::string, int> m_times_written_for_tex; //how many times we have written a texture with a certain name
-    std::vector<std::thread> m_writer_threads; 
+    std::vector<std::thread> m_writer_threads;
     bool m_threads_are_running;
 
     bool m_is_recording;

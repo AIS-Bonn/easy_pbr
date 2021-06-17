@@ -9,7 +9,7 @@ layout(location=0,index=0) out vec4 out_Color;
 
 //uniforms
 const float KERNEL_RADIUS = 7;
-  
+
 // layout(location=0) uniform float g_Sharpness=0;
 uniform float sigma_spacial;
 uniform float sigma_depth;
@@ -28,11 +28,11 @@ uniform sampler2D texLinearDepth;
 // {
 //   vec4  c = texture2D( texSource, uv );
 //   float d = texture2D( texLinearDepth, uv).x;
-  
+
 // //   const float BlurSigma = float(KERNEL_RADIUS) * 0.5;
 //   const float BlurSigma = float(KERNEL_RADIUS) *0.5;
 //   const float BlurFalloff = 1.0 / (2.0*BlurSigma*BlurSigma);
-  
+
 //   float ddiff = (d - center_d) * g_Sharpness;
 
 //     float sigma_spacial=3;
@@ -49,7 +49,7 @@ uniform sampler2D texLinearDepth;
 
 
 //     // float dist_spacial = length(vec2(x,y));
-    
+
 
 
 // float w=w_spacial;
@@ -67,7 +67,7 @@ vec4 BlurFunction(vec2 uv, float r, vec4 center_c, float center_d, float divisor
 
     //if the current pixel has no depth, don't accumulate anything
     if(d==1.0){
-        return vec4(0); 
+        return vec4(0);
     }
 
 
@@ -93,20 +93,20 @@ void main()
   if(center_d==1.0){
       discard;
   }
-  
+
   vec4  c_total = center_c;
   float w_total = 1.0;
-  
+
 //   for (float r = 1; r <= KERNEL_RADIUS; ++r)
 //   {
 //     vec2 uv = texCoord + g_InvResolutionDirection * r;
-//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);  
+//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);
 //   }
-  
+
 //   for (float r = 1; r <= KERNEL_RADIUS; ++r)
 //   {
 //     vec2 uv = texCoord - g_InvResolutionDirection * r;
-//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);  
+//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);
 //   }
 
 
@@ -117,12 +117,12 @@ void main()
     //attempt2
   for (float r = -half_size; r <= half_size; ++r){
     vec2 uv = texCoord + vec2(g_InvResolutionDirection.x, 0.0) * r;
-    c_total += BlurFunction(uv, r, center_c, center_d, divisor_s, divisor_d, w_total);  
+    c_total += BlurFunction(uv, r, center_c, center_d, divisor_s, divisor_d, w_total);
   }
-  
+
   for (float r = -half_size; r <= half_size; ++r){
     vec2 uv = texCoord - vec2(0.0, g_InvResolutionDirection.y)  * r;
-    c_total += BlurFunction(uv, r, center_c, center_d, divisor_s, divisor_d, w_total);  
+    c_total += BlurFunction(uv, r, center_c, center_d, divisor_s, divisor_d, w_total);
   }
 
 
@@ -130,9 +130,9 @@ void main()
 //   for (float r = -KERNEL_RADIUS/2; r <= KERNEL_RADIUS/2; ++r)
 //   {
 //     vec2 uv = texCoord + vec2(g_InvResolutionDirection.x, 0.0) * r;
-//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);  
+//     c_total += BlurFunction(uv, r, center_c, center_d, w_total);
 //   }
-  
+
 
 
 
@@ -141,7 +141,3 @@ void main()
     out_Color.x=pow(out_Color.x, ao_power);
 
 }
-
-
-
-

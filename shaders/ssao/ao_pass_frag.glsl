@@ -105,13 +105,13 @@ void main() {
 
     //get position in cam coordinates
     vec4 position_cam_coords;
-    // position_cam_coords.xyz= position_cam_coords_from_linear_depth(depth_linear); 
-    position_cam_coords.xyz= position_cam_coords_from_depth(depth); 
+    // position_cam_coords.xyz= position_cam_coords_from_linear_depth(depth_linear);
+    position_cam_coords.xyz= position_cam_coords_from_depth(depth);
     vec3 origin=position_cam_coords.xyz;
 
 
 
-    //if the normal is pointing awa from the camera it means we are viewing the face from behind (in the case we have culling turned off). We have to flip the normal 
+    //if the normal is pointing awa from the camera it means we are viewing the face from behind (in the case we have culling turned off). We have to flip the normal
     //we take the positiuon of the fragment in cam coords and get the normalized vector so this is the direction from cam to the fragment. All normals dot producted with this direction vector should be negative (pointing towards the camera)
     vec3 dir = normalize(origin);
     if(dot(normal, dir)>0.0 ){
@@ -140,23 +140,23 @@ void main() {
         offset.xy /= offset.w;
         offset.xy = offset.xy * 0.5 + 0.5;
 
-        //if offset is too far from the center discard it or the sampling of the texture at such a ig distance will destroy cache coherency 
+        //if offset is too far from the center discard it or the sampling of the texture at such a ig distance will destroy cache coherency
         vec4 origin_proj=P*vec4(origin,1.0);
         origin_proj.xy/=origin_proj.w;
         origin_proj.xy = origin_proj.xy * 0.5 + 0.5;
         float max_pixel_distance=0.05; //it's not actually pixels because the image space is already normalized in [0,1]
         if(length(offset.xy-origin_proj.xy)> max_pixel_distance ){
             continue;
-        } 
-        
+        }
+
         // get sample depth:
         // float sample_depth_linear=texture(depth_linear_tex, offset.xy).x;
         // float sample_z = position_cam_coords_from_linear_depth( sample_depth_linear ).z ;
         //with depth NOT linear
         float sample_depth=texture(depth_tex, offset.xy).x;
         float sample_z = position_cam_coords_from_depth( sample_depth ).z ;
-        
-        bool is_sample_within_radius=abs(origin.z - sample_z) < kernel_radius; 
+
+        bool is_sample_within_radius=abs(origin.z - sample_z) < kernel_radius;
         if(is_sample_within_radius){ //only consider occlusion for the samples that are actually withing radius, some will project to very far away objects or even the background and should not be considered
             nr_times_visible += (sample_z <= sample_point.z  ? 1.0 : 0.0); //https://learnopengl.com/Advanced-Lighting/SSAO
             nr_valid_samples++;
@@ -175,6 +175,3 @@ void main() {
 
 
 }
-
-
-

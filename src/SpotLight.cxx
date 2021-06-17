@@ -42,7 +42,7 @@ void SpotLight::set_power_for_point(const Eigen::Vector3f& point, const float po
     float dist=dist_to_lookat();
     float attenuation=1.0/ (dist*dist);
 
-    //power that the point receive is m_power*attenuation. If we want the power there to be power: power=m_power*attenuation. Therefore 
+    //power that the point receive is m_power*attenuation. If we want the power there to be power: power=m_power*attenuation. Therefore
     m_power=power/attenuation;
 }
 
@@ -57,7 +57,7 @@ void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
         // m_shadow_map_fbo.tex_with_name("shadow_map_depth").set_filter_mode(GL_NEAREST);
 
         m_shadow_map_fbo.sanity_check();
-    } 
+    }
 
 
     // Set attributes that the vao will pulll from buffers
@@ -71,7 +71,7 @@ void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
     Eigen::Matrix4f V = view_matrix();
     Eigen::Matrix4f P = proj_matrix(viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
- 
+
 
     GL_C( glViewport(0,0,m_shadow_map_resolution,m_shadow_map_resolution) );
     GL_C( m_shadow_map_shader.use() );
@@ -79,7 +79,7 @@ void SpotLight::render_mesh_to_shadow_map(MeshGLSharedPtr& mesh){
     m_shadow_map_shader.draw_into(m_shadow_map_fbo, {} ); //makes the shaders draw into the buffers we defines in the gbuffer
 
     // draw
-    GL_C( mesh->vao.bind() ); 
+    GL_C( mesh->vao.bind() );
     GL_C( glDrawElements(GL_TRIANGLES, mesh->m_core->F.size(), GL_UNSIGNED_INT, 0) );
 
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
@@ -98,7 +98,7 @@ void SpotLight::render_points_to_shadow_map(MeshGLSharedPtr& mesh){
         // m_shadow_map_fbo.tex_with_name("shadow_map_depth").set_filter_mode(GL_NEAREST);
 
         m_shadow_map_fbo.sanity_check();
-    } 
+    }
 
 
     // Set attributes that the vao will pulll from buffers
@@ -112,7 +112,7 @@ void SpotLight::render_points_to_shadow_map(MeshGLSharedPtr& mesh){
     Eigen::Matrix4f V = view_matrix();
     Eigen::Matrix4f P = proj_matrix(viewport_size);
     Eigen::Matrix4f MVP = P*V*M;
- 
+
 
     GL_C( glViewport(0,0,m_shadow_map_resolution,m_shadow_map_resolution) );
     GL_C( m_shadow_map_shader.use() );
@@ -120,7 +120,7 @@ void SpotLight::render_points_to_shadow_map(MeshGLSharedPtr& mesh){
     m_shadow_map_shader.draw_into(m_shadow_map_fbo, {} ); //makes the shaders draw into the buffers we defines in the gbuffer
 
     // draw
-    GL_C( mesh->vao.bind() ); 
+    GL_C( mesh->vao.bind() );
     glPointSize(mesh->m_core->m_vis.m_point_size);
     glDrawArrays(GL_POINTS, 0, mesh->m_core->V.rows());
 

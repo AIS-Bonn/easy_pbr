@@ -35,7 +35,7 @@ uniform float multichannel_start_x;
 uniform bool using_fat_gbuffer;
 
 
-//trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better 
+//trying ACES as explained in https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl because as explained here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/ it should be better
 mat3 aces_input = mat3(
    0.59719, 0.35458, 0.04823, // first column (not row!)
    0.07600, 0.90834, 0.01566, // second column
@@ -128,7 +128,7 @@ void main(){
         if (show_background_img || show_environment_map || show_prefiltered_environment_map){// //there is no mesh or anything covering this pixel, we either read the backgrpund or just set the pixel to the background color
             color = texture(composed_tex, uv_in);
         }else{ //if it's not covered by a mesh we might still need to color this pixel with the bloom texture so we just accumulate on top of a color of zero
-            color=vec4(0.0); 
+            color=vec4(0.0);
          }
     }else{ //pixel is covered by mesh so we read the color it has
         color = texture(composed_tex, uv_in);
@@ -144,7 +144,7 @@ void main(){
         }
     }
 
-    //see the weight as a color 
+    //see the weight as a color
     // color.xyz=vec3(color.w);
     // color.xyz=textureLod(bloom_tex, uv_in, 4).rgb;
     // color.xyz=vec3(textureLod(bloom_tex, uv_in, 5).w);
@@ -156,10 +156,10 @@ void main(){
     int tonemap_type=4;
     if (tonemap_type==0){//linear
         //do nothing
-        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+        color.xyz = pow(color.xyz, vec3(1.0/2.2));
     }else if (tonemap_type==1){//reinhardt
         color.xyz=Tonemap_Reinhard(color.xyz);
-        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+        color.xyz = pow(color.xyz, vec3(1.0/2.2));
     }else if (tonemap_type==2){//Unreal
         color.xyz=Tonemap_Unreal(color.xyz);
     }else if (tonemap_type==3){ //filmicALU
@@ -169,7 +169,7 @@ void main(){
         color.xyz = RRTAndODTFit(color.xyz);
         color.xyz = transpose(aces_output)*color.xyz;
         // gamma correct
-        color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+        color.xyz = pow(color.xyz, vec3(1.0/2.2));
     }
 
     if(!pixel_covered_by_mesh){
@@ -225,15 +225,15 @@ void main(){
     // // vec3 background_weighted=clamp( background_color*(1.0 - color_weight) , vec3(0.0), vec3(1.0));
     // // vec3 color_posprocessed_mixed = color_and_bloom_weighted+background_weighted;
 
-    // // vec3 final_color= color_posprocessed_mixed; 
-    // vec3 final_color= color_posprocessed; 
+    // // vec3 final_color= color_posprocessed_mixed;
+    // vec3 final_color= color_posprocessed;
 
     //if we have enabled the multichannel_view, we need to change the final color
     if (enable_multichannel_view ){
         int max_channels=5;
 
         // float line_separation_pixels=size_final_image.x * multichannel_interline_separation* abs( 1.0 - multichannel_line_angle/90.0); //the more the angle the more separated the lines are separated horizontally
-        float line_separation_pixels=size_final_image.x * multichannel_interline_separation; 
+        float line_separation_pixels=size_final_image.x * multichannel_interline_separation;
         vec2 pos_screen = vec2(uv_in.x*size_final_image.x, uv_in.y*size_final_image.y);
         //displace the position on screen in x direction to simulate that the lines are actually skewed
         float line_angle_radians=multichannel_line_angle * 3.1415 / 180.0;
@@ -284,7 +284,7 @@ void main(){
         // final_color = vec3(module/500);
     }
 
- 
+
 
 
 
