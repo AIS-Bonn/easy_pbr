@@ -257,7 +257,7 @@ public:
     //create certain meshes
     void create_full_screen_quad();
     void create_box_ndc(); //makes a 1x1x1 vox in NDC. which has z going into the screen
-    void create_box(const float w, const float l, const float h); //makes a box of a certain width, length and height
+    void create_box(const float w, const float h, const float l); //makes a box of a certain width, height and length which correspond to the x,y,z axes with y pointing up and x to the right
     void create_grid(const int nr_segments, const float y_pos, const float scale);
     void create_floor(const float y_pos, const float scale);
     void create_sphere(const Eigen::Vector3d& center, const double radius);

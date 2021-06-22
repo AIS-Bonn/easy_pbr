@@ -1254,7 +1254,7 @@ void Mesh::create_box_ndc(){
     F.row(11) << 6,1,2;
 }
 
-void Mesh::create_box(const float w, const float l, const float h){
+void Mesh::create_box(const float w, const float h, const float l){
     V.resize(8,3);
     //behind face (which has negative Z as the camera is now looking in the positive Z direction and this will be the face that is behind the camera)
     V.row(0) << -1.0, -1.0, -1.0; //bottom-left
@@ -1303,16 +1303,33 @@ void Mesh::create_box(const float w, const float l, const float h){
     F.row(11) << 6,1,2;
 
 
-    //the box now has a size of 2 in every direction but we and to have it size of w,l,h
-    V.col(0) = V.col(0)*0.5*w;
-    V.col(1) = V.col(1)*0.5*h;
-    V.col(2) = V.col(2)*0.5*l;
+
+
+    // //make also some edges that define just the cube edges
+    // E.resize(4*3,2);
+    // E.setZero();
+    // //behind face
+    // E.row(0)<<0,1;
+    // E.row(1)<<1,2;
+    // E.row(2)<<2,3;
+    // E.row(3)<<3,0;
+    // //front face
+    // E.row(4)<<4,5;
+    // E.row(5)<<5,6;
+    // E.row(6)<<6,7;
+    // E.row(7)<<7,4;
+    // //in between
+    // E.row(8)<<0,4;
+    // E.row(9)<<1,5;
+    // E.row(10)<<2,6;
+    // E.row(11)<<3,7;
 
 
 
     //since we want each vertex at the cornet to have multiple normals, we just duplicate them
     std::vector<Eigen::VectorXd> points;
     std::vector<Eigen::VectorXi> faces;
+    std::vector<Eigen::VectorXi> edges;
     for(int i=0; i<F.rows(); i++){
         Eigen::VectorXd p1=V.row( F(i,0) );
         Eigen::VectorXd p2=V.row( F(i,2) );
@@ -1323,12 +1340,45 @@ void Mesh::create_box(const float w, const float l, const float h){
 
         Eigen::VectorXi face;
         face.resize(3);
-        face << points.size()-1, points.size()-2, points.size()-3;
+        face << points.size()-1, points.size()-2, points.size()-3; //corresponds to p3,p2 and p1
         faces.push_back(face);
+
+        //we make edges between the straing lines, which are the points that have a distance of 2 between them, the two points on the triangle that would connect as a diagonal would have a higher distance so they will not create a line
+        float dist_1=(p1-p2).norm();
+        float dist_2=(p2-p3).norm();
+        float dist_3=(p3-p1).norm();
+        Eigen::VectorXi edge;
+        edge.resize(2);
+        if( std::abs(dist_1-2)<0.001 ){
+            //coonect p1 and p2
+            edge<< points.size()-3,  points.size()-2;
+            edges.push_back(edge);
+        }
+        if( std::abs(dist_2-2)<0.001 ){
+            //coonect p2 and p3 
+            edge<< points.size()-1,  points.size()-2;
+            edges.push_back(edge);
+        }
+        if( std::abs(dist_3-2)<0.001 ){
+            //coonect p3 and p1
+            edge<< points.size()-1,  points.size()-3;
+            edges.push_back(edge);
+        }
+
     }
 
     V=radu::utils::vec2eigen(points);
     F=radu::utils::vec2eigen(faces);
+    E=radu::utils::vec2eigen(edges);
+
+
+
+    //the box now has a size of 2 in every direction but we and to have it size of w,l,h
+    V.col(0) = V.col(0)*0.5*w;
+    V.col(1) = V.col(1)*0.5*h;
+    V.col(2) = V.col(2)*0.5*l;
+
+
     recalculate_normals();
 
 
