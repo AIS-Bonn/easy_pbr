@@ -560,6 +560,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("magma_color", &radu::utils::ColorMngr::magma_color )
     .def("plasma_color", &radu::utils::ColorMngr::plasma_color )
     .def("viridis_color", &radu::utils::ColorMngr::viridis_color )
+    .def("mat2color", &radu::utils::ColorMngr::mat2color )
     ;
 
     //utilsgl
