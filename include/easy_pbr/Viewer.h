@@ -23,10 +23,21 @@
 #include "dir_watcher/dir_watcher.hpp"
 // #endif
 
+
+//better enums
+#include <enum.h>
+
+
 // pybind
 // #include <pybind11/pybind11.h>
 // #include <pybind11/stl.h>
 // #include <pybind11/eigen.h>
+
+
+BETTER_ENUM(ToneMapType, int, Linear = 0, Reinhardt, Unreal, FilmicALU, ACES)
+
+
+
 class GLFWwindow;
 
 namespace radu { namespace utils {
@@ -222,6 +233,7 @@ public:
     float m_environment_map_blur;
     std::string m_environment_map_path;
     bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
+    ToneMapType m_tonemap_type=ToneMapType::ACES;
     int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
     int m_irradiance_cubemap_resolution;
     int m_prefilter_cubemap_resolution;

@@ -242,6 +242,17 @@ void Viewer::init_params(const std::string config_file){
     m_subsample_factor = vis_cfg.get_or("subsample_factor", default_vis_cfg);
     m_enable_culling = vis_cfg.get_or("enable_culling", default_vis_cfg);
     m_render_uv_to_gbuffer= vis_cfg.get_or("render_uv_to_gbuffer", default_vis_cfg);
+    std::string tonemap_string= (std::string)vis_cfg.get_or("tonemap", default_vis_cfg);
+    //go through the tonemapper and see if we find the one
+    bool found_tonemapper=false;
+    for (size_t n = 0; n < ToneMapType::_size(); n++) {
+        if(ToneMapType::_names()[n] == tonemap_string){
+            m_tonemap_type= ToneMapType::_values()[n];
+            found_tonemapper=true;
+        }
+    }
+    CHECK(found_tonemapper)<< "Tonemapper type not known";
+
 
     //cam
     m_camera->m_fov=cam_cfg.get_float_else_default_else_nan("fov", default_cam_cfg)  ;
@@ -2179,6 +2190,7 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_width, "multichannel_line_width");
     m_apply_postprocess_shader.uniform_float(m_multichannel_line_angle, "multichannel_line_angle");
     m_apply_postprocess_shader.uniform_float(m_multichannel_start_x, "multichannel_start_x");
+    m_apply_postprocess_shader.uniform_int(m_tonemap_type._to_integral() , "tonemap_type");
     m_apply_postprocess_shader.draw_into(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), "out_color");
     // draw
     m_fullscreen_quad->vao.bind();

@@ -32,6 +32,7 @@ uniform float multichannel_interline_separation;
 uniform float multichannel_line_width;
 uniform float multichannel_line_angle;
 uniform float multichannel_start_x;
+uniform int tonemap_type;
 uniform bool using_fat_gbuffer;
 
 
@@ -153,7 +154,7 @@ void main(){
 
     // exposure and tonemap
     color.xyz*=exposure;
-    int tonemap_type=4;
+    // int tonemap_type=4;
     if (tonemap_type==0){//linear
         //do nothing
         color.xyz = pow(color.xyz, vec3(1.0/2.2));

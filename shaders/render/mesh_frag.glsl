@@ -117,10 +117,11 @@ void main(){
                 // tex_color/=tex_color.w;
             // }
             if (tex_color.w<=0.01){
-                discard;
+                // diffuse_out=vec4(vec3(1,0,0),1.0);
+                diffuse_out=vec4(vec3(1,1,1),1.0);
+            }else{
+                diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
             }
-            diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
-            // diffuse_out = tex_color;
         }else{
             diffuse_out=vec4( vec3(0.0), 1.0 );
         }

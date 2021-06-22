@@ -544,6 +544,24 @@ void Gui::draw_main_menu(){
         ImGui::SliderFloat("Ambient power", &m_view->m_ambient_color_power, 0.0f, 1.0f);
 
 
+        //tonemapper
+        std::string current_selected_str=m_view->m_tonemap_type._to_string();
+        ToneMapType current_selected=m_view->m_tonemap_type;
+        if (ImGui::BeginCombo("Tonemap type", current_selected_str.c_str(), ImGuiComboFlags_HeightLarge  )) { // The second parameter is the label previewed before opening the combo.
+            for (size_t n = 0; n < ToneMapType::_size(); n++) {
+                bool is_selected = ( current_selected == ToneMapType::_values()[n] );
+                if (ImGui::Selectable( ToneMapType::_names()[n], is_selected)){
+
+                    m_view->m_tonemap_type= ToneMapType::_values()[n]; //select this one because we clicked on it
+
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+            }
+            ImGui::EndCombo();
+        }
+
+
         ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
         ImGui::SameLine(); help_marker("Hides the mesh faces that are pointing away from the viewer. Offers a mild increase in performance.");
