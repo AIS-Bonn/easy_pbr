@@ -1240,6 +1240,8 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
 
 
     //shader setup
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
     m_draw_lines_shader.use();
     // Eigen::Matrix4f MVP=compute_mvp_matrix(mesh);
     m_draw_lines_shader.uniform_4x4(MVP, "MVP");
@@ -1343,8 +1345,9 @@ void Viewer::render_wireframe(const MeshGLSharedPtr mesh){
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_POLYGON_OFFSET_LINE); //Avoid Z-buffer fighting between filled triangles & wireframe lines
     glPolygonOffset(-2.0, -10.0);
-    // glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
     glLineWidth( mesh->m_core->m_vis.m_line_width );
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable( GL_LINE_SMOOTH ); //draw lines antialiased (destroys performance)
 
 
     // draw

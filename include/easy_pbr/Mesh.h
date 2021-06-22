@@ -320,11 +320,11 @@ public:
     float max_y();
 
     //set textures for pbr
-    void set_diffuse_tex(const std::string file_path, const int subsample=1);
-    void set_metalness_tex(const std::string file_path, const int subsample=1);
-    void set_roughness_tex(const std::string file_path, const int subsample=1);
-    void set_gloss_tex(const std::string file_path, const int subsample=1);
-    void set_normals_tex(const std::string file_path, const int subsample=1);
+    void set_diffuse_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_metalness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_roughness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_gloss_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_normals_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     //using a mat directly
     void set_diffuse_tex(const cv::Mat& mat, const int subsample=1);
     void set_metalness_tex(const cv::Mat& mat, const int subsample=1);

@@ -2125,24 +2125,50 @@ Eigen::MatrixXd Mesh::compute_distance_to_mesh(const MeshSharedPtr& target_mesh)
     return D;
 }
 
-void Mesh::set_diffuse_tex(const std::string file_path, const int subsample){
-    cv::Mat mat = cv::imread(file_path);
+void Mesh::set_diffuse_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
     set_diffuse_tex(mat, subsample);
 }
-void Mesh::set_metalness_tex(const std::string file_path, const int subsample){
-    cv::Mat mat = cv::imread(file_path);
+void Mesh::set_metalness_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
     set_metalness_tex(mat, subsample);
 }
-void Mesh::set_roughness_tex(const std::string file_path, const int subsample){
-    cv::Mat mat = cv::imread(file_path);
+void Mesh::set_roughness_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
     set_roughness_tex(mat, subsample);
 }
-void Mesh::set_gloss_tex(const std::string file_path, const int subsample){
+void Mesh::set_gloss_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
     cv::Mat gloss = cv::imread(file_path);
     set_gloss_tex(gloss, subsample);
 }
-void Mesh::set_normals_tex(const std::string file_path, const int subsample){
-    cv::Mat mat = cv::imread(file_path);
+void Mesh::set_normals_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
     set_normals_tex(mat, subsample);
 }
 //using a mat directly

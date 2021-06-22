@@ -111,6 +111,7 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
 PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
+    .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
     .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )
     .def_readonly("rows", &cv::Mat::rows )
@@ -289,6 +290,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_recorder", &Viewer::m_recorder )
     .def_readwrite("m_viewport_size", &Viewer::m_viewport_size )
     .def_readwrite("m_nr_drawn_frames", &Viewer::m_nr_drawn_frames )
+    .def_readwrite("m_background_color", &Viewer::m_background_color )
     ;
 
     //Gui
@@ -508,11 +510,11 @@ PYBIND11_MODULE(easypbr, m) {
     .def("add_child", &Mesh::add_child )
     .def("radius_search", &Mesh::radius_search )
     .def("color_from_label_indices", &Mesh::color_from_label_indices )
-    .def("set_diffuse_tex",  py::overload_cast<const std::string, const int> (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )  //https://github.com/pybind/pybind11/issues/876
-    .def("set_metalness_tex", py::overload_cast<const std::string, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
-    .def("set_roughness_tex", py::overload_cast<const std::string, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
-    .def("set_gloss_tex", py::overload_cast<const std::string, const int > (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
-    .def("set_normals_tex", py::overload_cast<const std::string, const int > (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_diffuse_tex",  py::overload_cast<const std::string, const int, const bool> (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )  //https://github.com/pybind/pybind11/issues/876
+    .def("set_metalness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
+    .def("set_roughness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
+    .def("set_gloss_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
+    .def("set_normals_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_diffuse_tex",  py::overload_cast<const cv::Mat&, const int > (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_metalness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_roughness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
