@@ -118,7 +118,8 @@ void main(){
             // }
             if (tex_color.w<=0.01){
                 // diffuse_out=vec4(vec3(1,0,0),1.0);
-                diffuse_out=vec4(vec3(1,1,1),1.0);
+                // diffuse_out=vec4(vec3(1,1,1),1.0);
+                discard;
             }else{
                 diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
             }

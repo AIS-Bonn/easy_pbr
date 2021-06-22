@@ -111,7 +111,18 @@ void eigen_affine_bindings(py::module &m, const std::string typestr) {
 PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
-    .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path);  } )
+    .def(py::init<>())
+    .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
+    .def("set_alpha_to_value", [](cv::Mat &m, const int val) { 
+        CHECK(m.channels()==4) << "Mat needs to have 4 channels and it only has " << m.channels();
+        cv::Mat mat;
+        cv::Mat channels[4];
+        split(m, channels);
+        merge(channels,3,mat);
+        mat.setTo(cv::Scalar::all(val), (channels[3]<255));
+        m=mat;
+      } )
+    // .def("rgba2rgbblack", [](cv::Mat &m ) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
     .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )
     .def_readonly("rows", &cv::Mat::rows )
