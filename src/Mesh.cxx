@@ -393,6 +393,19 @@ Eigen::Affine3d& Mesh::model_matrix_ref(){
     return m_model_matrix;
 }
 void Mesh::set_model_matrix(const Eigen::Affine3d& new_model_matrix){
+
+
+    //get first the delta between the current model matrix and the new one
+    // the delta will be the matrix that multiplied with the current model matrix will yield the new one  new_model_matrix=delta*m_model_matrix
+    // Eigen::Affine3d delta=new_model_matrix*m_model_matrix.inverse();
+    // //check
+    // VLOG(1) << "new model matrix is " << new_model_matrix.matrix();
+    // Eigen::Affine3d calculated_new= delta * m_model_matrix;
+    // VLOG(1) << "calculated_new is " << calculated_new.matrix();
+    // VLOG(1) << "delta is " << delta.matrix();
+
+    // transform_model_matrix(delta); 
+
     m_model_matrix=new_model_matrix;
     m_is_shadowmap_dirty=true;
 }
