@@ -86,6 +86,39 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
     frustum_mesh->set_model_matrix( tf_cam_world.cast<double>().inverse() );
 
 
+    Eigen::MatrixXi F(2,3);
+    F << 4,5,6,
+        4,6,7;
+    Eigen::MatrixXd NV(8,3);
+    NV <<
+        // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1,
+        //far face (here we have defined the faces for the texturing and we set also the normals to be pointing towards the camera)
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1;
+
+    //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
+    Eigen::MatrixXd UV(8,2);
+    UV <<
+        // near face (doesnt actually need uvs)
+        1, 1, //top right
+        0, 1, // top left
+        0, 0, //bottom left
+        1, 0, //bottom right
+        //far face
+        1, 1, //top right
+        0, 1, // top left corner of ndc
+        0, 0, //bottom left
+        1, 0; //bottom right
+    frustum_mesh->F=F;
+    frustum_mesh->NV=NV;
+    frustum_mesh->UV=UV;
+
     //make also a mesh from the far face so that we can display a texture
     if(show_texture){
 
@@ -100,38 +133,7 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
         if(!tex.empty()){
 
 
-            Eigen::MatrixXi F(2,3);
-            F << 4,5,6,
-                4,6,7;
-            Eigen::MatrixXd NV(8,3);
-            NV <<
-                // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
-                0, 0, 1,
-                0, 0, 1,
-                0, 0, 1,
-                0, 0, 1,
-                //far face (here we have defined the faces for the texturing and we set also the normals to be pointing towards the camera)
-                0, 0, 1,
-                0, 0, 1,
-                0, 0, 1,
-                0, 0, 1;
-
-            //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
-            Eigen::MatrixXd UV(8,2);
-            UV <<
-                // near face (doesnt actually need uvs)
-                1, 1, //top right
-                0, 1, // top left
-                0, 0, //bottom left
-                1, 0, //bottom right
-                //far face
-                1, 1, //top right
-                0, 1, // top left corner of ndc
-                0, 0, //bottom left
-                1, 0; //bottom right
-            frustum_mesh->F=F;
-            frustum_mesh->NV=NV;
-            frustum_mesh->UV=UV;
+   
 
             //resize
             int max_size=256.0;
