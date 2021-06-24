@@ -112,7 +112,7 @@ PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
     .def(py::init<>())
-    .def("create", [](cv::Mat &m, int rows, int cols, int channels) {  
+    .def("create", [](cv::Mat &m, int rows, int cols, int channels) {
         if (channels==1) m=cv::Mat(rows,cols,CV_32FC1);
         if (channels==2) m=cv::Mat(rows,cols,CV_32FC2);
         if (channels==3) m=cv::Mat(rows,cols,CV_32FC3);
@@ -120,7 +120,7 @@ PYBIND11_MODULE(easypbr, m) {
         return m;
       } )
     .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
-    .def("set_alpha_to_value", [](cv::Mat &m, const int val) { 
+    .def("set_alpha_to_value", [](cv::Mat &m, const int val) {
         CHECK(m.channels()==4) << "Mat needs to have 4 channels and it only has " << m.channels();
         cv::Mat mat;
         cv::Mat channels[4];
@@ -129,10 +129,12 @@ PYBIND11_MODULE(easypbr, m) {
         mat.setTo(cv::Scalar::all(val), (channels[3]<255));
         m=mat;
       } )
-    .def("set_val", [](cv::Mat &m, const float val) {  m = cv::Scalar(val); } ) 
-    .def("set_val", [](cv::Mat &m, const float r, const float g) {  m = cv::Scalar(r,g); } ) 
-    .def("set_val", [](cv::Mat &m, const float r, const float g, const float b) {  m = cv::Scalar(b,g,r); } ) 
-    .def("set_val", [](cv::Mat &m, const float r, const float g, const float b, const float alpha) {  m = cv::Scalar(b,g,r, alpha); } ) 
+    .def("set_val", [](cv::Mat &m, const float val) {  m = cv::Scalar(val); } )
+    .def("set_val", [](cv::Mat &m, const float r, const float g) {  m = cv::Scalar(r,g); } )
+    .def("set_val", [](cv::Mat &m, const float r, const float g, const float b) {  m = cv::Scalar(b,g,r); } )
+    .def("set_val", [](cv::Mat &m, const float r, const float g, const float b, const float alpha) {  m = cv::Scalar(b,g,r, alpha); } )
+    .def("hsv2rgb", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_HSV2RGB); return res; } )
+    .def("hsv2bgr", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_HSV2BGR); return res; } )
     // .def("rgba2rgbblack", [](cv::Mat &m ) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
     .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )
