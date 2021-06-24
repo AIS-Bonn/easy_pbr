@@ -409,6 +409,18 @@ void Mesh::set_model_matrix(const Eigen::Affine3d& new_model_matrix){
     m_model_matrix=new_model_matrix;
     m_is_shadowmap_dirty=true;
 }
+
+void Mesh::set_model_matrix_from_string(const std::string& pose_string){
+    std::vector<std::string> tokens;
+    tokens=radu::utils::split(pose_string, " ");
+    CHECK(tokens.size()==7) << "Expected to be able to split the pose_string into 7. But got only " << tokens.size();
+
+    Eigen::Affine3d model_matrix=tf_vecstring2matrix<double>(tokens);
+
+    set_model_matrix(model_matrix);
+}
+
+
 void Mesh::transform_model_matrix(const Eigen::Affine3d& trans){
     m_model_matrix=trans*m_model_matrix;
 
@@ -2248,6 +2260,7 @@ void Mesh::set_diffuse_tex(const cv::Mat& mat, const int subsample){
     cv::flip(mat_internal, m_diffuse_mat.mat, 0); //opencv mat has origin of the texture on the upper left but opengl expect it to be on the lower left so we flip the texture. https://gamedev.stackexchange.com/questions/26175/how-do-i-load-a-texture-in-opengl-where-the-origin-of-the-texture0-0-isnt-in
     m_diffuse_mat.is_dirty=true;
     m_vis.set_color_texture(); //if we have diffuse we might as well just switch to actually display it
+    m_vis.m_show_mesh=true; //if we have diffuse we might as well just switch to actually display it
 }
 void Mesh::set_metalness_tex(const cv::Mat& mat, const int subsample){
     CHECK(mat.data) << "Metalness mat is empty";

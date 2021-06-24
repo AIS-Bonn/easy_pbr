@@ -219,6 +219,7 @@ public:
     Eigen::Affine3d model_matrix();
     Eigen::Affine3d& model_matrix_ref();
     void set_model_matrix(const Eigen::Affine3d& new_model_matrix);
+    void set_model_matrix_from_string(const std::string& pose_string); //pose_string contains x y z qx qy qz qw  with a space delimiter in between
     void transform_vertices_cpu(const Eigen::Affine3d& trans, const bool transform_points_at_zero=false); //modifyed the vertices on the cpu but does not update the model matrix
     void transform_model_matrix(const Eigen::Affine3d& trans); //just affects how the model is displayed when rendered by modifying the model matrix but does not change the vertices themselves
     void translate_model_matrix(const Eigen::Vector3d& translation); //easier acces to transform of model matrix by just translation. Easier to call from python

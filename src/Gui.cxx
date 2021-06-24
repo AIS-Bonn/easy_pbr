@@ -595,6 +595,14 @@ void Gui::draw_main_menu(){
             if (ImGui::RadioButton("Local", m_guizmo_mode == ImGuizmo::LOCAL)) { m_guizmo_mode = ImGuizmo::LOCAL; } ImGui::SameLine();
             if (ImGui::RadioButton("World", m_guizmo_mode == ImGuizmo::WORLD)) { m_guizmo_mode = ImGuizmo::WORLD; }
 
+            if (ImGui::Button("Copy Pose")){ 
+                Eigen::Affine3d model_matrix=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->model_matrix();
+                std::vector<std::string> pose_vec=radu::utils::tf_matrix2vecstring(model_matrix);
+                std::string pose_string=radu::utils::join(pose_vec, " ");
+                VLOG(1) << "Copied model matrix to clipboard: " << pose_string; 
+                glfwSetClipboardString(m_view->m_window, pose_string.c_str());
+            }
+
             edit_transform(m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx));
         }
 

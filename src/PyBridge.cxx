@@ -501,6 +501,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("transform_model_matrix", &Mesh::transform_model_matrix) // This transform also the children of this mesh
     .def_property("model_matrix", &Mesh::model_matrix_ref, &Mesh::set_model_matrix)
     .def_property("cur_pose", &Mesh::cur_pose_ref, &Mesh::set_cur_pose)
+    .def("set_model_matrix_from_string", &Mesh::set_model_matrix_from_string )
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
