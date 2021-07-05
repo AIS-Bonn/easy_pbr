@@ -404,7 +404,7 @@ void Mesh::set_model_matrix(const Eigen::Affine3d& new_model_matrix){
     // VLOG(1) << "calculated_new is " << calculated_new.matrix();
     // VLOG(1) << "delta is " << delta.matrix();
 
-    // transform_model_matrix(delta); 
+    // transform_model_matrix(delta);
 
     m_model_matrix=new_model_matrix;
     m_is_shadowmap_dirty=true;
@@ -1380,7 +1380,7 @@ void Mesh::create_box(const float w, const float h, const float l){
             edges.push_back(edge);
         }
         if( std::abs(dist_2-2)<0.001 ){
-            //coonect p2 and p3 
+            //coonect p2 and p3
             edge<< points.size()-1,  points.size()-2;
             edges.push_back(edge);
         }
@@ -2525,7 +2525,7 @@ void Mesh::write_ply(const std::string file_path){
     ply_file.write(outstream_binary, true);
 }
 
-void Mesh::read_obj(const std::string file_path){
+void Mesh::read_obj(const std::string file_path,  bool load_vti, bool load_vni){
 
     struct Vertex{
         Eigen::Vector3d pos=Eigen::Vector3d::Zero();
@@ -2553,6 +2553,7 @@ void Mesh::read_obj(const std::string file_path){
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
+    VLOG(1) << "read obj with path " << file_path;
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_path.c_str());
 
     LOG_IF(WARNING, shapes.size()!=1) << "Warning when loading obj with path " << file_path << " " << warn;
@@ -2572,10 +2573,17 @@ void Mesh::read_obj(const std::string file_path){
     std::vector<Vertex> vertices;
     std::unordered_map<Vertex, uint32_t, HashVertex> unique_vertices = {};
     std::vector<int> indices;
+    std::vector<int> vti;
+    std::vector<int> vni;
+
+    // if (!check_uniqueness){ //if we don't check for uniqunes we push the vertices in whichever order they appear in the obj and not in the order to which faces reference them
+        // vertices.resize( attrib.vertices.size()/3 );
+    // }
 
     for (const auto& shape : shapes) {
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex = {};
+            // VLOG(1) << "index has texoocrds index " << index.texcoord_index;
 
             vertex.pos = {
                 attrib.vertices[3 * index.vertex_index + 0],
@@ -2608,11 +2616,26 @@ void Mesh::read_obj(const std::string file_path){
             // }
 
             //push the vertex only if it's the first one we references
-            if (unique_vertices.count(vertex) == 0) {
-                unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(vertex);
+            // if (check_uniqueness){
+                if (unique_vertices.count(vertex) == 0) {
+                    unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+                indices.push_back(unique_vertices[vertex]);
+            // }else{
+                // vertices[index.vertex_index]=vertex;
+                // indices.push_back(index.vertex_index);
+            // }
+
+            if(load_vti){
+                // vti.push_back(index.texcoord_index);
+                vti.push_back(indices[indices.size()-1] );
             }
-            indices.push_back(unique_vertices[vertex]);
+            if(load_vni){
+                // vni.push_back(index.normal_index);
+                // vni.push_back(index.normal_index);
+                vni.push_back(indices[indices.size()-1] );
+            }
 
             // vertices.push_back(vertex);
             // indices.push_back(indices.size());
@@ -2636,6 +2659,21 @@ void Mesh::read_obj(const std::string file_path){
     for(size_t i=0; i<indices.size()/3; i++){
         F.row(i) << indices[3*i+0], indices[3*i+1], indices[3*i+2];
     }
+
+    //vti and vni
+    if (load_vti){
+        VTI.resize(vti.size()/3, 3);
+        for(size_t i=0; i<vti.size()/3; i++){
+            VTI.row(i) << vti[3*i+0], vti[3*i+1], vti[3*i+2];
+        }
+    }
+    if (load_vni){
+        VNI.resize(vni.size()/3, 3);
+        for(size_t i=0; i<vni.size()/3; i++){
+            VNI.row(i) << vni[3*i+0], vni[3*i+1], vni[3*i+2];
+        }
+    }
+
 
 }
 

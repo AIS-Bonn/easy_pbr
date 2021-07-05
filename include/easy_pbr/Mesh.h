@@ -207,6 +207,7 @@ public:
     void set_all_matrices_to_zero();
     void assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu); //assigns the pointer to the gpu implementation of this mesh
     bool load_from_file(const std::string file_path); //return sucess or failure
+    void read_obj(const std::string file_path, bool load_vti=false, bool load_vni=false); //vti and vni which are the indices that the vertices have towards the textures and towards the normals. Check https://en.wikipedia.org/wiki/Wavefront_.obj_file about Vertex texture coordinate indices and Vertex normal indices
     void save_to_file(const std::string file_path);
     bool is_empty()const;
     // void apply_transform(Eigen::Affine3d& trans, const bool transform_points_at_zero=false ); //transforms the vertices V and the normals. A more efficient way would be to just update the model matrix and let the GPU do it but I like having the V here and on the GPU in sync so I rather transform on CPU and then send all the data to GPU
@@ -357,6 +358,8 @@ public:
     Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation
     Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation
     Eigen::MatrixXd I; //intensity value of each point in the cloud. Useful for laser scanner
+    Eigen::MatrixXi VTI; //Vertex texture coordinate indices which is the coordinate that the vertices has towards the UV. check https://en.wikipedia.org/wiki/Wavefront_.obj_file
+    Eigen::MatrixXi VNI; //Vertex normal indices which is the coordinate that the vertices has towards the NV. check https://en.wikipedia.org/wiki/Wavefront_.obj_file
     DataBlob<double> V_blob;
 
 
@@ -422,7 +425,6 @@ private:
     //We use this for reading ply files because the readPLY from libigl has a memory leak https://github.com/libigl/libigl/issues/919
     void read_ply(const std::string file_path);
     void write_ply(const std::string file_path);
-    void read_obj(const std::string file_path);
 
     Eigen::Affine3d m_model_matrix;  //transform from object coordiantes to the world coordinates, esentially putting the model somewhere in the world.
     Eigen::Affine3d m_cur_pose;
