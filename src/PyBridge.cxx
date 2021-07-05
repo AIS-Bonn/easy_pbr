@@ -252,6 +252,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("look_dir", &Frame::look_dir )
     // .def("load_images", &Frame::load_images )
     .def("load_images", [](Frame &frame) {  frame.load_images(frame); } )
+    .def("has_extra_field", &Frame::has_extra_field )
     .def("add_extra_field", &Frame::add_extra_field<int> )
     .def("add_extra_field", &Frame::add_extra_field<float> )
     .def("add_extra_field", &Frame::add_extra_field<double> )
