@@ -203,6 +203,7 @@ public:
 
     Mesh clone();
     void add(Mesh& new_mesh); //Adds another mesh to this one and combines it into one
+    void add(const std::vector<std::shared_ptr<Mesh>>& meshes); //Adds all the meshes on the list onto this one
     void clear(); //empties all vectors makes them have size (0,0)
     void set_all_matrices_to_zero();
     void assign_mesh_gpu(std::shared_ptr<MeshGL> mesh_gpu); //assigns the pointer to the gpu implementation of this mesh

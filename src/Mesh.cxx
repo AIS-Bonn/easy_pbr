@@ -206,9 +206,9 @@ void Mesh::add(Mesh& new_mesh) {
         NV_new << NV, new_mesh.NV;
         Eigen::MatrixXd UV_new(UV.rows() + new_mesh.UV.rows(), 2);
         UV_new << UV, new_mesh.UV;
-        Eigen::MatrixXd V_tangent_u_new(V_tangent_u.rows() + new_mesh.V_tangent_u.rows(), 4);
+        Eigen::MatrixXd V_tangent_u_new(V_tangent_u.rows() + new_mesh.V_tangent_u.rows(), 3);
         V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
-        Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 4);
+        Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 1);
         V_lenght_v_new << V_length_v, new_mesh.V_length_v;
         Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
         L_pred_new << L_pred, new_mesh.L_pred;
@@ -236,7 +236,233 @@ void Mesh::add(Mesh& new_mesh) {
         m_is_dirty=true;
     }
 
-        m_is_shadowmap_dirty=true;
+    m_is_shadowmap_dirty=true;
+}
+
+void Mesh::add(const std::vector<std::shared_ptr<Mesh>>&  meshes){
+
+    //get the meshes to cpu
+    for(size_t i=0; i<meshes.size(); i++){
+        meshes[i]->apply_model_matrix_to_cpu(true);
+    }
+
+    //get a cumulative nr of vertices that we would get after adding every mesh and the total number of the other elements
+    // std::vector<int> cumulative_nr_verts;
+    // cumulative_nr_verts.push_back(0);
+    int nr_V_acumulated=V.rows();
+    int nr_F_acumulated=F.rows();
+    int nr_C_acumulated=C.rows();
+    int nr_E_acumulated=E.rows();
+    int nr_D_acumulated=D.rows();
+    int nr_NF_acumulated=NF.rows();
+    int nr_NV_acumulated=NV.rows();
+    int nr_UV_acumulated=UV.rows();
+    int nr_V_tangent_u_acumulated=V_tangent_u.rows();
+    int nr_V_length_v_acumulated=V_length_v.rows();
+    int nr_L_pred_acumulated=L_pred.rows();
+    int nr_L_gt_acumulated=L_gt.rows();
+    int nr_I_acumulated=I.rows();
+    for(size_t i=0; i<meshes.size(); i++){
+        nr_V_acumulated+=meshes[i]->V.rows();
+        // cumulative_nr_verts.push_back(nr_V_acumulated);
+        nr_F_acumulated+=meshes[i]->F.rows();
+        nr_C_acumulated+=meshes[i]->C.rows();
+        nr_E_acumulated+=meshes[i]->E.rows();
+        nr_D_acumulated+=meshes[i]->D.rows();
+        nr_NF_acumulated+=meshes[i]->NF.rows();
+        nr_NV_acumulated+=meshes[i]->NV.rows();
+        nr_UV_acumulated+=meshes[i]->UV.rows();
+        nr_V_tangent_u_acumulated+=meshes[i]->V_tangent_u.rows();
+        nr_V_length_v_acumulated+=meshes[i]->V_length_v.rows();
+        nr_L_pred_acumulated+=meshes[i]->L_pred.rows();
+        nr_L_gt_acumulated+=meshes[i]->L_gt.rows();
+        nr_I_acumulated+=meshes[i]->I.rows();
+    }
+
+    //make the new ones
+    Eigen::MatrixXd V_new(nr_V_acumulated, 3);
+    Eigen::MatrixXi F_new(nr_F_acumulated, 3);
+    Eigen::MatrixXd C_new(nr_C_acumulated, 3);
+    Eigen::MatrixXi E_new(nr_E_acumulated, 2);
+    Eigen::MatrixXd D_new(nr_D_acumulated, 1);
+    Eigen::MatrixXd NF_new(nr_NF_acumulated, 3);
+    Eigen::MatrixXd NV_new(nr_NV_acumulated, 3);
+    Eigen::MatrixXd UV_new(nr_UV_acumulated, 2);
+    Eigen::MatrixXd V_tangent_u_new(nr_V_tangent_u_acumulated, 3);
+    Eigen::MatrixXd V_lenght_v_new(nr_V_length_v_acumulated, 1);
+    Eigen::MatrixXi L_pred_new(nr_L_pred_acumulated, 1);
+    Eigen::MatrixXi L_gt_new(nr_L_gt_acumulated, 1);
+    Eigen::MatrixXd I_new(nr_I_acumulated, 1);
+
+
+
+
+    int nr_F_added=0;
+    int nr_E_added=0;
+    int nr_V_added=0;
+    int nr_C_added=0;
+    int nr_D_added=0;
+    int nr_NV_added=0;
+    int nr_UV_added=0;
+    int nr_V_tangent_u_added=0;
+    int nr_V_length_v_added=0;
+    int nr_L_pred_added=0;
+    int nr_L_gt_added=0;
+    int nr_I_added=0;
+
+
+
+    //put the current matrices into the new ones
+    //F
+    int nr_additional_F= F.rows();
+    F_new.block(0,0, nr_additional_F,3) = F.array()+nr_V_added;
+    nr_F_added+=nr_additional_F;
+    //E
+    int nr_additional_E= E.rows();
+    E_new.block(0,0, nr_additional_E,2) = E.array()+nr_V_added;
+    nr_E_added+=nr_additional_E;
+    //NF
+    // TODO
+    //V
+    int nr_additional_V= V.rows();
+    V_new.block(0,0,nr_additional_V,3) = V;
+    nr_V_added+=nr_additional_V;
+    //C
+    int nr_additional_C= C.rows();
+    C_new.block(0,0, nr_additional_C,3) = C;
+    nr_C_added+=nr_additional_C;
+    //D
+    int nr_additional_D= D.rows();
+    D_new.block(0,0, nr_additional_D,1) = D;
+    nr_D_added+=nr_additional_D;
+    //NV
+    int nr_additional_NV= NV.rows();
+    NV_new.block(0,0, nr_additional_NV,3) = NV;
+    nr_NV_added+=nr_additional_NV;
+    //UV
+    int nr_additional_UV= UV.rows();
+    UV_new.block(0,0, nr_additional_UV,2) = UV;
+    nr_UV_added+=nr_additional_UV;
+    //V_tangent_u
+    int nr_additional_V_tangent_u= V_tangent_u.rows();
+    V_tangent_u_new.block(0,0, nr_additional_V_tangent_u,3) = V_tangent_u;
+    nr_V_tangent_u_added+=nr_additional_V_tangent_u;
+    //V_lenght_v_
+    int nr_additional_V_lenght_v= V_length_v.rows();
+    V_lenght_v_new.block(0,0, nr_additional_V_lenght_v,1) = V_length_v;
+    nr_V_length_v_added+=nr_additional_V_lenght_v;
+    //L_pred
+    int nr_additional_L_pred= L_pred.rows();
+    L_pred_new.block(0,0, nr_additional_L_pred,1) = L_pred;
+    nr_L_pred_added+=nr_additional_L_pred;
+    //L_gt
+    int nr_additional_L_gt= L_gt.rows();
+    L_gt_new.block(0,0, nr_additional_L_gt,1) = L_gt;
+    nr_L_gt_added+=nr_additional_L_gt;
+    //I
+    int nr_additional_I= I.rows();
+    I_new.block(0,0, nr_additional_I,1) = I;
+    nr_I_added+=nr_additional_I;
+
+
+
+
+
+    //write into the new matrices
+    for(size_t i=0; i<meshes.size(); i++){
+
+        //F
+        int nr_additional_F= meshes[i]->F.rows();
+        int F_block_row= nr_F_added;
+        // F_new.block<nr_additional_F,3>(F_block_row,0) = meshes[i]->F.array()+nr_V_added;
+        F_new.block(F_block_row,0, nr_additional_F,3) = meshes[i]->F.array()+nr_V_added;
+        nr_F_added+=nr_additional_F;
+
+        //E
+        int nr_additional_E= meshes[i]->E.rows();
+        int E_block_row= nr_E_added;
+        E_new.block(E_block_row,0, nr_additional_E,2) = meshes[i]->E.array()+nr_V_added;
+        nr_E_added+=nr_additional_E;
+
+        //NF
+        // TODO
+
+
+        //all the per-vertex things
+        //V
+        int nr_additional_V= meshes[i]->V.rows();
+        int V_block_row= nr_V_added;
+        V_new.block(V_block_row,0,nr_additional_V,3) = meshes[i]->V;
+        nr_V_added+=nr_additional_V;
+        //C
+        int nr_additional_C= meshes[i]->C.rows();
+        int C_block_row= nr_C_added;
+        C_new.block(C_block_row,0, nr_additional_C,3) = meshes[i]->C;
+        nr_C_added+=nr_additional_C;
+        //D
+        int nr_additional_D= meshes[i]->D.rows();
+        int D_block_row= nr_D_added;
+        D_new.block(D_block_row,0, nr_additional_D,1) = meshes[i]->D;
+        nr_D_added+=nr_additional_D;
+        //NV
+        int nr_additional_NV= meshes[i]->NV.rows();
+        int NV_block_row= nr_NV_added;
+        NV_new.block(NV_block_row,0, nr_additional_NV,3) = meshes[i]->NV;
+        nr_NV_added+=nr_additional_NV;
+        //UV
+        int nr_additional_UV= meshes[i]->UV.rows();
+        int UV_block_row= nr_UV_added;
+        UV_new.block(UV_block_row,0, nr_additional_UV,2) = meshes[i]->UV;
+        nr_UV_added+=nr_additional_UV;
+        //V_tangent_u
+        int nr_additional_V_tangent_u= meshes[i]->V_tangent_u.rows();
+        int V_tangent_u_block_row= nr_V_tangent_u_added;
+        V_tangent_u_new.block(V_tangent_u_block_row,0, nr_additional_V_tangent_u,3) = meshes[i]->V_tangent_u;
+        nr_V_tangent_u_added+=nr_additional_V_tangent_u;
+        //V_lenght_v_
+        int nr_additional_V_lenght_v= meshes[i]->V_length_v.rows();
+        int V_lenght_v_block_row= nr_V_length_v_added;
+        V_lenght_v_new.block(V_lenght_v_block_row,0, nr_additional_V_lenght_v,1) = meshes[i]->V_length_v;
+        nr_V_length_v_added+=nr_additional_V_lenght_v;
+        //L_pred
+        int nr_additional_L_pred= meshes[i]->L_pred.rows();
+        int L_pred_block_row= nr_L_pred_added;
+        L_pred_new.block(L_pred_block_row,0, nr_additional_L_pred,1) = meshes[i]->L_pred;
+        nr_L_pred_added+=nr_additional_L_pred;
+        //L_gt
+        int nr_additional_L_gt= meshes[i]->L_gt.rows();
+        int L_gt_block_row= nr_L_gt_added;
+        L_gt_new.block(L_gt_block_row,0, nr_additional_L_gt,1) = meshes[i]->L_gt;
+        nr_L_gt_added+=nr_additional_L_gt;
+        //I
+        int nr_additional_I= meshes[i]->I.rows();
+        int I_block_row= nr_I_added;
+        I_new.block(I_block_row,0, nr_additional_I,1) = meshes[i]->I;
+        nr_I_added+=nr_additional_I;
+
+
+
+
+    }
+
+    V = V_new;
+    F = F_new;
+    C = C_new;
+    E = E_new;
+    D = D_new;
+    NF=NF_new;
+    NV=NV_new;
+    UV=UV_new;
+    V_tangent_u=V_tangent_u_new;
+    V_length_v=V_lenght_v_new;
+    L_pred=L_pred_new;
+    L_gt=L_gt_new;
+    I=I_new;
+
+
+    m_is_dirty=true;
+    m_is_shadowmap_dirty=true;
+
 }
 
 // void MeshCore::assign(const MeshCore& new_core){
