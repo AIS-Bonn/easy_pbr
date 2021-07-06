@@ -355,6 +355,7 @@ public:
     Eigen::MatrixXd UV; //UV for each vertex
     Eigen::MatrixXd V_tangent_u; //for surfel rendering each vertex has a 2 vectors that are tangent defining the span of the elipsoid. For memory usage we don't store the 2 vectors directly because we alreayd have a normal vector, rather we store one tangent vector in full (vec3) and the other one we store only the norm of it because it's dirrection can be inferred as the cross product between the normal and the first tangent vector
     Eigen::MatrixXd V_length_v;
+    Eigen::MatrixXd V_bitangent_v;
     Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation
     Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation
     Eigen::MatrixXd I; //intensity value of each point in the cloud. Useful for laser scanner

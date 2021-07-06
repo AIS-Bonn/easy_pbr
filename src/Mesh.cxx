@@ -1980,13 +1980,18 @@ void Mesh::compute_tangents(const float tangent_length){
             Eigen::Vector3d tangent = n.cross(vec).normalized();
             V_tangent_u.row(i) = tangent*tangent_length;
             V_length_v(i,0) = tangent_length;
+            V_bitangent.row(i)=  n.cross(tangent).normalized();
         }
 
 
 
     }
 
+    V_bitangent_v=V_bitangent;
 
+    // auto ret=std::make_tuple (V_tangent_u, V_bitangent);
+
+    // return ret;
 
 }
 

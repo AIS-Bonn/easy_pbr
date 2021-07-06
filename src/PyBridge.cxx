@@ -482,6 +482,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("UV", &Mesh::UV)
     .def_readwrite("V_tangent_u", &Mesh::V_tangent_u)
     .def_readwrite("V_lenght_v", &Mesh::V_length_v)
+    .def_readwrite("V_bitangent_v", &Mesh::V_bitangent_v)
     .def_readwrite("L_pred", &Mesh::L_pred)
     .def_readwrite("L_gt", &Mesh::L_gt)
     .def_readwrite("I", &Mesh::I)
