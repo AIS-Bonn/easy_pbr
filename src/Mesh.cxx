@@ -2290,6 +2290,11 @@ float Mesh::get_scale(){
 
     float scale = (max_point-min_point).array().abs().maxCoeff();
 
+    //if the difference between min and max is too tiny, just put the scale at 1
+    if( (min_point-max_point).norm()<1e-50 ){
+        scale=1.0;
+    }
+
     //sanity check
     if(std::isnan(scale)){
         LOG(ERROR) << "V is " << V;
