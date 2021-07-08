@@ -2271,7 +2271,7 @@ Mesh Mesh::interpolate(const Mesh& target_mesh, const float factor){
 }
 float Mesh::get_scale(){
     //if the mesh is empty just return the scale 1.0
-    if(is_empty()){
+    if(is_empty() || V.rows()==1){ //If we have only one vertex than the scale should just be 1
        return 1.0;
     }
     // VLOG(1) << "get scale";
