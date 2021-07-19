@@ -532,6 +532,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
+    .def("remove_duplicate_vertices", &Mesh::remove_duplicate_vertices )
     .def("compute_tangents", &Mesh::compute_tangents, py::arg("tangent_length") = 1.0)
     .def("estimate_normals_from_neighbourhood", &Mesh::estimate_normals_from_neighbourhood )
     .def("compute_distance_to_mesh", &Mesh::compute_distance_to_mesh )

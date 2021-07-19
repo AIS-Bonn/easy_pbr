@@ -1107,10 +1107,19 @@ void Mesh::remove_unreferenced_verts(){
 void Mesh::remove_duplicate_vertices(){
 
     Eigen::MatrixXd V_new;
-    Eigen::MatrixXi indirection; //size of mesh.V, says for each point where they ended up in the V_new array
-    Eigen::MatrixXi inverse_indirection; // size of V_new , says for each point where the original one was in mesh.V
+    Eigen::VectorXi indirection; //size of V_new , says for each point where the original one was in mesh.V
+    Eigen::VectorXi inverse_indirection; //size of mesh.V, says for each point where they ended up in the V_new array
 
     igl::remove_duplicate_vertices(V, 1e-7, V_new, indirection, inverse_indirection);
+
+    std::vector<int> inverse_indirection_vec= eigen2vec(inverse_indirection);
+
+    // VLOG(1) << "V is " << V.rows();
+    // VLOG(1) << "indirection has rows " << indirection.rows();
+    // VLOG(1) << "inverse_indirection has rows " << inverse_indirection.rows();
+
+    F=filter_apply_indirection(inverse_indirection_vec, F);
+    E=filter_apply_indirection(inverse_indirection_vec, E);
 
     V=V_new;
 }
