@@ -1778,6 +1778,41 @@ void Mesh::create_sphere(const Eigen::Vector3d& center, const double radius){
     }
 }
 
+void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius){
+    load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder.obj" );
+
+    //change the height and radius
+    for (int i = 0; i < V.rows(); i++) {
+        Eigen::Vector3d point = V.row(i);
+        V.row(i) << point.x()*radius, point.y()*height, point.z()*radius;
+    }
+
+
+    //rotate towards the main axis. The cylinder stads with the main axis being the y axis so it's upwright
+    Eigen::Vector3d canonical_direction=  Eigen::Vector3d::UnitY();
+    Eigen::Vector3d new_direction=main_axis.normalized();
+    if (  (new_direction-canonical_direction).norm()>1e-7  ){ //if the vectors are the same, then there is no need to rotate, also the cross product would fail
+
+        Eigen::Vector3d axis= (new_direction.cross(canonical_direction)).normalized();
+        double angle=std::acos( new_direction.dot(canonical_direction)  );
+
+        //get axis angle
+        Eigen::AngleAxisd angle_axis_eigen;
+        angle_axis_eigen.axis()=axis;
+        angle_axis_eigen.angle()=angle;
+
+        //get rotation
+        Eigen::Matrix3d R=angle_axis_eigen.toRotationMatrix();
+
+        //rotate the mesh
+        Eigen::Affine3d tf;
+        tf.setIdentity();
+        tf.linear()=R;
+        transform_vertices_cpu(tf,true);
+
+    }
+}
+
 
 
 

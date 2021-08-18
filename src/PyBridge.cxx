@@ -458,6 +458,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("create_box", &Mesh::create_box )
     .def("create_floor", &Mesh::create_floor )
     .def("create_sphere", &Mesh::create_sphere )
+    .def("create_cylinder", &Mesh::create_cylinder )
     .def("has_extra_field", &Mesh::has_extra_field )
     .def("add_extra_field", &Mesh::add_extra_field<int> )
     .def("add_extra_field", &Mesh::add_extra_field<float> )
