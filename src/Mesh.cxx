@@ -311,7 +311,6 @@ void Mesh::add(const std::vector<std::shared_ptr<Mesh>>&  meshes){
     int nr_I_added=0;
 
 
-
     //put the current matrices into the new ones
     //F
     int nr_additional_F= F.rows();
@@ -1778,8 +1777,21 @@ void Mesh::create_sphere(const Eigen::Vector3d& center, const double radius){
     }
 }
 
-void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius){
-    load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder.obj" );
+void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius, const bool origin_at_bottom){
+    load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder_14.obj" );
+
+    //make it a height of 1
+    V.col(1) = V.col(1)*0.5;
+
+
+    //if the origin is at the bottom, then we move the primtive
+    if(origin_at_bottom){
+        for (int i = 0; i < V.rows(); i++) {
+            Eigen::Vector3d point = V.row(i);
+            V.row(i) << point.x(), point.y()+0.5, point.z();
+        }
+    }
+
 
     //change the height and radius
     for (int i = 0; i < V.rows(); i++) {
@@ -1788,13 +1800,14 @@ void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height
     }
 
 
+
     //rotate towards the main axis. The cylinder stads with the main axis being the y axis so it's upwright
     Eigen::Vector3d canonical_direction=  Eigen::Vector3d::UnitY();
     Eigen::Vector3d new_direction=main_axis.normalized();
     if (  (new_direction-canonical_direction).norm()>1e-7  ){ //if the vectors are the same, then there is no need to rotate, also the cross product would fail
 
         Eigen::Vector3d axis= (new_direction.cross(canonical_direction)).normalized();
-        double angle=std::acos( new_direction.dot(canonical_direction)  );
+        double angle= - std::acos( new_direction.dot(canonical_direction)  );
 
         //get axis angle
         Eigen::AngleAxisd angle_axis_eigen;

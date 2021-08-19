@@ -264,7 +264,7 @@ public:
     void create_grid(const int nr_segments, const float y_pos, const float scale);
     void create_floor(const float y_pos, const float scale);
     void create_sphere(const Eigen::Vector3d& center, const double radius);
-    void create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius);
+    void create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius, const bool origin_at_bottom);
     void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.
 
     //lots of mesh ops
