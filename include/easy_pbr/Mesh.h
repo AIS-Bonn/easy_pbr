@@ -23,7 +23,7 @@ namespace radu { namespace utils {
 
 namespace easy_pbr{
 
-BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity, UV )
+BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity, UV, NormalViewCoords )
 
 
 class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff
@@ -91,6 +91,9 @@ struct VisOptions{
     }
     void set_color_uv(){
         m_color_type=MeshColorType::UV;
+    }
+    void set_color_normalvector_viewcoords(){
+        m_color_type=MeshColorType::NormalViewCoords;
     }
 
     bool operator==(const VisOptions& rhs) const{

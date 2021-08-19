@@ -26,6 +26,7 @@ layout(location = 6) out vec2 uv_out;
 
 
 // //uniform
+uniform mat4 V;
 uniform bool render_uv_to_gbuffer;
 uniform int color_type;
 uniform sampler2D diffuse_tex;
@@ -141,6 +142,10 @@ void main(){
         // }
     }else if(color_type==5){ //normal vector //NORMAL WILL BE OUTPUTTED FROM FRAGMENT SHADER BECAUSE sometime we might want to do normal mapping and only the framgne thas acces to that
         diffuse_out=vec4( (normal_to_encode+1.0)/2.0, 1.0 );
+    }else if(color_type==9){ //normal vector in view coordinates
+        vec3 normal_vis=normal_to_encode;
+        normal_vis=normalize(vec3(V*vec4(normal_vis,0.0)));
+        diffuse_out=vec4( (normal_vis+1.0)/2.0, 1.0 );
     }else{
         diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }

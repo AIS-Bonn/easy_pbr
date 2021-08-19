@@ -437,6 +437,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_color_height", &VisOptions::set_color_height )
     .def("set_color_intensity", &VisOptions::set_color_intensity )
     .def("set_color_uv", &VisOptions::set_color_uv )
+    .def("set_color_normalvector_viewcoords", &VisOptions::set_color_normalvector_viewcoords )
     ;
 
 

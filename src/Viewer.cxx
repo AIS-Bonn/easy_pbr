@@ -1423,6 +1423,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     //shader setup
     m_draw_mesh_shader.use();
     m_draw_mesh_shader.uniform_bool(m_render_uv_to_gbuffer, "render_uv_to_gbuffer");
+    m_draw_mesh_shader.uniform_4x4(V, "V");
     m_draw_mesh_shader.uniform_4x4(M, "M");
     m_draw_mesh_shader.uniform_4x4(MV, "MV");
     m_draw_mesh_shader.uniform_4x4(MVP, "MVP");
