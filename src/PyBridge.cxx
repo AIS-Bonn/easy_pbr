@@ -519,6 +519,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_model_matrix_from_string", &Mesh::set_model_matrix_from_string )
     .def("get_scale", &Mesh::get_scale )
     .def("color_solid2pervert", &Mesh::color_solid2pervert )
+    .def("color_from_mat", &Mesh::color_from_mat )
     .def("translate_model_matrix", &Mesh::translate_model_matrix )
     .def("transform_vertices_cpu", &Mesh::transform_vertices_cpu )
     // .def("rotate_model_matrix", &Mesh::rotate_model_matrix )
@@ -569,6 +570,8 @@ PYBIND11_MODULE(easypbr, m) {
     // .def(py::init<>())
     .def("record", py::overload_cast<const std::string, const std::string >(&Recorder::record) )
     .def("snapshot", py::overload_cast<const std::string, const std::string >(&Recorder::snapshot) )
+    .def("is_finished", &Recorder::is_finished )
+    .def("nr_images_recorded", &Recorder::nr_images_recorded )
     ;
 
     //Profiler

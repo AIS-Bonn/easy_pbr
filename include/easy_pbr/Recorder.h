@@ -39,6 +39,7 @@ public:
     void pause_recording();
     void stop_recording();
     int nr_images_recorded();
+    bool is_finished(); //returns true when the queue is empty and we finished writing everything
 
 
     //objects

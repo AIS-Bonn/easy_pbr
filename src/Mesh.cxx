@@ -1845,6 +1845,83 @@ void Mesh::color_from_label_indices(Eigen::MatrixXi label_indices){
     }
 }
 
+void Mesh::color_from_mat(const cv::Mat& mat){
+    CHECK(UV.size()) << "In order to use color_from_mat you need UVs";
+    CHECK(mat.data) << "Mat is empty";
+
+    VLOG(1) << "mat in is " << radu::utils::type2string(mat.type());
+    int channels=mat.channels();
+
+    cv::Mat mat_float; //just convert it to float so that we don't need to deal with different types
+    if (mat.depth()==CV_32F){
+        VLOG(1) << "Mat is already in float";
+        if (channels==1) mat.convertTo(mat_float, CV_32FC1);
+        if (channels==2) mat.convertTo(mat_float, CV_32FC2);
+        if (channels==3) mat.convertTo(mat_float, CV_32FC3);
+        if (channels==4) mat.convertTo(mat_float, CV_32FC4);
+    }else{
+        VLOG(1) << "conveting mat to float";
+        if (channels==1) mat.convertTo(mat_float, CV_32FC1, 1.0/255.0);
+        if (channels==2) mat.convertTo(mat_float, CV_32FC2, 1.0/255.0);
+        if (channels==3) mat.convertTo(mat_float, CV_32FC3, 1.0/255.0);
+        if (channels==4) mat.convertTo(mat_float, CV_32FC4, 1.0/255.0);
+    }
+
+    VLOG(1) << "mat_float in is " << radu::utils::type2string(mat_float.type());
+
+    int rows=mat_float.rows;
+    int cols=mat_float.cols;
+    VLOG(1) << "ne channels is " << channels;
+
+    C.resize(V.rows(),3);
+    C.setZero();
+
+    for(int i=0; i<V.rows(); i++){
+        float u=UV(i,0);
+        float v=UV(i,1);
+        //get the uv from [0,1] to range [0,img size]
+        u=u*cols;
+        v=v*rows;
+
+        int x=(int)u;
+        int y=rows-(int)v; //flip up and down
+
+        if(x>=0 && x<cols && y>=0 && y<rows ){
+            float r,g,b;
+            r=0;
+            g=0;
+            b=0;
+            if (channels==1){
+                r=mat_float.at<float>(y,x);
+                g=r;
+                b=r;
+            }else if (channels==2){
+                r=mat_float.at<cv::Vec2f>(y,x)[0];
+                g=mat_float.at<cv::Vec2f>(y,x)[1];
+                b=r;
+            }else if (channels==3){
+                r=mat_float.at<cv::Vec3f>(y,x)[0];
+                g=mat_float.at<cv::Vec3f>(y,x)[1];
+                b=mat_float.at<cv::Vec3f>(y,x)[2];
+            }else if (channels==4){
+                r=mat_float.at<cv::Vec4f>(y,x)[0];
+                g=mat_float.at<cv::Vec4f>(y,x)[1];
+                b=mat_float.at<cv::Vec4f>(y,x)[2];
+            }
+            // float r=mat_float.at<cv::Vec3f>(y,x)[0];
+            // float g=mat_float.at<cv::Vec3f>(y,x)[1];
+            // float b=mat_float.at<cv::Vec3f>(y,x)[2];
+            // VLOG(1) << "Pixel at " << u << " " << v << " is " << r << " " << g << " " << b;
+            C(i,0)=r;
+            C(i,1)=g;
+            C(i,2)=b;
+        }
+
+    }
+
+
+}
+
 Eigen::Vector3d Mesh::centroid(){
     Eigen::Vector3d min_point = V.colwise().minCoeff();
     Eigen::Vector3d max_point = V.colwise().maxCoeff();

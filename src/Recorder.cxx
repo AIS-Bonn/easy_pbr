@@ -270,7 +270,13 @@ void Recorder::write_to_file_threaded(){
             cv::cvtColor(cv_mat_flipped, cv_mat_flipped, cv::COLOR_BGR2RGB);
         }
         VLOG(1) << "writen image to " << mat_with_file.file_path;
-        cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
+        bool result;
+        try{
+            result=cv::imwrite(mat_with_file.file_path, cv_mat_flipped);
+        }catch (const cv::Exception& ex){
+            LOG(FATAL) << "Exception saving image " << ex.what();
+        }
+        CHECK(result) << "Something went wrong when writing image";
         TIME_END("write_to_file");
 
     }
@@ -293,6 +299,18 @@ void Recorder::pause_recording(){
 }
 int Recorder::nr_images_recorded(){
     return m_nr_images_recorded;
+}
+bool Recorder::is_finished(){
+    // MatWithFilePath mat_with_file;
+    // bool found = m_cv_mats_queue.try_dequeue(mat_with_file);
+    bool is_empty= m_cv_mats_queue.size_approx() == 0;
+
+    return is_empty;
+
+    // if (found){
+    //     return
+    // }
+
 }
 
 
