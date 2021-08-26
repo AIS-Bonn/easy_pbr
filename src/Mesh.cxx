@@ -1886,6 +1886,13 @@ void Mesh::color_from_mat(const cv::Mat& mat){
         int x=(int)u;
         int y=rows-(int)v; //flip up and down
 
+        //if it's out of bounds by one pixel, try to bring it back within the bounds of the image
+        if (x<0) x+=1;
+        if (y<0) y+=1;
+        if (x>=cols) x-=1;
+        if (y>=rows) y-=1;
+
+
         if(x>=0 && x<cols && y>=0 && y<rows ){
             float r,g,b;
             r=0;
@@ -1915,6 +1922,8 @@ void Mesh::color_from_mat(const cv::Mat& mat){
             C(i,0)=r;
             C(i,1)=g;
             C(i,2)=b;
+        }else{
+            // VLOG(1) << "out of bounds at" << u << " " << v << " xy is " << x << " " << y;
         }
 
     }
