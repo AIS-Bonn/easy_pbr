@@ -276,7 +276,8 @@ public:
     void set_marked_vertices_to_zero(const std::vector<bool>& mask, const bool keep); //useful for when the actual removal of verts will destroy the organized structure
     void remove_vertices_at_zero(); // zero is used to denote the invalid vertex, we can remove them and rebuild F, E and the rest of indices with this function
     void remove_unreferenced_verts();
-    void remove_duplicate_vertices();
+    Eigen::VectorXi remove_duplicate_vertices(); //return the inverse_indirection which is a vector of size original_mesh.V.rows(). Says for each original V where it's now indexed in the merged mesh
+    void undo_remove_duplicate_vertices(const std::shared_ptr<Mesh>& original_mesh, const Eigen::VectorXi& inverse_indirection );
     void set_duplicate_verts_to_zero();
     void decimate(const int nr_target_faces);
     void upsample(const int nr_of_subdivisions);

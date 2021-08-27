@@ -1103,7 +1103,7 @@ void Mesh::remove_unreferenced_verts(){
 
 }
 
-void Mesh::remove_duplicate_vertices(){
+Eigen::VectorXi Mesh::remove_duplicate_vertices(){
 
     Eigen::MatrixXd V_new;
     Eigen::VectorXi indirection; //size of V_new , says for each point where the original one was in mesh.V
@@ -1123,15 +1123,20 @@ void Mesh::remove_duplicate_vertices(){
     //now that we merge the vertices we need to also somehow merge the vertex atributes, so merge the colors for examaple. UV cannot be merged since you would need to choose one or the other uv  coordinate, if you choose the wrong one you end up stretching the face all over the uv map
     //We not efectivelly splat and acummulate the colors from the original mesh into the new mesh. So if V0 and v1 got merged together their colors would average on the new mesh
     std::vector<int> nr_times_merged(V_new.rows(), 0); //stores for each new vertex, how many vertices it merged into itself
-    Eigen::MatrixXd C_new;
-    C_new.resize(V_new.rows(), 3);
-    C_new.setZero();
+    //get the nr of times merged
+    for (int i=0; i<V.rows(); i++){
+        int idx_new_mesh=inverse_indirection(i); //index saying for this old vertex, where it got merged into in the new mesh
+        nr_times_merged[idx_new_mesh]++;
+    }
+    //calcualte the average color, Intensity and the other per-vertex things for the merged vertices
+    //COLOR
     if (C.size()){
+        Eigen::MatrixXd C_new;
+        C_new.resize(V_new.rows(), 3);
+        C_new.setZero();
         for (int i=0; i<V.rows(); i++){
-            //index saying for this old vertex, where it got merged into in the new mesh
-            int idx_new_mesh=inverse_indirection(i);
+            int idx_new_mesh=inverse_indirection(i); //index saying for this old vertex, where it got merged into in the new mesh
             Eigen::Vector3d original_color=C.row(i);
-            nr_times_merged[idx_new_mesh]++;
             C_new.row(idx_new_mesh)+=original_color;
         }
         //renormalize the colors
@@ -1142,6 +1147,33 @@ void Mesh::remove_duplicate_vertices(){
     }
 
     V=V_new;
+
+    m_is_dirty=true;
+
+    return inverse_indirection;
+}
+
+void Mesh::undo_remove_duplicate_vertices(const std::shared_ptr<Mesh>& original_mesh, const Eigen::VectorXi& inverse_indirection ){
+
+    CHECK(inverse_indirection.size()==original_mesh->V.rows()) << "The inverse_indirection has to have the same size as the original mesh vertices. Indirection is " << inverse_indirection.size() << " original mesh V is " << original_mesh->V.rows();
+
+    //check the position that the vertices now have in the merged mesh and copy them
+    Eigen::MatrixXd V_undone=original_mesh->V;
+    for (int i=0; i<V_undone.rows(); i++){
+        int idx_merged_mesh=inverse_indirection(i);
+        Eigen::Vector3d merged_point=V.row(idx_merged_mesh);
+        V_undone.row(i)=merged_point;
+    }
+    V=V_undone;
+
+
+    //original indices
+    if(original_mesh->F.size()) F=original_mesh->F;
+    if(original_mesh->E.size()) E=original_mesh->E;
+    //copy rest of atributes that got merged in the removing of duplicates
+    if(original_mesh->C.size()) C=original_mesh->C;
+    m_is_dirty=true;
+
 }
 
 //instead of removing the duplicate verts, we sometimes just want them set to zero so they don't interfere with the organized datastrucutre of a velodyne cloud
