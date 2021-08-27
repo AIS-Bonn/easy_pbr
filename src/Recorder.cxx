@@ -4,6 +4,7 @@
 
 //my stuff
 #include "easy_pbr/Viewer.h"
+#include "easy_pbr/Camera.h"
 // #include "opencv_utils.h" //only for debugging
 #define ENABLE_GL_PROFILING 1
 #include "Profiler.h"
@@ -126,6 +127,24 @@ bool Recorder::record(const std::string name, const std::string path){
 void Recorder::snapshot(const std::string name, const std::string path){
     //TODO put the bool for record_gui in the Recorder and then recorder either the final_fbo_with or without gui
     write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
+}
+
+bool Recorder::record_orbit(const std::string path){
+    int nr_images=360;
+    float angle_increment=360/nr_images; //each segment needs to have this many angles
+    m_view->m_show_gui=false; //this function is usually called by the gui, if we do again a view->update, it will try to make another frame for the gui and that will fail
+    for(int i=0; i<360; i++){
+        m_view->m_camera->orbit_y(angle_increment);
+        m_view->update();
+        std::string snapshot_name=std::to_string(i)+".png";
+        //record
+        if (m_view->m_record_with_transparency){
+            write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), snapshot_name, path);
+        }else{
+            write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), snapshot_name, path);
+        }
+    }
+    m_view->m_show_gui=true;
 }
 
 

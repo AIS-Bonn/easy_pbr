@@ -595,11 +595,11 @@ void Gui::draw_main_menu(){
             if (ImGui::RadioButton("Local", m_guizmo_mode == ImGuizmo::LOCAL)) { m_guizmo_mode = ImGuizmo::LOCAL; } ImGui::SameLine();
             if (ImGui::RadioButton("World", m_guizmo_mode == ImGuizmo::WORLD)) { m_guizmo_mode = ImGuizmo::WORLD; }
 
-            if (ImGui::Button("Copy Pose")){ 
+            if (ImGui::Button("Copy Pose")){
                 Eigen::Affine3d model_matrix=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->model_matrix();
                 std::vector<std::string> pose_vec=radu::utils::tf_matrix2vecstring(model_matrix);
                 std::string pose_string=radu::utils::join(pose_vec, " ");
-                VLOG(1) << "Copied model matrix to clipboard: " << pose_string; 
+                VLOG(1) << "Copied model matrix to clipboard: " << pose_string;
                 glfwSetClipboardString(m_view->m_window, pose_string.c_str());
             }
 
@@ -1076,6 +1076,9 @@ void Gui::draw_main_menu(){
                     m_view->m_recorder->write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_without_transparency_gtex"), m_view->m_snapshot_name, m_view->m_recording_path);
                 }
             }
+        }
+        if(ImGui::Button("Record orbit") ){
+            m_view->m_recorder->record_orbit( m_view->m_recording_path );
         }
         ImGui::Checkbox("Record GUI", &m_view->m_record_gui);
         ImGui::Checkbox("Record with transparency", &m_view->m_record_with_transparency);
