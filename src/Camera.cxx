@@ -31,6 +31,7 @@ Camera::Camera():
     m_is_initialized(false),
     m_position_initialized(false),
     m_lookat_initialized(false),
+    m_use_fixed_proj_matrix(false),
     m_rand_gen(new RandGenerator())
 {
 
@@ -56,7 +57,13 @@ Eigen::Affine3f Camera::view_matrix_affine(){
 }
 Eigen::Matrix4f Camera::proj_matrix(const Eigen::Vector2f viewport_size){
     float aspect=viewport_size.x()/viewport_size.y();
-    return compute_projection_matrix(m_fov, aspect, m_near, m_far);
+
+    VLOG(1)<<"m_use_fixed_proj_matrix" << m_use_fixed_proj_matrix;
+    if (m_use_fixed_proj_matrix){
+        return m_fixed_proj_matrix;
+    }else{
+        return compute_projection_matrix(m_fov, aspect, m_near, m_far);
+    }
 }
 Eigen::Matrix4f Camera::proj_matrix(const float viewport_width, const float viewport_height){
     Eigen::Vector2f viewport_size;
@@ -281,9 +288,15 @@ void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
         m_model_matrix.linear()= cam_axes;
     }
 
-    //set fov in x direction
+    //set fov in x direction THis is shit because it assumes a perfect principal point
     float fx=frame.K(0,0);
     m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
+    VLOG(1) << "proj matrix using only the fov would be \n" <<  proj_matrix(frame.width, frame.height);
+
+    m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height);
+    m_fixed_proj_matrix.col(2)=-m_fixed_proj_matrix.col(2);
+    m_use_fixed_proj_matrix=true;
+    VLOG(1) << "fixed proj matrix would be \n" <<  m_fixed_proj_matrix;
 
     // m_is_initialized=true; //we don't set the initialized because the m_near and m_far are still not valid and the viewer loop should initialize them to a reasonable value
     // m_lookat_initialized=true; //lookat is also not initialized when we set the camera from a frame

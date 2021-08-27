@@ -129,7 +129,7 @@ void Recorder::snapshot(const std::string name, const std::string path){
     write_without_buffering(m_view->m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), name, path);
 }
 
-bool Recorder::record_orbit(const std::string path){
+void Recorder::record_orbit(const std::string path){
     int nr_images=360;
     float angle_increment=360/nr_images; //each segment needs to have this many angles
     m_view->m_show_gui=false; //this function is usually called by the gui, if we do again a view->update, it will try to make another frame for the gui and that will fail

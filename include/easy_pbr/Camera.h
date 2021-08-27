@@ -98,6 +98,8 @@ public:
     bool m_is_initialized; //the camera start in a somewhat default position. Initializing it means putting the camera in position in which you see the scene. This can be done with from_string or can be done by the viewer automatically when the first update is done. If you used from_string then the viewer doesnt need to do anything
     bool m_position_initialized; //signales if the position was initialized already by the user(true) or is not initialized to anything meaningful and should be set automatically
     bool m_lookat_initialized; //signales if the lookat was initialized already by the user(true) or is not initialized to anything meaningful and should be set automatically
+    bool m_use_fixed_proj_matrix;
+    Eigen::Matrix4f m_fixed_proj_matrix;
 
     Trajectory m_traj;
     std::shared_ptr<Camera> clone();

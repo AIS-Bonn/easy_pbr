@@ -16,7 +16,7 @@ Frame::Frame()
 }
 
 
-std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool show_texture) const{
+std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool show_texture, const int texture_max_size) const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
@@ -133,12 +133,12 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
         if(!tex.empty()){
 
 
-   
+
 
             //resize
-            int max_size=256.0;
-            if(tex.cols>max_size || tex.rows> max_size){
-                int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/max_size );
+            // int max_size=texture_max_size;
+            if(tex.cols>texture_max_size || tex.rows> texture_max_size){
+                int subsample_factor= std::ceil( std::max(tex.cols, tex.rows)/texture_max_size );
                 cv::Mat resized;
                 cv::resize(tex, resized, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA );
                 tex=resized;
