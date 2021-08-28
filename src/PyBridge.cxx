@@ -535,6 +535,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("flip_normals", &Mesh::flip_normals )
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )
+    .def("to_3D", &Mesh::to_3D )
+    .def("to_2D", &Mesh::to_2D )
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
     .def("remove_duplicate_vertices", &Mesh::remove_duplicate_vertices )
     .def("undo_remove_duplicate_vertices", &Mesh::undo_remove_duplicate_vertices )

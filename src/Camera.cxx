@@ -58,7 +58,6 @@ Eigen::Affine3f Camera::view_matrix_affine(){
 Eigen::Matrix4f Camera::proj_matrix(const Eigen::Vector2f viewport_size){
     float aspect=viewport_size.x()/viewport_size.y();
 
-    VLOG(1)<<"m_use_fixed_proj_matrix" << m_use_fixed_proj_matrix;
     if (m_use_fixed_proj_matrix){
         return m_fixed_proj_matrix;
     }else{
