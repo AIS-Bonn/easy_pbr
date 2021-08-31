@@ -138,6 +138,8 @@ public:
     //getters
     gl::Texture2D& rendered_tex_no_gui(const bool with_transparency);
     gl::Texture2D& rendered_tex_with_gui();
+    cv::Mat rendered_mat_no_gui(const bool with_transparency);
+    cv::Mat rendered_mat_with_gui();
 
     // Callbacks
     void set_callbacks();

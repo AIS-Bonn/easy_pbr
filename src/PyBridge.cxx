@@ -306,6 +306,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     .def("gbuffer_mat_with_name", &Viewer::gbuffer_mat_with_name )
+    .def("rendered_mat_no_gui", &Viewer::rendered_mat_no_gui )
+    .def("rendered_mat_with_gui", &Viewer::rendered_mat_with_gui )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
     .def_readwrite("m_enable_culling", &Viewer::m_enable_culling )
     .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting )
@@ -574,6 +576,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def(py::init<>())
     .def("record", py::overload_cast<const std::string, const std::string >(&Recorder::record) )
     .def("snapshot", py::overload_cast<const std::string, const std::string >(&Recorder::snapshot) )
+    .def("write_without_buffering", &Recorder::write_without_buffering )
     .def("is_finished", &Recorder::is_finished )
     .def("nr_images_recorded", &Recorder::nr_images_recorded )
     ;

@@ -1077,9 +1077,6 @@ void Gui::draw_main_menu(){
                 }
             }
         }
-        if(ImGui::Button("Record orbit") ){
-            m_view->m_recorder->record_orbit( m_view->m_recording_path );
-        }
         ImGui::Checkbox("Record GUI", &m_view->m_record_gui);
         ImGui::Checkbox("Record with transparency", &m_view->m_record_with_transparency);
         // ImGui::SliderFloat("Magnification", &m_view->m_recorder->m_magnification, 1.0f, 5.0f);
@@ -1098,6 +1095,9 @@ void Gui::draw_main_menu(){
         if ( ImGui::Button("Pause") )
         {
             m_view->m_recorder->pause_recording();
+        }
+        if(ImGui::Button("Record orbit") ){
+            m_view->m_recorder->record_orbit( m_view->m_recording_path );
         }
     }
 

@@ -290,12 +290,12 @@ void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
     //set fov in x direction THis is shit because it assumes a perfect principal point
     float fx=frame.K(0,0);
     m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
-    VLOG(1) << "proj matrix using only the fov would be \n" <<  proj_matrix(frame.width, frame.height);
+    // VLOG(1) << "proj matrix using only the fov would be \n" <<  proj_matrix(frame.width, frame.height);
 
     m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height);
     m_fixed_proj_matrix.col(2)=-m_fixed_proj_matrix.col(2);
     m_use_fixed_proj_matrix=true;
-    VLOG(1) << "fixed proj matrix would be \n" <<  m_fixed_proj_matrix;
+    // VLOG(1) << "fixed proj matrix would be \n" <<  m_fixed_proj_matrix;
 
     // m_is_initialized=true; //we don't set the initialized because the m_near and m_far are still not valid and the viewer loop should initialize them to a reasonable value
     // m_lookat_initialized=true; //lookat is also not initialized when we set the camera from a frame

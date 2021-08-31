@@ -2335,6 +2335,15 @@ gl::Texture2D& Viewer::rendered_tex_no_gui(const bool with_transparency){
 gl::Texture2D& Viewer::rendered_tex_with_gui(){
     return m_final_fbo_with_gui.tex_with_name("color_gtex");
 }
+cv::Mat Viewer::rendered_mat_no_gui(const bool with_transparency){
+    gl::Texture2D& tex=rendered_tex_no_gui(with_transparency);
+    return tex.download_to_cv_mat();
+}
+cv::Mat Viewer::rendered_mat_with_gui(){
+    gl::Texture2D& tex=rendered_tex_with_gui();
+    return tex.download_to_cv_mat();
+}
+
 cv::Mat Viewer::gbuffer_mat_with_name(const std::string name){
     return m_gbuffer.tex_with_name(name).download_to_cv_mat();
 }

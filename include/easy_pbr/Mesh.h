@@ -290,7 +290,7 @@ public:
     void random_subsample(const float percentage_removal);
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();
-    void normalize_size(); //normalize the size of the mesh between [-1,1]
+    void normalize_size(); //normalize the size of the mesh between [0,1]
     void normalize_position(); //calculate the bounding box of the object and put it at 0.0.0
     Eigen::VectorXi fix_oversplit_due_to_blender_uv();
     void color_connected_components();
