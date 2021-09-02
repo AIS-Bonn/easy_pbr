@@ -26,6 +26,8 @@
 #include "UtilsGL.h"
 #include "Profiler.h"
 
+#include "opencv_utils.h"
+
 
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
 // PYBIND11_MAKE_OPAQUE(std::vector<int>); //to be able to pass vectors by reference to functions and have things like push back actually work
@@ -120,6 +122,7 @@ PYBIND11_MODULE(easypbr, m) {
         return m;
       } )
     .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
+    .def("to_file", [](cv::Mat &m, const std::string path) {  cv::imwrite(path,m);  } )
     .def("set_alpha_to_value", [](cv::Mat &m, const int val) {
         CHECK(m.channels()==4) << "Mat needs to have 4 channels and it only has " << m.channels();
         cv::Mat mat;
@@ -129,12 +132,15 @@ PYBIND11_MODULE(easypbr, m) {
         mat.setTo(cv::Scalar::all(val), (channels[3]<255));
         m=mat;
       } )
+    .def("clone", [](cv::Mat &m) {  return m.clone();  } )
     .def("set_val", [](cv::Mat &m, const float val) {  m = cv::Scalar(val); } )
     .def("set_val", [](cv::Mat &m, const float r, const float g) {  m = cv::Scalar(r,g); } )
     .def("set_val", [](cv::Mat &m, const float r, const float g, const float b) {  m = cv::Scalar(b,g,r); } )
     .def("set_val", [](cv::Mat &m, const float r, const float g, const float b, const float alpha) {  m = cv::Scalar(b,g,r, alpha); } )
     .def("hsv2rgb", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_HSV2RGB); return res; } )
     .def("hsv2bgr", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_HSV2BGR); return res; } )
+    .def("rgb2bgr", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_RGB2BGR); return res; } )
+    .def("bgr2rgb", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGR2RGB); return res; } )
     // .def("rgba2rgbblack", [](cv::Mat &m ) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
     .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )
@@ -143,7 +149,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("channels", &cv::Mat::channels )
     .def("empty", &cv::Mat::empty )
     .def("to_cv8u", [](cv::Mat &m) {  cv::Mat out; m.convertTo(out, CV_8U, 255, 0);  m=out; return out;  } )
-    .def("to_file", [](cv::Mat &m, const std::string path) {  cv::imwrite(path,m);  } )
+    .def("blend", [](cv::Mat &cur, cv::Mat &src2, float alpha ) { cv::Mat dst; cv::addWeighted( cur, alpha, src2, 1-alpha, 0.0, dst);  return dst;   } )
+    .def("hconcat", [](cv::Mat &cur, cv::Mat &src1 ) { cv::Mat dst; cv::hconcat(cur,src1,dst);  return dst;   } )
+    .def("vconcat", [](cv::Mat &cur, cv::Mat &src1 ) { cv::Mat dst; cv::vconcat(cur,src1,dst);  return dst;   } )
     // .def("rows", [](const cv::Mat &m) {  return m.rows;  }  )
     ;
     // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
