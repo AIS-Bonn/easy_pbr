@@ -385,6 +385,7 @@ void Gui::draw_main_menu(){
                 ImGui::Unindent(10.0f*m_hidpi_scaling );
             if( ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh) ) {  mesh->m_is_shadowmap_dirty=true;  }
             if( ImGui::Checkbox("Show normals", &mesh->m_vis.m_show_normals) ) {  mesh->m_is_shadowmap_dirty=true;  }
+            if ( mesh->m_vis.m_show_normals ) { ImGui::SliderFloat("Normal_scale", &mesh->m_vis.m_normals_scale, -1.0f, 1.0f) ;  }
             if( ImGui::Checkbox("Show wireframe", &mesh->m_vis.m_show_wireframe)) {  mesh->m_is_shadowmap_dirty=true; }
             if( ImGui::Checkbox("Show surfels", &mesh->m_vis.m_show_surfels) ) { mesh->m_is_shadowmap_dirty=true; }
             if( ImGui::Checkbox("Custom shader", &mesh->m_vis.m_use_custom_shader )){

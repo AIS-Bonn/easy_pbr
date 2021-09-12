@@ -423,6 +423,7 @@ void Viewer::compile_shaders(){
     m_blend_bg_shader.compile( std::string(EASYPBR_SHADERS_PATH)+"/render/blend_bg_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/render/blend_bg_frag.glsl"  );
 
     m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_frag.glsl" );
+    // m_ssao_ao_pass_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_pure_depth_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/ao_pass_pure_depth_frag.glsl" );
     // m_depth_linearize_shader.compile(std::string(PROJECT_SOURCE_DIR)+"/shaders/ssao/depth_linearize_compute.glsl");
     m_depth_linearize_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/depth_linearize_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/depth_linearize_frag.glsl");
     m_bilateral_blur_shader.compile(std::string(EASYPBR_SHADERS_PATH)+"/ssao/bilateral_blur_vert.glsl", std::string(EASYPBR_SHADERS_PATH)+"/ssao/bilateral_blur_frag.glsl");

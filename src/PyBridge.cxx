@@ -439,6 +439,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_solid_color", &VisOptions::m_solid_color)
     .def_readwrite("m_metalness", &VisOptions::m_metalness)
     .def_readwrite("m_roughness", &VisOptions::m_roughness)
+    .def_readwrite("m_use_custom_shader", &VisOptions::m_use_custom_shader)
     .def("set_color_solid", &VisOptions::set_color_solid )
     .def("set_color_pervertcolor", &VisOptions::set_color_pervertcolor )
     .def("set_color_texture", &VisOptions::set_color_texture )
@@ -512,6 +513,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_label_mngr", &Mesh::m_label_mngr )
     .def_readwrite("m_min_max_y_for_plotting", &Mesh::m_min_max_y_for_plotting )
     .def_readwrite("m_disk_path", &Mesh::m_disk_path)
+    .def_readwrite("custom_render_func", &Mesh::custom_render_func)
     // .def("model_matrix_d", [](const Mesh &m) {
     //         return m.m_model_matrix;
     //     }
