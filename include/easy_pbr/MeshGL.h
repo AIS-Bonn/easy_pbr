@@ -60,6 +60,32 @@ public:
     gl::Buf L_pred_buf;
     gl::Buf L_gt_buf;
     gl::Buf I_buf;
+    //extra stuff. We store them as shared ptr because I don't want to deal with constructors and destructors when I insert into the map
+    std::map<std::string, std::shared_ptr<gl::Buf>  > extra_array_buffers;
+    std::map<std::string, std::shared_ptr<gl::Buf> > extra_element_array_buffers;
+    std::map<std::string, std::shared_ptr<gl::Texture2D> > extra_textures;
+
+    void add_extra_array_buffer(const std::string name){
+        // gl::Buf new_buf;
+        // new_buf.set_target(GL_ARRAY_BUFFER);
+        // extra_array_buffers[name] = new_buf;
+        // extra_array_buffers.emplace(name, std::move(new_buf));
+
+        std::shared_ptr<gl::Buf> new_buf = std::make_shared<gl::Buf>();
+        new_buf->set_target(GL_ARRAY_BUFFER);
+        extra_array_buffers[name] = new_buf;
+    }
+    bool has_extra_array_buffer(const std::string name){
+        if ( extra_array_buffers.find(name) == extra_array_buffers.end() ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    gl::Buf& get_extra_array_buffer(const std::string name){
+        CHECK(has_extra_array_buffer(name)) << "The array_buffer you want to acces with name " << name << " does not exist. Please add it with add_extra_array_buffer";
+        return *extra_array_buffers.at(name);
+    }
 
     //we store the textures then as shared ptr so we can have a weak ptr that selects the one we sho
     // std::shared_ptr<gl::Texture2D> m_rgb_tex;

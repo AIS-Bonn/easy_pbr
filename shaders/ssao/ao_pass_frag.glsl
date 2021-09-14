@@ -91,11 +91,20 @@ void main() {
     }
 
 
+    //get position in cam coordinates
+    vec4 position_cam_coords;
+    // position_cam_coords.xyz= position_cam_coords_from_linear_depth(depth_linear);
+    position_cam_coords.xyz= position_cam_coords_from_depth(depth);
+    vec3 origin=position_cam_coords.xyz;
+
+
+
     vec3 normal_encoded=texture(normal_tex, uv_in).xyz;
     if(normal_encoded==vec3(0)){ //we have something like a point cloud without normals. so we just it to everything visible
         ao_out=vec4(1.0);
         return;
     }
+    // vec3 normal = normalize(cross(dFdx(position_cam_coords.xyz), dFdy(position_cam_coords.xyz)));
     vec3 normal=decode_normal(normal_encoded);
     normal=V_rot*normal; //we need the normal in cam coordinates so we have to rotate it with the rotation part of the view matrix
 
@@ -103,11 +112,6 @@ void main() {
 
 
 
-    //get position in cam coordinates
-    vec4 position_cam_coords;
-    // position_cam_coords.xyz= position_cam_coords_from_linear_depth(depth_linear);
-    position_cam_coords.xyz= position_cam_coords_from_depth(depth);
-    vec3 origin=position_cam_coords.xyz;
 
 
 

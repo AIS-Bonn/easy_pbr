@@ -186,6 +186,7 @@ public:
     // gl::Texture2D m_posprocessed_tex; //after adding also any post processing like bloom and tone mapping and gamma correcting. Is in RGBA8
     gl::GBuffer m_final_fbo_no_gui; //after rendering also the lines and edges but before rendering the gui
     gl::GBuffer m_final_fbo_with_gui; //after we also render the gui into it
+    bool m_using_fat_gbuffer; //surfel splatting starts requires to use a gbuffer with half floats, this makes is so that there is no need for encoding an decoding normals, we can just sum them
 
     gl::Texture2D m_ao_tex;
     gl::Texture2D m_ao_blurred_tex;
@@ -285,7 +286,6 @@ private:
     void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
     void blend_bg(); //takes the post_processed image and blends a solid background color into it if needed.
 
-    bool m_using_fat_gbuffer; //surfel splatting starts requires to use a gbuffer with half floats, this makes is so that there is no need for encoding an decoding normals, we can just sum them
 
 
 };
