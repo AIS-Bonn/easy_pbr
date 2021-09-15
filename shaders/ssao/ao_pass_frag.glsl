@@ -27,6 +27,7 @@ uniform float kernel_radius;
 uniform int pyr_lvl;
 uniform bool using_fat_gbuffer;
 uniform bool ssao_estimate_normals_from_depth;
+uniform float max_ssao_distance; //it's not actually pixels because the image space is already normalized in [0,1]
 
 
 float linear_depth(float depth_sample){
@@ -152,8 +153,8 @@ void main() {
         vec4 origin_proj=P*vec4(origin,1.0);
         origin_proj.xy/=origin_proj.w;
         origin_proj.xy = origin_proj.xy * 0.5 + 0.5;
-        float max_pixel_distance=0.05; //it's not actually pixels because the image space is already normalized in [0,1]
-        if(length(offset.xy-origin_proj.xy)> max_pixel_distance ){
+        // max_ssao_distance=0.05; //it's not actually pixels because the image space is already normalized in [0,1]
+        if(length(offset.xy-origin_proj.xy)> max_ssao_distance ){
             continue;
         }
 

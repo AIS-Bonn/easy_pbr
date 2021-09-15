@@ -273,6 +273,7 @@ void Viewer::init_params(const std::string config_file){
     m_enable_ssao = ssao_cfg.get_or("enable_ssao", default_ssao_cfg);
     m_ssao_downsample = ssao_cfg.get_or("ao_downsample", default_ssao_cfg);
     m_kernel_radius = ssao_cfg.get_float_else_default_else_nan("kernel_radius", default_ssao_cfg);
+    m_max_ssao_distance = ssao_cfg.get_or("max_ssao_distance", default_ssao_cfg);
     m_ao_power = ssao_cfg.get_or("ao_power", default_ssao_cfg);
     m_sigma_spacial = ssao_cfg.get_or("ao_blur_sigma_spacial", default_ssao_cfg);
     m_sigma_depth = ssao_cfg.get_or("ao_blur_sigma_depth", default_ssao_cfg);
@@ -1637,7 +1638,7 @@ void Viewer::render_surfels_to_gbuffer(const MeshGLSharedPtr mesh){
 
 }
 
-void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera>& camera){
+void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
     TIME_SCOPE("ssao_pass_full");
 
@@ -1710,6 +1711,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera>& camera){
     m_ssao_ao_pass_shader.uniform_array_v3_float(m_random_samples,"random_samples");
     m_ssao_ao_pass_shader.uniform_int(m_random_samples.rows(),"nr_samples");
     m_ssao_ao_pass_shader.uniform_float(m_kernel_radius,"kernel_radius");
+    m_ssao_ao_pass_shader.uniform_float(m_max_ssao_distance,"max_ssao_distance");
     // m_ssao_ao_pass_shader.uniform_int(m_ssao_downsample, "pyr_lvl"); //no need for pyramid because we only sample from depth_linear_tex which is already downsampled and has no mipmap
     // m_ssao_ao_pass_shader.bind_texture(m_depth_linear_tex,"depth_linear_tex");
     //attempt 2 with depth Not linear because using the linear depth seems to give wrong ssao when camera is near for some reason..

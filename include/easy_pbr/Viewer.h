@@ -130,7 +130,7 @@ public:
 
 
     //rendering passes
-    void ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera>& camera);
+    void ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera);
     void compose_final_image(const GLuint fbo_id);
     cv::Mat gbuffer_mat_with_name(const std::string name);
 
@@ -211,6 +211,7 @@ public:
     int m_ssao_downsample;
     int m_nr_samples;
     float m_kernel_radius;
+    float m_max_ssao_distance;
     int m_ao_power;
     float m_sigma_spacial;
     float m_sigma_depth;
