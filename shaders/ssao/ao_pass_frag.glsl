@@ -26,6 +26,7 @@ uniform vec3 random_samples[MAX_NR_SAMPLES];
 uniform float kernel_radius;
 uniform int pyr_lvl;
 uniform bool using_fat_gbuffer;
+uniform bool ssao_estimate_normals_from_depth;
 
 
 float linear_depth(float depth_sample){
@@ -98,15 +99,18 @@ void main() {
     vec3 origin=position_cam_coords.xyz;
 
 
-
-    vec3 normal_encoded=texture(normal_tex, uv_in).xyz;
-    if(normal_encoded==vec3(0)){ //we have something like a point cloud without normals. so we just it to everything visible
-        ao_out=vec4(1.0);
-        return;
+    vec3 normal;
+    if(ssao_estimate_normals_from_depth){
+        normal = normalize(cross(dFdx(position_cam_coords.xyz), dFdy(position_cam_coords.xyz)));
+    }else{
+        vec3 normal_encoded=texture(normal_tex, uv_in).xyz;
+        if(normal_encoded==vec3(0)){ //we have something like a point cloud without normals. so we just it to everything visible
+            ao_out=vec4(1.0);
+            return;
+        }
+        normal=decode_normal(normal_encoded);
+        normal=V_rot*normal; //we need the normal in cam coordinates so we have to rotate it with the rotation part of the view matrix
     }
-    // vec3 normal = normalize(cross(dFdx(position_cam_coords.xyz), dFdy(position_cam_coords.xyz)));
-    vec3 normal=decode_normal(normal_encoded);
-    normal=V_rot*normal; //we need the normal in cam coordinates so we have to rotate it with the rotation part of the view matrix
 
 
 

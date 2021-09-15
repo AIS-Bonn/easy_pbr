@@ -674,6 +674,7 @@ void Gui::draw_main_menu(){
         ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in the spacial dimension and higher values yield blurrier AO.");
         ImGui::SliderFloat("Sigma D", &m_view->m_sigma_depth, 0.1, 5.0);
         ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in depth so as to avoid blurring over depth discontinuities. The higher the value, the more tolerant the blurring is to depth discontinuities.");
+        ImGui::Checkbox("Estimate_normals_from_depth", &m_view->m_ssao_estimate_normals_from_depth);
     }
 
 

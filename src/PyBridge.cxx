@@ -318,6 +318,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("gbuffer_mat_with_name", &Viewer::gbuffer_mat_with_name )
     .def("rendered_mat_no_gui", &Viewer::rendered_mat_no_gui )
     .def("rendered_mat_with_gui", &Viewer::rendered_mat_with_gui )
+    .def("upload_single_mesh_to_gpu", &Viewer::upload_single_mesh_to_gpu )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
     .def_readwrite("m_enable_culling", &Viewer::m_enable_culling )
     .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting )

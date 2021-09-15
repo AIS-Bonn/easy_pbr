@@ -49,6 +49,7 @@ namespace easy_pbr{
 
 
 class Scene;
+class Mesh;
 class MeshGL;
 class Camera;
 class Gui;
@@ -109,6 +110,7 @@ public:
     void hotload_shaders();
     void init_opengl();
     void update_meshes_gl();
+    void upload_single_mesh_to_gpu(const std::shared_ptr<Mesh> mesh_core); //it's nice to have this function to upload a single mesh because some external programs might need to use it to upload quickly a whole mesh to gl buffers
     void render_points(const std::shared_ptr<MeshGL> mesh);
     void render_points_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_lines(const std::shared_ptr<MeshGL> mesh);
@@ -128,7 +130,7 @@ public:
 
 
     //rendering passes
-    void ssao_pass();
+    void ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera>& camera);
     void compose_final_image(const GLuint fbo_id);
     cv::Mat gbuffer_mat_with_name(const std::string name);
 
@@ -212,6 +214,7 @@ public:
     int m_ao_power;
     float m_sigma_spacial;
     float m_sigma_depth;
+    bool m_ssao_estimate_normals_from_depth;
     Eigen::Vector3f m_ambient_color;
     float m_ambient_color_power;
     bool m_enable_culling;
