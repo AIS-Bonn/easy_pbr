@@ -58,7 +58,7 @@ Recorder::~Recorder(){
 }
 
 bool Recorder::record(gl::Texture2D& tex, const std::string name, const std::string path){
-    tex.download_to_pbo();
+    GL_C( tex.download_to_pbo() );
 
     if( m_cv_mats_queue.size_approx()>100)
         VLOG(1) << "Enqueued too many cv_mats approx mats in queue: " << m_cv_mats_queue.size_approx();
