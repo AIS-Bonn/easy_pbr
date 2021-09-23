@@ -14,6 +14,7 @@ std::vector<MeshSharedPtr>  Scene::m_meshes;
 std::mutex Scene::m_mesh_mutex;
 bool Scene::m_floor_visible =true;
 bool Scene::m_floor_metric =false;
+bool Scene::m_automatic_normal_calculation =true;
 
 
 Scene::Scene()
@@ -47,7 +48,7 @@ void Scene::show(const std::shared_ptr<Mesh> mesh, const std::string name){
     }else{
         m_meshes.push_back(mesh);
         m_meshes.back()->name=name;
-        if(m_meshes.back()->V.rows()!=m_meshes.back()->NV.rows()){
+        if(m_meshes.back()->V.rows()!=m_meshes.back()->NV.rows() && Scene::m_automatic_normal_calculation){
             m_meshes.back()->recalculate_normals();
         }
     }
@@ -358,6 +359,9 @@ void Scene::set_floor_metric(const bool val){
         show(mesh_grid, mesh_grid->name);
     }
 
+}
+void Scene::set_automatic_normal_calculation(const bool val){
+    m_automatic_normal_calculation=val;
 }
 
 

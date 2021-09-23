@@ -263,8 +263,10 @@ void Viewer::init_params(const std::string config_file){
     //scene
     bool floor_visible= scene_cfg.get_or("floor_visible", default_scene_cfg);
     bool floor_metric= scene_cfg.get_or("floor_metric", default_scene_cfg);
+    bool automatic_normal_calculation= scene_cfg.get_or("automatic_normal_calculation", default_scene_cfg);
     Scene::set_floor_visible(floor_visible);
     Scene::set_floor_metric(floor_metric);
+    Scene::set_automatic_normal_calculation(automatic_normal_calculation);
 
 
 

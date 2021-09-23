@@ -338,6 +338,7 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<Gui, std::shared_ptr<Gui> > (m, "Gui")
     // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
     .def_static("show", &Gui::show )
+    .def_static("show_gl_texture", &Gui::show_gl_texture )
     ;
 
 

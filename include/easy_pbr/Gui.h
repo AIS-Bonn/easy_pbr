@@ -44,7 +44,7 @@ public:
        );
     void update();
     static void show(const cv::Mat cv_mat, const std::string name);
-    void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
+    static void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
     void select_mesh_with_idx(const int idx); //set the selection fo the meshes to the one with a certain index
     int selected_mesh_idx(); //get the index of the mesh we have selected
     void toggle_main_menu();
