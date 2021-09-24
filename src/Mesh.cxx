@@ -1830,8 +1830,13 @@ void Mesh::create_sphere(const Eigen::Vector3d& center, const double radius){
     }
 }
 
-void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius, const bool origin_at_bottom){
-    load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder_14.obj" );
+void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius, const bool origin_at_bottom, const bool with_cap){
+    if (with_cap){
+        load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder_14.obj" );
+    }else{
+        load_from_file( std::string(EASYPBR_DATA_DIR)+"/cylinder_14_nocap.obj" );
+        remove_unreferenced_verts(); //the no cap one was done by removing the faces of the caps in blender but that leaves the vertices so we need to remove them
+    }
 
     //make it a height of 1
     V.col(1) = V.col(1)*0.5;

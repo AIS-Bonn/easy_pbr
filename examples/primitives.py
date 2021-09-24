@@ -23,7 +23,8 @@ Scene.show(sphere,"sphere")
 
 cylinder=Mesh()
 origin_at_bottom=True
-cylinder.create_cylinder([0,1,0], 1, 1, origin_at_bottom ) #main axis, height, radius
+with_cap=False
+cylinder.create_cylinder([0,1,0], 1, 1, origin_at_bottom, with_cap ) #main axis, height, radius
 cylinder.model_matrix.translate([4,0,0])
 Scene.show(cylinder,"cylinder")
 
