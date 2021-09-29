@@ -72,20 +72,80 @@ public:
     ~Viewer();
 
 
-    bool dummy;  //to initialize the window we provide this dummy variable so we can call initialie context
+
+    //params
+    bool m_show_gui;
+    bool m_use_offscreen;
+    float m_subsample_factor; // subsample factor for the whole viewer so that when it's fullscreen it's not using the full resolution of the screen
+    bool m_render_uv_to_gbuffer; // usually we don't need to render the uv to the gbuffer but for some applications it's nice to have so we can enable it here and it will create a new render target in the gbuffer
+    int m_ssao_downsample;
+    int m_nr_samples;
+    float m_kernel_radius;
+    float m_max_ssao_distance;
+    int m_ao_power;
+    float m_sigma_spacial;
+    float m_sigma_depth;
+    bool m_ssao_estimate_normals_from_depth;
+    Eigen::Vector3f m_ambient_color;
+    float m_ambient_color_power;
+    bool m_enable_culling;
+    bool m_auto_ssao;
+    bool m_enable_ssao;
+    bool m_enable_bloom;
+    float m_bloom_threshold;
+    int m_bloom_start_mip_map_lvl;
+    int m_bloom_max_mip_map_lvl;
+    int m_bloom_blur_iters;
+    bool m_auto_edl;
+    bool m_enable_edl_lighting;
+    float m_edl_strength;
+    bool m_enable_surfel_splatting;
+    bool m_show_background_img;
+    std::string m_background_img_path;
+    bool m_enable_ibl; //we need an environment map for ibl
+    bool m_show_environment_map; //we can still use ibl without showing the environment map
+    bool m_show_prefiltered_environment_map; //show the prefiltered environment which means we can run down the mip maps and show blurred versions of it
+    float m_environment_map_blur;
+    std::string m_environment_map_path;
+    bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
+    ToneMapType m_tonemap_type=ToneMapType::ACES;
+    int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
+    int m_irradiance_cubemap_resolution;
+    int m_prefilter_cubemap_resolution;
+    int m_brdf_lut_resolution;
+    float m_surfel_blend_factor;
+    float m_surfel_blend_scale;
+    //params for multi-channel view
+    bool m_enable_multichannel_view;
+    float m_multichannel_interline_separation; //separation between the lines of different channels. Is a percentage of the screen's width
+    float m_multichannel_line_width; //we also draw a white line in between the channels, the width is indicated by this
+    float m_multichannel_line_angle; // angle between the lines separating the channels It starts at 0 which means the lines are vertical and goes to 90 when the lines are horizontal
+    float m_multichannel_start_x; //the start of the first line, defalt is 0 which means it start on the left
+    std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
+
+
+
+
+
+
+
+    //we first create the cameras because some parameters will set things here so they need to exist before init_params
+    std::shared_ptr<Camera> m_default_camera;
+    std::shared_ptr<Camera> m_camera; //just a point to either the default camera or one of the point light so that we render the view from the point of view of the light
+
+    bool dummy_init_params_nongl; //we add it here so that we first initialize the parameters that don't depend on opengl context
+    bool dummy_init_context;  //to initialize the window we provide this dummy variable so we can call initialie context
     bool dummy_glad;
+    bool dummy_init_params_gl;
     GLFWwindow* m_window;
     // #ifdef EASYPBR_WITH_DIR_WATCHER
         // emilib::DelayedDirWatcher dir_watcher;
     // #endif
     std::shared_ptr<emilib::DelayedDirWatcher> dir_watcher;
     std::shared_ptr<Scene> m_scene;
-    std::shared_ptr<Camera> m_default_camera;
-    std::shared_ptr<Camera> m_camera; //just a point to either the default camera or one of the point light so that we render the view from the point of view of the light
     std::shared_ptr<Gui> m_gui;
     std::shared_ptr<Recorder> m_recorder;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
-    std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
     std::vector<std::shared_ptr<Camera>> m_trajectory;
 
 
@@ -94,7 +154,8 @@ public:
     Eigen::Vector3f m_background_color;
     bool m_swap_buffers;
 
-    void init_params(const std::string config_file);
+    bool init_params_nongl(const std::string config_file);
+    bool init_params_gl(const std::string config_file);
     bool init_context();
     void setup_callbacks_viewer(GLFWwindow* window);
     void setup_callbacks_imgui(GLFWwindow* window);
@@ -204,55 +265,56 @@ public:
     Eigen::MatrixXf m_random_samples;
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
 
-    //params
-    bool m_show_gui;
-    float m_subsample_factor; // subsample factor for the whole viewer so that when it's fullscreen it's not using the full resolution of the screen
-    bool m_render_uv_to_gbuffer; // usually we don't need to render the uv to the gbuffer but for some applications it's nice to have so we can enable it here and it will create a new render target in the gbuffer
-    int m_ssao_downsample;
-    int m_nr_samples;
-    float m_kernel_radius;
-    float m_max_ssao_distance;
-    int m_ao_power;
-    float m_sigma_spacial;
-    float m_sigma_depth;
-    bool m_ssao_estimate_normals_from_depth;
-    Eigen::Vector3f m_ambient_color;
-    float m_ambient_color_power;
-    bool m_enable_culling;
-    bool m_auto_ssao;
-    bool m_enable_ssao;
-    bool m_enable_bloom;
-    float m_bloom_threshold;
-    int m_bloom_start_mip_map_lvl;
-    int m_bloom_max_mip_map_lvl;
-    int m_bloom_blur_iters;
-    // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
-    // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
-    bool m_auto_edl;
-    bool m_enable_edl_lighting;
-    float m_edl_strength;
-    bool m_enable_surfel_splatting;
-    bool m_show_background_img;
-    std::string m_background_img_path;
-    bool m_enable_ibl; //we need an environment map for ibl
-    bool m_show_environment_map; //we can still use ibl without showing the environment map
-    bool m_show_prefiltered_environment_map; //show the prefiltered environment which means we can run down the mip maps and show blurred versions of it
-    float m_environment_map_blur;
-    std::string m_environment_map_path;
-    bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
-    ToneMapType m_tonemap_type=ToneMapType::ACES;
-    int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
-    int m_irradiance_cubemap_resolution;
-    int m_prefilter_cubemap_resolution;
-    int m_brdf_lut_resolution;
-    float m_surfel_blend_factor;
-    float m_surfel_blend_scale;
-    //params for multi-channel view
-    bool m_enable_multichannel_view;
-    float m_multichannel_interline_separation; //separation between the lines of different channels. Is a percentage of the screen's width
-    float m_multichannel_line_width; //we also draw a white line in between the channels, the width is indicated by this
-    float m_multichannel_line_angle; // angle between the lines separating the channels It starts at 0 which means the lines are vertical and goes to 90 when the lines are horizontal
-    float m_multichannel_start_x; //the start of the first line, defalt is 0 which means it start on the left
+    // //params
+    // bool m_show_gui;
+    // bool m_use_offscreen;
+    // float m_subsample_factor; // subsample factor for the whole viewer so that when it's fullscreen it's not using the full resolution of the screen
+    // bool m_render_uv_to_gbuffer; // usually we don't need to render the uv to the gbuffer but for some applications it's nice to have so we can enable it here and it will create a new render target in the gbuffer
+    // int m_ssao_downsample;
+    // int m_nr_samples;
+    // float m_kernel_radius;
+    // float m_max_ssao_distance;
+    // int m_ao_power;
+    // float m_sigma_spacial;
+    // float m_sigma_depth;
+    // bool m_ssao_estimate_normals_from_depth;
+    // Eigen::Vector3f m_ambient_color;
+    // float m_ambient_color_power;
+    // bool m_enable_culling;
+    // bool m_auto_ssao;
+    // bool m_enable_ssao;
+    // bool m_enable_bloom;
+    // float m_bloom_threshold;
+    // int m_bloom_start_mip_map_lvl;
+    // int m_bloom_max_mip_map_lvl;
+    // int m_bloom_blur_iters;
+    // // float m_shading_factor; // dicates how much the lights and ambient occlusion influence the final color. If at zero then we only output the diffuse color
+    // // float m_light_factor; // dicates how much the lights influence the final color. If at zero then we only output the diffuse color but also multipled by ambient occlusion ter
+    // bool m_auto_edl;
+    // bool m_enable_edl_lighting;
+    // float m_edl_strength;
+    // bool m_enable_surfel_splatting;
+    // bool m_show_background_img;
+    // std::string m_background_img_path;
+    // bool m_enable_ibl; //we need an environment map for ibl
+    // bool m_show_environment_map; //we can still use ibl without showing the environment map
+    // bool m_show_prefiltered_environment_map; //show the prefiltered environment which means we can run down the mip maps and show blurred versions of it
+    // float m_environment_map_blur;
+    // std::string m_environment_map_path;
+    // bool m_lights_follow_camera; //if set to true, the movement and the rotation of the main camera will also influence the lights so that they make the same movements as if they are rigidly anchored to the default_camera
+    // ToneMapType m_tonemap_type=ToneMapType::ACES;
+    // int m_environment_cubemap_resolution; //environment cubemap have 6 faces each with a resolution of m_environment_cubemap_resolution X m_environment_cubemap_resolution
+    // int m_irradiance_cubemap_resolution;
+    // int m_prefilter_cubemap_resolution;
+    // int m_brdf_lut_resolution;
+    // float m_surfel_blend_factor;
+    // float m_surfel_blend_scale;
+    // //params for multi-channel view
+    // bool m_enable_multichannel_view;
+    // float m_multichannel_interline_separation; //separation between the lines of different channels. Is a percentage of the screen's width
+    // float m_multichannel_line_width; //we also draw a white line in between the channels, the width is indicated by this
+    // float m_multichannel_line_angle; // angle between the lines separating the channels It starts at 0 which means the lines are vertical and goes to 90 when the lines are horizontal
+    // float m_multichannel_start_x; //the start of the first line, defalt is 0 which means it start on the left
 
     std::vector< std::shared_ptr<MeshGL> > m_meshes_gl; //stored the gl meshes which will get updated if the meshes in the scene are dirty
 
