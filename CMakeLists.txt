@@ -64,9 +64,16 @@ find_package(kqueue)
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
 #try to compile with pytorch if you can
-set(PYTORCH_PATH "/opt/pytorch")
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
+# set(PYTORCH_PATH "/opt/pytorch")
+# set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
+# get and append paths for finding dep
+execute_process( #do it like this https://github.com/facebookresearch/hanabi_SAD/blob/6e4ed590f5912fcb99633f4c224778a3ba78879b/rela/CMakeLists.txt#L10
+  COMMAND python -c "import torch; import os; print(os.path.dirname(torch.__file__), end='')"
+  OUTPUT_VARIABLE TorchPath
+)
+list(APPEND CMAKE_PREFIX_PATH ${TorchPath})
 find_package(Torch)
+# set(TORCH_FOUND False)
 
 
 
