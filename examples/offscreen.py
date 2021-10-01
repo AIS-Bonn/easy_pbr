@@ -28,4 +28,5 @@ Scene.set_floor_visible(False)
 
 
 while True:
+    print("rendering")
     view.update()

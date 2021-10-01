@@ -32,12 +32,12 @@
 #include "tiny_obj_loader.h"
 
 //for reading pcd files
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/kdtree/kdtree_flann.h>
-// #include <pcl/search/impl/search.hpp>
-// #include <sensor_msgs/PointCloud2.h>
+#ifdef EASYPBR_WITH_PCL
+    #include <pcl/io/pcd_io.h>
+    #include <pcl/point_types.h>
+    #include <pcl/features/normal_3d.h>
+    #include <pcl/kdtree/kdtree_flann.h>
+#endif
 
 #include "nanoflann.hpp"
 
@@ -853,71 +853,75 @@ bool Mesh::load_from_file(const std::string file_path){
     } else if (file_ext == "stl" || file_ext == "STL") {
         igl::readSTL(file_path_abs, V, F, NV);
     }else if (file_ext == "pcd") {
-        //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
-        pcl::PCLPointCloud2 cloud_blob;
-        Eigen::Vector4f origin = Eigen::Vector4f::Zero();
-        Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
-        pcl::PCDReader p;
-        int pcd_version;
-        p.read (file_path_abs, cloud_blob, origin, orientation, pcd_version);
-        Eigen::Affine3f cloud_pose = Eigen::Affine3f::Identity();
-        cloud_pose.linear() = orientation.toRotationMatrix();
-        cloud_pose.translation() = origin.head<3>();
-        //pcl::io::loadPCDFile (file_path_abs, cloud_blob);
+        #ifdef EASYPBR_WITH_PCL
+            //read the cloud as general binary blob and then parse it to a certain type of point cloud http://pointclouds.org/documentation/tutorials/reading_pcd.php
+            pcl::PCLPointCloud2 cloud_blob;
+            Eigen::Vector4f origin = Eigen::Vector4f::Zero();
+            Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
+            pcl::PCDReader p;
+            int pcd_version;
+            p.read (file_path_abs, cloud_blob, origin, orientation, pcd_version);
+            Eigen::Affine3f cloud_pose = Eigen::Affine3f::Identity();
+            cloud_pose.linear() = orientation.toRotationMatrix();
+            cloud_pose.translation() = origin.head<3>();
+            //pcl::io::loadPCDFile (file_path_abs, cloud_blob);
 
-        // VLOG(1) << " read pcl cloud with header: " << cloud_blob;
+            // VLOG(1) << " read pcl cloud with header: " << cloud_blob;
 
-        bool has_rgb=false;
-        bool has_intensity=false;
-        for(size_t i=0; i<cloud_blob.fields.size(); i++){
-            if(cloud_blob.fields[i].name=="rgb"){
-                has_rgb=true;
-            }
-            if(cloud_blob.fields[i].name=="intensity"){
-                has_intensity=true;
-            }
-        }
-
-        //depending on the fields, read as xyz, as xyzrgb or as xyzi, xyzrgbi
-        if(!has_rgb && !has_intensity){
-            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
-            V.resize(cloud->points.size(), 3);
-            for (size_t i = 0; i < cloud->points.size (); ++i){
-                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
-                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
+            bool has_rgb=false;
+            bool has_intensity=false;
+            for(size_t i=0; i<cloud_blob.fields.size(); i++){
+                if(cloud_blob.fields[i].name=="rgb"){
+                    has_rgb=true;
+                }
+                if(cloud_blob.fields[i].name=="intensity"){
+                    has_intensity=true;
+                }
             }
 
-        }else if (has_rgb && !has_intensity){
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
-            V.resize(cloud->points.size(), 3);
-            C.resize(cloud->points.size(), 3);
-            for (size_t i = 0; i < cloud->points.size (); ++i){
-                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
-                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
-                C.row(i) << (float)cloud->points[i].r/255.0 , (float)cloud->points[i].g/255.0, (float)cloud->points[i].b/255.0;
+            //depending on the fields, read as xyz, as xyzrgb or as xyzi, xyzrgbi
+            if(!has_rgb && !has_intensity){
+                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+                pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+                V.resize(cloud->points.size(), 3);
+                for (size_t i = 0; i < cloud->points.size (); ++i){
+                    //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                    V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
+                }
+
+            }else if (has_rgb && !has_intensity){
+                pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+                pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+                V.resize(cloud->points.size(), 3);
+                C.resize(cloud->points.size(), 3);
+                for (size_t i = 0; i < cloud->points.size (); ++i){
+                    //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                    V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
+                    C.row(i) << (float)cloud->points[i].r/255.0 , (float)cloud->points[i].g/255.0, (float)cloud->points[i].b/255.0;
+                }
+
+            }else if (has_rgb && has_intensity){
+                LOG(FATAL) << "We do not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
+
+            }else if (!has_rgb && has_intensity){
+                pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
+                pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
+                V.resize(cloud->points.size(), 3);
+                I.resize(cloud->points.size(), 1);
+                for (size_t i = 0; i < cloud->points.size (); ++i){
+                    //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+                    V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
+                    I.row(i) << cloud->points[i].intensity;
+                }
             }
+            LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
 
-        }else if (has_rgb && has_intensity){
-            LOG(FATAL) << "We do not support at the moment point cloud with both rgb and intensity. I would need to add a new point cloud type PointXYZRGBI for that.";
-
-        }else if (!has_rgb && has_intensity){
-            pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
-            pcl::fromPCLPointCloud2 (cloud_blob, *cloud); //* convert from pcl/PCLPointCloud2 to pcl::PointCloud<T>
-            V.resize(cloud->points.size(), 3);
-            I.resize(cloud->points.size(), 1);
-            for (size_t i = 0; i < cloud->points.size (); ++i){
-                //V.row(i) << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
-                V.row(i) << (cloud_pose * cloud->points[i].getVector3fMap()).transpose().cast<double>();
-                I.row(i) << cloud->points[i].intensity;
-            }
-        }
-        LOG(INFO) << "CloudPose=[" << cloud_pose.matrix()<<"]";
-
-        //set the width and height from the pcd file
-        m_width=cloud_blob.width;
-        m_height=cloud_blob.height;
+            //set the width and height from the pcd file
+            m_width=cloud_blob.width;
+            m_height=cloud_blob.height;
+        #else
+            LOG(FATAL) << "Not compiled with PCL so we cannot read pcd filed";
+        #endif
 
     }else{
         LOG(WARNING) << "Not a known extension of mesh file: " << file_path_abs;
@@ -2516,55 +2520,57 @@ void Mesh::color_solid2pervert(){
 
 }
 
-void Mesh::estimate_normals_from_neighbourhood(const float radius){
-    CHECK(V.size()) << "We have no vertices";
+#ifdef EASYPBR_WITH_PCL
+    void Mesh::estimate_normals_from_neighbourhood(const float radius){
+        CHECK(V.size()) << "We have no vertices";
 
-    //https://pointclouds.org/documentation/tutorials/normal_estimation.html
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+        //https://pointclouds.org/documentation/tutorials/normal_estimation.html
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
-//   ... read, pass in or create a point cloud ...
-    for(int i=0; i<V.rows(); i++){
-        pcl::PointXYZ p;
-        p.x=V(i,0);
-        p.y=V(i,1);
-        p.z=V(i,2);
-        cloud->points.push_back(p);
+    //   ... read, pass in or create a point cloud ...
+        for(int i=0; i<V.rows(); i++){
+            pcl::PointXYZ p;
+            p.x=V(i,0);
+            p.y=V(i,1);
+            p.z=V(i,2);
+            cloud->points.push_back(p);
+        }
+
+        // Create the normal estimation class, and pass the input dataset to it
+        pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+        ne.setInputCloud (cloud);
+
+        // Create an empty kdtree representation, and pass it to the normal estimation object.
+        // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+        pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+        // pcl::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::KdTree<pcl::PointXYZ> ());
+        ne.setSearchMethod (tree);
+
+        // Output datasets
+        pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+        // Use all neighbors in a sphere of radius 3cm
+        ne.setRadiusSearch (radius);
+
+        // Compute the features
+        ne.compute (*cloud_normals);
+
+        NV.resize(cloud_normals->points.size(),3);
+        for(size_t i=0; i<cloud_normals->points.size(); i++){
+            pcl::Normal p=cloud_normals->points[i];
+            NV(i,0)=p.normal_x;
+            NV(i,1)=p.normal_y;
+            NV(i,2)=p.normal_z;
+            // p.x=V(i,0);
+            // p.y=V(i,1);
+            // p.z=V(i,2);
+            // cloud.push_back(p);
+        }
+
+
+
     }
-
-    // Create the normal estimation class, and pass the input dataset to it
-    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-    ne.setInputCloud (cloud);
-
-    // Create an empty kdtree representation, and pass it to the normal estimation object.
-    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
-    // pcl::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::KdTree<pcl::PointXYZ> ());
-    ne.setSearchMethod (tree);
-
-    // Output datasets
-    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
-
-    // Use all neighbors in a sphere of radius 3cm
-    ne.setRadiusSearch (radius);
-
-    // Compute the features
-    ne.compute (*cloud_normals);
-
-    NV.resize(cloud_normals->points.size(),3);
-    for(size_t i=0; i<cloud_normals->points.size(); i++){
-        pcl::Normal p=cloud_normals->points[i];
-        NV(i,0)=p.normal_x;
-        NV(i,1)=p.normal_y;
-        NV(i,2)=p.normal_z;
-        // p.x=V(i,0);
-        // p.y=V(i,1);
-        // p.z=V(i,2);
-        // cloud.push_back(p);
-    }
-
-
-
-}
+#endif
 
 float Mesh::min_y(){
     return m_min_max_y_for_plotting(0);
