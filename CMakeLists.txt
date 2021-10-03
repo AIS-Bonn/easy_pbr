@@ -71,6 +71,9 @@ execute_process( #do it like this https://github.com/facebookresearch/hanabi_SAD
   COMMAND python -c "import torch; import os; print(os.path.dirname(torch.__file__), end='')"
   OUTPUT_VARIABLE TorchPath
 )
+#sometimes we want to use libtorch because the pytorch one has a different abi
+# set(TorchPath "/home/rosu/work/ws/libtorch-cxx11-abi-shared-with-deps-1.9.0+cu111/libtorch")
+# set(TorchPath "/home/rosu/work/ws/libtorch-cxx11-abi-shared-with-deps-1.9.1+cu111/libtorch")
 list(APPEND CMAKE_PREFIX_PATH ${TorchPath})
 find_package(Torch)
 # set(TORCH_FOUND False)
@@ -201,6 +204,7 @@ if(${KQUEUE_FOUND})
     set(LIBS  ${LIBS} ${KQUEUE_LIBRARIES})
 endif()
 if(${TORCH_FOUND})
+    # message("Torch libraries are ", ${TORCH_LIBRARIES})
     set(LIBS ${LIBS} ${TORCH_LIBRARIES} )
     #torch 1.5.0 and above mess with pybind and we therefore need to link against libtorch_python.so also
     find_library(TORCH_PYTHON_LIBRARY torch_python PATHS "${TORCH_INSTALL_PREFIX}/lib")
