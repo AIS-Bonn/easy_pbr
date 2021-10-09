@@ -1082,13 +1082,13 @@ void Viewer::draw(const GLuint fbo_id){
 
 
     //attempt 3 at forward rendering
-    TIME_START("blit");
+    // TIME_START("blit");
     glViewport(0.0f , 0.0f, m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor );
     //blit the depth from the gbuffer to the final_fbo_no_gui so that we can forward render stuff into it
     m_gbuffer.bind_for_read();
     m_final_fbo_no_gui.bind_for_draw();
     glBlitFramebuffer( 0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_final_fbo_no_gui.width(), m_final_fbo_no_gui.height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-    TIME_END("blit");
+    // TIME_END("blit");
 
     //forward render the lines and edges
     TIME_START("forward_render");
@@ -1734,7 +1734,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
 
     //LINEARIZE-------------------------
-    TIME_START("depth_linearize_pass");
+    // TIME_START("depth_linearize_pass");
     m_depth_linear_tex.allocate_or_resize( GL_R32F, GL_RED, GL_FLOAT, new_viewport_size.x(), new_viewport_size.y() );
     m_depth_linear_tex.clear();
 
@@ -1753,7 +1753,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
     // draw
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    TIME_END("depth_linearize_pass");
+    // TIME_END("depth_linearize_pass");
 
 
 
@@ -1763,7 +1763,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
 
     //SSAO----------------------------------------
-    TIME_START("ao_pass");
+    // TIME_START("ao_pass");
     //matrix setup
     Eigen::Matrix3f V_rot = Eigen::Affine3f(camera->view_matrix()).linear(); //for rotating the normals from the world coords to the cam_coords
     Eigen::Matrix4f P = camera->proj_matrix(gbuffer.width(), gbuffer.height());
@@ -1801,7 +1801,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
     // // draw
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    TIME_END("ao_pass");
+    // TIME_END("ao_pass");
 
     //restore the state
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
@@ -1815,7 +1815,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
 
     //dont perform depth checking nor write into the depth buffer
-    TIME_START("blur_pass");
+    // TIME_START("blur_pass");
     glDepthMask(false);
     glDisable(GL_DEPTH_TEST);
 
@@ -1859,7 +1859,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
     // m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
     // glColorMask(true, true, true, true);
-    TIME_END("blur_pass");
+    // TIME_END("blur_pass");
 
     //restore the state
     GL_C( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
@@ -2321,7 +2321,7 @@ void Viewer::apply_postprocess(){
 
 void Viewer::blend_bg(){
 
-    TIME_START("blend_bg");
+    // TIME_START("blend_bg");
 
     if(m_viewport_size.x()/m_subsample_factor!=m_final_fbo_no_gui.width() || m_viewport_size.y()/m_subsample_factor!=m_final_fbo_no_gui.height()){
         m_final_fbo_no_gui.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor  );
@@ -2359,7 +2359,7 @@ void Viewer::blend_bg(){
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
 
-    TIME_END("blend_bg");
+    // TIME_END("blend_bg");
 
 }
 // cv::Mat Viewer::download_to_cv_mat(){
