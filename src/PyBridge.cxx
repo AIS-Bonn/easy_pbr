@@ -561,7 +561,10 @@ PYBIND11_MODULE(easypbr, m) {
     .def("upload_from_cv_mat", &gl::Texture2D::upload_from_cv_mat, py::arg().noconvert(),  py::arg("flip_red_blue") = true, py::arg("store_as_normalized_vals") = true  )
     .def("download_to_cv_mat", &gl::Texture2D::download_to_cv_mat, py::arg("lvl") = 0, py::arg("denormalize") = false  )
     #ifdef EASYPBR_WITH_TORCH
+        .def("enable_cuda_transfer", &gl::Texture2D::enable_cuda_transfer )
+        .def("disable_cuda_transfer", &gl::Texture2D::disable_cuda_transfer )
         .def("from_tensor", &gl::Texture2D::from_tensor,  py::arg().noconvert(), py::arg("flip_red_blue") = false, py::arg("store_as_normalized_vals") = true )
+        .def("to_tensor", &gl::Texture2D::to_tensor )
     #endif
     ;
 

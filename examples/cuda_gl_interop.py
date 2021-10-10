@@ -43,6 +43,8 @@ Scene.show(mesh,"mesh")
 #hide the gird floor
 Scene.set_floor_visible(False)
 
+mat=Mat()
+mat.from_file("/home/rosu/work/meetings/weekly_sync/data/week18/2_head_with_shoulders.png")
 
 while True:
 
@@ -66,14 +68,12 @@ while True:
   # tensor=tensor*0.8
 
   #make a torch tensor from an image
-  mat=Mat()
-  # mat.from_file("/home/rosu/work/c_ws/src/easy_pbr/data/uv_checker.png")
-  mat.from_file("/home/rosu/work/meetings/weekly_sync/data/week18/2_head_with_shoulders.png")
   tensor=mat2tensor(mat,False).cuda()
 
 
   # #copy the tensor to the texture
   new_tex_from_tensor=gl.Texture2D()
+  new_tex_from_tensor.enable_cuda_transfer()
   TIME_START("cuda2gl")
   new_tex_from_tensor.from_tensor(tensor)
   TIME_END("cuda2gl")
@@ -81,6 +81,11 @@ while True:
   new_tex_from_tensor_mat=new_tex_from_tensor.download_to_cv_mat()
   TIME_END("gl2mat")
   Gui.show(new_tex_from_tensor_mat, "new_tex_from_tensor_mat")
+  #copy back from tex to tensor and show it
+  TIME_START("gl2cuda")
+  tensor_roundback=new_tex_from_tensor.to_tensor()
+  TIME_END("gl2cuda")
+  Gui.show(tensor2mat(tensor_roundback), "tensor_roundback")
 
 
 
