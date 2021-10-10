@@ -154,86 +154,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("blend", [](cv::Mat &cur, cv::Mat &src2, float alpha ) { cv::Mat dst; cv::addWeighted( cur, alpha, src2, 1-alpha, 0.0, dst);  return dst;   } )
     .def("hconcat", [](cv::Mat &cur, cv::Mat &src1 ) { cv::Mat dst; cv::hconcat(cur,src1,dst);  return dst;   } )
     .def("vconcat", [](cv::Mat &cur, cv::Mat &src1 ) { cv::Mat dst; cv::vconcat(cur,src1,dst);  return dst;   } )
-    // .def("rows", [](const cv::Mat &m) {  return m.rows;  }  )
+    .def("type_string", [](cv::Mat &m) {  return radu::utils::type2string(m.type());  } )
     ;
-    // py::class_<Eigen::Affine3f> (m, "Eigen::Affine3f")
-    // .def(py::init<>())
-    // //operators
-    // .def(py::self * py::self) //multiply a matrix with another one
-    // //getters
-    // .def("matrix", [](const Eigen::Affine3f &m) {  return m.matrix();  } )
-    // .def("translation", [](const Eigen::Affine3f &m) {  return m.translation();  } )
-    // .def("linear", [](const Eigen::Affine3f &m) {  return m.linear();  } )
-    // // .def("matrix", &Eigen::Affine3f::matrix, py::return_value_policy::reference_internal )
-    // // .def("matrix", &Eigen::Affine3f::matrix )
-    // // .def("translation", &Eigen::Affine3f::translation )
-    // // .def("linear", &Eigen::Affine3f::linear )
-    // //setters
 
-    // //translational
-
-    // //convenience functions for translating and rotating
-
-
-    // .def("to_double", [](const Eigen::Affine3f &m) {  return m.cast<double>();  }  )
-    // ;
-
-
-    // py::class_<Eigen::Affine3d> (m, "Eigen::Affine3d")
-    // .def(py::init<>())
-    // //operators
-    // .def(py::self * py::self) //multiply a matrix with another one
-    // //getters
-    // .def("matrix", [](const Eigen::Affine3d &m) {  return m.matrix();  } )
-    // .def("translation", [](const Eigen::Affine3d &m) {  return m.translation();  } )
-    // .def("linear", [](const Eigen::Affine3d &m) {  return m.linear();  } )
-    // .def("quat", [](const Eigen::Affine3d &m) {  Eigen::Quaterniond q ( m.linear() );    return q.coeffs();   } )
-    // //TODO euler
-    // //TODO to_xyz_quat_vec
-    // //setters
-    // .def("set_translation", [](Eigen::Affine3d &m, const Eigen::Vector3d& t) {  m.translation()=t;  } )
-    // .def("set_linear", [](Eigen::Affine3d &m, const Eigen::Matrix3d& t) {  m.linear()=t;  } )
-    // .def("set_quat", [](Eigen::Affine3d &m, const Eigen::Vector4d& q_vec) {
-    //     Eigen::Quaterniond q;
-    //     q.coeffs()=q_vec;
-    //     m.linear()=q.toRotationMatrix();
-    // } )
-    // //convenience functions
-    // .def("rotate_axis_angle", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) {
-    //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
-    //     Eigen::Affine3d tf;
-    //     tf.setIdentity();
-    //     tf.linear()=q.toRotationMatrix();
-    //     //compose the old transform with this new one
-    //     m=tf*m;
-    // } )
-    // .def("rotate_axis_angle_local", [](Eigen::Affine3d &m, const Eigen::Vector3d& axis, const float angle_degrees) {
-    //     Eigen::Quaterniond q = Eigen::Quaterniond( Eigen::AngleAxis<double>( angle_degrees * M_PI / 180.0 ,  axis.normalized() ) );
-    //     Eigen::Affine3d rot;
-    //     rot.setIdentity();
-    //     rot.linear()=q.toRotationMatrix();
-    //     Eigen::Affine3d tf=Eigen::Translation3d(m.translation()) * rot *  Eigen::Translation3d(-m.translation());
-    //     //compose the old transform with this new one
-    //     m=tf*m;
-    // } )
-    // //cast
-    // .def("to_float", [](const Eigen::Affine3d &m) {  return m.cast<float>();  }  )
-    // ;
-
-
-
-
-    // template<typename T>
-    // void declare_array(py::module &m, std::string &typestr) {
-    //     // using Class = Array2D<T>;
-    //     // std::string pyclass_name = std::string("Array2D") + typestr;
-    //     // py::class_<Class>(m, pyclass_name.c_str(), py::buffer_protocol(), py::dynamic_attr())
-    //     // .def(py::init<>())
-    //     // .def(py::init<Class::xy_t, Class::xy_t, T>())
-    //     // .def("size",      &Class::size)
-    //     // .def("width",     &Class::width)
-    //     // .def("height",    &Class::height);
-    // }
 
     eigen_affine_bindings<float>(m, "f");
     eigen_affine_bindings<double>(m, "d");
@@ -318,6 +241,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("load_environment_map", &Viewer::load_environment_map )
     .def("spotlight_with_idx", &Viewer::spotlight_with_idx )
     .def("gbuffer_mat_with_name", &Viewer::gbuffer_mat_with_name )
+    .def("rendered_tex_no_gui", &Viewer::rendered_tex_no_gui, py::return_value_policy::reference )
+    .def("rendered_tex_with_gui", &Viewer::rendered_tex_with_gui, py::return_value_policy::reference )
     .def("rendered_mat_no_gui", &Viewer::rendered_mat_no_gui )
     .def("rendered_mat_with_gui", &Viewer::rendered_mat_with_gui )
     .def("upload_single_mesh_to_gpu", &Viewer::upload_single_mesh_to_gpu )
@@ -624,9 +549,21 @@ PYBIND11_MODULE(easypbr, m) {
     .def("mat2color", &radu::utils::ColorMngr::mat2color )
     ;
 
-    //utilsgl
-    m.def("intrinsics_to_opengl_proj", &intrinsics_to_opengl_proj );
-    m.def("opengl_proj_to_intrinsics", &opengl_proj_to_intrinsics );
+    //utilsgl EVERYTHING hre is in another submodule
+    py::module gl = m.def_submodule("gl", "GL is a submodule of easypbr");
+
+    gl.def("intrinsics_to_opengl_proj", &intrinsics_to_opengl_proj );
+    gl.def("opengl_proj_to_intrinsics", &opengl_proj_to_intrinsics );
+
+    //texture2d everything in a new submodule
+    py::class_<gl::Texture2D> (gl, "Texture2D")
+    .def(py::init<>())
+    .def("upload_from_cv_mat", &gl::Texture2D::upload_from_cv_mat, py::arg().noconvert(),  py::arg("flip_red_blue") = true, py::arg("store_as_normalized_vals") = true  )
+    .def("download_to_cv_mat", &gl::Texture2D::download_to_cv_mat, py::arg("lvl") = 0, py::arg("denormalize") = false  )
+    #ifdef EASYPBR_WITH_TORCH
+        .def("from_tensor", &gl::Texture2D::from_tensor,  py::arg().noconvert(), py::arg("flip_red_blue") = false, py::arg("store_as_normalized_vals") = true )
+    #endif
+    ;
 
 
 }
