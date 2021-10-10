@@ -1120,7 +1120,7 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh> mesh_core){
+void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core){
     if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty()) ) { //the mesh gl needs updating
 
         // VLOG(1) << "mesh with name " << mesh_core->name << " needs updating is dirty is " << mesh_core->m_is_dirty << "texture dirty is " << mesh_core->is_any_texture_dirty();
@@ -1146,12 +1146,20 @@ void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh> mesh_core){
         }else{
             // VLOG(1) << "not found";
             MeshGLSharedPtr mesh_gpu=MeshGL::create();
+            // VLOG(1) << " mesh_gpu has adress " << mesh_gpu;
             mesh_gpu->assign_core(mesh_core); //GPU implementation points to the cpu data
             mesh_core->assign_mesh_gpu(mesh_gpu); // cpu data points to the gpu implementation
             mesh_gpu->upload_to_gpu();
             mesh_gpu->sanity_check(); //check that we have for sure all the normals for all the vertices and faces and that everything is correct
             m_meshes_gl.push_back(mesh_gpu);
         }
+
+
+        //sanity check
+        // auto again_mesh_gl= mesh_core->m_mesh_gpu.lock();
+        // CHECK(again_mesh_gl) <<"we should have a meshgl here";
+        // VLOG(1) << "ahain meshgl fbuf has rgarget" << again_mesh_gl->F_buf.target();
+        // VLOG(1) << " again_mesh_gl has adress " << again_mesh_gl;
 
 
 

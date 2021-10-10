@@ -43,6 +43,22 @@ MeshGL::MeshGL():
     L_gt_buf.set_target(GL_ARRAY_BUFFER);
     I_buf.set_target(GL_ARRAY_BUFFER);
 
+
+    // V_buf.set_type(GL_FLOAT);
+    // F_buf.set_type(GL_UNSIGNED_INT);
+    // C_buf.set_type(GL_FLOAT);
+    // E_buf.set_type(GL_UNSIGNED_INT);
+    // D_buf.set_type(GL_FLOAT);
+    // NF_buf.set_type(GL_FLOAT);
+    // NV_buf.set_type(GL_FLOAT);
+    // UV_buf.set_type(GL_FLOAT);
+    // V_tangent_u_buf.set_type(GL_FLOAT);
+    // V_lenght_v_buf.set_type(GL_FLOAT);
+    // L_pred_buf.set_type(GL_UNSIGNED_INT);
+    // L_gt_buf.set_type(GL_UNSIGNED_INT);
+    // I_buf.set_type(GL_FLOAT);
+
+
     m_diffuse_tex.set_wrap_mode(GL_REPEAT);
     m_metalness_tex.set_wrap_mode(GL_REPEAT);
     m_roughness_tex.set_wrap_mode(GL_REPEAT);

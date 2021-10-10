@@ -3,7 +3,10 @@
 #include <memory>
 #include<stdarg.h>
 
-
+//we add them first because they might contain torch and we need to include torch before we include loguru otherwise loguru doesnt work
+#include "Buf.h"
+#include "Texture2D.h"
+#include "VertexArrayObject.h"
 
 //loguru
 #define LOGURU_WITH_STREAMS 1
@@ -11,9 +14,6 @@
 #include <loguru.hpp>
 
 
-#include "Buf.h"
-#include "Texture2D.h"
-#include "VertexArrayObject.h"
 
 // #include "easy_pbr/Mesh.h"
 

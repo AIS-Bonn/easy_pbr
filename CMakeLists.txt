@@ -196,8 +196,6 @@ target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
 
-
-
 ###   LIBS   ###############################################
 set(LIBS -lpthread -ldl) #because loguru needs them
 if(${KQUEUE_FOUND})

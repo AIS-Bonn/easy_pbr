@@ -3127,6 +3127,7 @@ void Mesh::sanity_check() const{
     LOG_IF_S(ERROR, V.size() && D.size() && V.rows()!=D.rows() ) << name << ": V and D don't coincide " << V.rows() << " and " << D.rows();
     LOG_IF_S(ERROR, V.size() && I.size() && V.rows()!=I.rows() ) << name << ": V and I don't coincide " << V.rows() << " and " << I.rows();
     LOG_IF_S(ERROR, V.size() && C.size() && V.rows()!=C.rows() ) << name << ": V and C don't coincide " << V.rows() << " and " << C.rows();
+    LOG_IF_S(ERROR, V.size() && UV.size() && V.rows()!=UV.rows() ) << name << ": V and UV don't coincide " << V.rows() << " and " << UV.rows();
     if (F.size()) LOG_IF_S(ERROR, F.maxCoeff()>V.rows()-1) << name << ": F indexes V at invalid poisitions, max coeff is " << F.maxCoeff() << " and V size is" << V.rows();
     if (E.size()) LOG_IF_S(ERROR, E.maxCoeff()>V.rows()-1) << name << ": E indexes V at invalid poisitions, max coeff is " << E.maxCoeff() << " and V size is" << V.rows() ;
     if (C.size()) LOG_IF_S(ERROR, C.rows()!=V.rows() ) << name << ": We have per vertex color but C and V don't match. C has rows " << C.rows() << " and V size is" << V.rows() ;
