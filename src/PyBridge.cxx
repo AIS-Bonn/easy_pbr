@@ -568,6 +568,21 @@ PYBIND11_MODULE(easypbr, m) {
     #endif
     ;
 
+    py::class_<gl::Buf> (gl, "Buf")
+    .def(py::init<>())
+    #ifdef EASYPBR_WITH_TORCH
+        .def("set_target_array_buffer", &gl::Buf::set_target_array_buffer )
+        .def("set_target_element_array_buffer", &gl::Buf::set_target_element_array_buffer )
+        .def("enable_cuda_transfer", &gl::Buf::enable_cuda_transfer )
+        .def("disable_cuda_transfer", &gl::Buf::disable_cuda_transfer )
+        .def("from_tensor", &gl::Buf::from_tensor )
+        .def("to_tensor", [](gl::Buf &buf, py::object dtype){
+                   torch::ScalarType type = torch::python::detail::py_object_to_dtype(dtype);
+                   return buf.to_tensor(type);
+             } ) //from https://discuss.pytorch.org/t/how-to-pass-python-device-and-dtype-to-c/69577/6
+    #endif
+    ;
+
 
 }
 

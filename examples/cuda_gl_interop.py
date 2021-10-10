@@ -46,6 +46,7 @@ Scene.set_floor_visible(False)
 mat=Mat()
 mat.from_file("/home/rosu/work/meetings/weekly_sync/data/week18/2_head_with_shoulders.png")
 
+
 while True:
 
   #see the original screen texture
@@ -59,13 +60,6 @@ while True:
   new_mat=new_tex.download_to_cv_mat()
   Gui.show(new_mat, "new_mat")
 
-
-  #make a torch tensor
-  # h=original_screen_mat.rows
-  # w=original_screen_mat.cols
-  # print("original_screen_mat ", original_screen_mat.type_string(), " of size ", h, " ", w )
-  # tensor = torch.ones((1,3,h,w), dtype=torch.uint8).cuda()
-  # tensor=tensor*0.8
 
   #make a torch tensor from an image
   tensor=mat2tensor(mat,False).cuda()
@@ -86,6 +80,17 @@ while True:
   tensor_roundback=new_tex_from_tensor.to_tensor()
   TIME_END("gl2cuda")
   Gui.show(tensor2mat(tensor_roundback), "tensor_roundback")
+
+
+  #make a buffer
+  buf=gl.Buf()
+  buf.set_target_array_buffer()
+  buf.enable_cuda_transfer()
+  tensor_buf=torch.arange(6).cuda().float().view(2,3)
+  print("tensor_buf", tensor_buf)
+  buf.from_tensor(tensor_buf)
+  tensor_buf_roundback=buf.to_tensor(torch.float32)
+  print("tensor_buf_roundback", tensor_buf_roundback)
 
 
 
