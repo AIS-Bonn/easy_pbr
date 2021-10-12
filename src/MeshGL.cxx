@@ -11,6 +11,7 @@ namespace easy_pbr{
 
 MeshGL::MeshGL():
     m_first_core_assignment(true),
+    m_sticky(false),
     V_buf("V_buf"),
     F_buf("F_buf"),
     C_buf("C_buf"),

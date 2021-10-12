@@ -44,6 +44,7 @@ public:
     void upload_to_gpu();
 
     bool m_first_core_assignment;
+    bool m_sticky; //if it's set to true then this meshgl will not get automtically deleted even if the mesh core is not in the scene. Useful for when external code wants to push data to opengl but doesnt necessarally want to add the meshcore to the scene for visualization
 
     //GL buffers
     gl::VertexArrayObject vao;

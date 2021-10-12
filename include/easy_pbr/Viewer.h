@@ -171,7 +171,7 @@ public:
     void hotload_shaders();
     void init_opengl();
     void update_meshes_gl();
-    void upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core); //it's nice to have this function to upload a single mesh because some external programs might need to use it to upload quickly a whole mesh to gl buffers
+    void upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core, const bool is_meshgl_sticky); //it's nice to have this function to upload a single mesh because some external programs might need to use it to upload quickly a whole mesh to gl buffers
     void render_points(const std::shared_ptr<MeshGL> mesh);
     void render_points_to_gbuffer(const std::shared_ptr<MeshGL> mesh);
     void render_lines(const std::shared_ptr<MeshGL> mesh);

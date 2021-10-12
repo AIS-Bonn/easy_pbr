@@ -122,7 +122,7 @@ Mesh Mesh::clone(){
     cloned.m_min_max_y=m_min_max_y;
     cloned.m_min_max_y_for_plotting=m_min_max_y_for_plotting;
 
-    cloned.name=name;
+    cloned.name=name+"_clone";
     cloned.m_disk_path=m_disk_path;
 
     return cloned;

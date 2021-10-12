@@ -1120,8 +1120,11 @@ void Viewer::draw(const GLuint fbo_id){
 
 
 
-void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core){
-    if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty()) ) { //the mesh gl needs updating
+void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core, const bool is_meshgl_sticky){
+
+    auto possible_mesh_gl= mesh_core->m_mesh_gpu.lock(); //check if we have a mesh gl
+
+    if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty())  || !possible_mesh_gl) { //the mesh gl needs updating
 
         // VLOG(1) << "mesh with name " << mesh_core->name << " needs updating is dirty is " << mesh_core->m_is_dirty << "texture dirty is " << mesh_core->is_any_texture_dirty();
 
@@ -1155,14 +1158,20 @@ void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core){
         }
 
 
-        //sanity check
         // auto again_mesh_gl= mesh_core->m_mesh_gpu.lock();
         // CHECK(again_mesh_gl) <<"we should have a meshgl here";
+        // again_mesh_gl->m_sticky=is_meshgl_sticky;
         // VLOG(1) << "ahain meshgl fbuf has rgarget" << again_mesh_gl->F_buf.target();
         // VLOG(1) << " again_mesh_gl has adress " << again_mesh_gl;
 
 
 
+    }
+
+    if (is_meshgl_sticky){
+        auto again_mesh_gl= mesh_core->m_mesh_gpu.lock();
+        CHECK(again_mesh_gl) <<"we should have a meshgl here";
+        again_mesh_gl->m_sticky=is_meshgl_sticky;
     }
 
 }
@@ -1174,7 +1183,7 @@ void Viewer::update_meshes_gl(){
     //Check if we need to upload to gpu
     for(int i=0; i<m_scene->nr_meshes(); i++){
         MeshSharedPtr mesh_core=m_scene->get_mesh_with_idx(i);
-        upload_single_mesh_to_gpu(mesh_core);
+        upload_single_mesh_to_gpu(mesh_core, /*ism_meshgl sticky*/ false);
     }
 
 
@@ -1195,8 +1204,8 @@ void Viewer::update_meshes_gl(){
             }
         }
 
-        //we found it in the scene and in the gpu so we keep it
-        if(found){
+        //we found it in the scene and in the gpu so we keep it, OR if the meshgl is sticky and we dont care if the mesh core is not in the scene
+        if(found || m_meshes_gl[gl_idx]->m_sticky){
             meshes_gl_filtered.push_back(m_meshes_gl[gl_idx]);
         }else{
             //the mesh_gl has no corresponding mesh_core in the scene which means we discard this mesh_gl which will in turn also garbage collect whatever shared ptr if has over the mesh_core
