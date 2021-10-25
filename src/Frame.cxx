@@ -158,7 +158,7 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
 }
 
-Frame Frame::subsample(const int subsample_factor){
+Frame Frame::subsample(const float subsample_factor){
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
 

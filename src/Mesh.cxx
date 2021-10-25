@@ -1406,6 +1406,18 @@ void Mesh::upsample(const int nr_of_subdivisions){
 
 }
 
+void Mesh::flip_winding(){
+    Eigen::MatrixXi new_F=F;
+
+    for(int f=0;f<F.rows();++f){
+        new_F(f,0)=F(f,0);
+        new_F(f,1)=F(f,2);
+        new_F(f,2)=F(f,1);
+    }
+
+    F=new_F;
+}
+
 void Mesh::flip_normals(){
     NF=-NF;
     NV=-NV;

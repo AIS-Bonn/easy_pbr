@@ -132,6 +132,31 @@ PYBIND11_MODULE(easypbr, m) {
         mat.setTo(cv::Scalar::all(val), (channels[3]<255));
         m=mat;
       } )
+    .def("set_value_to_alpha", [](cv::Mat &m, const int val) {
+        CHECK(m.channels()==3) << "Mat needs to have 4 channels and it only has " << m.channels();
+        // cv::Mat mat;
+        // cv::cvtColor(m, mat, CV_8UC4);
+        cv::Mat mat=cv::Mat(m.rows,m.cols,CV_8UC4);
+        // find all white pixel and set alpha value to zero:
+        for (int y = 0; y < mat.rows; ++y){
+            for (int x = 0; x < mat.cols; ++x){
+                cv::Vec3b & pixel = m.at<cv::Vec3b>(y, x);
+                cv::Vec4b & pixel_out = mat.at<cv::Vec4b>(y, x);
+                pixel_out[0] = pixel[0];
+                pixel_out[1] = pixel[1];
+                pixel_out[2] = pixel[2];
+                pixel_out[3] = 255;
+                // if pixel is the value
+                if (pixel[0] == val && pixel[1] == val && pixel[2] == val)
+                {
+                    // set alpha to zero:
+                    pixel_out[3] = 0;
+                }
+            }
+        }
+        m=mat;
+        return mat;
+      } )
     .def("clone", [](cv::Mat &m) {  return m.clone();  } )
     .def("set_val", [](cv::Mat &m, const float val) {  m = cv::Scalar(val); } )
     .def("set_val", [](cv::Mat &m, const float r, const float g) {  m = cv::Scalar(r,g); } )
@@ -481,6 +506,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("flip_normals", &Mesh::flip_normals )
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )
+    .def("flip_winding", &Mesh::flip_winding )
     .def("to_3D", &Mesh::to_3D )
     .def("to_2D", &Mesh::to_2D )
     .def("remove_vertices_at_zero", &Mesh::remove_vertices_at_zero )
