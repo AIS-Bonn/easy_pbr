@@ -123,9 +123,9 @@ Viewer::Viewer(const std::string config_file):
     m_camera_translation_speed_multiplier(1.0)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
-            VLOG(1) << "created viewer with dirwatcher";
+            // VLOG(1) << "created viewer with dirwatcher";
         #else
-            VLOG(1) << "Created viewer with no dir watcher";
+            // VLOG(1) << "Created viewer with no dir watcher";
         #endif
         m_timer->start();
         // m_old_time=m_timer->elapsed_ms();
