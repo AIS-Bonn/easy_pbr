@@ -35,6 +35,7 @@ class Viewer;
 struct VisOptions{
      //visualization params (it's nice to have here so that the various algorithms that run in different threads can set them)
     bool m_is_visible=true;
+    bool m_force_cast_shadow=false;
     bool m_show_points=false;
     bool m_show_lines=false;
     bool m_show_normals=false;

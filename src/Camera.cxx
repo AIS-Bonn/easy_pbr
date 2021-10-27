@@ -292,7 +292,7 @@ void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
     m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
     // VLOG(1) << "proj matrix using only the fov would be \n" <<  proj_matrix(frame.width, frame.height);
 
-    m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height);
+    m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height, m_near, m_far);
     m_fixed_proj_matrix.col(2)=-m_fixed_proj_matrix.col(2);
     m_use_fixed_proj_matrix=true;
     // VLOG(1) << "fixed proj matrix would be \n" <<  m_fixed_proj_matrix;

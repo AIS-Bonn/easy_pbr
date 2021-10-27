@@ -69,6 +69,7 @@ Viewer::Viewer(const std::string config_file):
     #ifdef EASYPBR_WITH_DIR_WATCHER
         dir_watcher( new  emilib::DelayedDirWatcher( std::string(PROJECT_SOURCE_DIR)+"/shaders/",5)  ),
     #endif
+    m_debug(false),
     m_scene(new Scene),
     // m_gui(new Gui(this, m_window )),
     m_recorder(new Recorder( this )),
@@ -219,6 +220,7 @@ bool Viewer::init_params_nongl(const std::string config_file){
     m_enable_ssao = ssao_cfg.get_or("enable_ssao", default_ssao_cfg);
     m_ssao_downsample = ssao_cfg.get_or("ao_downsample", default_ssao_cfg);
     m_kernel_radius = ssao_cfg.get_float_else_default_else_nan("kernel_radius", default_ssao_cfg);
+    m_nr_samples = ssao_cfg.get_or("nr_samples", default_ssao_cfg);
     m_max_ssao_distance = ssao_cfg.get_or("max_ssao_distance", default_ssao_cfg);
     m_ao_power = ssao_cfg.get_or("ao_power", default_ssao_cfg);
     m_sigma_spacial = ssao_cfg.get_or("ao_blur_sigma_spacial", default_ssao_cfg);
@@ -981,21 +983,31 @@ void Viewer::draw(const GLuint fbo_id){
             break;
         }
     }
+    // VLOG(1) << "need_shadow_map_update " <<need_shadow_map_update;
     //loop through all the light and each mesh into their shadow maps as a depth map
     if(!m_enable_edl_lighting && need_shadow_map_update){
         for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
             if(m_spot_lights[l_idx]->m_create_shadow){
                 m_spot_lights[l_idx]->clear_shadow_map();
 
+                // VLOG(1) << " l_idx " << l_idx;
+
                 //loop through all the meshes
                 for(size_t i=0; i<m_meshes_gl.size(); i++){
                     MeshGLSharedPtr mesh=m_meshes_gl[i];
-                    if(mesh->m_core->m_vis.m_is_visible && !mesh->m_core->is_empty() ){
+                    // VLOG(1) << " mesh->m_core->name " << mesh->m_core->name;
+                    // VLOG(1) << " mesh->m_core->m_vis.m_is_visible " << mesh->m_core->m_vis.m_is_visible;
+                    // VLOG(1) << " mesh->m_core->m_vis.m_force_cast_shadow " << mesh->m_core->m_vis.m_force_cast_shadow;
+                    if( (mesh->m_core->m_vis.m_is_visible || mesh->m_core->m_vis.m_force_cast_shadow) && !mesh->m_core->is_empty() ){
+
+                        // VLOG(1) << "rendering shadow";
 
                         if(mesh->m_core->m_vis.m_show_mesh){
+                            // VLOG(1) << "rendering mesh to shadowmap-------------------" << mesh->m_core->name;
                             m_spot_lights[l_idx]->render_mesh_to_shadow_map(mesh);
                         }
                         if(mesh->m_core->m_vis.m_show_points){
+                            // VLOG(1) << "rendering points to shadowmap-------------------" << mesh->m_core->name;
                             m_spot_lights[l_idx]->render_points_to_shadow_map(mesh);
                         }
 

@@ -124,6 +124,7 @@ public:
     std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
 
 
+    bool m_debug;
 
 
 
