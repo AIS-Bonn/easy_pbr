@@ -1124,7 +1124,7 @@ void Viewer::upload_single_mesh_to_gpu(const std::shared_ptr<Mesh>& mesh_core, c
 
     auto possible_mesh_gl= mesh_core->m_mesh_gpu.lock(); //check if we have a mesh gl
 
-    if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty())  || !possible_mesh_gl) { //the mesh gl needs updating
+    if(mesh_core->m_vis.m_is_visible && (mesh_core->m_is_dirty || mesh_core->is_any_texture_dirty()  || !possible_mesh_gl)) { //the mesh gl needs updating
 
         // VLOG(1) << "mesh with name " << mesh_core->name << " needs updating is dirty is " << mesh_core->m_is_dirty << "texture dirty is " << mesh_core->is_any_texture_dirty();
 

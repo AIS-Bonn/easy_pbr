@@ -26,6 +26,7 @@
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/connect_boundary_to_infinity.h>
 #include <igl/upsample.h>
+#include <igl/loop.h>
 #include <igl/point_mesh_squared_distance.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
@@ -1390,11 +1391,15 @@ bool Mesh::compute_non_manifold_edges(std::vector<bool>& is_face_non_manifold, s
 }
 
 
-void Mesh::upsample(const int nr_of_subdivisions){
+void Mesh::upsample(const int nr_of_subdivisions, const bool smooth){
     Eigen::MatrixXd new_V;
     Eigen::MatrixXi new_F;
 
-    igl::upsample(V,F, new_V, new_F, nr_of_subdivisions);
+    if(smooth){
+        igl::loop(V,F, new_V, new_F, nr_of_subdivisions);
+    }else{
+        igl::upsample(V,F, new_V, new_F, nr_of_subdivisions);
+    }
 
     V=new_V;
     F=new_F;
