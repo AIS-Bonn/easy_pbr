@@ -1805,7 +1805,7 @@ void Mesh::create_grid(const int nr_segments, const float y_pos, const float sca
     m_vis.m_line_color<<0.6, 0.6, 0.6;
     m_vis.m_show_mesh=false;
 
-    VLOG(1) << "get scale " << get_scale();
+    // VLOG(1) << "get scale " << get_scale();
 
 }
 
