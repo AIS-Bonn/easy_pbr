@@ -1844,7 +1844,7 @@ void Mesh::create_floor(const float y_pos, const float scale){
 
 void Mesh::create_sphere(const Eigen::Vector3d& center, const double radius){
     load_from_file( std::string(EASYPBR_DATA_DIR)+"/sphere.obj" );
-    V/= 0.0751893; //normalize by the radius of this sphere that we loaded so not we have a radius of 1.0
+    // V/= 0.0751893; //normalize by the radius of this sphere that we loaded so not we have a radius of 1.0
     for (int i = 0; i < V.rows(); i++) {
         // V.row(i) =V.row(i)*radius+center;
         V.row(i) = Eigen::Vector3d(V.row(i))*radius+center;
