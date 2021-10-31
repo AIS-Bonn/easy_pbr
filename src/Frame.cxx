@@ -180,18 +180,18 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     cv::Rect rect_crop(rand_x, rand_y, crop_width, crop_height);
 
 
-    if(!rgb_8u.empty())   {  cv::Mat new_mat; rgb_8u(rect_crop).copyTo(new_mat);   new_frame.rgb_8u=new_mat;   }
-    if(!rgb_32f.empty())  {  cv::Mat new_mat; rgb_32f(rect_crop).copyTo(new_mat);   new_frame.rgb_32f=new_mat;  }
-    if(!gray_8u.empty())   {  cv::Mat new_mat; gray_8u(rect_crop).copyTo(new_mat);   new_frame.gray_8u=new_mat;   }
-    if(!gray_32f.empty())   {  cv::Mat new_mat; gray_32f(rect_crop).copyTo(new_mat);   new_frame.gray_32f=new_mat;   }
-    if(!grad_x_32f.empty())  {  cv::Mat new_mat; grad_x_32f(rect_crop).copyTo(new_mat);   new_frame.grad_x_32f=new_mat;   }
-    if(!grad_y_32f.empty())  {  cv::Mat new_mat; grad_y_32f(rect_crop).copyTo(new_mat);   new_frame.grad_y_32f=new_mat;   }
-    if(!gray_with_gradients.empty())  {  cv::Mat new_mat; gray_with_gradients(rect_crop).copyTo(new_mat);   new_frame.gray_with_gradients=new_mat;   }
-    if(!thermal_16u.empty())  {  cv::Mat new_mat; thermal_16u(rect_crop).copyTo(new_mat);   new_frame.thermal_16u=new_mat;   }
-    if(!thermal_32f.empty()) {  cv::Mat new_mat; thermal_32f(rect_crop).copyTo(new_mat);   new_frame.thermal_32f=new_mat;   }
-    if(!thermal_vis_32f.empty()) {  cv::Mat new_mat; thermal_vis_32f(rect_crop).copyTo(new_mat);   new_frame.thermal_vis_32f=new_mat;   }
-    if(!mask.empty())   {  cv::Mat new_mat; mask(rect_crop).copyTo(new_mat);   new_frame.mask=new_mat;   }
-    if(!depth.empty())   {  cv::Mat new_mat; depth(rect_crop).copyTo(new_mat);   new_frame.depth=new_mat;   }
+    if(!rgb_8u.empty())    new_frame.rgb_8u=rgb_8u(rect_crop).clone();
+    if(!rgb_32f.empty())   new_frame.rgb_32f=rgb_32f(rect_crop).clone();
+    if(!gray_8u.empty())   new_frame.gray_8u=gray_8u(rect_crop).clone();
+    if(!gray_32f.empty())   new_frame.gray_32f=gray_32f(rect_crop).clone();
+    if(!grad_x_32f.empty())  new_frame.grad_x_32f=grad_x_32f(rect_crop).clone();
+    if(!grad_y_32f.empty())  new_frame.grad_y_32f=grad_y_32f(rect_crop).clone();
+    if(!gray_with_gradients.empty())  new_frame.gray_with_gradients=gray_with_gradients(rect_crop).clone();
+    if(!thermal_16u.empty())  new_frame.thermal_16u=thermal_16u(rect_crop).clone();
+    if(!thermal_32f.empty()) new_frame.thermal_32f=thermal_32f(rect_crop).clone();
+    if(!thermal_vis_32f.empty()) new_frame.thermal_vis_32f=thermal_vis_32f(rect_crop).clone();
+    if(!mask.empty())   new_frame.mask=mask(rect_crop).clone();
+    if(!depth.empty())  new_frame.depth=depth(rect_crop).clone();
 
     //ajust principal point
     new_frame.K(0,2) = K(0,2) - rand_x;
@@ -200,6 +200,14 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     //set the new width and height
     new_frame.width=crop_width;
     new_frame.height=crop_height;
+
+    //set the crop of this.
+    new_frame.add_extra_field("crop_x", rand_x);
+    new_frame.add_extra_field("crop_y", rand_y);
+    new_frame.add_extra_field("crop_width", crop_width);
+    new_frame.add_extra_field("crop_height", crop_height);
+    new_frame.add_extra_field("width_before_crop", width);
+    new_frame.add_extra_field("height_before_crop", height);
 
     return new_frame;
 }
