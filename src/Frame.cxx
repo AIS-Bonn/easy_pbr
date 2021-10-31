@@ -4,13 +4,18 @@
 #include "UtilsGL.h"
 #include "opencv_utils.h"
 
+#include "RandGenerator.h"
+
 //loguru
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
+
+
 namespace easy_pbr {
 
-Frame::Frame()
+Frame::Frame():
+    m_rand_gen(new radu::utils::RandGenerator( int(time(NULL))  )) //we seed the generator with a random number otherwise all the new frames we create will start with the same seed
         {
 
 }
@@ -158,7 +163,48 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
 }
 
-Frame Frame::subsample(const float subsample_factor){
+
+Frame Frame::random_crop(const int crop_height, const int crop_width){
+    CHECK(width!=-1) << "Width was not set";
+    CHECK(height!=-1) << "Height was not set";
+    CHECK(crop_width<width) << "Crop width is larger than width of the image. Crop width is " << crop_width << " width of this frame is " << width;
+    CHECK(crop_height<width) << "Crop height is larger than height of the image. Crop height is " << crop_height << " height of this frame is " << height;
+
+    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+    //I use this random nr generator from opencv because I don't want to have in this class a RandGenerator from my utils library because it doesnt have a global state so recreating the frame, will recreate a rng with the same seed
+    int rand_x=m_rand_gen->rand_int(0,width-1-crop_width);
+    int rand_y=m_rand_gen->rand_int(0,height-1-crop_height);
+    // int rand_x=0;
+    // int rand_y=0;
+    cv::Rect rect_crop(rand_x, rand_y, crop_width, crop_height);
+
+
+    if(!rgb_8u.empty())   {  cv::Mat new_mat; rgb_8u(rect_crop).copyTo(new_mat);   new_frame.rgb_8u=new_mat;   }
+    if(!rgb_32f.empty())  {  cv::Mat new_mat; rgb_32f(rect_crop).copyTo(new_mat);   new_frame.rgb_32f=new_mat;  }
+    if(!gray_8u.empty())   {  cv::Mat new_mat; gray_8u(rect_crop).copyTo(new_mat);   new_frame.gray_8u=new_mat;   }
+    if(!gray_32f.empty())   {  cv::Mat new_mat; gray_32f(rect_crop).copyTo(new_mat);   new_frame.gray_32f=new_mat;   }
+    if(!grad_x_32f.empty())  {  cv::Mat new_mat; grad_x_32f(rect_crop).copyTo(new_mat);   new_frame.grad_x_32f=new_mat;   }
+    if(!grad_y_32f.empty())  {  cv::Mat new_mat; grad_y_32f(rect_crop).copyTo(new_mat);   new_frame.grad_y_32f=new_mat;   }
+    if(!gray_with_gradients.empty())  {  cv::Mat new_mat; gray_with_gradients(rect_crop).copyTo(new_mat);   new_frame.gray_with_gradients=new_mat;   }
+    if(!thermal_16u.empty())  {  cv::Mat new_mat; thermal_16u(rect_crop).copyTo(new_mat);   new_frame.thermal_16u=new_mat;   }
+    if(!thermal_32f.empty()) {  cv::Mat new_mat; thermal_32f(rect_crop).copyTo(new_mat);   new_frame.thermal_32f=new_mat;   }
+    if(!thermal_vis_32f.empty()) {  cv::Mat new_mat; thermal_vis_32f(rect_crop).copyTo(new_mat);   new_frame.thermal_vis_32f=new_mat;   }
+    if(!mask.empty())   {  cv::Mat new_mat; mask(rect_crop).copyTo(new_mat);   new_frame.mask=new_mat;   }
+    if(!depth.empty())   {  cv::Mat new_mat; depth(rect_crop).copyTo(new_mat);   new_frame.depth=new_mat;   }
+
+    //ajust principal point
+    new_frame.K(0,2) = K(0,2) - rand_x;
+    new_frame.K(1,2) = K(1,2) - height+crop_height+ rand_y;
+
+    //set the new width and height
+    new_frame.width=crop_width;
+    new_frame.height=crop_height;
+
+    return new_frame;
+}
+
+Frame Frame::subsample(const int subsample_factor){
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
 
@@ -484,6 +530,7 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
     // VLOG(1) << "nr_points_projected" << nr_points_projected;
 
     cloud->m_vis.set_color_pervertcolor();
+    cloud->m_is_dirty=true;
 
 
     return cloud;
