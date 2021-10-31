@@ -71,7 +71,8 @@ public:
 
     std::shared_ptr<Mesh> create_frustum_mesh(float scale_multiplier=1.0, bool show_texture=true, const int texture_max_size=256) const;
     Frame random_crop(const int crop_height, const int crop_width);
-    Frame subsample(const int subsample_factor);
+    Frame subsample(const float subsample_factor);
+    Frame upsample(const float upsample_factor);
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;
     // Mesh assign_color(Mesh& cloud);

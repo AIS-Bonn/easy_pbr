@@ -195,6 +195,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("create_frustum_mesh", &Frame::create_frustum_mesh, py::arg("scale_multiplier") = 1.0, py::arg("show_texture")=true, py::arg("texture_max_size")=256 )
     .def("random_crop", &Frame::random_crop )
     .def("subsample", &Frame::subsample )
+    .def("upsample", &Frame::upsample )
     .def("depth2world_xyz_mat", &Frame::depth2world_xyz_mat )
     .def("depth2world_xyz_mesh", &Frame::depth2world_xyz_mesh )
     .def("pixels2dirs_mesh", &Frame::pixels2dirs_mesh )
