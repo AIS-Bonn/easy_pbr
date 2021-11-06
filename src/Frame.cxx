@@ -212,8 +212,14 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     return new_frame;
 }
 
+void Frame::rescale_K(const float scale){
+    K.block(0,0,2,2)*=scale;
+    K(0,2) = (K(0,2) + 0.5)*scale  - 0.5;
+    K(1,2) = (K(1,2) + 0.5)*scale  - 0.5;
+}
+
 Frame Frame::subsample(const float subsample_factor){
-    CHECK(subsample_factor>1.0) << "Subsample factor is below 1.0 which means it would actually do a upsampling. For that please use frame.upsample()";
+    CHECK(subsample_factor>=1.0) << "Subsample factor is below 1.0 which means it would actually do a upsampling. For that please use frame.upsample()";
 
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
@@ -253,8 +259,9 @@ Frame Frame::subsample(const float subsample_factor){
 
 
     //deal with the other things that changed now that the image is smaller
-    new_frame.K/=subsample_factor;
-    new_frame.K(2,2)=1.0;
+    // new_frame.K/=subsample_factor;
+    // new_frame.K(2,2)=1.0;
+    new_frame.rescale_K(1.0/subsample_factor);
     // new_frame.height=std::round( (float)height/subsample_factor);
     // new_frame.width=std::round( (float)width/subsample_factor);
     //need to use the cvround because the cv::resize uses that one to compute teh new size of the image and std::round gives different results
@@ -266,7 +273,7 @@ Frame Frame::subsample(const float subsample_factor){
 }
 
 Frame Frame::upsample(const float upsample_factor){
-    CHECK(upsample_factor>1.0) << "Upsample factor is below 1.0 which means it would actually do a subsampling. For that please use frame.subsample()";
+    CHECK(upsample_factor>=1.0) << "Upsample factor is below 1.0 which means it would actually do a subsampling. For that please use frame.subsample()";
 
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
@@ -306,8 +313,9 @@ Frame Frame::upsample(const float upsample_factor){
 
 
     //deal with the other things that changed now that the image is smaller
-    new_frame.K*=upsample_factor;
-    new_frame.K(2,2)=1.0;
+    // new_frame.K*=upsample_factor;
+    // new_frame.K(2,2)=1.0;
+    new_frame.rescale_K(upsample_factor);
     // new_frame.height=std::round( (float)height/subsample_factor);
     // new_frame.width=std::round( (float)width/subsample_factor);
     //need to use the cvround because the cv::resize uses that one to compute teh new size of the image and std::round gives different results
