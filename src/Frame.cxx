@@ -218,7 +218,7 @@ void Frame::rescale_K(const float scale){
     K(1,2) = (K(1,2) + 0.5)*scale  - 0.5;
 }
 
-Frame Frame::subsample(const float subsample_factor){
+Frame Frame::subsample(const float subsample_factor, bool subsample_imgs){
     CHECK(subsample_factor>=1.0) << "Subsample factor is below 1.0 which means it would actually do a upsampling. For that please use frame.upsample()";
 
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
@@ -243,20 +243,21 @@ Frame Frame::subsample(const float subsample_factor){
     // cv::Mat mask;
     // cv::Mat depth;
 
-    if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!gray_8u.empty()) cv::resize(gray_8u, new_frame.gray_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!gray_32f.empty()) cv::resize(gray_32f, new_frame.gray_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!grad_x_32f.empty()) cv::resize(grad_x_32f, new_frame.grad_x_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!grad_y_32f.empty()) cv::resize(grad_y_32f, new_frame.grad_y_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!gray_with_gradients.empty()) cv::resize(gray_with_gradients, new_frame.gray_with_gradients, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!thermal_16u.empty()) cv::resize(thermal_16u, new_frame.thermal_16u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!thermal_32f.empty()) cv::resize(thermal_32f, new_frame.thermal_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    if(!thermal_vis_32f.empty()) cv::resize(thermal_vis_32f, new_frame.thermal_vis_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
-    //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
-    if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
-    if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
-
+    if (subsample_imgs){
+        if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!gray_8u.empty()) cv::resize(gray_8u, new_frame.gray_8u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!gray_32f.empty()) cv::resize(gray_32f, new_frame.gray_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!grad_x_32f.empty()) cv::resize(grad_x_32f, new_frame.grad_x_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!grad_y_32f.empty()) cv::resize(grad_y_32f, new_frame.grad_y_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!gray_with_gradients.empty()) cv::resize(gray_with_gradients, new_frame.gray_with_gradients, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!thermal_16u.empty()) cv::resize(thermal_16u, new_frame.thermal_16u, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!thermal_32f.empty()) cv::resize(thermal_32f, new_frame.thermal_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!thermal_vis_32f.empty()) cv::resize(thermal_vis_32f, new_frame.thermal_vis_32f, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
+        if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+        if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+    }
 
     //deal with the other things that changed now that the image is smaller
     // new_frame.K/=subsample_factor;
@@ -272,7 +273,7 @@ Frame Frame::subsample(const float subsample_factor){
     return new_frame;
 }
 
-Frame Frame::upsample(const float upsample_factor){
+Frame Frame::upsample(const float upsample_factor, bool upsample_imgs){
     CHECK(upsample_factor>=1.0) << "Upsample factor is below 1.0 which means it would actually do a subsampling. For that please use frame.subsample()";
 
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
@@ -297,19 +298,21 @@ Frame Frame::upsample(const float upsample_factor){
     // cv::Mat mask;
     // cv::Mat depth;
 
-    if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!gray_8u.empty()) cv::resize(gray_8u, new_frame.gray_8u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!gray_32f.empty()) cv::resize(gray_32f, new_frame.gray_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!grad_x_32f.empty()) cv::resize(grad_x_32f, new_frame.grad_x_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!grad_y_32f.empty()) cv::resize(grad_y_32f, new_frame.grad_y_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!gray_with_gradients.empty()) cv::resize(gray_with_gradients, new_frame.gray_with_gradients, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!thermal_16u.empty()) cv::resize(thermal_16u, new_frame.thermal_16u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!thermal_32f.empty()) cv::resize(thermal_32f, new_frame.thermal_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    if(!thermal_vis_32f.empty()) cv::resize(thermal_vis_32f, new_frame.thermal_vis_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
-    //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
-    if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), upsample_factor, upsample_factor,  cv::INTER_NEAREST);
-    if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_NEAREST);
+    if (upsample_imgs) {
+        if(!rgb_8u.empty()) cv::resize(rgb_8u, new_frame.rgb_8u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!rgb_32f.empty()) cv::resize(rgb_32f, new_frame.rgb_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!gray_8u.empty()) cv::resize(gray_8u, new_frame.gray_8u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!gray_32f.empty()) cv::resize(gray_32f, new_frame.gray_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!grad_x_32f.empty()) cv::resize(grad_x_32f, new_frame.grad_x_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!grad_y_32f.empty()) cv::resize(grad_y_32f, new_frame.grad_y_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!gray_with_gradients.empty()) cv::resize(gray_with_gradients, new_frame.gray_with_gradients, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!thermal_16u.empty()) cv::resize(thermal_16u, new_frame.thermal_16u, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!thermal_32f.empty()) cv::resize(thermal_32f, new_frame.thermal_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!thermal_vis_32f.empty()) cv::resize(thermal_vis_32f, new_frame.thermal_vis_32f, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
+        if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), upsample_factor, upsample_factor,  cv::INTER_NEAREST);
+        if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_NEAREST);
+    }
 
 
     //deal with the other things that changed now that the image is smaller
