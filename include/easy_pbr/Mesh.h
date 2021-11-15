@@ -316,6 +316,7 @@ public:
 
     //nanoflann options for querying points in a certain radius or querying neighbiurs
     int radius_search(const Eigen::Vector3d& query_point, const double radius); //returns touples of (index in V of the point, distance to it)
+    void ball_query(const Eigen::MatrixXd& query_points, const Eigen::MatrixXd& target_points, const float search_radius);
 
     //some convenience functions and also useful for calling from python using pybind
     // void move_in_x(const float amount);

@@ -2638,6 +2638,49 @@ int Mesh::radius_search(const Eigen::Vector3d& query_point, const double radius)
 
     // return ret_matches;
 }
+
+//similar to https://pytorch3d.readthedocs.io/en/latest/modules/ops.html
+//based on https://github.com/jlblancoc/nanoflann/blob/master/examples/pointcloud_kdd_radius.cpp
+//based also on https://github.com/jlblancoc/nanoflann/blob/master/examples/matrix_example.cpp
+void Mesh::ball_query(const Eigen::MatrixXd& query_points, const Eigen::MatrixXd& target_points, const float search_radius){
+
+    LOG(FATAL) << "not finished";
+
+
+
+
+    typedef nanoflann::KDTreeEigenMatrixAdaptor<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
+      my_kd_tree_t;
+    my_kd_tree_t mat_index(3, std::cref(target_points), 10 /* max leaf */);
+    mat_index.index->buildIndex();
+
+
+    const size_t num_results = 3;
+    //initialize a big matrix containing for each query point, the indices of the points in the ball
+    Eigen::MatrixXi full_indices;
+    //initialize a big matrix containing for each query point, the distance towards the points in the ball
+    Eigen::MatrixXd full_dists;
+
+
+    // do a knn search
+    for (int i=0; i<query_points.rows(); i++){
+        //initialize the returned values from the knn
+        std::vector<size_t> ret_indexes(num_results);
+        std::vector<double> out_dists_sqr(num_results);
+        nanoflann::KNNResultSet<double> resultSet(num_results);
+        resultSet.init(&ret_indexes[0], &out_dists_sqr[0]);
+
+
+        std::vector<double> query_pt(3);
+        query_pt[0]=query_points(i,0);
+        query_pt[1]=query_points(i,1);
+        query_pt[2]=query_points(i,2);
+        mat_index.index->findNeighbors(resultSet, &query_pt[0], nanoflann::SearchParams(10));
+    }
+
+
+}
+
 Eigen::MatrixXd Mesh::compute_distance_to_mesh(const MeshSharedPtr& target_mesh){
     //we use the point_mesh_squared_distance.h
     //it computes the distances to a mesh, so if the target mesh doesnt have F then we make F for each vertex, a degenerate triangle with [0,0,0]
