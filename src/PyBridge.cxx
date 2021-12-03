@@ -289,6 +289,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_viewport_size", &Viewer::m_viewport_size )
     .def_readwrite("m_nr_drawn_frames", &Viewer::m_nr_drawn_frames )
     .def_readwrite("m_background_color", &Viewer::m_background_color )
+    .def_readwrite("m_gui", &Viewer::m_gui )
     ;
 
     //Gui
@@ -296,6 +297,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
     .def_static("show", &Gui::show )
     .def_static("show_gl_texture", &Gui::show_gl_texture )
+    .def("selected_mesh_idx", &Gui::selected_mesh_idx )
     ;
 
 
