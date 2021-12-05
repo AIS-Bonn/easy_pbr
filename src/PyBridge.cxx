@@ -27,6 +27,11 @@
 #include "Profiler.h"
 
 #include "opencv_utils.h"
+#include "string_utils.h"
+
+//boost
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -121,7 +126,17 @@ PYBIND11_MODULE(easypbr, m) {
         if (channels==4) m=cv::Mat(rows,cols,CV_32FC4);
         return m;
       } )
-    .def("from_file", [](cv::Mat &m, const std::string path) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
+    .def("from_file", [](cv::Mat &m, const std::string file_path) { 
+        std::string filepath_trim= radu::utils::trim_copy(file_path);
+        std::string file_path_abs;
+        if (fs::path( filepath_trim ).is_relative()){
+            file_path_abs=(fs::path(PROJECT_SOURCE_DIR) / filepath_trim).string();
+        }else{
+            file_path_abs=filepath_trim;
+        }
+
+        m=cv::imread(file_path_abs, cv::IMREAD_UNCHANGED);  
+    } )
     .def("to_file", [](cv::Mat &m, const std::string path) {  cv::imwrite(path,m);  } )
     .def("set_alpha_to_value", [](cv::Mat &m, const int val) {
         CHECK(m.channels()==4) << "Mat needs to have 4 channels and it only has " << m.channels();
@@ -168,6 +183,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("bgr2rgb", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGR2RGB); return res; } )
     .def("rgba2bgra", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_RGBA2BGRA); return res; } )
     .def("bgra2rgba", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGRA2RGBA); return res; } )
+    .def("rgb2rgba", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_RGB2RGBA); return res; } )
+    .def("bgr2bgra", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGR2BGRA); return res; } )
     // .def("rgba2rgbblack", [](cv::Mat &m ) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
     .def("flip_x", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 1); m=flipped; return flipped;  } )

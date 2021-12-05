@@ -189,6 +189,8 @@ target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_SHADERS_PATH="${PROJECT_SO
 target_compile_definitions(easypbr_cpp PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
 target_compile_definitions(easypbr_cpp PUBLIC -DDEFAULT_CONFIG="${PROJECT_SOURCE_DIR}/config/default_params.cfg" )
 
+target_compile_definitions(easypbr PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}") #point to the cmakelist folder of the easy_pbr
+
 target_compile_definitions(easypbr_cpp PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
 
 
