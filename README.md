@@ -108,8 +108,9 @@ $ make
 ```
 
 ### Troubleshoot:
-    If the GUI is too small or to big, enable the hidpi: true in the corresponding config file from easy_pbr/config.
-    The error libGL error: No matching fbConfigs or visuals found can be fixed with: export LIBGL_ALWAYS_INDIRECT=1
+If the GUI is too small or to big, enable the hidpi: true in the corresponding config file from easy_pbr/config.
+
+The error libGL error: No matching fbConfigs or visuals found can be fixed with: export LIBGL_ALWAYS_INDIRECT=1
 
 # Examples
 
