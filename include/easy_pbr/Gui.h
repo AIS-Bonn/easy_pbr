@@ -19,6 +19,10 @@
 //opencv
 #include "opencv2/opencv.hpp"
 
+//eigen
+#include <Eigen/Core>
+
+
 //gl
 #include "Texture2D.h"
 

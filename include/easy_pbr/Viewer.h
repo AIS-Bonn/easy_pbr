@@ -20,7 +20,7 @@
 //dir watcher
 // #ifdef EASYPBR_WITH_DIR_WATCHER
 // DO NOT USE A IFDEF because other C++ libs may include this Viewer.h without the compile definitions and therefore the Viewer.h that was used to compile easypbr and the one included will be different leading to issues
-#include "dir_watcher/dir_watcher.hpp"
+// #include "dir_watcher/dir_watcher.hpp"
 // #endif
 
 
@@ -44,6 +44,11 @@ namespace radu { namespace utils {
     class RandGenerator;
     class Timer;
     }}
+namespace emilib{
+    class DelayedDirWatcher;
+}
+
+
 
 namespace easy_pbr{
 

@@ -92,7 +92,7 @@ An example of using EasyPBR from an external C++ application can be seen in [./e
 # Install
 ### Dependencies:
 ```sh
-$ sudo apt-get install python3-pip python3-setuptools libglfw3-dev libboost-dev libeigen3-dev libpcl-dev libopencv-dev
+$ sudo apt-get install python3-pip python3-setuptools python3-numpy libglfw3-dev libboost-dev libeigen3-dev libpcl-dev libopencv-dev
 ```
 ### Optional dependencies:
 Allow for shader hotloading, so changes to .glsl files are automatically recompiled and used while the program is running:
@@ -107,6 +107,9 @@ $ cd easy_pbr
 $ make
 ```
 
+### Troubleshoot:
+    If the GUI is too small or to big, enable the hidpi: true in the corresponding config file from easy_pbr/config.
+    The error libGL error: No matching fbConfigs or visuals found can be fixed with: export LIBGL_ALWAYS_INDIRECT=1
 
 # Examples
 

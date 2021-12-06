@@ -628,9 +628,22 @@ PYBIND11_MODULE(easypbr, m) {
         .def("enable_cuda_transfer", &gl::Buf::enable_cuda_transfer )
         .def("disable_cuda_transfer", &gl::Buf::disable_cuda_transfer )
         .def("from_tensor", &gl::Buf::from_tensor )
+        // .def("to_tensor", [](gl::Buf &buf, py::object dtype){
+        //            torch::ScalarType type = torch::python::detail::py_object_to_dtype(dtype);
+        //            return buf.to_tensor(type);
+        //      } ) //from https://discuss.pytorch.org/t/how-to-pass-python-device-and-dtype-to-c/69577/6
+
         .def("to_tensor", [](gl::Buf &buf, py::object dtype){
-                   torch::ScalarType type = torch::python::detail::py_object_to_dtype(dtype);
-                   return buf.to_tensor(type);
+                   const torch::ScalarType type = torch::python::detail::py_object_to_dtype(dtype);
+                   if (type==torch::kFloat32){
+                        return buf.to_tensor<float>();
+                   }else if (type==torch::kInt32){
+                        return buf.to_tensor<int>();
+                   }else{
+                        LOG(FATAL) << "The type of tensor you are asking for is not implemented in the PyBridge. You need to add another explicit template specialization for it in the pybridge and also at the end of the Buf.cxx file.";
+                        return buf.to_tensor<float>(); //this line will never actually be reached but it stops the compiler from complainng for the function not having a return value
+                   }
+                //    return buf.to_tensor< decltype(c10::impl::ScalarTypeToCPPType<type::t>()) >();
              } ) //from https://discuss.pytorch.org/t/how-to-pass-python-device-and-dtype-to-c/69577/6
     #endif
     ;

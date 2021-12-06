@@ -35,6 +35,10 @@
 #include "opencv_utils.h"
 #include "string_utils.h"
 
+#ifdef EASYPBR_WITH_DIR_WATCHER
+    #include "dir_watcher/dir_watcher.hpp"
+#endif
+
 //Add this header after we add all opengl stuff because we need the profiler to have glFinished defined
 #define PROFILER_IMPLEMENTATION 1
 #define ENABLE_GL_PROFILING 1

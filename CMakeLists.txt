@@ -63,6 +63,7 @@ endif()
 find_package(kqueue)
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
+add_subdirectory(${PROJECT_SOURCE_DIR}/deps/easy_gl)
 #try to compile with pytorch if you can
 # set(PYTORCH_PATH "/opt/pytorch")
 # set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
@@ -74,8 +75,15 @@ execute_process( #do it like this https://github.com/facebookresearch/hanabi_SAD
 #sometimes we want to use libtorch because the pytorch one has a different abi
 # set(TorchPath "/home/rosu/work/ws/libtorch-cxx11-abi-shared-with-deps-1.9.0+cu111/libtorch")
 # set(TorchPath "/home/rosu/work/ws/libtorch-cxx11-abi-shared-with-deps-1.9.1+cu111/libtorch")
-list(APPEND CMAKE_PREFIX_PATH ${TorchPath})
-find_package(Torch)
+# message("TORCH path-------------------", ${TorchPath})
+if(TorchPath STREQUAL "")
+    set(TORCH_FOUND False)
+else()
+    list(APPEND CMAKE_PREFIX_PATH ${TorchPath})
+    find_package(Torch)
+endif()
+# list(APPEND CMAKE_PREFIX_PATH ${TorchPath})
+# find_package(Torch)
 # set(TORCH_FOUND False)
 
 
@@ -121,7 +129,7 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
                         ${PROJECT_SOURCE_DIR}/deps/loguru
                         ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/easy_gl
+                        ${PROJECT_SOURCE_DIR}/deps/easy_gl/include/easy_gl
                         ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
                         ${PROJECT_SOURCE_DIR}/deps/configuru
                         ${PROJECT_SOURCE_DIR}/deps/libigl/include
@@ -218,7 +226,7 @@ if(${PCL_FOUND})
     set(LIBS  ${LIBS} ${PCL_LIBRARIES})
 endif()
 # set(LIBS ${LIBS} Eigen3::Eigen  ${Boost_LIBRARIES}  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
-set(LIBS ${LIBS} Eigen3::Eigen  igl::core ${Boost_LIBRARIES}  ${GLFW_LIBRARIES} ${OpenCV_LIBS}  )
+set(LIBS ${LIBS} easygl_cpp Eigen3::Eigen  igl::core ${Boost_LIBRARIES}  ${GLFW_LIBRARIES} ${OpenCV_LIBS}  )
 
 
 target_link_libraries(easypbr_cpp PUBLIC ${LIBS} )
