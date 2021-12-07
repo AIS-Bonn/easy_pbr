@@ -34,6 +34,7 @@ namespace fs = boost::filesystem;
 #include "easy_pbr/LabelMngr.h"
 #include "string_utils.h"
 #include "eigen_utils.h"
+#include "numerical_utils.h"
 #include "se3_utils.h"
 
 // //imgui
@@ -1273,9 +1274,9 @@ void Gui::show(const cv::Mat cv_mat_0, const std::string name_0,
         m_win_imgs_map.emplace(window_name, std::move(window));
 
         //first time we create te window we set the first one as selected
-        if (!name_1.empty()){
-        m_win_imgs_map[window_name].named_imgs_vec[1].change_selection_to_this=true;
-        }
+        // if (!name_1.empty()){
+        // m_win_imgs_map[window_name].named_imgs_vec[1].change_selection_to_this=true;
+        // }
     }
 
     //make the named imgs
@@ -1379,6 +1380,37 @@ void Gui::show_images(){
             ImGui::Begin(name.c_str(), nullptr, window_flags);
 
 
+            //if we hover and push the right and left arrows we can change the image
+            if (ImGui::IsWindowHovered()){
+                //get the idx of the img that was selected
+                int idx_selected=-1;
+                for(int i=0; i<nr_imgs_in_window; i++){
+                    if( win.second.named_imgs_vec[i].is_selected){
+                        idx_selected=i;
+                    }
+                }
+                int idx_left=radu::utils::wrap( idx_selected-1, nr_imgs_in_window );
+                int idx_right=radu::utils::wrap( idx_selected+1, nr_imgs_in_window );
+                // VLOG(1) << "idx left and idx irght is" << idx_left << " " << idx_right;
+
+
+
+                //switch to the new image 
+                ImGuiIO& io = ImGui::GetIO();
+                // if (io.KeysDown[GLFW_KEY_LEFT]){
+                if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_LeftArrow) )  ){
+                    // VLOG(1) << "activating idx left which is " << idx_left;
+                    win.second.named_imgs_vec[idx_left].change_selection_to_this=true;
+                }
+                // if (io.KeysDown[GLFW_KEY_RIGHT]){
+                if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_RightArrow) )  ){
+                    // VLOG(1) << "activating idx right which is " << idx_right;
+                    win.second.named_imgs_vec[idx_right].change_selection_to_this=true;
+                }
+            }
+
+
+
             //here we make our dockable things
             ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
             if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)){
@@ -1386,32 +1418,27 @@ void Gui::show_images(){
 
                     ImGuiTabItemFlags tab_flags=ImGuiTabItemFlags_None;
                     if (win.second.named_imgs_vec[i].change_selection_to_this) {
-                        VLOG(1) << "setting img to selected"<<i;
-                        std::cout << "setting img to selected"<<i << std::endl;
+                        // VLOG(1) << "setting img to selected"<<i;
+                        // std::cout << "setting img to selected"<<i << std::endl;
                         tab_flags|=ImGuiTabItemFlags_SetSelected;
                     }
                     win.second.named_imgs_vec[i].change_selection_to_this=false;
+                    win.second.named_imgs_vec[i].is_selected=false;
 
                     if (ImGui::BeginTabItem(win.second.named_imgs_vec[i].name.c_str(), nullptr,  tab_flags  )){
-                        //deselect all the other
-                        // for(int j=0; j<nr_imgs_in_window; j++){
-                            // win.second.named_imgs_vec[j].is_selected=false;
-                        // }
+                        win.second.named_imgs_vec[i].is_selected=true;
 
                         gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
                         // show_gl_texture(tex.tex_id(), win.second.named_imgs_vec[i].name);
                         ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
                         ImGui::EndTabItem();
                     }
-                    // }else{
-                        // win.second.named_imgs_vec[i].is_selected=false;
-                    // }
                 
                 }
                 ImGui::EndTabBar();
             }
 
-
+          
 
 
             //finish

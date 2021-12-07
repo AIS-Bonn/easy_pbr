@@ -48,6 +48,7 @@ public:
     cv::Mat mat;
     gl::Texture2D tex;
     bool change_selection_to_this=false; //when you have multiple images open in one window, this controls which one is selected
+    bool is_selected=false; //is true for the named img that is currently selected. This is internal and shouldnt be modified. to modify which one is selected programatically, use the change_selection_to_this
 };
 
 
