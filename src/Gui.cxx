@@ -59,8 +59,9 @@ using namespace configuru;
 namespace easy_pbr{
 
 //redeclared things here so we can use them from this file even though they are static
-std::unordered_map<std::string, cv::Mat>  Gui::m_cv_mats_map;
-std::unordered_map<std::string, bool>  Gui::m_cv_mats_dirty_map;
+// std::unordered_map<std::string, cv::Mat>  Gui::m_cv_mats_map;
+// std::unordered_map<std::string, bool>  Gui::m_cv_mats_dirty_map;
+std::unordered_map<std::string, WindowImg> Gui::m_win_imgs_map;
 std::mutex  Gui::m_cv_mats_mutex;
 
 
@@ -1229,18 +1230,48 @@ void Gui::draw_profiler(){
     }
 }
 
-void Gui::show(const cv::Mat cv_mat, const std::string name){
+void Gui::show(const cv::Mat cv_mat_0, const std::string name_0, 
+               const cv::Mat cv_mat_1, const std::string name_1,
+               const cv::Mat cv_mat_2, const std::string name_2){
 
-    if(!cv_mat.data){
-        VLOG(3) << "Showing empty image, discaring with name "<< name;
+    if(!cv_mat_0.data){
+        VLOG(3) << "Showing empty image, discaring with name "<< name_0;
         return;
     }
+
+    //see how many images we have in this window
+    int imgs_in_window=1; //start at 1 because name_0 surely exists here
+    if (!name_1.empty()) imgs_in_window++;
+    if (!name_2.empty()) imgs_in_window++;
 
     std::lock_guard<std::mutex> lock(m_cv_mats_mutex);  // so that "show" can be usef from any thread
 
     // m_cv_mats_map[name] = cv_mat.clone(); //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
-    m_cv_mats_map[name] = cv_mat; //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
-    m_cv_mats_dirty_map[name]=true;
+    // m_cv_mats_map[name_0] = cv_mat_0; //TODO we shouldnt clone on top of this one because it might be at the moment used for transfering between cpu and gpu
+    // m_cv_mats_dirty_map[name_0]=true;
+
+
+    //check if the window exists
+    std::string window_name=name_0;
+    auto got= m_win_imgs_map.find(window_name);
+    if(got==m_win_imgs_map.end() ){
+        //does not exists so we create it
+
+        //make the window
+        WindowImg window;
+        window.named_imgs_vec.resize(imgs_in_window);
+        //add the new window
+        m_win_imgs_map.emplace(window_name, std::move(window));
+
+
+    }
+
+    //make the named imgs
+    m_win_imgs_map[window_name].named_imgs_vec[0].is_dirty=true;
+    m_win_imgs_map[window_name].named_imgs_vec[0].mat=cv_mat_0;
+    m_win_imgs_map[window_name].named_imgs_vec[0].name=name_0;
+
+
 
 }
 
@@ -1248,30 +1279,60 @@ void Gui::show_images(){
 
     std::lock_guard<std::mutex> lock(m_cv_mats_mutex);  // so that "show" can be used at the same time as the viewer thread shows images
 
+    // //TODO check if the cv mats actually changed, maybe a is_dirty flag
+    // for (auto const& x : m_cv_mats_map){
+    //     std::string name=x.first;
+
+    //     //check if it's dirty, if the cv mat changed since last time we displayed it
+    //     if(m_cv_mats_dirty_map[name]){
+    //         m_cv_mats_dirty_map[name]=false;
+    //         //check if there is already a texture with the same name
+    //         auto got= m_textures_map.find(name);
+    //         if(got==m_textures_map.end() ){
+    //             //the first time we shot this texture so we add it to the map otherwise there is already a texture there so we just update it
+    //             m_textures_map.emplace(name, (name) ); //using inplace constructor of the Texture2D so we don't use a move constructor or something similar
+    //         }
+    //         //upload to this texture, either newly created or not
+    //         gl::Texture2D& tex= m_textures_map[name];
+    //         tex.upload_from_cv_mat(x.second);
+    //     }
+
+
+    //     gl::Texture2D& tex= m_textures_map[name];
+    //     show_gl_texture(tex.tex_id(), name);
+
+
+    // }
+
+
     //TODO check if the cv mats actually changed, maybe a is_dirty flag
-    for (auto const& x : m_cv_mats_map){
-        std::string name=x.first;
+    for (auto &win : m_win_imgs_map){
+        std::string name=win.first;
 
         //check if it's dirty, if the cv mat changed since last time we displayed it
-        if(m_cv_mats_dirty_map[name]){
-            m_cv_mats_dirty_map[name]=false;
-            //check if there is already a texture with the same name
-            auto got= m_textures_map.find(name);
-            if(got==m_textures_map.end() ){
-                //the first time we shot this texture so we add it to the map otherwise there is already a texture there so we just update it
-                m_textures_map.emplace(name, (name) ); //using inplace constructor of the Texture2D so we don't use a move constructor or something similar
-            }
+        if(win.second.named_imgs_vec[0].is_dirty ){
+            win.second.named_imgs_vec[0].is_dirty;
+            // //check if there is already a texture with the same name
+            // auto got= m_textures_map.find(name);
+            // if(got==m_textures_map.end() ){
+            //     //the first time we shot this texture so we add it to the map otherwise there is already a texture there so we just update it
+            //     m_textures_map.emplace(name, (name) ); //using inplace constructor of the Texture2D so we don't use a move constructor or something similar
+            // }
             //upload to this texture, either newly created or not
-            gl::Texture2D& tex= m_textures_map[name];
-            tex.upload_from_cv_mat(x.second);
+            gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
+            tex.upload_from_cv_mat( win.second.named_imgs_vec[0].mat );
         }
 
 
-        gl::Texture2D& tex= m_textures_map[name];
+        gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
         show_gl_texture(tex.tex_id(), name);
 
 
     }
+
+
+
+    
 }
 
 

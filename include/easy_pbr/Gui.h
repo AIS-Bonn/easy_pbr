@@ -40,6 +40,25 @@ class MeshGL;
 class Camera;
 
 
+//Img with a name so we can identiy it
+class NamedImg{
+public:
+    bool is_dirty; 
+    std::string name;
+    cv::Mat mat;
+    gl::Texture2D tex;
+};
+
+
+//Window containing an image or various images to be shown
+class WindowImg{
+public:
+    std::vector<NamedImg> named_imgs_vec;
+};
+
+
+
+//GUI as a whole
 class Gui{
 public:
     Gui( const std::string config_file,
@@ -47,8 +66,13 @@ public:
         GLFWwindow* window
        );
     void update();
-    static void show(const cv::Mat cv_mat, const std::string name);
+    //show one image or up to 3 images in the same window with the possibility to flip between them
+    static void show(const cv::Mat cv_mat_0, const std::string name_0, 
+                     const cv::Mat cv_mat_1=cv::Mat(), const std::string name_1="",
+                     const cv::Mat cv_mat_2=cv::Mat(), const std::string name_2="");
     static void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
+
+
     void select_mesh_with_idx(const int idx); //set the selection fo the meshes to the one with a certain index
     int selected_mesh_idx(); //get the index of the mesh we have selected
     void toggle_main_menu();
@@ -84,10 +108,12 @@ private:
 
     static std::mutex m_cv_mats_mutex; //adding or registering images for viewing must be thread safe
     //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context
-    static std::unordered_map<std::string, cv::Mat> m_cv_mats_map;
-    static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it
+    // static std::unordered_map<std::string, cv::Mat> m_cv_mats_map;
+    // static std::unordered_map<std::string, bool> m_cv_mats_dirty_map; // when we register one cv mat we set it to dirty so we know we need to upload data on it
     //for showing images we store a list of their opengl textures implemented as a map between their name and the gltexture
-    std::unordered_map<std::string, gl::Texture2D> m_textures_map;
+    // std::unordered_map<std::string, gl::Texture2D> m_textures_map;
+    //new way to doing it
+    static std::unordered_map<std::string, WindowImg> m_win_imgs_map;
 
 
 

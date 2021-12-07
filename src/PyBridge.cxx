@@ -119,6 +119,19 @@ PYBIND11_MODULE(easypbr, m) {
 
     py::class_<cv::Mat> (m, "Mat")
     .def(py::init<>())
+    .def(py::init([](std::string file_path) {
+        // return std::unique_ptr<Example>(new Example(arg));
+        cv::Mat m;
+        std::string filepath_trim= radu::utils::trim_copy(file_path);
+        std::string file_path_abs;
+        if (fs::path( filepath_trim ).is_relative()){
+            file_path_abs=(fs::path(PROJECT_SOURCE_DIR) / filepath_trim).string();
+        }else{
+            file_path_abs=filepath_trim;
+        }
+        m=cv::imread(file_path_abs, cv::IMREAD_UNCHANGED);  
+        return m;
+    }))
     .def("create", [](cv::Mat &m, int rows, int cols, int channels) {
         if (channels==1) m=cv::Mat(rows,cols,CV_32FC1);
         if (channels==2) m=cv::Mat(rows,cols,CV_32FC2);
@@ -312,7 +325,9 @@ PYBIND11_MODULE(easypbr, m) {
     //Gui
     py::class_<Gui, std::shared_ptr<Gui> > (m, "Gui")
     // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
-    .def_static("show", &Gui::show )
+    .def_static("show", &Gui::show,  py::arg().noconvert(), py::arg().noconvert(),
+                                     py::arg("cv_mat_1") = cv::Mat(), py::arg("name_1") = "",
+                                     py::arg("cv_mat_2") = cv::Mat(), py::arg("name_2") = "")
     .def_static("show_gl_texture", &Gui::show_gl_texture )
     .def("selected_mesh_idx", &Gui::selected_mesh_idx )
     ;
