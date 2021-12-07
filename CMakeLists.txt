@@ -104,7 +104,7 @@ set(MY_SRC
     ${PROJECT_SOURCE_DIR}/src/LabelMngr.cxx
     ${PROJECT_SOURCE_DIR}/src/Frame.cxx
 )
-file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/examples/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
+file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/deps/imgui/*.c* ${PROJECT_SOURCE_DIR}/deps/imgui/backends/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/deps/imgui/backends/imgui_impl_opengl3.cpp ${PROJECT_SOURCE_DIR}/deps/imguizmo/ImGuizmo.cpp
 )
 #tinyply because libigl readPLY has a memory leak
 set(DEPS_SRC ${DEPS_SRC} ${PROJECT_SOURCE_DIR}/deps/tiny_ply/source/tinyply.cpp)
@@ -126,7 +126,7 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps
                         ${PROJECT_SOURCE_DIR}/deps/imgui
                         ${PROJECT_SOURCE_DIR}/deps/imgui_ext
-                        ${PROJECT_SOURCE_DIR}/deps/imgui/examples/
+                        ${PROJECT_SOURCE_DIR}/deps/imgui/backends/
                         ${PROJECT_SOURCE_DIR}/deps/loguru
                         ${PROJECT_SOURCE_DIR}/deps/configuru
                         ${PROJECT_SOURCE_DIR}/deps/easy_gl/include/easy_gl

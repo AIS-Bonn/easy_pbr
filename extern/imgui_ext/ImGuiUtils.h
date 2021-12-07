@@ -173,7 +173,7 @@ namespace ImGui
         void CalcHistogramSize( int numShown_ )
         {
             ImVec2 wRegion = ImGui::GetContentRegionMax();
-            float heightGone = 7.0f * ImGui::GetItemsLineHeightWithSpacing();
+            float heightGone = 7.0f * ImGui::GetFrameHeightWithSpacing();
             wRegion.y -= heightGone;
             wRegion.y /= (float) numShown_;
             const ImGuiStyle& style = ImGui::GetStyle();
