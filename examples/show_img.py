@@ -29,7 +29,7 @@ while True:
     Gui.show(original_screen_mat, "mat2")
 
     #show two images and flip betwen them
-    # Gui.show(mat, "mat1", original_screen_mat, "mat2")
+    Gui.show(mat, "mat1", original_screen_mat, "mat2")
 
 
     view.update()

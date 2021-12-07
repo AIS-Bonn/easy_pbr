@@ -62,6 +62,7 @@ namespace easy_pbr{
 // std::unordered_map<std::string, cv::Mat>  Gui::m_cv_mats_map;
 // std::unordered_map<std::string, bool>  Gui::m_cv_mats_dirty_map;
 std::unordered_map<std::string, WindowImg> Gui::m_win_imgs_map;
+// std::unordered_map<std::string, NamedImg> Gui::m_named_imgs_map;
 std::mutex  Gui::m_cv_mats_mutex;
 
 
@@ -92,6 +93,7 @@ Gui::Gui( const std::string config_file,
         // m_record_with_transparency(true)
          {
     m_view = view;
+
 
     init_params(config_file);
 
@@ -145,6 +147,8 @@ Gui::Gui( const std::string config_file,
 
     m_curve_points[0].x = -1;
 
+    //enable docking 
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 }
 
 void Gui::init_params(const std::string config_file){
@@ -1253,6 +1257,11 @@ void Gui::show(const cv::Mat cv_mat_0, const std::string name_0,
 
     //check if the window exists
     std::string window_name=name_0;
+    if (imgs_in_window>1){
+        if (!name_1.empty()) window_name+="_"+name_1;
+        if (!name_2.empty()) window_name+="_"+name_2;
+        window_name+="_flip";
+    }
     auto got= m_win_imgs_map.find(window_name);
     if(got==m_win_imgs_map.end() ){
         //does not exists so we create it
@@ -1270,6 +1279,17 @@ void Gui::show(const cv::Mat cv_mat_0, const std::string name_0,
     m_win_imgs_map[window_name].named_imgs_vec[0].is_dirty=true;
     m_win_imgs_map[window_name].named_imgs_vec[0].mat=cv_mat_0;
     m_win_imgs_map[window_name].named_imgs_vec[0].name=name_0;
+
+    if (!name_1.empty()){
+        m_win_imgs_map[window_name].named_imgs_vec[1].is_dirty=true;
+        m_win_imgs_map[window_name].named_imgs_vec[1].mat=cv_mat_1;
+        m_win_imgs_map[window_name].named_imgs_vec[1].name=name_1;
+    }
+    if (!name_2.empty()){
+        m_win_imgs_map[window_name].named_imgs_vec[2].is_dirty=true;
+        m_win_imgs_map[window_name].named_imgs_vec[2].mat=cv_mat_2;
+        m_win_imgs_map[window_name].named_imgs_vec[2].name=name_2;
+    }
 
 
 
@@ -1309,23 +1329,80 @@ void Gui::show_images(){
     for (auto &win : m_win_imgs_map){
         std::string name=win.first;
 
+        int nr_imgs_in_window=win.second.named_imgs_vec.size();
+
         //check if it's dirty, if the cv mat changed since last time we displayed it
-        if(win.second.named_imgs_vec[0].is_dirty ){
-            win.second.named_imgs_vec[0].is_dirty;
-            // //check if there is already a texture with the same name
-            // auto got= m_textures_map.find(name);
-            // if(got==m_textures_map.end() ){
-            //     //the first time we shot this texture so we add it to the map otherwise there is already a texture there so we just update it
-            //     m_textures_map.emplace(name, (name) ); //using inplace constructor of the Texture2D so we don't use a move constructor or something similar
-            // }
-            //upload to this texture, either newly created or not
-            gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
-            tex.upload_from_cv_mat( win.second.named_imgs_vec[0].mat );
+        for(int i=0; i<nr_imgs_in_window; i++){
+            if(win.second.named_imgs_vec[i].is_dirty ){
+                win.second.named_imgs_vec[i].is_dirty;
+                gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
+                tex.upload_from_cv_mat( win.second.named_imgs_vec[i].mat );
+            }
         }
 
 
-        gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
-        show_gl_texture(tex.tex_id(), name);
+
+        //show the textures either alone or in a docked way
+        if (nr_imgs_in_window==1){
+            gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
+            show_gl_texture(tex.tex_id(), name);
+        }else{
+            //make a window in which you dock the other windows of the images
+            // static bool opt_padding = false;
+            // static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+            // // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+            // // because it would be confusing to have two docking targets within each others.
+            // ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+            // dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+           
+
+            // // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+            // // and handle the pass-thru hole, so we ask Begin() to not render a background.
+            // if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            //     window_flags |= ImGuiWindowFlags_NoBackground;
+
+            ImGui::SetNextWindowPos(ImVec2(400,400), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(512,512), ImGuiCond_FirstUseEver);
+
+            // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+            // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+            // all active windows docked into it will lose their parent and become undocked.
+            // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+            // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+            // if (!opt_padding)
+                // ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+            ImGuiWindowFlags window_flags = 0;
+            ImGui::Begin(name.c_str(), nullptr, window_flags);
+
+
+            //here we make our dockable things
+            ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+            if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)){
+                for(int i=0; i<nr_imgs_in_window; i++){
+
+                    if (ImGui::BeginTabItem(win.second.named_imgs_vec[i].name.c_str() )){
+                        gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
+                        // show_gl_texture(tex.tex_id(), win.second.named_imgs_vec[i].name);
+                        ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
+                        ImGui::EndTabItem();
+                    }
+                
+                }
+                ImGui::EndTabBar();
+            }
+
+
+
+
+            //finish
+            // if (!opt_padding)
+                // ImGui::PopStyleVar();
+            ImGui::End();
+
+        }
+
+
 
 
     }
