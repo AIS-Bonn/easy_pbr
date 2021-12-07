@@ -47,6 +47,7 @@ public:
     std::string name;
     cv::Mat mat;
     gl::Texture2D tex;
+    bool change_selection_to_this=false; //when you have multiple images open in one window, this controls which one is selected
 };
 
 

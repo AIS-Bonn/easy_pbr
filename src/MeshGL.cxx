@@ -4,6 +4,9 @@
 #include <iostream>
 #include <algorithm>
 
+#include "easy_gl/UtilsGL.h"
+
+
 //my stuff
 #include "easy_pbr/Mesh.h"
 
