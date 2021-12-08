@@ -24,6 +24,7 @@ namespace radu { namespace utils {
 namespace easy_pbr{
 
 BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity, UV, NormalViewCoords )
+BETTER_ENUM(ColorSchemeType, int, Plasma = 0, Viridis, Magma )
 
 
 class MeshGL; //we forward declare this so we can have from here a pointer to the gpu stuff
@@ -57,6 +58,7 @@ struct VisOptions{
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering
     float m_normals_scale=-1.0; //the scale of the arrows for the normal. It starts at -1.0 but it gets set during the first render to something depending on the mesh scale
     MeshColorType m_color_type=MeshColorType::Solid;
+    ColorSchemeType m_color_scheme = ColorSchemeType::Plasma;
     // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0);
     Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0);
     Eigen::Vector3f m_line_color = Eigen::Vector3f(1.0, 0.0, 0.0);   //used for lines and wireframes
@@ -366,6 +368,7 @@ public:
     Eigen::MatrixXd V_tangent_u; //for surfel rendering each vertex has a 2 vectors that are tangent defining the span of the elipsoid. For memory usage we don't store the 2 vectors directly because we alreayd have a normal vector, rather we store one tangent vector in full (vec3) and the other one we store only the norm of it because it's dirrection can be inferred as the cross product between the normal and the first tangent vector
     Eigen::MatrixXd V_length_v;
     Eigen::MatrixXd V_bitangent_v;
+    Eigen::MatrixXd S_pred; //predicted likelihood for each class per point, useful for semantic segmentation
     Eigen::MatrixXi L_pred; //predicted labels for each point, useful for semantic segmentation
     Eigen::MatrixXi L_gt; //ground truth labels for each point, useful for semantic segmentation
     Eigen::MatrixXd I; //intensity value of each point in the cloud. Useful for laser scanner

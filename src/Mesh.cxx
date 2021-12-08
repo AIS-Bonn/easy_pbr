@@ -100,6 +100,7 @@ Mesh Mesh::clone(){
     cloned.UV=UV;
     cloned.V_tangent_u=V_tangent_u;
     cloned.V_length_v=V_length_v;
+    cloned.S_pred=S_pred;
     cloned.L_pred=L_pred;
     cloned.L_gt=L_gt;
     cloned.I=I;
@@ -162,6 +163,8 @@ void Mesh::add(Mesh& new_mesh) {
         V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
         Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 4);
         V_lenght_v_new << V_length_v, new_mesh.V_length_v;
+        Eigen::MatrixXd S_pred_new(S_pred.rows() + new_mesh.S_pred.rows(), std::max<int>(S_pred.rows(),new_mesh.S_pred.rows()));
+        S_pred_new << S_pred, new_mesh.S_pred;
         Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
         L_pred_new << L_pred, new_mesh.L_pred;
         Eigen::MatrixXi L_gt_new(L_gt.rows() + new_mesh.L_gt.rows(), 1);
@@ -180,6 +183,7 @@ void Mesh::add(Mesh& new_mesh) {
         UV=UV_new;
         V_tangent_u=V_tangent_u_new;
         V_length_v=V_lenght_v_new;
+        S_pred=S_pred_new;
         L_pred=L_pred_new;
         L_gt=L_gt_new;
         I=I_new;
@@ -211,6 +215,8 @@ void Mesh::add(Mesh& new_mesh) {
         V_tangent_u_new << V_tangent_u, new_mesh.V_tangent_u;
         Eigen::MatrixXd V_lenght_v_new(V_length_v.rows() + new_mesh.V_length_v.rows(), 1);
         V_lenght_v_new << V_length_v, new_mesh.V_length_v;
+        Eigen::MatrixXd S_pred_new(S_pred.rows() + new_mesh.S_pred.rows(), std::max<int>(S_pred.rows(),new_mesh.S_pred.rows()));
+        S_pred_new << S_pred, new_mesh.S_pred;
         Eigen::MatrixXi L_pred_new(L_pred.rows() + new_mesh.L_pred.rows(), 1);
         L_pred_new << L_pred, new_mesh.L_pred;
         Eigen::MatrixXi L_gt_new(L_gt.rows() + new_mesh.L_gt.rows(), 1);
@@ -229,6 +235,7 @@ void Mesh::add(Mesh& new_mesh) {
         UV=UV_new;
         V_tangent_u=V_tangent_u_new;
         V_length_v=V_lenght_v_new;
+        S_pred=S_pred_new;
         L_pred=L_pred_new;
         L_gt=L_gt_new;
         I=I_new;
@@ -518,6 +525,7 @@ void Mesh::clear() {
     UV.resize(0,0);
     V_tangent_u.resize(0,0);
     V_length_v.resize(0,0);
+    S_pred.resize(0,0);
     L_pred.resize(0,0);
     L_gt.resize(0,0);
     I.resize(0,0);
@@ -549,6 +557,7 @@ void Mesh::set_all_matrices_to_zero(){
     UV.setZero();
     V_tangent_u.setZero();
     V_length_v.setZero();
+    S_pred.setZero();
     L_pred.setZero();
     L_gt.setZero();
     I.setZero();
@@ -1028,6 +1037,7 @@ void Mesh::remove_marked_vertices(const std::vector<bool>& mask, const bool keep
     UV=filter(UV, mask, keep, /*do_checks*/ false);
     V_tangent_u=filter(V_tangent_u, mask, keep, /*do_checks*/ false);
     V_length_v=filter(V_length_v, mask, keep, /*do_checks*/ false);
+    S_pred=filter(S_pred, mask, keep, /*do_checks*/ false);
     L_pred=filter(L_pred, mask, keep, /*do_checks*/ false);
     L_gt=filter(L_gt, mask, keep, /*do_checks*/ false);
     I=filter(I, mask, keep, /*do_checks*/ false);
@@ -1057,6 +1067,7 @@ void Mesh::set_marked_vertices_to_zero(const std::vector<bool>& mask, const bool
     UV=filter_set_zero(UV, mask, keep, /*do_checks*/ false);
     V_tangent_u=filter_set_zero(V_tangent_u, mask, keep, /*do_checks*/ false);
     V_length_v=filter_set_zero(V_length_v, mask, keep, /*do_checks*/ false);
+    S_pred=filter_set_zero(S_pred, mask, keep, /*do_checks*/ false);
     L_pred=filter_set_zero(L_pred, mask, keep, /*do_checks*/ false);
     L_gt=filter_set_zero(L_gt, mask, keep, /*do_checks*/ false);
     I=filter_set_zero(I, mask, keep, /*do_checks*/ false);
@@ -3191,6 +3202,7 @@ void Mesh::sanity_check() const{
     if (F.size()) LOG_IF_S(ERROR, F.maxCoeff()>V.rows()-1) << name << ": F indexes V at invalid poisitions, max coeff is " << F.maxCoeff() << " and V size is" << V.rows();
     if (E.size()) LOG_IF_S(ERROR, E.maxCoeff()>V.rows()-1) << name << ": E indexes V at invalid poisitions, max coeff is " << E.maxCoeff() << " and V size is" << V.rows() ;
     if (C.size()) LOG_IF_S(ERROR, C.rows()!=V.rows() ) << name << ": We have per vertex color but C and V don't match. C has rows " << C.rows() << " and V size is" << V.rows() ;
+    LOG_IF_S(ERROR, S_pred.size() && S_pred.rows()!=V.rows() ) << name << ": S_pred and V don't coincide in size, they are " << S_pred.rows() << " and " << V.rows();
     LOG_IF_S(ERROR, L_pred.size() && L_pred.rows()!=V.rows() ) << name << ": L_pred and V don't coincide in size, they are " << L_pred.rows() << " and " << V.rows();
     LOG_IF_S(ERROR, L_gt.size() && L_gt.rows()!=V.rows() ) << name << ": L_gt and V don't coincide in size, they are " << L_gt.rows() << " and " << V.rows();
 }
