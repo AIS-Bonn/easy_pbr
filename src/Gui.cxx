@@ -150,6 +150,9 @@ Gui::Gui( const std::string config_file,
 
     //enable docking 
     // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    //prevent the moving of windows unless dragged by title bar. this is because we also want to drag inside the windows which have images in order to make cropping
+    io.ConfigWindowsMoveFromTitleBarOnly=true;
 }
 
 void Gui::init_params(const std::string config_file){
@@ -1397,16 +1400,15 @@ void Gui::show_images(){
 
                 //switch to the new image 
                 ImGuiIO& io = ImGui::GetIO();
-                // if (io.KeysDown[GLFW_KEY_LEFT]){
                 if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_LeftArrow) )  ){
-                    // VLOG(1) << "activating idx left which is " << idx_left;
                     win.second.named_imgs_vec[idx_left].change_selection_to_this=true;
                 }
-                // if (io.KeysDown[GLFW_KEY_RIGHT]){
                 if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_RightArrow) )  ){
-                    // VLOG(1) << "activating idx right which is " << idx_right;
                     win.second.named_imgs_vec[idx_right].change_selection_to_this=true;
                 }
+
+
+
             }
 
 
@@ -1415,22 +1417,90 @@ void Gui::show_images(){
             ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
             if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)){
                 for(int i=0; i<nr_imgs_in_window; i++){
+                    NamedImg& cur_img = win.second.named_imgs_vec[i];
 
                     ImGuiTabItemFlags tab_flags=ImGuiTabItemFlags_None;
-                    if (win.second.named_imgs_vec[i].change_selection_to_this) {
-                        // VLOG(1) << "setting img to selected"<<i;
-                        // std::cout << "setting img to selected"<<i << std::endl;
-                        tab_flags|=ImGuiTabItemFlags_SetSelected;
-                    }
-                    win.second.named_imgs_vec[i].change_selection_to_this=false;
-                    win.second.named_imgs_vec[i].is_selected=false;
+                    if (cur_img.change_selection_to_this) { tab_flags|=ImGuiTabItemFlags_SetSelected; }
+                    cur_img.change_selection_to_this=false;
+                    cur_img.is_selected=false;
 
-                    if (ImGui::BeginTabItem(win.second.named_imgs_vec[i].name.c_str(), nullptr,  tab_flags  )){
-                        win.second.named_imgs_vec[i].is_selected=true;
+
+
+                    if (ImGui::BeginTabItem(cur_img.name.c_str(), nullptr,  tab_flags  )){
+                        cur_img.is_selected=true;
 
                         gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
-                        // show_gl_texture(tex.tex_id(), win.second.named_imgs_vec[i].name);
-                        ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
+                        // ImVec2 vMin=ImGui::GetItemRectMin(); //get the position before and fter submitting the image so we know it's bounds https://discourse.dearimgui.org/t/how-to-know-if-a-tab-bar-of-a-docked-window-is-hidden-and-its-height/316/5
+                        ImVec2 vMin= ImGui::GetCursorScreenPos();
+                        if (!cur_img.is_cropped){
+                            ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
+                        }else{
+                            ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail(),  
+                            ImVec2( cur_img.crop_start_uv.x(), cur_img.crop_start_uv.y()  ) , ImVec2( cur_img.crop_end_uv.x(), cur_img.crop_end_uv.y()  ) );
+                        }
+                        const bool is_img_hovered = ImGui::IsItemHovered(); // Hovered
+                        ImVec2 vMax=ImGui::GetItemRectMax();
+                        // ImVec2 vMax=ImGui::GetCursorScreenPos();
+                        // ImGui::GetForegroundDrawList()->AddRect( vMin, vMax, IM_COL32( 255, 255, 0, 255 ) ); //debug
+                        int width_img=vMax.x - vMin.x;
+                        int height_img=vMax.y - vMin.y;
+
+                        //crop
+                        if (is_img_hovered){
+                            ImVec2 mouse_pos=ImGui::GetMousePos(); //in screen coordinats 0,0 is at the top left of your screen
+                            ImVec2 pos_wrt_img=mouse_pos-vMin;
+                            // VLOG(1) <<" pos_wrt_img " << pos_wrt_img.x << " " << pos_wrt_img.y;
+                            ImVec2 uv_wrt_img;
+                            uv_wrt_img.x =pos_wrt_img.x/width_img;
+                            uv_wrt_img.y =pos_wrt_img.y/height_img;
+                            // VLOG(1) <<"uv_wrt_img" << uv_wrt_img.x << " " << uv_wrt_img.y;
+
+                            //drag and create a rectangle in screen coordinate and one in uv coordinates
+                            //similar to the imgui_demo Canvas
+                            if (!cur_img.is_cropped){
+                                if (!cur_img.is_cropping && ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
+                                    cur_img.crop_start_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                    cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                    cur_img.screen_pos_start << mouse_pos.x, mouse_pos.y;
+                                    cur_img.is_cropping = true;
+                                }
+                                if (cur_img.is_cropping){
+                                    cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                    cur_img.screen_pos_end << mouse_pos.x, mouse_pos.y;
+                                    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)){
+                                        cur_img.is_cropping = false;
+                                        cur_img.is_cropped = true;
+                                        //now that we finished cropping this img, copy this crop to all the other imgs in the window
+                                        for(int j=0; j<nr_imgs_in_window; j++){
+                                            NamedImg& other_img = win.second.named_imgs_vec[j];
+                                            other_img.crop_start_uv=cur_img.crop_start_uv;
+                                            other_img.crop_end_uv=cur_img.crop_end_uv;
+                                            other_img.screen_pos_start=cur_img.screen_pos_start;
+                                            other_img.screen_pos_end=cur_img.screen_pos_end;
+                                            other_img.is_cropping=false;
+                                            other_img.is_cropped=true;
+                                        }
+                                    }
+                                    //draw rectangle
+                                    ImGui::GetForegroundDrawList()->AddRect( ImVec2(cur_img.screen_pos_start.x(), cur_img.screen_pos_start.y()), ImVec2(cur_img.screen_pos_end.x(), cur_img.screen_pos_end.y()), 
+                                    IM_COL32( 255, 255, 0, 255 ) );
+                                }
+                            }
+                            if (ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
+                                cur_img.is_cropping = false;
+                                cur_img.is_cropped = false;
+                                //uncrop the rest of the img in the window
+                                for(int j=0; j<nr_imgs_in_window; j++){
+                                    NamedImg& other_img = win.second.named_imgs_vec[j];
+                                    other_img.is_cropped=false;
+                                }
+                            }
+
+
+
+                        }
+
+
                         ImGui::EndTabItem();
                     }
                 
@@ -1876,6 +1946,10 @@ void Gui::init_style() {
     style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
     style->Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
+
+    style->Colors[ImGuiCol_Tab] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_TabHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_TabActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
 }
 
 } //namespace easy_pbr

@@ -49,6 +49,13 @@ public:
     gl::Texture2D tex;
     bool change_selection_to_this=false; //when you have multiple images open in one window, this controls which one is selected
     bool is_selected=false; //is true for the named img that is currently selected. This is internal and shouldnt be modified. to modify which one is selected programatically, use the change_selection_to_this
+    //for cropping
+    Eigen::Vector2f crop_start_uv;
+    Eigen::Vector2f crop_end_uv;
+    Eigen::Vector2f screen_pos_start; //position in screen coordinated of the start and end of the crop. Useful for drawing the rectangle to show the cropped region
+    Eigen::Vector2f screen_pos_end;
+    bool is_cropping=false; //this is true when the user is in the process of cropping by draggin
+    bool is_cropped=false; //is trye when the user has released the left mouse and the crop is finished
 };
 
 
