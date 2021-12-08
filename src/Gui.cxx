@@ -1335,6 +1335,7 @@ void Gui::show_images(){
     //TODO check if the cv mats actually changed, maybe a is_dirty flag
     for (auto &win : m_win_imgs_map){
         std::string name=win.first;
+        WindowImg& window=win.second;
 
         int nr_imgs_in_window=win.second.named_imgs_vec.size();
 
@@ -1349,174 +1350,190 @@ void Gui::show_images(){
 
 
 
-        //show the textures either alone or in a docked way
-        if (nr_imgs_in_window==1){
-            gl::Texture2D& tex= win.second.named_imgs_vec[0].tex;
-            show_gl_texture(tex.tex_id(), name);
-        }else{
-            //make a window in which you dock the other windows of the images
-            // static bool opt_padding = false;
-            // static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+        bool make_tabs=nr_imgs_in_window!=1;
 
-            // // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-            // // because it would be confusing to have two docking targets within each others.
-            // ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-            // dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-           
+        ImGui::SetNextWindowPos(ImVec2(400,400), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(512,512), ImGuiCond_FirstUseEver);
 
-            // // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-            // // and handle the pass-thru hole, so we ask Begin() to not render a background.
-            // if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            //     window_flags |= ImGuiWindowFlags_NoBackground;
-
-            ImGui::SetNextWindowPos(ImVec2(400,400), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(512,512), ImGuiCond_FirstUseEver);
-
-            // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-            // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-            // all active windows docked into it will lose their parent and become undocked.
-            // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-            // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-            // if (!opt_padding)
-                // ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-            ImGuiWindowFlags window_flags = 0;
-            ImGui::Begin(name.c_str(), nullptr, window_flags);
+        
+        ImGuiWindowFlags window_flags = 0;
+        window_flags |= ImGuiWindowFlags_MenuBar;
+        ImGui::Begin(name.c_str(), nullptr, window_flags);
 
 
-            //if we hover and push the right and left arrows we can change the image
-            if (ImGui::IsWindowHovered()){
-                //get the idx of the img that was selected
-                int idx_selected=-1;
-                for(int i=0; i<nr_imgs_in_window; i++){
-                    if( win.second.named_imgs_vec[i].is_selected){
-                        idx_selected=i;
-                    }
+
+        //menu
+        if (ImGui::BeginMenuBar()){
+            // if (ImGui::BeginMenu("File")){
+                // ImGui::EndMenu();
+            // }
+            if (ImGui::Button("Save")){
+                // VLOG(1) << "save";
+                int idx_selected= window.selected_img_idx();
+                cv::Mat mat= window.named_imgs_vec[idx_selected].mat;
+                fs::path root_path="./recordings/imgs/";
+                if (!fs::exists(root_path)){
+                    fs::create_directories(root_path);
                 }
-                int idx_left=radu::utils::wrap( idx_selected-1, nr_imgs_in_window );
-                int idx_right=radu::utils::wrap( idx_selected+1, nr_imgs_in_window );
-                // VLOG(1) << "idx left and idx irght is" << idx_left << " " << idx_right;
+                std::string path= root_path.string()+window.named_imgs_vec[idx_selected].name +".png";
+                cv::imwrite(path, mat);
+                VLOG(1) << "Saved img to " << path;
+            }
+            // if (ImGui::Button("FixAspect")){ // Not sure how to do it properly because we need to resize the window by only having knowlege of the image part of it
+            //     int idx_selected= window.selected_img_idx();
+            //     cv::Mat mat= window.named_imgs_vec[idx_selected].mat;
+            //     float aspect_ratio= (float)mat.cols /mat.rows;
+            //     ImVec2 window_size=ImGui::GetWindowSize(); //not really the best way. Ideally we would get the size of only the image par
+            //     // ImVec2 window_size = ImVec2( window.img_width, window.img_height );
+            //     ImVec2 new_window_size=ImVec2( window_size.x,  window_size.x/aspect_ratio );
+            //     ImGui::SetWindowSize(new_window_size);
+            // }
+            ImGui::EndMenuBar();
+        }
 
 
 
-                //switch to the new image 
-                ImGuiIO& io = ImGui::GetIO();
-                if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_LeftArrow) )  ){
-                    win.second.named_imgs_vec[idx_left].change_selection_to_this=true;
-                }
-                if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_RightArrow) )  ){
-                    win.second.named_imgs_vec[idx_right].change_selection_to_this=true;
-                }
+
+        //if we hover and push the right and left arrows we can change the image
+        if (ImGui::IsWindowHovered()){
+            //get the idx of the img that was selected
+            int idx_selected= window.selected_img_idx();
+            int idx_left=radu::utils::wrap( idx_selected-1, nr_imgs_in_window );
+            int idx_right=radu::utils::wrap( idx_selected+1, nr_imgs_in_window );
+
+            ImGui::SetItemUsingMouseWheel();
+            float wheel = ImGui::GetIO().MouseWheel;
+            // VLOG(1) << "wheel"<< wheel;
 
 
-
+            //switch to the new image 
+            // ImGuiIO& io = ImGui::GetIO();
+            if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_LeftArrow) )  ||  wheel<0  ){
+                win.second.named_imgs_vec[idx_left].change_selection_to_this=true;
+            }
+            if ( ImGui::IsKeyPressed( ImGui::GetKeyIndex(ImGuiKey_RightArrow) )  ||  wheel>0  ){
+                win.second.named_imgs_vec[idx_right].change_selection_to_this=true;
             }
 
 
-
-            //here we make our dockable things
-            ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-            if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)){
-                for(int i=0; i<nr_imgs_in_window; i++){
-                    NamedImg& cur_img = win.second.named_imgs_vec[i];
-
-                    ImGuiTabItemFlags tab_flags=ImGuiTabItemFlags_None;
-                    if (cur_img.change_selection_to_this) { tab_flags|=ImGuiTabItemFlags_SetSelected; }
-                    cur_img.change_selection_to_this=false;
-                    cur_img.is_selected=false;
-
-
-
-                    if (ImGui::BeginTabItem(cur_img.name.c_str(), nullptr,  tab_flags  )){
-                        cur_img.is_selected=true;
-
-                        gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
-                        // ImVec2 vMin=ImGui::GetItemRectMin(); //get the position before and fter submitting the image so we know it's bounds https://discourse.dearimgui.org/t/how-to-know-if-a-tab-bar-of-a-docked-window-is-hidden-and-its-height/316/5
-                        ImVec2 vMin= ImGui::GetCursorScreenPos();
-                        if (!cur_img.is_cropped){
-                            ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
-                        }else{
-                            ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail(),  
-                            ImVec2( cur_img.crop_start_uv.x(), cur_img.crop_start_uv.y()  ) , ImVec2( cur_img.crop_end_uv.x(), cur_img.crop_end_uv.y()  ) );
-                        }
-                        const bool is_img_hovered = ImGui::IsItemHovered(); // Hovered
-                        ImVec2 vMax=ImGui::GetItemRectMax();
-                        // ImVec2 vMax=ImGui::GetCursorScreenPos();
-                        // ImGui::GetForegroundDrawList()->AddRect( vMin, vMax, IM_COL32( 255, 255, 0, 255 ) ); //debug
-                        int width_img=vMax.x - vMin.x;
-                        int height_img=vMax.y - vMin.y;
-
-                        //crop
-                        if (is_img_hovered){
-                            ImVec2 mouse_pos=ImGui::GetMousePos(); //in screen coordinats 0,0 is at the top left of your screen
-                            ImVec2 pos_wrt_img=mouse_pos-vMin;
-                            // VLOG(1) <<" pos_wrt_img " << pos_wrt_img.x << " " << pos_wrt_img.y;
-                            ImVec2 uv_wrt_img;
-                            uv_wrt_img.x =pos_wrt_img.x/width_img;
-                            uv_wrt_img.y =pos_wrt_img.y/height_img;
-                            // VLOG(1) <<"uv_wrt_img" << uv_wrt_img.x << " " << uv_wrt_img.y;
-
-                            //drag and create a rectangle in screen coordinate and one in uv coordinates
-                            //similar to the imgui_demo Canvas
-                            if (!cur_img.is_cropped){
-                                if (!cur_img.is_cropping && ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
-                                    cur_img.crop_start_uv << uv_wrt_img.x,  uv_wrt_img.y;
-                                    cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
-                                    cur_img.screen_pos_start << mouse_pos.x, mouse_pos.y;
-                                    cur_img.is_cropping = true;
-                                }
-                                if (cur_img.is_cropping){
-                                    cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
-                                    cur_img.screen_pos_end << mouse_pos.x, mouse_pos.y;
-                                    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)){
-                                        cur_img.is_cropping = false;
-                                        cur_img.is_cropped = true;
-                                        //now that we finished cropping this img, copy this crop to all the other imgs in the window
-                                        for(int j=0; j<nr_imgs_in_window; j++){
-                                            NamedImg& other_img = win.second.named_imgs_vec[j];
-                                            other_img.crop_start_uv=cur_img.crop_start_uv;
-                                            other_img.crop_end_uv=cur_img.crop_end_uv;
-                                            other_img.screen_pos_start=cur_img.screen_pos_start;
-                                            other_img.screen_pos_end=cur_img.screen_pos_end;
-                                            other_img.is_cropping=false;
-                                            other_img.is_cropped=true;
-                                        }
-                                    }
-                                    //draw rectangle
-                                    ImGui::GetForegroundDrawList()->AddRect( ImVec2(cur_img.screen_pos_start.x(), cur_img.screen_pos_start.y()), ImVec2(cur_img.screen_pos_end.x(), cur_img.screen_pos_end.y()), 
-                                    IM_COL32( 255, 255, 0, 255 ) );
-                                }
-                            }
-                            if (ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
-                                cur_img.is_cropping = false;
-                                cur_img.is_cropped = false;
-                                //uncrop the rest of the img in the window
-                                for(int j=0; j<nr_imgs_in_window; j++){
-                                    NamedImg& other_img = win.second.named_imgs_vec[j];
-                                    other_img.is_cropped=false;
-                                }
-                            }
-
-
-
-                        }
-
-
-                        ImGui::EndTabItem();
-                    }
-                
-                }
-                ImGui::EndTabBar();
-            }
-
-          
-
-
-            //finish
-            // if (!opt_padding)
-                // ImGui::PopStyleVar();
-            ImGui::End();
 
         }
+
+
+
+        //here we make our dockable things
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        bool tab_ret= make_tabs? ImGui::BeginTabBar("MyTabBar", tab_bar_flags) : true;  //make the tabs only if we have more then 1 img
+        if (tab_ret){
+            for(int i=0; i<nr_imgs_in_window; i++){
+                NamedImg& cur_img = win.second.named_imgs_vec[i];
+
+                ImGuiTabItemFlags tab_flags=ImGuiTabItemFlags_None;
+                if (cur_img.change_selection_to_this) { tab_flags|=ImGuiTabItemFlags_SetSelected; }
+                cur_img.change_selection_to_this=false;
+                cur_img.is_selected=false;
+
+
+
+                // if (make_tabs && ImGui::BeginTabItem(cur_img.name.c_str(), nullptr,  tab_flags  )){
+                bool item_ret= make_tabs? ImGui::BeginTabItem(cur_img.name.c_str(), nullptr,  tab_flags  ) : true; 
+                if(item_ret){
+                    cur_img.is_selected=true;
+
+                    gl::Texture2D& tex= window.named_imgs_vec[i].tex;
+                    // ImVec2 vMin=ImGui::GetItemRectMin(); //get the position before and fter submitting the image so we know it's bounds https://discourse.dearimgui.org/t/how-to-know-if-a-tab-bar-of-a-docked-window-is-hidden-and-its-height/316/5
+                    ImVec2 vMin= ImGui::GetCursorScreenPos();
+                    if (!cur_img.is_cropped){
+                        ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail() );
+                    }else{
+                        ImGui::Image((ImTextureID)(uintptr_t) tex.tex_id() , ImGui::GetContentRegionAvail(),  
+                        ImVec2( cur_img.crop_start_uv.x(), cur_img.crop_start_uv.y()  ) , ImVec2( cur_img.crop_end_uv.x(), cur_img.crop_end_uv.y()  ) );
+                    }
+                    const bool is_img_hovered = ImGui::IsItemHovered(); // Hovered
+                    ImVec2 vMax=ImGui::GetItemRectMax();
+                    // ImVec2 vMax=ImGui::GetCursorScreenPos();
+                    // ImGui::GetForegroundDrawList()->AddRect( vMin, vMax, IM_COL32( 255, 255, 0, 255 ) ); //debug
+                    int width_img=vMax.x - vMin.x;
+                    int height_img=vMax.y - vMin.y;
+                    window.img_width=width_img;
+                    window.img_height=height_img;
+
+                    //crop
+                    if (is_img_hovered){
+                        ImVec2 mouse_pos=ImGui::GetMousePos(); //in screen coordinats 0,0 is at the top left of your screen
+                        ImVec2 pos_wrt_img=mouse_pos-vMin;
+                        // VLOG(1) <<" pos_wrt_img " << pos_wrt_img.x << " " << pos_wrt_img.y;
+                        ImVec2 uv_wrt_img;
+                        uv_wrt_img.x =pos_wrt_img.x/width_img;
+                        uv_wrt_img.y =pos_wrt_img.y/height_img;
+                        // VLOG(1) <<"uv_wrt_img" << uv_wrt_img.x << " " << uv_wrt_img.y;
+
+                        //drag and create a rectangle in screen coordinate and one in uv coordinates
+                        //similar to the imgui_demo Canvas
+                        if (!cur_img.is_cropped){
+                            if (!cur_img.is_cropping && ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
+                                cur_img.crop_start_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                cur_img.screen_pos_start << mouse_pos.x, mouse_pos.y;
+                                cur_img.is_cropping = true;
+                            }
+                            if (cur_img.is_cropping){
+                                cur_img.crop_end_uv << uv_wrt_img.x,  uv_wrt_img.y;
+                                cur_img.screen_pos_end << mouse_pos.x, mouse_pos.y;
+                                if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)){
+                                    bool is_crop_big_enough=false; //sometimes we just click on the image and we don't actually want to crop anything
+                                    float crop_size= (cur_img.crop_start_uv - cur_img.crop_end_uv).norm();
+                                    // VLOG(1) << "crop size" << crop_size;
+                                    if (crop_size>0.01){
+                                        is_crop_big_enough=true;
+                                    }
+
+
+                                    cur_img.is_cropping = false;
+                                    cur_img.is_cropped = is_crop_big_enough;
+                                    //now that we finished cropping this img, copy this crop to all the other imgs in the window
+                                    for(int j=0; j<nr_imgs_in_window; j++){
+                                        NamedImg& other_img = win.second.named_imgs_vec[j];
+                                        other_img.crop_start_uv=cur_img.crop_start_uv;
+                                        other_img.crop_end_uv=cur_img.crop_end_uv;
+                                        other_img.screen_pos_start=cur_img.screen_pos_start;
+                                        other_img.screen_pos_end=cur_img.screen_pos_end;
+                                        other_img.is_cropping=false;
+                                        other_img.is_cropped=is_crop_big_enough;
+                                    }
+                                }
+                                //draw rectangle
+                                ImGui::GetForegroundDrawList()->AddRect( ImVec2(cur_img.screen_pos_start.x(), cur_img.screen_pos_start.y()), ImVec2(cur_img.screen_pos_end.x(), cur_img.screen_pos_end.y()), 
+                                IM_COL32( 255, 255, 0, 255 ) );
+                            }
+                        }
+                        if (ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
+                            cur_img.is_cropping = false;
+                            cur_img.is_cropped = false;
+                            //uncrop the rest of the img in the window
+                            for(int j=0; j<nr_imgs_in_window; j++){
+                                NamedImg& other_img = win.second.named_imgs_vec[j];
+                                other_img.is_cropped=false;
+                            }
+                        }
+
+
+
+                    }
+
+    
+                    if(make_tabs) ImGui::EndTabItem();
+                }
+            
+            }
+            if(make_tabs) ImGui::EndTabBar();
+        }
+
+        
+
+        ImGui::End(); //finish window
+
+        // }
 
 
 

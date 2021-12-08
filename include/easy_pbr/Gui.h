@@ -63,6 +63,19 @@ public:
 class WindowImg{
 public:
     std::vector<NamedImg> named_imgs_vec;
+    int img_width; //width of the image part of the window in the screen space
+    int img_height; 
+
+
+    int selected_img_idx(){
+        int idx_selected=-1;
+        for(int i=0; i<(int)named_imgs_vec.size(); i++){
+            if( named_imgs_vec[i].is_selected){
+                idx_selected=i;
+            }
+        }
+        return idx_selected;
+    }
 };
 
 
