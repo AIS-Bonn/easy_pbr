@@ -1044,6 +1044,142 @@ void Gui::draw_main_menu(){
 
 
     ImGui::Separator();
+    if (ImGui::CollapsingHeader("CropBox")) {
+        static float minX = -1, maxX = 1, minY = -1, maxY = 1, minZ = -1, maxZ = 1;
+        static bool removeOutside = true;
+        static bool showPlanes = false;
+        ImGui::SliderFloat("min X", &minX, -1000.0, 1000.0);
+        ImGui::SliderFloat("max X", &maxX, -1000.0, 1000.0);
+        ImGui::SliderFloat("min Y", &minY, -1000.0, 1000.0);
+        ImGui::SliderFloat("max Y", &maxY, -1000.0, 1000.0);
+        ImGui::SliderFloat("min Z", &minZ, -1000.0, 1000.0);
+        ImGui::SliderFloat("max Z", &maxZ, -1000.0, 1000.0);
+        if ( minX > maxX ) { const float tmp = minX; minX = maxX; maxX = tmp; }
+        if ( minY > maxY ) { const float tmp = minY; minY = maxY; maxY = tmp; }
+        if ( minZ > maxZ ) { const float tmp = minZ; minZ = maxZ; maxZ = tmp; }
+        static Eigen::Array<double,1,3> prevMinXYZ(0,0,0), prevMaxXYZ(1,1,1);
+        const Eigen::Array<double,1,3> minXYZ(minX,minY,minZ), maxXYZ(maxX,maxY,maxZ);
+        static MeshSharedPtr planes = std::make_shared<Mesh>();
+
+        if (ImGui::RadioButton("removeOutside", removeOutside)) { removeOutside = true; }
+        if (ImGui::RadioButton("removeInside", !removeOutside)) { removeOutside = false; }
+        ImGui::Checkbox("ShowPlanes", &showPlanes);
+        if ( showPlanes )
+        {
+            //VLOG(1) << "showing planes";
+            if ( planes->V.rows() != 8 ) planes->V.resize(8,3);
+            if ( planes->E.rows() != 12 ){
+                planes->E.resize(12,2);
+                planes->E.row(0) << 0,1;
+                planes->E.row(1) << 1,2;
+                planes->E.row(2) << 2,3;
+                planes->E.row(3) << 3,0;
+
+                planes->E.row(4) << 4,5;
+                planes->E.row(5) << 5,6;
+                planes->E.row(6) << 6,7;
+                planes->E.row(7) << 7,4;
+
+                planes->E.row(8) << 0,4;
+                planes->E.row(9) << 1,5;
+                planes->E.row(10) << 2,6;
+                planes->E.row(11) << 3,7;
+            }
+            if ( planes->F.rows() != 12 ){
+                planes->F.resize(12,3); planes->F.setZero();
+                planes->F.row(0) << 0, 3, 2; // bottom
+                planes->F.row(1) << 2, 1, 0;
+                planes->F.row(2) << 4, 5, 6; // top
+                planes->F.row(3) << 6, 7, 4;
+                planes->F.row(4) << 0, 1, 5;
+                planes->F.row(5) << 5, 4, 0;
+                planes->F.row(6) << 1, 2, 6;
+                planes->F.row(7) << 6, 5, 1;
+                planes->F.row(8) << 2, 3, 7;
+                planes->F.row(9) << 7, 6, 2;
+                planes->F.row(10) << 3, 0, 4;
+                planes->F.row(11) << 4, 7, 3;
+            }
+            if ( planes->C.rows() != 8 ){
+                planes->C.resize(8,3);
+                planes->C.row(0) << 1.0, 0.0, 0.0;
+                planes->C.row(1) << 0.0, 1.0, 0.0;
+                planes->C.row(2) << 0.0, 0.0, 1.0;
+                planes->C.row(3) << 1.0, 1.0, 1.0;
+                planes->C.row(4) << 1.0, 0.0, 0.0;
+                planes->C.row(5) << 0.0, 1.0, 0.0;
+                planes->C.row(6) << 0.0, 0.0, 1.0;
+                planes->C.row(7) << 1.0, 1.0, 1.0;
+            }
+
+            if ( std::abs((minXYZ-prevMinXYZ).sum()) > 0 || std::abs((maxXYZ-prevMaxXYZ).sum()) > 0 )
+            {
+                VLOG(1) << "updating planes: " << minXYZ << " " << maxXYZ;
+                planes->V.row(0) << minX, minY, minZ;
+                planes->V.row(1) << minX, minY, maxZ;
+                planes->V.row(2) << minX, maxY, maxZ;
+                planes->V.row(3) << minX, maxY, minZ;
+                planes->V.row(4) << maxX, minY, minZ;
+                planes->V.row(5) << maxX, minY, maxZ;
+                planes->V.row(6) << maxX, maxY, maxZ;
+                planes->V.row(7) << maxX, maxY, minZ;
+                planes->m_is_dirty = true;
+                Scene::show(planes, "CropPlanes");
+            }
+            prevMinXYZ = minXYZ;
+            prevMaxXYZ = maxXYZ;
+        }
+        if (ImGui::Button("Crop"))
+        {
+            // get mesh
+            // apply crop
+            if ( Scene::nr_meshes() > 0 )
+            {
+                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
+                MeshSharedPtr cropped =  std::make_shared<Mesh>(mesh->clone());
+
+                int copy_idx = 0, numInside = 0;
+                for ( int idx = 0; idx < mesh->V.rows(); ++idx)
+                {
+                    const Eigen::Vector3d pt = mesh->model_matrix() * Eigen::Vector3d(mesh->V.row(idx).transpose());
+                    const bool insideTheBox = (minXYZ < pt.transpose().array()).all() && (pt.transpose().array() < maxXYZ).all();
+                    numInside += insideTheBox;
+                    if ( (removeOutside && insideTheBox) || (!removeOutside && !insideTheBox) )
+                    {
+                        cropped->V.row(copy_idx) = mesh->V.row(idx);
+                        if ( mesh->C.rows() > 0 ) cropped->C.row(copy_idx) = mesh->C.row(idx);
+                        if ( mesh->D.rows() > 0 ) cropped->D.row(copy_idx) = mesh->D.row(idx);
+                        if ( mesh->NV.rows() > 0 ) cropped->NV.row(copy_idx) = mesh->NV.row(idx);
+                        if ( mesh->L_pred.rows() > 0 ) cropped->L_pred.row(copy_idx)=mesh->L_pred.row(idx);
+                        if ( mesh->L_gt.rows() > 0 ) cropped->L_gt.row(copy_idx)=mesh->L_gt.row(idx);
+                        if ( mesh->I.rows() > 0 ) cropped->I.row(copy_idx) = mesh->I.row(idx);
+                        ++copy_idx;
+                        // TODO: do it the right way for all other fields.
+                        //cloned.F=F;
+                        //cloned.E=E;
+                        //cloned.NF=NF;
+                        //cloned.UV=UV;
+                        //cloned.V_tangent_u=V_tangent_u;
+                        //cloned.V_length_v=V_length_v;
+                    }
+                }
+                cropped->V.conservativeResize(copy_idx,cropped->V.cols());
+                if ( mesh->C.rows() > 0 ) cropped->C.conservativeResize(copy_idx,cropped->C.cols());
+                if ( mesh->D.rows() > 0 ) cropped->D.conservativeResize(copy_idx,cropped->D.cols());
+                if ( mesh->NV.rows() > 0 ) cropped->NV.conservativeResize(copy_idx,cropped->NV.cols());
+                if ( mesh->L_pred.rows() > 0 ) cropped->L_pred.conservativeResize(copy_idx,cropped->L_pred.cols());
+                if ( mesh->L_gt.rows() > 0 ) cropped->L_gt.conservativeResize(copy_idx,cropped->L_gt.cols());
+                if ( mesh->I.rows() > 0 ) cropped->I.conservativeResize(copy_idx,cropped->I.cols());
+                std::string cropped_name=mesh->name+"_cropped";
+                VLOG(1) << "cropped with name "<<cropped_name << " idx: " << copy_idx << " inside: " << numInside;
+                Scene::show(cropped, cropped_name);
+            }
+        }
+    }
+
+
+
+    ImGui::Separator();
     if (ImGui::CollapsingHeader("Lights")) {
         if(ImGui::ListBoxHeader("Selected lights", m_view->m_spot_lights.size(), 6)){ //all the spot lights
 
