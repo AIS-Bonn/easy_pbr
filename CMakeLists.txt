@@ -21,6 +21,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # option(CORE_WITH_CUDA "Compile CUDA" OFF)
 # option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
 # option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
+option(CORE_WITH_PCL "Compile with PCL" OFF)
+
 
 
 
@@ -55,8 +57,8 @@ find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui imgcodecs )
 find_package(LIBIGL REQUIRED)
-find_package(PCL 1.3)
-if(${PCL_FOUND})
+if(CORE_WITH_PCL)
+    find_package(PCL 1.3 REQUIRED)
     link_directories(${PCL_LIBRARY_DIRS})
     add_definitions(${PCL_DEFINITIONS})
 endif()

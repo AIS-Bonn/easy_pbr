@@ -1888,19 +1888,23 @@ void Gui::draw_trajectory( const std::string & trajectory_mesh_name, const std::
             prevCam = cam;
         frustum_mesh->add(*camMesh);
     }
-    trajectory_mesh->m_vis.m_point_size = 20;
-    trajectory_mesh->m_vis.set_color_pervertcolor();
-    trajectory_mesh->m_vis.m_show_points=true;
-    trajectory_mesh->m_vis.m_show_mesh=false;
-    trajectory_mesh->m_vis.m_show_lines=true;
-    Scene::show(trajectory_mesh,trajectory_mesh_name);
+    if ( trajectory_mesh->V.rows() > 0 ){
+        trajectory_mesh->m_vis.m_point_size = 20;
+        trajectory_mesh->m_vis.set_color_pervertcolor();
+        trajectory_mesh->m_vis.m_show_points=true;
+        trajectory_mesh->m_vis.m_show_mesh=false;
+        trajectory_mesh->m_vis.m_show_lines=true;
+        Scene::show(trajectory_mesh,trajectory_mesh_name);
+    }
 
-    frustum_mesh->m_vis.m_point_size = 10;
-    frustum_mesh->m_vis.set_color_pervertcolor();
-    frustum_mesh->m_vis.m_show_points=true;
-    frustum_mesh->m_vis.m_show_mesh=false;
-    frustum_mesh->m_vis.m_show_lines=true;
-    Scene::show(frustum_mesh,frustum_mesh_name);
+    if ( frustum_mesh->V.rows() > 0 ){
+        frustum_mesh->m_vis.m_point_size = 10;
+        frustum_mesh->m_vis.set_color_pervertcolor();
+        frustum_mesh->m_vis.m_show_points=true;
+        frustum_mesh->m_vis.m_show_mesh=false;
+        frustum_mesh->m_vis.m_show_lines=true;
+        Scene::show(frustum_mesh,frustum_mesh_name);
+    }
 }
 
 
