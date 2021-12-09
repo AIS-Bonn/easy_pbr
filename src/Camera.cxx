@@ -15,7 +15,7 @@
 #include "string_utils.h"
 #include "numerical_utils.h"
 #include "RandGenerator.h"
-#include "UtilsGL.h"
+#include "easy_gl/UtilsGL.h"
 
 using namespace radu::utils;
 

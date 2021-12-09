@@ -12,9 +12,9 @@
 
 #include <Eigen/Geometry>
 
-#include "Shader.h"
-#include "GBuffer.h"
-#include "CubeMap.h"
+#include "easy_gl/Shader.h"
+#include "easy_gl/GBuffer.h"
+#include "easy_gl/CubeMap.h"
 #include "ColorMngr.h"
 
 //dir watcher

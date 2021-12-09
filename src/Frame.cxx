@@ -1,7 +1,7 @@
 #include "easy_pbr/Frame.h"
 #include "easy_pbr/Scene.h"
 
-#include "UtilsGL.h"
+#include "easy_gl/UtilsGL.h"
 #include "opencv_utils.h"
 
 #include "RandGenerator.h"

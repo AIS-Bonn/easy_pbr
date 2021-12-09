@@ -23,7 +23,7 @@
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/SpotLight.h"
 #include "easy_pbr/Frame.h"
-#include "UtilsGL.h"
+#include "easy_gl/UtilsGL.h"
 #include "Profiler.h"
 
 #include "opencv_utils.h"

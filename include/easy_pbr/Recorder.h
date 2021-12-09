@@ -5,7 +5,7 @@
 #include <thread>
 #include <memory>
 #include <unordered_map>
-#include "GBuffer.h"
+#include "easy_gl/GBuffer.h"
 
 #include "concurrentqueue.h"
 

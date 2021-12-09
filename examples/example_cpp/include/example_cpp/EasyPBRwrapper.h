@@ -17,8 +17,8 @@
 
 
 //gl
-#include "Texture2D.h"
-#include "Shader.h"
+#include "easy_gl/Texture2D.h"
+#include "easy_gl/Shader.h"
 
 
 

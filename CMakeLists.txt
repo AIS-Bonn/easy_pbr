@@ -131,7 +131,7 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
                         ${PROJECT_SOURCE_DIR}/deps/imgui/backends/
                         ${PROJECT_SOURCE_DIR}/deps/loguru
                         ${PROJECT_SOURCE_DIR}/deps/configuru
-                        ${PROJECT_SOURCE_DIR}/deps/easy_gl/include/easy_gl
+                        ${PROJECT_SOURCE_DIR}/deps/easy_gl/include
                         ${PROJECT_SOURCE_DIR}/deps/easy_pytorch
                         ${PROJECT_SOURCE_DIR}/deps/configuru
                         ${PROJECT_SOURCE_DIR}/deps/libigl/include

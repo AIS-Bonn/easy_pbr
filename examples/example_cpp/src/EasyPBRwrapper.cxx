@@ -11,7 +11,7 @@
 #include <loguru.hpp>
 
 //My stuff
-#include "UtilsGL.h"
+#include "easy_gl/UtilsGL.h"
 #include "easy_pbr/Viewer.h"
 #include "easy_pbr/Gui.h"
 #include "easy_pbr/MeshGL.h"

@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "Shader.h"
-#include "GBuffer.h"
+#include "easy_gl/Shader.h"
+#include "easy_gl/GBuffer.h"
 
 #include <Eigen/Geometry>
 

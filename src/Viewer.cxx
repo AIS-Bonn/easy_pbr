@@ -18,11 +18,11 @@
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h> //glfw3.h after our OpenGL definitions
+// #include <glad/glad.h>
+// #include <GLFW/glfw3.h> //glfw3.h after our OpenGL definitions
 
 //My stuff
-#include "UtilsGL.h"
+#include "easy_gl/UtilsGL.h"
 #include "easy_pbr/Scene.h"
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/MeshGL.h"

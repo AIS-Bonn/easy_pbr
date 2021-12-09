@@ -24,7 +24,7 @@ message("EASYPPBR source is ", ${EASYPBR_SRC_PATH})
 # set(EASYPBR_SRC_PATH "/media/rosu/Data/phd/c_ws/src/easy_pbr")
 
 find_path(EASYPBR_CORE_INCLUDE_DIR  NAMES easy_pbr/Viewer.h PATHS "${EASYPBR_SRC_PATH}/include" )
-find_path(EASYPBR_EASYGL_INCLUDE_DIR  NAMES Texture2D.h PATHS "${EASYPBR_SRC_PATH}/deps/easy_gl" )
+find_path(EASYPBR_EASYGL_INCLUDE_DIR  NAMES easy_gl/Texture2D.h PATHS "${EASYPBR_SRC_PATH}/deps/easy_gl/include" )
 find_path(EASYPBR_LOGURU_INCLUDE_DIR  NAMES loguru.hpp PATHS "${EASYPBR_SRC_PATH}/deps/loguru" )
 find_path(EASYPBR_CONFIGURU_INCLUDE_DIR  NAMES configuru.hpp PATHS "${EASYPBR_SRC_PATH}/deps/configuru" )
 find_path(EASYPBR_UTILS_INCLUDE_DIR  NAMES Profiler.h PATHS "${EASYPBR_SRC_PATH}/deps/utils/include" )
