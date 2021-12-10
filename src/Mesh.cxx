@@ -2548,8 +2548,8 @@ void Mesh::color_solid2pervert(){
 
 }
 
-#ifdef EASYPBR_WITH_PCL
-    void Mesh::estimate_normals_from_neighbourhood(const float radius){
+void Mesh::estimate_normals_from_neighbourhood(const float radius){
+    #ifdef EASYPBR_WITH_PCL
         CHECK(V.size()) << "We have no vertices";
 
         //https://pointclouds.org/documentation/tutorials/normal_estimation.html
@@ -2596,9 +2596,10 @@ void Mesh::color_solid2pervert(){
         }
 
 
-
-    }
-#endif
+    #else 
+        LOG(WARNING) << "estimate_normals_from_neighbourhood not available because easy_pbr was not compiled with PCL";
+    #endif
+}
 
 float Mesh::min_y(){
     return m_min_max_y_for_plotting(0);

@@ -4,6 +4,12 @@
 #include <chrono>
 #include <thread>
 
+// dir watcher
+#ifdef WITH_DIR_WATCHER
+    #include "dir_watcher/dir_watcher.hpp"
+#endif
+
+
 //loguru
 #define LOGURU_NO_DATE_TIME 1
 #define LOGURU_NO_UPTIME 1

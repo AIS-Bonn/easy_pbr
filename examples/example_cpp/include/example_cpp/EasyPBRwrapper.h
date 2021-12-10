@@ -12,9 +12,6 @@
 //opencv
 // #include "opencv2/opencv.hpp"
 
-// dir watcher
-#include "dir_watcher/dir_watcher.hpp"
-
 
 //gl
 #include "easy_gl/Texture2D.h"
@@ -27,6 +24,11 @@
 namespace radu { namespace utils {
     class RandGenerator;
     }}
+namespace emilib{
+    class DelayedDirWatcher;
+}
+
+
 
 namespace easy_pbr{
 

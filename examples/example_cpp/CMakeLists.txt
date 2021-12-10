@@ -23,7 +23,7 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
 find_package(OpenCV REQUIRED)
 find_package(EasyPBR REQUIRED)
-find_package(kqueue REQUIRED)
+find_package(kqueue)
 add_subdirectory(${EASYPBR_SRC_PATH}/deps/pybind11  [EXCLUDE_FROM_ALL])
 
 
