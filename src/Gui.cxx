@@ -1170,6 +1170,8 @@ void Gui::draw_main_menu(){
                 if ( mesh->L_pred.rows() > 0 ) cropped->L_pred.conservativeResize(copy_idx,cropped->L_pred.cols());
                 if ( mesh->L_gt.rows() > 0 ) cropped->L_gt.conservativeResize(copy_idx,cropped->L_gt.cols());
                 if ( mesh->I.rows() > 0 ) cropped->I.conservativeResize(copy_idx,cropped->I.cols());
+                cropped->F.resize(0,0);
+                cropped->E.resize(0,0);
                 std::string cropped_name=mesh->name+"_cropped";
                 VLOG(1) << "cropped with name "<<cropped_name << " idx: " << copy_idx << " inside: " << numInside;
                 Scene::show(cropped, cropped_name);
