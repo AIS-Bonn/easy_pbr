@@ -781,6 +781,59 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
 }
 
+Eigen::Vector3d Frame::unproject(const float x, const float y, const float depth){
+
+    Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
+
+    Eigen::Vector3d point_2D;
+    point_2D << x, height-1-y, 1.0;
+    Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D;
+    point_3D_camera_coord*=depth;
+    Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord; 
+
+    return point_3D_world_coord;
+}
+
+Eigen::Vector2d Frame::project(const Eigen::Vector3d& point_world){
+
+    Eigen::Vector3d point_cam = tf_cam_world.cast<double>() *point_world;
+    Eigen::Vector3d point_screen=K.cast<double>() * point_cam;
+    point_screen.x()/=point_screen.z();
+    point_screen.y()/=point_screen.z();
+    point_screen.y()=height-1-point_screen.y();
+
+    Eigen::Vector2d point_ret;
+    point_ret << point_screen.x(), point_screen.y();
+
+    return point_ret;
+    
+}
+
+cv::Mat Frame::draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen::Vector3d p1_world, const int thickness){
+    Eigen::Vector2d p0_screen=project(p0_world);
+    Eigen::Vector2d p1_screen=project(p1_world);
+
+    //get the rgb img
+    cv::Mat rgb_img;
+    if (!rgb_8u.empty()){
+        rgb_img=rgb_8u;
+    }else if(!rgb_32f.empty()){
+        rgb_32f.convertTo(rgb_img, CV_8U, 255);
+    }else{
+        LOG(FATAL)<<"There is no rgb image in this frame";
+    }
+
+    //draw
+    cv::Point pt0, pt1;
+    pt0.x=p0_screen.x();
+    pt0.y=p0_screen.y();
+    pt1.x=p1_screen.x();
+    pt1.y=p1_screen.y();
+    cv::line(rgb_img, pt0, pt1, cv::Scalar( 255, 0, 0 ), thickness );
+
+    return rgb_img;
+}
+
 // void Frame::rotate_y_axis(const float rads ){
 //     Eigen::Affine3f tf;
 //     tf.setIdentity();

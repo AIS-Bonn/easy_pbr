@@ -90,6 +90,9 @@ public:
     std::shared_ptr<Mesh>  assign_color(std::shared_ptr<Mesh>& cloud) const; //grabs a point cloud in world coordinates and assings colors to the points by projecting it into the current color frame
     cv::Mat rgb_with_valid_depth(const Frame& frame_depth) const; //returns a color Mat which the color set to 0 for pixels that have no depth info
     Eigen::MatrixXd  compute_uv(std::shared_ptr<Mesh>& cloud) const; //projects the cloud into the frame and returns the uv coordinates that index into the frame, The uv is in range [0,1] with the zero being top left (so like the opencv and not the opengl)
+    Eigen::Vector3d unproject(const float x, const float y, const float depth); //gets a pixel in the 2d plane and unprojects it, putting it somewhere in 3d at a depth of 1
+    Eigen::Vector2d project(const Eigen::Vector3d& point_world); //projects from world coordinates to img coordinates 
+    cv::Mat draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen::Vector3d p1_world, const int thickness=1); //gets two points describing a line in world coordinates, projects them into the image and then draws a line through them;
 
 
     //getters that are nice to have for python bindings

@@ -272,6 +272,7 @@ public:
     void create_floor(const float y_pos, const float scale);
     void create_sphere(const Eigen::Vector3d& center, const double radius);
     void create_cylinder(const Eigen::Vector3d& main_axis, const double height, const double radius, const bool origin_at_bottom, const bool with_cap);
+    void create_line_strip_from_points(const std::vector<Eigen::Vector3d>& points_vec);
     void add_child(std::shared_ptr<Mesh>& mesh); //add a child into the transformation hierarchy. Therefore when this object moves or rotates the children also do.
 
     //lots of mesh ops

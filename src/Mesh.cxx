@@ -1916,6 +1916,20 @@ void Mesh::create_cylinder(const Eigen::Vector3d& main_axis, const double height
     }
 }
 
+void Mesh::create_line_strip_from_points(const std::vector<Eigen::Vector3d>& points_vec){
+    CHECK(points_vec.size()>=2 ) << "We need at least 2 points to create line_strip";
+
+    V=vec2eigen(points_vec);
+    E.resize(points_vec.size()-1, 2);
+    for(size_t i=0; i<points_vec.size()-1; i++){
+        E.row(i) << i, i+1; 
+    }
+
+    m_vis.m_show_lines=true;
+    m_vis.m_show_mesh=false;
+
+}
+
 
 
 
