@@ -11,13 +11,6 @@
 #include <string> //find_last_of
 #include <limits> //signaling_nan
 
-//loguru
-#define LOGURU_IMPLEMENTATION 1
-#define LOGURU_NO_DATE_TIME 1
-#define LOGURU_NO_UPTIME 1
-#define LOGURU_REPLACE_GLOG 1
-#include <loguru.hpp>
-
 // #include <glad/glad.h>
 // #include <GLFW/glfw3.h> //glfw3.h after our OpenGL definitions
 
@@ -51,6 +44,14 @@
 #define CONFIGURU_IMPLICIT_CONVERSIONS 1
 #include <configuru.hpp>
 using namespace configuru;
+
+//loguru
+#define LOGURU_IMPLEMENTATION 1
+#define LOGURU_NO_DATE_TIME 1
+#define LOGURU_NO_UPTIME 1
+#define LOGURU_REPLACE_GLOG 1
+#include <loguru.hpp>
+
 
 //boost
 #include <boost/filesystem.hpp>

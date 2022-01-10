@@ -24,7 +24,7 @@
 
 
 //gl
-#include "easy_gl/Texture2D.h"
+#include "easy_gl/Texture2D.h" //contains torch header s it should be included before any loguru stuff
 
 
 class GLFWwindow;

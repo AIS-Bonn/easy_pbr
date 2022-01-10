@@ -6,6 +6,7 @@
 #include "easy_pbr/Mesh.h"
 
 #include <any>
+#include <stdexcept>
 
 
 // DO NOT USE A IFDEF because other C++ libs may include this Frame.h without the compile definitions and therefore the Frame.h that was used to compile easypbr and the one included will be different leading to issues
@@ -49,7 +50,7 @@ public:
     cv::Mat depth;
     unsigned long long int timestamp;
     Eigen::Matrix3f K = Eigen::Matrix3f::Identity();
-    Eigen::Matrix<float, 5, 1> distort_coeffs;
+    Eigen::Matrix<float, 5, 1> distort_coeffs = Eigen::Matrix<float, 5, 1>::Zero();
     Eigen::Affine3f tf_cam_world = Eigen::Affine3f::Identity();
     int subsample_factor=1; //the subsample factor (eg, 2,4,8) between the img_original size and the rgb_32f and so on
 
@@ -74,6 +75,8 @@ public:
     Frame random_crop(const int crop_height, const int crop_width);
     Frame subsample(const float subsample_factor, bool subsample_imgs=true);
     Frame upsample(const float upsample_factor, bool upsample_imgs=true);
+    Frame undistort();
+    void clone_mats();
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;
     // Mesh assign_color(Mesh& cloud);
@@ -93,6 +96,7 @@ public:
     Eigen::Vector3d unproject(const float x, const float y, const float depth); //gets a pixel in the 2d plane and unprojects it, putting it somewhere in 3d at a depth of 1
     Eigen::Vector2d project(const Eigen::Vector3d& point_world); //projects from world coordinates to img coordinates 
     cv::Mat draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen::Vector3d p1_world, const int thickness=1); //gets two points describing a line in world coordinates, projects them into the image and then draws a line through them;
+    cv::Mat get_rgb_mat(); //returns either the rgb_8u or the rgb_32f, whiever one is not empty, otherwise returns an empty mat
 
 
     //getters that are nice to have for python bindings
@@ -114,7 +118,10 @@ public:
     }
     template <typename T>
     T get_extra_field(const std::string name){
-        CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        // CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        if (!has_extra_field(name)){
+            throw std::runtime_error( "The field you want to acces with name " + name + " does not exist. Please add it with add_extra_field" );
+        }
         return std::any_cast<T>(extra_fields[name]);
     }
 

@@ -54,6 +54,11 @@ using namespace radu::utils;
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+//loguru
+#define LOGURU_REPLACE_GLOG 1
+#include <loguru.hpp>
+
+
 namespace easy_pbr{
 
 Mesh::Mesh():

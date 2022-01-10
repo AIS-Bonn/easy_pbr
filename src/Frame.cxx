@@ -3,6 +3,7 @@
 
 #include "easy_gl/UtilsGL.h"
 #include "opencv_utils.h"
+#include <opencv2/core/eigen.hpp>
 
 #include "RandGenerator.h"
 
@@ -328,6 +329,68 @@ Frame Frame::upsample(const float upsample_factor, bool upsample_imgs){
     //copy all stuff;
     return new_frame;
 }
+
+
+Frame Frame::undistort(){
+    CHECK( !distort_coeffs.isZero() ) << "The distorsion coefficients are zero so there is nothing to undistort";
+    CHECK( !get_rgb_mat().empty()) << "The undistorsion assumes we have either a rgb_8u or rgb_32f but both are empty";
+
+    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+    Eigen::Matrix<float, 4, 1> distort_coeffs_reduced; //we trim to the 4 coefficients
+    distort_coeffs_reduced(0)=distort_coeffs(0);
+    distort_coeffs_reduced(1)=distort_coeffs(1);
+    distort_coeffs_reduced(2)=distort_coeffs(2);
+    distort_coeffs_reduced(3)=distort_coeffs(3);
+
+    //get opencv matrices
+    cv::Mat K_mat, distort_coeffs_mat, R, new_K_mat, rmap1, rmap2;
+
+    cv::eigen2cv(K, K_mat);
+    cv::eigen2cv(distort_coeffs_reduced, distort_coeffs_mat);
+
+    cv::Size image_size = get_rgb_mat().size(); //TODO we kind assume here that we use the rgb3f one and 
+
+
+    new_K_mat=cv::getOptimalNewCameraMatrix(K_mat, distort_coeffs_mat, image_size, 1.0 );
+    cv::initUndistortRectifyMap (K_mat, distort_coeffs_mat, R, new_K_mat, image_size, CV_32FC1, rmap1, rmap2);
+
+    new_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
+
+    //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
+    if(!rgb_8u.empty())  cv::remap(rgb_8u.clone(), new_frame.rgb_8u, rmap1, rmap2, cv::INTER_LANCZOS4 );
+    if(!rgb_32f.empty())  cv::remap(rgb_32f.clone(), new_frame.rgb_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_8u.empty())  cv::remap(gray_8u.clone(), new_frame.gray_8u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_32f.empty())  cv::remap(gray_32f.clone(), new_frame.gray_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!grad_x_32f.empty())  cv::remap(grad_x_32f.clone(), new_frame.grad_x_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!grad_y_32f.empty())  cv::remap(grad_y_32f.clone(), new_frame.grad_y_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_with_gradients.empty())  cv::remap(gray_with_gradients.clone(), new_frame.gray_with_gradients, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_16u.empty())  cv::remap(thermal_16u.clone(), new_frame.thermal_16u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_32f.empty())  cv::remap(thermal_32f.clone(), new_frame.thermal_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
+    if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
+
+    return new_frame;
+}
+
+void Frame::clone_mats(){
+    if(!rgb_8u.empty()) rgb_8u=rgb_8u.clone();
+    if(!rgb_32f.empty()) rgb_32f=rgb_32f.clone();
+    if(!gray_8u.empty()) gray_8u=gray_8u.clone();
+    if(!gray_32f.empty()) gray_32f=gray_32f.clone();
+    if(!grad_x_32f.empty()) grad_x_32f=grad_x_32f.clone();
+    if(!grad_y_32f.empty()) grad_y_32f=grad_y_32f.clone();
+    if(!gray_with_gradients.empty()) gray_with_gradients=gray_with_gradients.clone();
+    if(!thermal_16u.empty()) thermal_16u=thermal_16u.clone();
+    if(!thermal_32f.empty()) thermal_32f=thermal_32f.clone();
+    if(!thermal_vis_32f.empty()) thermal_vis_32f=thermal_vis_32f.clone();
+    if(!normal_32f.empty()) normal_32f=normal_32f.clone();
+    if(!img_original_size.empty()) img_original_size=img_original_size.clone();
+    if(!mask.empty()) mask=mask.clone();
+    if(!depth.empty()) depth=depth.clone();
+}
+
 
 cv::Mat Frame::depth2world_xyz_mat() const{
 
@@ -848,6 +911,19 @@ cv::Mat Frame::draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen:
 
 // }
 
+
+cv::Mat Frame::get_rgb_mat(){
+     //get the rgb img
+    cv::Mat rgb_img;
+    if (!rgb_8u.empty()){
+        rgb_img=rgb_8u;
+    }else if(!rgb_32f.empty()){
+        rgb_img=rgb_32f;
+    }
+
+    return rgb_img;
+
+}
 
 
 

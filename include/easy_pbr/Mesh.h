@@ -3,6 +3,8 @@
 #include <memory>
 #include<stdarg.h>
 #include <any>
+#include <stdexcept>
+
 
 
 //eigen
@@ -14,7 +16,7 @@
 //better enums
 #include <enum.h>
 
-#include <loguru.hpp>
+// #include <loguru.hpp>
 
 
 namespace radu { namespace utils {
@@ -158,8 +160,15 @@ struct DataBlob {
             //WARNING , cannot be used to append E and F because they also need to be reindexed
             static_assert(std::is_same<T, double>::value, "We only allow appending to matrices that are of type double. If the matrix of type int it means it is E or F and therefore would need to be reindexed after appending which is no supported in the streaming API");
             //other checks
-            CHECK(m_is_preallocated) << "Can only use this appening API when the data has been preallocated";
-            CHECK(m_data.cols()==new_data.cols()) << "Data cols and new_data cols do not coincide. m_data cols is " << m_data.cols() << " and new_data cols is " << new_data.cols();
+            // CHECK(m_is_preallocated) << "Can only use this appening API when the data has been preallocated";
+            // CHECK(m_data.cols()==new_data.cols()) << "Data cols and new_data cols do not coincide. m_data cols is " << m_data.cols() << " and new_data cols is " << new_data.cols();
+            if (!m_is_preallocated){
+                throw std::runtime_error( "Can only use this appening API when the data has been preallocated" );
+            }
+            if (m_data.cols()!=new_data.cols()){
+                throw std::runtime_error( "Data cols and new_data cols do not coincide. m_data cols is " + std::to_string(m_data.cols()) + " and new_data cols is " + std::to_string(new_data.cols() )  );
+            }
+            
 
 
             //find a block that can fit the new data size
@@ -173,7 +182,8 @@ struct DataBlob {
             }else if(nr_empty_rows_start>=new_data.rows()){
                 start_new_block=0;
             }else{
-                LOG(WARNING) << "Dropping, cannot append anywhere inside this data matrix. We are trying to append a new matrix of rows " << new_data.rows() << ". The preallocated data has rows " << m_data.rows() << " the m_start_row_allocated is " << m_start_row_allocated << " m_end_row_allocated " <<m_end_row_allocated;
+                // LOG(WARNING) << "Dropping, cannot append anywhere inside this data matrix. We are trying to append a new matrix of rows " << new_data.rows() << ". The preallocated data has rows " << m_data.rows() << " the m_start_row_allocated is " << m_start_row_allocated << " m_end_row_allocated " <<m_end_row_allocated;
+                std::cout <<  "Dropping, cannot append anywhere inside this data matrix. We are trying to append a new matrix of rows " << new_data.rows() << ". The preallocated data has rows " << m_data.rows() << " the m_start_row_allocated is " << m_start_row_allocated << " m_end_row_allocated " <<m_end_row_allocated << std::endl;
             }
 
             //copy in the empty block
@@ -424,7 +434,10 @@ public:
     }
     template <typename T>
     T get_extra_field(const std::string name){
-        CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        // CHECK(has_extra_field(name)) << "The field you want to acces with name " << name << " does not exist. Please add it with add_extra_field";
+        if (!has_extra_field(name)){
+            throw std::runtime_error( "The field you want to acces with name " + name + " does not exist. Please add it with add_extra_field" );
+        }
         return std::any_cast<T>(extra_fields[name]);
     }
 

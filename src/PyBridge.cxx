@@ -233,6 +233,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("pixels2coords", &Frame::pixels2coords )
     .def("unproject", &Frame::unproject )
     .def("project", &Frame::project )
+    .def("undistort", &Frame::undistort )
     .def("draw_projected_line", &Frame::draw_projected_line,  py::arg().noconvert(), py::arg().noconvert(), py::arg("thickness")=1 )
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )

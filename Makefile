@@ -4,4 +4,4 @@ all:
 
 clean:
 	python3 -m pip uninstall easypbr
-	rm -rf build *.egg-info build easypbr*.so libeasypbr_cpp.so
+	rm -rf build *.egg-info build easypbr*.so libeasypbr_cpp.so libeasygl_cpp.so

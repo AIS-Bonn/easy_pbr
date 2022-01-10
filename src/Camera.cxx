@@ -1,11 +1,6 @@
 #include "easy_pbr/Camera.h"
 #include "easy_pbr/Mesh.h"
 
-
-//loguru
-#define LOGURU_REPLACE_GLOG 1
-#include <loguru.hpp>
-
 #include <math.h>
 
 // Implementation
@@ -16,6 +11,12 @@
 #include "numerical_utils.h"
 #include "RandGenerator.h"
 #include "easy_gl/UtilsGL.h"
+
+//loguru
+#define LOGURU_REPLACE_GLOG 1
+#include <loguru.hpp>
+
+
 
 using namespace radu::utils;
 

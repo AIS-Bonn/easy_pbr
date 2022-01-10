@@ -47,6 +47,12 @@ namespace fs = boost::filesystem;
 // // Include glfw3.h after our OpenGL definitions
 // #include <GLFW/glfw3.h>
 
+//loguru
+#define LOGURU_REPLACE_GLOG 1
+#include <loguru.hpp>
+
+
+
 using namespace radu::utils;
 
 

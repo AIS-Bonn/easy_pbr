@@ -2,16 +2,18 @@
 
 #include <memory>
 #include<stdarg.h>
+#include <stdexcept>
+
 
 //we add them first because they might contain torch and we need to include torch before we include loguru otherwise loguru doesnt work
 #include "easy_gl/Buf.h"
 #include "easy_gl/Texture2D.h"
 #include "easy_gl/VertexArrayObject.h"
 
-//loguru
-#define LOGURU_WITH_STREAMS 1
-#define LOGURU_REPLACE_GLOG 1
-#include <loguru.hpp>
+// //loguru
+// #define LOGURU_WITH_STREAMS 1
+// #define LOGURU_REPLACE_GLOG 1
+// #include <loguru.hpp>
 
 
 
@@ -84,7 +86,10 @@ public:
         }
     }
     gl::Buf& get_extra_array_buffer(const std::string name){
-        CHECK(has_extra_array_buffer(name)) << "The array_buffer you want to acces with name " << name << " does not exist. Please add it with add_extra_array_buffer";
+        // CHECK(has_extra_array_buffer(name)) << "The array_buffer you want to acces with name " << name << " does not exist. Please add it with add_extra_array_buffer";
+        if (!has_extra_array_buffer(name)){
+            throw std::runtime_error( "The array_buffer you want to acces with name " + name + " does not exist. Please add it with add_extra_array_buffer" );
+        }
         return *extra_array_buffers.at(name);
     }
 
