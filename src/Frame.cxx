@@ -391,6 +391,25 @@ void Frame::clone_mats(){
     if(!depth.empty()) depth=depth.clone();
 }
 
+void Frame::unload_images(){
+    if(!rgb_8u.empty()) rgb_8u.release(); CHECK(rgb_8u.empty());
+    if(!rgb_32f.empty()) rgb_32f.release(); CHECK(rgb_32f.empty());
+    if(!gray_8u.empty()) gray_8u.release(); CHECK(gray_8u.empty());
+    if(!gray_32f.empty()) gray_32f.release(); CHECK(gray_32f.empty());
+    if(!grad_x_32f.empty()) grad_x_32f.release(); CHECK(grad_x_32f.empty());
+    if(!grad_y_32f.empty()) grad_y_32f.release(); CHECK(grad_y_32f.empty());
+    if(!gray_with_gradients.empty()) gray_with_gradients.release(); CHECK(gray_with_gradients.empty());
+    if(!thermal_16u.empty()) thermal_16u.release(); CHECK(thermal_16u.empty());
+    if(!thermal_32f.empty()) thermal_32f.release(); CHECK(thermal_32f.empty());
+    if(!thermal_vis_32f.empty()) thermal_vis_32f.release(); CHECK(thermal_vis_32f.empty());
+    if(!normal_32f.empty()) normal_32f.release(); CHECK(normal_32f.empty());
+    if(!img_original_size.empty()) img_original_size.release(); CHECK(img_original_size.empty());
+    if(!mask.empty()) mask.release(); CHECK(mask.empty());
+    if(!depth.empty()) depth.release(); CHECK(depth.empty());
+
+     is_shell=true;
+}
+
 
 cv::Mat Frame::depth2world_xyz_mat() const{
 
@@ -616,6 +635,7 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
         color_mat=rgb_32f;
     }
 
+    cloud->apply_model_matrix_to_cpu(false);
 
     Eigen::MatrixXd V_transformed;
     V_transformed.resize(cloud->V.rows(), cloud->V.cols());
@@ -643,26 +663,33 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
     V_transformed=V_transformed*K.cast<double>().transpose();
     int nr_points_projected=0;
     for (int i = 0; i < cloud->V.rows(); i++) {
-        V_transformed(i,0)/=V_transformed(i,2);
-        V_transformed(i,1)/=V_transformed(i,2);
-        // V_transformed(i,2)=1.0;
+        if(!cloud->V.row(i).isZero()){
+            // VLOG(1)<< " before " <<  V_transformed.row(i);
+            V_transformed(i,0)/=V_transformed(i,2);
+            V_transformed(i,1)/=V_transformed(i,2);
+            // V_transformed(i,2)=1.0;
+            // VLOG(1)<< " after "<< V_transformed.row(i);
 
-        //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-1-V_transformed(i,1)
-        int x=V_transformed(i,0);
-        int y=height-1-V_transformed(i,1);
-        if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
-            continue;
+            //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-1-V_transformed(i,1)
+            int x=V_transformed(i,0);
+            int y=height-1-V_transformed(i,1);
+            // VLOG(1) << " x and y is " << x << " " << y;
+            // VLOG(1) << height << " rows is " << color_mat.rows;
+            // VLOG(1) << "K is " << K;
+            if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
+                continue;
+            }
+            nr_points_projected++;
+
+            // // VLOG(1) << "accessing at y,x" << y << " " << x;
+            // // store Color in C as RGB
+            cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
+            cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
+            cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
+
+            cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
+            cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
         }
-        nr_points_projected++;
-
-        // // VLOG(1) << "accessing at y,x" << y << " " << x;
-        // // store Color in C as RGB
-        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
-        cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
-        cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
-
-        cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
-        cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
     }
     // VLOG(1) << "nr_points_projected" << nr_points_projected;
 
@@ -785,6 +812,8 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
         color_mat=rgb_32f;
     }
 
+    cloud->apply_model_matrix_to_cpu(false);
+
 
     Eigen::MatrixXd V_transformed;
     V_transformed.resize(cloud->V.rows(), cloud->V.cols());
@@ -812,26 +841,28 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
     V_transformed=V_transformed*K.cast<double>().transpose();
     int nr_points_projected=0;
     for (int i = 0; i < cloud->V.rows(); i++) {
-        V_transformed(i,0)/=V_transformed(i,2);
-        V_transformed(i,1)/=V_transformed(i,2);
-        // V_transformed(i,2)=1.0;
+        if(!cloud->V.row(i).isZero()){
+            V_transformed(i,0)/=V_transformed(i,2);
+            V_transformed(i,1)/=V_transformed(i,2);
+            // V_transformed(i,2)=1.0;
 
-        //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
-        int x=V_transformed(i,0);
-        int y=height-1-V_transformed(i,1);
-        if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
-            continue;
+            //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
+            int x=V_transformed(i,0);
+            int y=height-1-V_transformed(i,1);
+            if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
+                continue;
+            }
+            nr_points_projected++;
+
+            // // VLOG(1) << "accessing at y,x" << y << " " << x;
+            // // store Color in C as RGB
+            cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
+            cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
+            cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
+
+            cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
+            cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
         }
-        nr_points_projected++;
-
-        // // VLOG(1) << "accessing at y,x" << y << " " << x;
-        // // store Color in C as RGB
-        cloud->C(i,0)=color_mat.at<cv::Vec3f>(y, x) [ 2 ];
-        cloud->C(i,1)=color_mat.at<cv::Vec3f>(y, x) [ 1 ];
-        cloud->C(i,2)=color_mat.at<cv::Vec3f>(y, x) [ 0 ];
-
-        cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
-        cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
     }
     // VLOG(1) << "nr_points_projected" << nr_points_projected;
 

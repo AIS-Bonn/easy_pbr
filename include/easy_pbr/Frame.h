@@ -62,6 +62,7 @@ public:
     std::string depth_path;
     std::function<void(Frame& frame)> load_images; //function which when called, will read the paths and fill the corresponding mats
 
+    std::string m_name;
     int cam_id; //id of the camera depending on how many cameras we have (it gos from 0 to 1 in the case of stereo)
     int frame_idx; //frame idx monotonically increasing
 
@@ -77,6 +78,8 @@ public:
     Frame upsample(const float upsample_factor, bool upsample_imgs=true);
     Frame undistort();
     void clone_mats();
+    void unload_images(); //releases the memory of all the opencv mats
+    std::string name(){ return m_name;};
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;
     // Mesh assign_color(Mesh& cloud);

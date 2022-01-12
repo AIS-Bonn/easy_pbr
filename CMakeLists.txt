@@ -21,7 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # option(CORE_WITH_CUDA "Compile CUDA" OFF)
 # option(CORE_WITH_GLM "With GLM for some quality of life functions in EasyGL" OFF)
 # option(CORE_WITH_DIR_WATCHER "Compile with the dir_watcher dependency from emildb" OFF)
-option(CORE_WITH_PCL "Compile with PCL" OFF)
+option(CORE_WITH_PCL "Compile with PCL" ON)
 
 
 
