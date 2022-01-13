@@ -236,6 +236,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("undistort", &Frame::undistort )
     .def("has_right_stereo_pair", &Frame::has_right_stereo_pair )
     .def("right_stereo_pair", &Frame::right_stereo_pair )
+    .def("rectify_stereo_pair", &Frame::rectify_stereo_pair, py::arg("offset_disparity")=0  )
     .def("draw_projected_line", &Frame::draw_projected_line,  py::arg().noconvert(), py::arg().noconvert(), py::arg("thickness")=1 )
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )

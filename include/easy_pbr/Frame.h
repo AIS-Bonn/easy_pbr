@@ -79,11 +79,13 @@ public:
     Frame subsample(const float subsample_factor, bool subsample_imgs=true);
     Frame upsample(const float upsample_factor, bool upsample_imgs=true);
     Frame undistort();
+    Frame remap(cv::Mat& rmap1, cv::Mat& rmap2);
     void clone_mats();
     void unload_images(); //releases the memory of all the opencv mats
     std::string name(){ return m_name;};
     bool has_right_stereo_pair(){ return m_right_stereo_pair.get()!=0;};
     std::shared_ptr<Frame> right_stereo_pair();
+    std::tuple<std::shared_ptr<easy_pbr::Frame>, std::shared_ptr<easy_pbr::Frame>, float> rectify_stereo_pair(const int offset_disparity=0); //can offset the disparity by some positive value so that the disparity range si smaller
 
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;

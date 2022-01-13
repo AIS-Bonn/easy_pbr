@@ -112,15 +112,27 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
     Eigen::MatrixXd UV(8,2);
     UV <<
         // near face (doesnt actually need uvs)
-        1, 1, //top right
-        0, 1, // top left
-        0, 0, //bottom left
-        1, 0, //bottom right
+        // 1, 1, //top right
+        // 0, 1, // top left
+        // 0, 0, //bottom left
+        // 1, 0, //bottom right
+        // //far face
+        // 1, 1, //top right
+        // 0, 1, // top left corner of ndc
+        // 0, 0, //bottom left
+        // 1, 0; //bottom right
+
+        //we use the opencv systme in which the origin of the uv is top left https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        //THIS WORKS because the tf_cam_world of the frame look like the one in the link. So the X to the right, y towards bottom and Z towards the frame itself
+        1, 0, //top right
+        0, 0, // top left
+        0, 1, //bottom left
+        1, 1, //bottom right
         //far face
-        1, 1, //top right
-        0, 1, // top left corner of ndc
-        0, 0, //bottom left
-        1, 0; //bottom right
+        1, 0, //top right
+        0, 0, // top left corner of ndc
+        0, 1, //bottom left
+        1, 1; //bottom right
     frustum_mesh->F=F;
     frustum_mesh->NV=NV;
     frustum_mesh->UV=UV;
@@ -335,7 +347,7 @@ Frame Frame::undistort(){
     CHECK( !distort_coeffs.isZero() ) << "The distorsion coefficients are zero so there is nothing to undistort";
     CHECK( !get_rgb_mat().empty()) << "The undistorsion assumes we have either a rgb_8u or rgb_32f but both are empty";
 
-    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+    // Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
     Eigen::Matrix<float, 4, 1> distort_coeffs_reduced; //we trim to the 4 coefficients
     distort_coeffs_reduced(0)=distort_coeffs(0);
@@ -355,21 +367,23 @@ Frame Frame::undistort(){
     new_K_mat=cv::getOptimalNewCameraMatrix(K_mat, distort_coeffs_mat, image_size, 1.0 );
     cv::initUndistortRectifyMap (K_mat, distort_coeffs_mat, R, new_K_mat, image_size, CV_32FC1, rmap1, rmap2);
 
-    new_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
+    Frame new_frame=remap(rmap1, rmap2);
 
-    //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
-    if(!rgb_8u.empty())  cv::remap(rgb_8u.clone(), new_frame.rgb_8u, rmap1, rmap2, cv::INTER_LANCZOS4 );
-    if(!rgb_32f.empty())  cv::remap(rgb_32f.clone(), new_frame.rgb_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!gray_8u.empty())  cv::remap(gray_8u.clone(), new_frame.gray_8u, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!gray_32f.empty())  cv::remap(gray_32f.clone(), new_frame.gray_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!grad_x_32f.empty())  cv::remap(grad_x_32f.clone(), new_frame.grad_x_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!grad_y_32f.empty())  cv::remap(grad_y_32f.clone(), new_frame.grad_y_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!gray_with_gradients.empty())  cv::remap(gray_with_gradients.clone(), new_frame.gray_with_gradients, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!thermal_16u.empty())  cv::remap(thermal_16u.clone(), new_frame.thermal_16u, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!thermal_32f.empty())  cv::remap(thermal_32f.clone(), new_frame.thermal_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
-    if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
-    if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
+    // new_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
+
+    // //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
+    // if(!rgb_8u.empty())  cv::remap(rgb_8u.clone(), new_frame.rgb_8u, rmap1, rmap2, cv::INTER_LANCZOS4 );
+    // if(!rgb_32f.empty())  cv::remap(rgb_32f.clone(), new_frame.rgb_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!gray_8u.empty())  cv::remap(gray_8u.clone(), new_frame.gray_8u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!gray_32f.empty())  cv::remap(gray_32f.clone(), new_frame.gray_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!grad_x_32f.empty())  cv::remap(grad_x_32f.clone(), new_frame.grad_x_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!grad_y_32f.empty())  cv::remap(grad_y_32f.clone(), new_frame.grad_y_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!gray_with_gradients.empty())  cv::remap(gray_with_gradients.clone(), new_frame.gray_with_gradients, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!thermal_16u.empty())  cv::remap(thermal_16u.clone(), new_frame.thermal_16u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!thermal_32f.empty())  cv::remap(thermal_32f.clone(), new_frame.thermal_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    // if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
+    // if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
 
     return new_frame;
 }
@@ -410,6 +424,29 @@ void Frame::unload_images(){
      is_shell=true;
 }
 
+Frame Frame::remap(cv::Mat& rmap1, cv::Mat& rmap2){
+
+    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+    new_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
+
+    //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
+    if(!rgb_8u.empty())  cv::remap(rgb_8u.clone(), new_frame.rgb_8u, rmap1, rmap2, cv::INTER_LANCZOS4 );
+    if(!rgb_32f.empty())  cv::remap(rgb_32f.clone(), new_frame.rgb_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_8u.empty())  cv::remap(gray_8u.clone(), new_frame.gray_8u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_32f.empty())  cv::remap(gray_32f.clone(), new_frame.gray_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!grad_x_32f.empty())  cv::remap(grad_x_32f.clone(), new_frame.grad_x_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!grad_y_32f.empty())  cv::remap(grad_y_32f.clone(), new_frame.grad_y_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!gray_with_gradients.empty())  cv::remap(gray_with_gradients.clone(), new_frame.gray_with_gradients, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_16u.empty())  cv::remap(thermal_16u.clone(), new_frame.thermal_16u, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_32f.empty())  cv::remap(thermal_32f.clone(), new_frame.thermal_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
+    if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
+    if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
+
+    return new_frame;
+}
+
 
 cv::Mat Frame::depth2world_xyz_mat() const{
 
@@ -433,7 +470,8 @@ cv::Mat Frame::depth2world_xyz_mat() const{
 
                 Eigen::Vector3d point_2D;
                 //the point is not at x,y but at x, heght-1-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-1-y
-                point_2D << x, depth.rows-1-y, 1.0;
+                // point_2D << x, depth.rows-1-y, 1.0;
+                point_2D << x, y, 1.0;
                 Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D;
                 point_3D_camera_coord*=depth_val;
                 Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord;
@@ -543,7 +581,9 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
         for(int x=0; x<width; x++){
             Eigen::Vector3f point_screen;
             //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-            point_screen << x,height-1-y,1.0;
+            // point_screen << x,height-1-y,1.0;
+            //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+            point_screen << x,y,1.0;
 
             Eigen::Vector3f point_cam_coords;
             point_cam_coords=K.inverse()*point_screen;
@@ -581,7 +621,9 @@ std::shared_ptr<Mesh> Frame::pixels2coords() const{
         for(int x=0; x<width; x++){
             Eigen::Vector3f point_screen;
             //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
-            point_screen << x,height-1-y,1.0;
+            // point_screen << x,height-1-y,1.0;
+            //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+            point_screen << x,y,1.0;
 
             points_mesh->V.row(idx_insert)= point_screen.cast<double>();
 
@@ -672,7 +714,9 @@ std::shared_ptr<Mesh> Frame::assign_color(std::shared_ptr<Mesh>& cloud) const{
 
             //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-1-V_transformed(i,1)
             int x=V_transformed(i,0);
-            int y=height-1-V_transformed(i,1);
+            // int y=height-1-V_transformed(i,1);
+            //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+            int y=V_transformed(i,1);
             // VLOG(1) << " x and y is " << x << " " << y;
             // VLOG(1) << height << " rows is " << color_mat.rows;
             // VLOG(1) << "K is " << K;
@@ -848,7 +892,9 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
             //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
             int x=V_transformed(i,0);
-            int y=height-1-V_transformed(i,1);
+            // int y=height-1-V_transformed(i,1);
+            //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+            int y=V_transformed(i,1);
             if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
                 continue;
             }
@@ -880,7 +926,9 @@ Eigen::Vector3d Frame::unproject(const float x, const float y, const float depth
     Eigen::Affine3d tf_world_cam=tf_cam_world.inverse().cast<double>();
 
     Eigen::Vector3d point_2D;
-    point_2D << x, height-1-y, 1.0;
+    // point_2D << x, height-1-y, 1.0;
+    //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+    point_2D << x, y, 1.0;
     Eigen::Vector3d point_3D_camera_coord= K.cast<double>().inverse() * point_2D;
     point_3D_camera_coord*=depth;
     Eigen::Vector3d point_3D_world_coord=tf_world_cam*point_3D_camera_coord; 
@@ -894,7 +942,8 @@ Eigen::Vector2d Frame::project(const Eigen::Vector3d& point_world){
     Eigen::Vector3d point_screen=K.cast<double>() * point_cam;
     point_screen.x()/=point_screen.z();
     point_screen.y()/=point_screen.z();
-    point_screen.y()=height-1-point_screen.y();
+    // point_screen.y()=height-1-point_screen.y();
+    //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
 
     Eigen::Vector2d point_ret;
     point_ret << point_screen.x(), point_screen.y();
@@ -926,6 +975,101 @@ cv::Mat Frame::draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen:
     cv::line(rgb_img, pt0, pt1, cv::Scalar( 255, 0, 0 ), thickness );
 
     return rgb_img;
+}
+
+std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectify_stereo_pair(const int offset_disparity){
+    CHECK(has_right_stereo_pair()) <<"We need a stereo pair to rectify";
+    Frame& frame_left=*this;
+    Frame& frame_right=*m_right_stereo_pair;
+    CHECK(!frame_left.is_shell) << "You need to run load_images on the left frame because we need to know the frame size";
+    CHECK(!frame_right.is_shell) << "You need to run load_images on the right frame because we need to know the frame size";
+
+    //get the pose delta between the two cams
+    Eigen::Affine3d cam_left_cam_right; //transforms cam right to the frame of cam_left
+    cam_left_cam_right = (frame_left.tf_cam_world * frame_right.tf_cam_world.inverse() ).cast<double>(); //camRigth to world  * world to cam_left
+
+
+     //get the matrices into opencv Mat 
+    Eigen::Matrix3f K_1 = frame_left.K.cast<float>();
+    cv::Mat K_1_mat = cv::Mat(3, 3, CV_32FC1, K_1.data()).clone().t();
+    Eigen::Matrix3f K_2 = frame_right.K.cast<float>();
+    cv::Mat K_2_mat = cv::Mat(3, 3, CV_32FC1, K_2.data()).clone().t();
+    cv::Mat distCoeffs;
+    //get the rotation and translation and opencv wants the transform from cam1 to cam 2 so from cam_left to cam right
+    Eigen::MatrixXd R_eigen=cam_left_cam_right.inverse().linear().cast<double>();
+    Eigen::VectorXd t_eigen=cam_left_cam_right.inverse().translation().cast<double>();
+    // VLOG(1) << "R_eigen " << R_eigen;
+    // VLOG(1) << "t_eigen " << t_eigen;
+    cv::Mat R_mat = cv::Mat(3, 3, CV_64FC1, R_eigen.data()).clone().t();
+    cv::Mat t_mat = cv::Mat(3, 1, CV_64FC1, t_eigen.data()).clone();
+    // VLOG(1) << " R_Mat " << R_mat;
+    // VLOG(1) << " t_Mat " << t_mat;
+
+    // VLOG(1) << " frame left size " << frame_left.get_rgb_mat().size(); 
+    // VLOG(1) << " frame right size " << frame_right.get_rgb_mat().size(); 
+
+
+    cv::Mat rectification_cam1;
+    cv::Mat rectification_cam2;
+    cv::Mat proj_cam1;
+    cv::Mat proj_cam2;
+    cv::Mat Q;
+    cv::stereoRectify 	( K_1_mat, distCoeffs, K_2_mat, distCoeffs, frame_left.get_rgb_mat().size(), R_mat, t_mat, 
+                        rectification_cam1, rectification_cam2, proj_cam1, proj_cam2, Q);
+
+    //perform rectification 
+    cv::Mat cam_1_map_x, cam_1_map_y;
+    cv::Mat cam_2_map_x, cam_2_map_y;
+    cv::initUndistortRectifyMap(K_1_mat, distCoeffs, rectification_cam1, proj_cam1, frame_left.get_rgb_mat().size(), CV_16SC2, cam_1_map_x, cam_1_map_y);
+    cv::initUndistortRectifyMap(K_2_mat, distCoeffs, rectification_cam2, proj_cam2, frame_right.get_rgb_mat().size(), CV_16SC2, cam_2_map_x, cam_2_map_y);
+
+    Frame frame_left_rectified=frame_left.remap(cam_1_map_x, cam_1_map_y);
+    Frame frame_right_rectified=frame_right.remap(cam_2_map_x, cam_2_map_y);
+
+    // cv::Mat cam1_rectified;
+    // cv::Mat cam2_rectified;
+    // cv::remap(frame_4_rot.img, cam1_rectified, cam_1_map_x, cam_1_map_y, cv::INTER_LANCZOS4);
+    // cv::remap(frame_5_rot.img, cam2_rectified, cam_2_map_x, cam_2_map_y, cv::INTER_LANCZOS4);
+
+    // //print the new K matrices 
+    // // VLOG(1) << "proj cam1" << proj_cam1;
+    // Frame new_frame_left, new_frame_right;
+    // new_frame_left.img= cam1_rectified;
+    frame_left_rectified.K(0,0) =  proj_cam1.at<double>(0,0);
+    frame_left_rectified.K(1,1) =  proj_cam1.at<double>(1,1);
+    frame_left_rectified.K(0,2) =  proj_cam1.at<double>(0,2);
+    frame_left_rectified.K(1,2) =  proj_cam1.at<double>(1,2);
+    // // VLOG(1) << "New k is " << new_frame_left.K;
+    // new_frame_right.img= cam2_rectified;
+    frame_right_rectified.K(0,0) =  proj_cam2.at<double>(0,0);
+    frame_right_rectified.K(1,1) =  proj_cam2.at<double>(1,1);
+    frame_right_rectified.K(0,2) =  proj_cam2.at<double>(0,2);
+    frame_right_rectified.K(1,2) =  proj_cam2.at<double>(1,2);
+    float baseline=cam_left_cam_right.translation().norm();
+
+
+
+    //move the cam2_crop a bit to the right so that the maximum disparity we need to check is lower
+    int offsety=0;
+    if (offset_disparity!=0){
+        cv::Mat trans_mat = (cv::Mat_<double>(2,3) << 1, 0, offset_disparity, 0, 1, offsety);
+        if (!rgb_8u.empty()) cv::warpAffine(frame_right_rectified.rgb_8u, frame_right_rectified.rgb_8u, trans_mat, frame_right_rectified.rgb_8u.size());
+        if (!rgb_32f.empty()) cv::warpAffine(frame_right_rectified.rgb_32f, frame_right_rectified.rgb_32f, trans_mat, frame_right_rectified.rgb_32f.size());
+    }
+
+
+
+    //get make them shared ptr
+    std::shared_ptr frame_left_rectified_ptr=std::make_shared<Frame>(frame_left_rectified);
+    std::shared_ptr frame_right_rectified_ptr=std::make_shared<Frame>(frame_right_rectified);
+    frame_left_rectified_ptr->m_right_stereo_pair=frame_right_rectified_ptr;
+
+
+    // std::tuple<Frame, Frame, float> ret_value= std::make_tuple(frame_left_rectified, frame_right_rectified, baseline);
+    std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float> ret_value= std::make_tuple(frame_left_rectified_ptr, frame_right_rectified_ptr, baseline);
+
+    return ret_value;
+
 }
 
 // void Frame::rotate_y_axis(const float rads ){
