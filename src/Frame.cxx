@@ -7,6 +7,8 @@
 
 #include "RandGenerator.h"
 
+#include "numerical_utils.h"
+
 //loguru
 #define LOGURU_REPLACE_GLOG 1
 #include <loguru.hpp>
@@ -1072,6 +1074,65 @@ std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectif
 
 }
 
+Frame Frame::rotate_clockwise_90(){
+
+    //check that the distorsion coefficiets are zero, therefore we are rotating a undistorted image. If we were to deal with a distorted image we whould need to modify also the coefficients probably which is a bit difficult.
+    CHECK(distort_coeffs.isZero()) << "We are trying to rotate an image which has not been undistorted. This would require modifing also the dist_coeffs which is a bit involved and I'm to lazy to do it. Please undistort your image first.";
+    CHECK(!is_shell) <<"This frame is a shell. You need to call load_images first";
+
+
+
+    Frame rotated_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+    rotated_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
+
+    //rotate K
+    // rotated_frame.K(1,1)=K(0,0); //fx and fy change place
+    // rotated_frame.K(0,0)=K(1,1);
+    // rotated_frame.K(0,2)=get_rgb_mat().cols-K(1,2); //cx is width-old_cy
+    // rotated_frame.K(1,2)=K(0,2); //cy is the same as old_cx
+
+    //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
+    if(!rgb_8u.empty())  cv::rotate(rgb_8u, rotated_frame.rgb_8u, cv::ROTATE_90_CLOCKWISE);
+    if(!rgb_32f.empty())  cv::rotate(rgb_32f, rotated_frame.rgb_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!gray_8u.empty())  cv::rotate(gray_8u, rotated_frame.gray_8u, cv::ROTATE_90_CLOCKWISE);
+    if(!gray_32f.empty())  cv::rotate(gray_32f, rotated_frame.gray_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!grad_x_32f.empty())  cv::rotate(grad_x_32f, rotated_frame.grad_x_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!grad_y_32f.empty())  cv::rotate(grad_y_32f, rotated_frame.grad_y_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!gray_with_gradients.empty())  cv::rotate(gray_with_gradients, rotated_frame.gray_with_gradients, cv::ROTATE_90_CLOCKWISE);
+    if(!thermal_16u.empty())  cv::rotate(thermal_16u, rotated_frame.thermal_16u, cv::ROTATE_90_CLOCKWISE);
+    if(!thermal_32f.empty())  cv::rotate(thermal_32f, rotated_frame.thermal_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!thermal_vis_32f.empty())  cv::rotate(thermal_vis_32f, rotated_frame.thermal_vis_32f, cv::ROTATE_90_CLOCKWISE);
+    if(!mask.empty())  cv::rotate(mask, rotated_frame.mask, cv::ROTATE_90_CLOCKWISE);
+    if(!depth.empty())  cv::rotate(depth, rotated_frame.depth, cv::ROTATE_90_CLOCKWISE);
+
+    //rotate K
+    rotated_frame.K(1,1)=K(0,0); //fx and fy change place
+    rotated_frame.K(0,0)=K(1,1);
+    rotated_frame.K(0,2)=get_rgb_mat().cols-K(1,2); //cx is width-old_cy
+    rotated_frame.K(1,2)=K(0,2); //cy is the same as old_cx
+
+    
+    //rotate tf_cam_world;
+    Eigen::Affine3f tf_rot;
+    tf_rot.setIdentity();
+    Eigen::Matrix3f r = (Eigen::AngleAxisf( radu::utils::degrees2radians(90), Eigen::Vector3f::UnitZ()) ).toRotationMatrix();
+    tf_rot.linear()=r;
+    // rotated_frame.tf_cam_world=tf_rot*tf_cam_world;
+
+    Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
+    rotated_frame.tf_cam_world = (tf_world_cam*tf_rot).inverse();
+
+
+    //set width and height
+    rotated_frame.height=rotated_frame.get_rgb_mat().rows;
+    rotated_frame.width=rotated_frame.get_rgb_mat().cols;
+
+
+    return rotated_frame;
+
+}
+
 // void Frame::rotate_y_axis(const float rads ){
 //     Eigen::Affine3f tf;
 //     tf.setIdentity();
@@ -1118,6 +1179,10 @@ Eigen::Vector3f Frame::look_dir() const{
 std::shared_ptr<Frame> Frame::right_stereo_pair(){
     CHECK( has_right_stereo_pair()) << "We do not have a right stereo pair";
     return m_right_stereo_pair;
+}
+
+void Frame::set_right_stereo_pair(Frame& frame){
+    m_right_stereo_pair=std::make_shared<Frame>(frame);
 }
 
 // template <typename T>

@@ -84,6 +84,7 @@ public:
     void unload_images(); //releases the memory of all the opencv mats
     std::string name(){ return m_name;};
     bool has_right_stereo_pair(){ return m_right_stereo_pair.get()!=0;};
+    void set_right_stereo_pair(Frame& frame);
     std::shared_ptr<Frame> right_stereo_pair();
     std::tuple<std::shared_ptr<easy_pbr::Frame>, std::shared_ptr<easy_pbr::Frame>, float> rectify_stereo_pair(const int offset_disparity=0); //can offset the disparity by some positive value so that the disparity range si smaller
 
@@ -92,6 +93,7 @@ public:
     // Mesh assign_color(Mesh& cloud);
     // std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
     // std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
+    Frame rotate_clockwise_90();
 
 
     //conversions that are useful for treating the data with pytorch for example
