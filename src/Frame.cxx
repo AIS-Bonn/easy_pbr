@@ -371,6 +371,8 @@ Frame Frame::undistort(){
 
     Frame new_frame=remap(rmap1, rmap2);
 
+    cv::cv2eigen(new_K_mat, new_frame.K);
+
     // new_frame.clone_mats(); //since the operations are done in place, we clone the memory assigned for the mats so the two frames actually make a deep copy of the mats
 
     // //undistort all images, we clone the input mat because the remap operates inplace and the src and destination mats are actually the same since we just did a shallow copy
@@ -1109,7 +1111,7 @@ Frame Frame::rotate_clockwise_90(){
     //rotate K
     rotated_frame.K(1,1)=K(0,0); //fx and fy change place
     rotated_frame.K(0,0)=K(1,1);
-    rotated_frame.K(0,2)=get_rgb_mat().cols-K(1,2); //cx is width-old_cy
+    rotated_frame.K(0,2)=rotated_frame.get_rgb_mat().cols-K(1,2); //cx is width-old_cy
     rotated_frame.K(1,2)=K(0,2); //cy is the same as old_cx
 
     
@@ -1118,10 +1120,10 @@ Frame Frame::rotate_clockwise_90(){
     tf_rot.setIdentity();
     Eigen::Matrix3f r = (Eigen::AngleAxisf( radu::utils::degrees2radians(90), Eigen::Vector3f::UnitZ()) ).toRotationMatrix();
     tf_rot.linear()=r;
-    // rotated_frame.tf_cam_world=tf_rot*tf_cam_world;
+    rotated_frame.tf_cam_world=tf_rot*tf_cam_world;
 
-    Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
-    rotated_frame.tf_cam_world = (tf_world_cam*tf_rot).inverse();
+    // Eigen::Affine3f tf_world_cam=tf_cam_world.inverse();
+    // rotated_frame.tf_cam_world = (tf_world_cam*tf_rot).inverse();
 
 
     //set width and height
