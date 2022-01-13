@@ -20,7 +20,7 @@ namespace radu { namespace utils {
 
 namespace easy_pbr{
 
-class Frame {
+class Frame : public std::enable_shared_from_this<Frame>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
     // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Frame();
@@ -54,6 +54,8 @@ public:
     Eigen::Affine3f tf_cam_world = Eigen::Affine3f::Identity();
     int subsample_factor=1; //the subsample factor (eg, 2,4,8) between the img_original size and the rgb_32f and so on
 
+    std::shared_ptr<Frame> m_right_stereo_pair;
+
     //paths of the images in case we don't want to load them because it takes too much time. In this case the frame is like a shell of a frame
     bool is_shell; // if the frame is a shell it contains all the parameters of that frame (intrinsics, extrinsics, etc) but NOT the images. The images can be loaded on demand with load_images
     std::string rgb_path;
@@ -80,6 +82,9 @@ public:
     void clone_mats();
     void unload_images(); //releases the memory of all the opencv mats
     std::string name(){ return m_name;};
+    bool has_right_stereo_pair(){ return m_right_stereo_pair.get()!=0;};
+    std::shared_ptr<Frame> right_stereo_pair();
+
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;
     // Mesh assign_color(Mesh& cloud);

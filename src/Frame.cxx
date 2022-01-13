@@ -971,6 +971,11 @@ Eigen::Vector3f Frame::look_dir() const{
     return dir;
 }
 
+std::shared_ptr<Frame> Frame::right_stereo_pair(){
+    CHECK( has_right_stereo_pair()) << "We do not have a right stereo pair";
+    return m_right_stereo_pair;
+}
+
 // template <typename T>
 // void Frame::add_field(const std::string name, const T data){
 //     // extra_field[name] = data;

@@ -219,7 +219,7 @@ PYBIND11_MODULE(easypbr, m) {
     m.def("cv_imread", [](const std::string path) {  cv::Mat mat=cv::imread(path); return mat;  } );
 
     //Frame
-    py::class_<Frame> (m, "Frame")
+    py::class_<Frame, std::shared_ptr<Frame> > (m, "Frame")
     .def(py::init<>())
     // .def_readwrite("rgb_32f", &Frame::rgb_32f) //not possible in pybind. You would need to wrap the opencv into a matrix type or soemthing like that
     .def("create_frustum_mesh", &Frame::create_frustum_mesh, py::arg("scale_multiplier") = 1.0, py::arg("show_texture")=true, py::arg("texture_max_size")=256 )
@@ -234,6 +234,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("unproject", &Frame::unproject )
     .def("project", &Frame::project )
     .def("undistort", &Frame::undistort )
+    .def("has_right_stereo_pair", &Frame::has_right_stereo_pair )
+    .def("right_stereo_pair", &Frame::right_stereo_pair )
     .def("draw_projected_line", &Frame::draw_projected_line,  py::arg().noconvert(), py::arg().noconvert(), py::arg("thickness")=1 )
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )
@@ -263,6 +265,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("get_extra_field_matrixXi", &Frame::get_extra_field<Eigen::MatrixXi> )
     .def("get_extra_field_matrixXf", &Frame::get_extra_field<Eigen::MatrixXf> )
     .def("get_extra_field_matrixXd", &Frame::get_extra_field<Eigen::MatrixXd> )
+    .def_readwrite("m_right_stereo_pair", &Frame::m_right_stereo_pair )
     .def_readwrite("is_shell", &Frame::is_shell )
     .def_readwrite("tf_cam_world", &Frame::tf_cam_world )
     .def_readwrite("K", &Frame::K )
@@ -279,7 +282,6 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("mask", &Frame::mask )
     .def_readwrite("frame_idx", &Frame::frame_idx )
     .def_readwrite("cam_id", &Frame::cam_id )
-    .def_readwrite("rgb_path", &Frame::rgb_path )
     ;
 
     //convenience functions to transform from mat or eigen to tensors
