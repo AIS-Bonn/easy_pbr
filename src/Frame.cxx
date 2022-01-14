@@ -981,7 +981,7 @@ cv::Mat Frame::draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen:
     return rgb_img;
 }
 
-std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectify_stereo_pair(const int offset_disparity){
+std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float, Eigen::Matrix4d>  Frame::rectify_stereo_pair(const int offset_disparity){
     CHECK(has_right_stereo_pair()) <<"We need a stereo pair to rectify";
     Frame& frame_left=*this;
     Frame& frame_right=*m_right_stereo_pair;
@@ -1013,22 +1013,27 @@ std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectif
     // VLOG(1) << " frame right size " << frame_right.get_rgb_mat().size(); 
 
 
-    cv::Mat rectification_cam1;
-    cv::Mat rectification_cam2;
+    cv::Mat rotation_cam1_mat;
+    cv::Mat rotation_cam2_mat;
     cv::Mat proj_cam1;
     cv::Mat proj_cam2;
-    cv::Mat Q;
+    cv::Mat Q_mat;
     cv::stereoRectify 	( K_1_mat, distCoeffs, K_2_mat, distCoeffs, frame_left.get_rgb_mat().size(), R_mat, t_mat, 
-                        rectification_cam1, rectification_cam2, proj_cam1, proj_cam2, Q);
+                        rotation_cam1_mat, rotation_cam2_mat, proj_cam1, proj_cam2, Q_mat);
 
     //perform rectification 
     cv::Mat cam_1_map_x, cam_1_map_y;
     cv::Mat cam_2_map_x, cam_2_map_y;
-    cv::initUndistortRectifyMap(K_1_mat, distCoeffs, rectification_cam1, proj_cam1, frame_left.get_rgb_mat().size(), CV_16SC2, cam_1_map_x, cam_1_map_y);
-    cv::initUndistortRectifyMap(K_2_mat, distCoeffs, rectification_cam2, proj_cam2, frame_right.get_rgb_mat().size(), CV_16SC2, cam_2_map_x, cam_2_map_y);
+    cv::initUndistortRectifyMap(K_1_mat, distCoeffs, rotation_cam1_mat, proj_cam1, frame_left.get_rgb_mat().size(), CV_32FC1, cam_1_map_x, cam_1_map_y);
+    cv::initUndistortRectifyMap(K_2_mat, distCoeffs, rotation_cam2_mat, proj_cam2, frame_right.get_rgb_mat().size(), CV_32FC1, cam_2_map_x, cam_2_map_y);
 
     Frame frame_left_rectified=frame_left.remap(cam_1_map_x, cam_1_map_y);
     Frame frame_right_rectified=frame_right.remap(cam_2_map_x, cam_2_map_y);
+
+    // VLOG(1) << "Rctify for camera" << frame_left.cam_id;
+    // VLOG(1) <<  "proj_cam1 " << proj_cam1;
+    // VLOG(1) <<  "proj_cam2 " << proj_cam2;
+    // VLOG(1) <<  "Q" << Q;
 
     // cv::Mat cam1_rectified;
     // cv::Mat cam2_rectified;
@@ -1052,6 +1057,28 @@ std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectif
     float baseline=cam_left_cam_right.translation().norm();
 
 
+    //since we are rotating the frame, we need to change the tf_cam_world for the frame_left and frame_right
+    //the rotation matrices maps from unrectified frame to the rectified frame
+    Eigen::Matrix3f rotation_cam1, rotation_cam2;
+    cv::cv2eigen(rotation_cam1_mat, rotation_cam1);
+    cv::cv2eigen(rotation_cam2_mat, rotation_cam2);
+    Eigen::Affine3f tf_rectified_unrectified_cam1, tf_rectified_unrectified_cam2;
+    tf_rectified_unrectified_cam1.setIdentity();
+    tf_rectified_unrectified_cam2.setIdentity();
+    tf_rectified_unrectified_cam1.linear()=rotation_cam1;
+    tf_rectified_unrectified_cam2.linear()=rotation_cam2;
+    //rotate
+    frame_left_rectified.tf_cam_world=  tf_rectified_unrectified_cam1 * frame_left.tf_cam_world;
+    frame_right_rectified.tf_cam_world=  tf_rectified_unrectified_cam2 * frame_right.tf_cam_world;
+
+    // VLOG(1) << " rotation_cam1_mat " << rotation_cam1_mat << " eigen " << rotation_cam1;
+    // VLOG(1) << " rotation_cam1_mat " << rotation_cam2_mat << " eigen " << rotation_cam2;
+
+
+
+
+
+
 
     //move the cam2_crop a bit to the right so that the maximum disparity we need to check is lower
     int offsety=0;
@@ -1068,9 +1095,13 @@ std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float>  Frame::rectif
     std::shared_ptr frame_right_rectified_ptr=std::make_shared<Frame>(frame_right_rectified);
     frame_left_rectified_ptr->m_right_stereo_pair=frame_right_rectified_ptr;
 
+    //get also the Q which is useful for getting from disparity to depth. Check stereoRectify from OpenCV
+    Eigen::Matrix4d Q;
+    cv::cv2eigen(Q_mat, Q);
+
 
     // std::tuple<Frame, Frame, float> ret_value= std::make_tuple(frame_left_rectified, frame_right_rectified, baseline);
-    std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float> ret_value= std::make_tuple(frame_left_rectified_ptr, frame_right_rectified_ptr, baseline);
+    std::tuple<std::shared_ptr<Frame>, std::shared_ptr<Frame>, float, Eigen::Matrix4d> ret_value= std::make_tuple(frame_left_rectified_ptr, frame_right_rectified_ptr, baseline, Q);
 
     return ret_value;
 

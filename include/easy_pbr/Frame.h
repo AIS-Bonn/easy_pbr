@@ -86,7 +86,7 @@ public:
     bool has_right_stereo_pair(){ return m_right_stereo_pair.get()!=0;};
     void set_right_stereo_pair(Frame& frame);
     std::shared_ptr<Frame> right_stereo_pair();
-    std::tuple<std::shared_ptr<easy_pbr::Frame>, std::shared_ptr<easy_pbr::Frame>, float> rectify_stereo_pair(const int offset_disparity=0); //can offset the disparity by some positive value so that the disparity range si smaller
+    std::tuple<std::shared_ptr<easy_pbr::Frame>, std::shared_ptr<easy_pbr::Frame>, float, Eigen::Matrix4d > rectify_stereo_pair(const int offset_disparity=0); //can offset the disparity by some positive value so that the disparity range si smaller
 
     // void rotate_y_axis(const float rads );
     // Mesh backproject_depth() const;
