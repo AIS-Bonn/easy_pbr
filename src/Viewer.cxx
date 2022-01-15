@@ -705,7 +705,7 @@ void Viewer::configure_auto_params(){
             key->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         }
         key->m_near=( (centroid-key->position()).norm()*0.1 ) ;
-        key->m_far=( (centroid-key->position()).norm()*10 ) ;
+        key->m_far=( (centroid-key->position()).norm()*100 ) ; //far plane can be quite big. The near plane shouldn't be too tiny because it make the depth have very little precision
         key->m_fov=40;
         if (std::isnan(key->m_power) ){
             key->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
@@ -728,7 +728,7 @@ void Viewer::configure_auto_params(){
             fill->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         }
         fill->m_near=( (centroid-fill->position()).norm()*0.1 ) ;
-        fill->m_far=( (centroid-fill->position()).norm()*10 ) ;
+        fill->m_far=( (centroid-fill->position()).norm()*100 ) ; //far plane can be quite big. The near plane shouldn't be too tiny because it make the depth have very little precision
         fill->m_fov=40;
         if (std::isnan(fill->m_power) ){
             fill->set_power_for_point(centroid, 0.8); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
@@ -750,7 +750,7 @@ void Viewer::configure_auto_params(){
             rim->set_position(centroid+dir_movement*3*scale); //move the light starting from the center in the direction by a certain amout so that in engulfs the whole scene
         }
         rim->m_near=( (centroid-rim->position()).norm()*0.1 ) ;
-        rim->m_far=( (centroid-rim->position()).norm()*10 ) ;
+        rim->m_far=( (centroid-rim->position()).norm()*100 ) ; //far plane can be quite big. The near plane shouldn't be too tiny because it make the depth have very little precision
         rim->m_fov=40;
         if (std::isnan(rim->m_power) ){
             rim->set_power_for_point(centroid, 3); //sets the power so that the lookatpoint, after attenuating, gets a certain intesity
@@ -784,7 +784,7 @@ void Viewer::configure_camera(){
             m_camera->m_near=( (centroid-m_camera->position()).norm()*0.01 ) ;
         }
         if (std::isnan(m_camera->m_far) ){
-            m_camera->m_far=( (centroid-m_camera->position()).norm()*10 ) ;
+            m_camera->m_far=( (centroid-m_camera->position()).norm()*1000 ) ; //far plane can be quite big. The near plane shouldn't be too tiny because it make the depth have very little precision
         }
         if (std::isnan(m_camera->m_exposure) ){ //signaling nan indicates we should automatically set the values
             m_camera->m_exposure=1.0;
