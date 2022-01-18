@@ -31,7 +31,6 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
     // https://gamedev.stackexchange.com/questions/29999/how-do-i-create-a-bounding-frustum-from-a-view-projection-matrix
     MeshSharedPtr frustum_mesh=Mesh::create();
-    frustum_mesh->name="frustum";
 
     Eigen::Matrix4f proj=intrinsics_to_opengl_proj(K, width, height, 0.5*scale_multiplier, 2.5*scale_multiplier);
     Eigen::Matrix4f view= tf_cam_world.matrix();
