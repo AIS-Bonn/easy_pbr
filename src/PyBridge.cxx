@@ -151,6 +151,56 @@ PYBIND11_MODULE(easypbr, m) {
         m=cv::imread(file_path_abs, cv::IMREAD_UNCHANGED);  
     } )
     .def("to_file", [](cv::Mat &m, const std::string path) {  cv::imwrite(path,m);  } )
+    .def("from_numpy", [](cv::Mat &m, py::array &arr) { // from https://stackoverflow.com/a/49693704
+        CHECK(arr.ndim()==3) <<"We assume 3 dimensions to the image corresponding to h,w,c. But instead it is "<< arr.ndim();
+        // VLOG(1) << "Mat from numpy"; 
+
+        //get nr of channels
+        int nr_channels=arr.shape(2);
+        CHECK(nr_channels==1 || nr_channels==2 || nr_channels==3 || nr_channels==4) << "Assuming nr of channels is 1,2,3 or 4. But it is " << nr_channels;
+        //get h and width
+        int h=arr.shape(0);
+        int w=arr.shape(1);
+
+
+
+        //get type
+        int mat_type=-1;
+        if(arr.dtype().is(  py::dtype("int32"))){
+            switch ( nr_channels ) {
+                case 1: mat_type = CV_32SC1; break;
+                case 2: mat_type = CV_32SC2; break;
+                case 3: mat_type = CV_32SC3; break;
+                case 4: mat_type = CV_32SC4; break;
+                default:   mat_type=-1; break;
+            }
+        }else if(arr.dtype().is(  py::dtype("int8"))){
+            switch ( nr_channels ) {
+                case 1: mat_type = CV_8UC1; break;
+                case 2: mat_type = CV_8UC2; break;
+                case 3: mat_type = CV_8UC3; break;
+                case 4: mat_type = CV_8UC4; break;
+                default:   mat_type=-1; break;
+            }
+        }else if(arr.dtype().is(  py::dtype("float32"))){
+            switch ( nr_channels ) {
+                case 1: mat_type = CV_32FC1; break;
+                case 2: mat_type = CV_32FC2; break;
+                case 3: mat_type = CV_32FC3; break;
+                case 4: mat_type = CV_32FC4; break;
+                default:   mat_type=-1; break;
+            }
+        }else{
+            LOG(FATAL) << "Unknown numpy type";
+        }
+
+        //wrap buffer
+        py::buffer_info buf = arr.request();
+        m=cv::Mat(h,w, mat_type, buf.ptr);
+
+
+        
+        } )
     .def("set_alpha_to_value", [](cv::Mat &m, const int val) {
         CHECK(m.channels()==4) << "Mat needs to have 4 channels and it only has " << m.channels();
         cv::Mat mat;
