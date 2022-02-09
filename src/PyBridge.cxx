@@ -292,6 +292,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )
     .def("rotate_clockwise_90", &Frame::rotate_clockwise_90 )
+    .def("from_camera", &Frame::from_camera )
     .def("assign_color", &Frame::assign_color )
     // .def("pixel_world_direction", &Frame::pixel_world_direction )
     // .def("pixel_world_direction_euler_angles", &Frame::pixel_world_direction_euler_angles )
@@ -318,6 +319,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("get_extra_field_matrixXi", &Frame::get_extra_field<Eigen::MatrixXi> )
     .def("get_extra_field_matrixXf", &Frame::get_extra_field<Eigen::MatrixXf> )
     .def("get_extra_field_matrixXd", &Frame::get_extra_field<Eigen::MatrixXd> )
+    .def("get_extra_field_mesh", &Frame::get_extra_field< std::shared_ptr<Mesh> > )
     .def_readwrite("m_right_stereo_pair", &Frame::m_right_stereo_pair )
     .def_readwrite("is_shell", &Frame::is_shell )
     .def_readwrite("tf_cam_world", &Frame::tf_cam_world )
@@ -606,6 +608,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("postmultiply_model_matrix", &Mesh::postmultiply_model_matrix )
     .def("recalculate_normals", &Mesh::recalculate_normals )
     .def("flip_normals", &Mesh::flip_normals )
+    .def("recalculate_min_max_height", &Mesh::recalculate_min_max_height )
     .def("decimate", &Mesh::decimate )
     .def("upsample", &Mesh::upsample )
     .def("flip_winding", &Mesh::flip_winding )
@@ -637,12 +640,12 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_diffuse_tex",  py::overload_cast<const std::string, const int, const bool> (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )  //https://github.com/pybind/pybind11/issues/876
     .def("set_metalness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_roughness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
-    .def("set_gloss_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
+    .def("set_smoothness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_smoothness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_normals_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_diffuse_tex",  py::overload_cast<const cv::Mat&, const int > (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_metalness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_roughness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
-    .def("set_gloss_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_gloss_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_smoothness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_smoothness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_normals_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     ;
 

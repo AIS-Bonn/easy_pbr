@@ -307,6 +307,7 @@ public:
     void flip_normals();
     void normalize_size(); //normalize the size of the mesh between [0,1]
     void normalize_position(); //calculate the bounding box of the object and put it at 0.0.0
+    void recalculate_min_max_height();
     Eigen::VectorXi fix_oversplit_due_to_blender_uv();
     void color_connected_components();
     void remove_small_uv_charts();
@@ -348,13 +349,13 @@ public:
     void set_diffuse_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     void set_metalness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     void set_roughness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
-    void set_gloss_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_smoothness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false); //the inverse of the roughness
     void set_normals_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     //using a mat directly
     void set_diffuse_tex(const cv::Mat& mat, const int subsample=1);
     void set_metalness_tex(const cv::Mat& mat, const int subsample=1);
     void set_roughness_tex(const cv::Mat& mat, const int subsample=1);
-    void set_gloss_tex(const cv::Mat& mat, const int subsample=1);
+    void set_smoothness_tex(const cv::Mat& mat, const int subsample=1);
     void set_normals_tex(const cv::Mat& mat, const int subsample=1);
     bool is_any_texture_dirty();
 

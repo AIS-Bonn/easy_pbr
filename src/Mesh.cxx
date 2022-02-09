@@ -960,10 +960,8 @@ bool Mesh::load_from_file(const std::string file_path){
         compute_tangents(); //
     }
 
-    //calculate the min and max y which will be useful for coloring
-    m_min_max_y(0)=V.col(1).minCoeff();
-    m_min_max_y(1)=V.col(1).maxCoeff();
-    m_min_max_y_for_plotting=m_min_max_y;
+    recalculate_min_max_height();
+    
 
     m_is_dirty=true;
     m_is_shadowmap_dirty=true;
@@ -1468,6 +1466,14 @@ void Mesh::normalize_position(){
     tf.translation()=-mid;
 
     transform_vertices_cpu(tf);
+}
+
+void Mesh::recalculate_min_max_height(){
+    CHECK( !is_empty() ) << "Mesh is empty";
+    //calculate the min and max y which will be useful for coloring
+    m_min_max_y(0)=V.col(1).minCoeff();
+    m_min_max_y(1)=V.col(1).maxCoeff();
+    m_min_max_y_for_plotting=m_min_max_y;
 }
 
 
@@ -2761,7 +2767,7 @@ void Mesh::set_roughness_tex(const std::string file_path, const int subsample, c
     }
     set_roughness_tex(mat, subsample);
 }
-void Mesh::set_gloss_tex(const std::string file_path, const int subsample, const bool read_alpha){
+void Mesh::set_smoothness_tex(const std::string file_path, const int subsample, const bool read_alpha){
     cv::Mat mat;
     if (read_alpha){
         mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
@@ -2769,7 +2775,7 @@ void Mesh::set_gloss_tex(const std::string file_path, const int subsample, const
         mat= cv::imread(file_path);
     }
     cv::Mat gloss = cv::imread(file_path);
-    set_gloss_tex(gloss, subsample);
+    set_smoothness_tex(gloss, subsample);
 }
 void Mesh::set_normals_tex(const std::string file_path, const int subsample, const bool read_alpha){
     cv::Mat mat;
@@ -2822,7 +2828,7 @@ void Mesh::set_roughness_tex(const cv::Mat& mat, const int subsample){
     cv::flip(mat_internal, m_roughness_mat.mat, 0);
     m_roughness_mat.is_dirty=true;
 }
-void Mesh::set_gloss_tex(const cv::Mat& mat, const int subsample){
+void Mesh::set_smoothness_tex(const cv::Mat& mat, const int subsample){
     CHECK(mat.data) << "Gloss mat is empty";
     CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
     cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary

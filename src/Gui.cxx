@@ -669,10 +669,18 @@ void Gui::draw_main_menu(){
             // m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
         }
 
-         if (ImGui::Button("AddCube") ){
+        if (ImGui::Button("AddCube") ){
             std::shared_ptr<easy_pbr::Mesh> mesh=Mesh::create();
             mesh->create_box(1,1,1);
             Scene::show(mesh,"cube");
+        }
+
+        if (ImGui::Button("AddSphere") ){
+            std::shared_ptr<easy_pbr::Mesh> mesh=Mesh::create();
+            Eigen::Vector3d center;
+            center.setZero();
+            mesh->create_sphere(center, 1.0);
+            Scene::show(mesh,"sphere");
         }
 
 

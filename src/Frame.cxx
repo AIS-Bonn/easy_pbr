@@ -1,5 +1,6 @@
 #include "easy_pbr/Frame.h"
 #include "easy_pbr/Scene.h"
+#include "easy_pbr/Camera.h"
 
 #include "easy_gl/UtilsGL.h"
 #include "opencv_utils.h"
@@ -1179,6 +1180,34 @@ Frame Frame::rotate_clockwise_90(){
 //     tf_cam_world=tf_world_cam_rotated.inverse();
 
 // }
+
+void Frame::from_camera(const std::shared_ptr<Camera>& cam, const int width, const int height, const bool flip_z_axis, const bool flip_y_axis){
+    Eigen::Matrix4f P = cam->proj_matrix(width, height);
+    this->K=opengl_proj_to_intrinsics(P, width, height);
+
+    this->tf_cam_world=cam->view_matrix_affine();
+
+    if (flip_z_axis){
+        Eigen::Affine3f tf_world_cam=this->tf_cam_world.inverse();
+        Eigen::Matrix3f cam_axes;
+        cam_axes=tf_world_cam.linear();
+        cam_axes.col(2)=-cam_axes.col(2);
+        tf_world_cam.linear()= cam_axes;
+        this->tf_cam_world= tf_world_cam.inverse();
+    }
+
+    if (flip_y_axis){
+        Eigen::Affine3f tf_world_cam=this->tf_cam_world.inverse();
+        Eigen::Matrix3f cam_axes;
+        cam_axes=tf_world_cam.linear();
+        cam_axes.col(1)=-cam_axes.col(1);
+        tf_world_cam.linear()= cam_axes;
+        this->tf_cam_world= tf_world_cam.inverse();
+    }
+
+    this->width=width;
+    this->height=height;
+}
 
 
 cv::Mat Frame::get_rgb_mat(){

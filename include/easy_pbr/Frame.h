@@ -20,6 +20,8 @@ namespace radu { namespace utils {
 
 namespace easy_pbr{
 
+    class Camera;
+
 class Frame : public std::enable_shared_from_this<Frame>{ //enable_shared_from is required due to pybind https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html
 public:
     // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -94,6 +96,8 @@ public:
     // std::shared_ptr<Mesh> pixel_world_direction(); //return a mesh where the V vertices represent directions in world coordiantes in which every pixel of this camera looks through
     // std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
     Frame rotate_clockwise_90();
+
+    void from_camera(const std::shared_ptr<Camera>& cam, const int width, const int height, const bool flip_z_axis, const bool flip_y_axis);
 
 
     //conversions that are useful for treating the data with pytorch for example
