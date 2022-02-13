@@ -245,6 +245,7 @@ public:
     void rotate_model_matrix_local(const Eigen::Vector3d& axis, const float angle_degrees);
     void rotate_model_matrix_local(const Eigen::Quaterniond& q);
     void apply_model_matrix_to_cpu( const bool transform_points_at_zero);
+    void scale_mesh(const float scale);
     // void set_model_matrix(const Eigen::VectorXd& xyz_q);
     // Eigen::VectorXd model_matrix_as_xyz_and_quaternion();
     // Eigen::VectorXd model_matrix_as_xyz_and_rpy();

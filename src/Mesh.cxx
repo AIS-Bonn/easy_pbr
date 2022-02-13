@@ -730,6 +730,10 @@ void Mesh::apply_model_matrix_to_cpu(const bool transform_points_at_zero){
     m_is_shadowmap_dirty=true;
 }
 
+void Mesh::scale_mesh(const float scale){
+    V=V*scale;
+}
+
 // void Mesh::set_model_matrix(const Eigen::VectorXd& xyz_q){
 //     m_model_matrix.translation().x() = xyz_q[0];
 //     m_model_matrix.translation().y() = xyz_q[1];
