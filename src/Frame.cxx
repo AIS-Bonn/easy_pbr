@@ -208,6 +208,7 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     if(!thermal_vis_32f.empty()) new_frame.thermal_vis_32f=thermal_vis_32f(rect_crop).clone();
     if(!mask.empty())   new_frame.mask=mask(rect_crop).clone();
     if(!depth.empty())  new_frame.depth=depth(rect_crop).clone();
+    if(!confidence.empty())  new_frame.depth=depth(rect_crop).clone();
 
     //ajust principal point
     new_frame.K(0,2) = K(0,2) - rand_x;
@@ -273,6 +274,7 @@ Frame Frame::subsample(const float subsample_factor, bool subsample_imgs){
         //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
         if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
         if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+        if(!confidence.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
     }
 
     //deal with the other things that changed now that the image is smaller
@@ -328,6 +330,7 @@ Frame Frame::upsample(const float upsample_factor, bool upsample_imgs){
         //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
         if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), upsample_factor, upsample_factor,  cv::INTER_NEAREST);
         if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_NEAREST);
+        if(!confidence.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
     }
 
 
@@ -408,6 +411,7 @@ void Frame::clone_mats(){
     if(!img_original_size.empty()) img_original_size=img_original_size.clone();
     if(!mask.empty()) mask=mask.clone();
     if(!depth.empty()) depth=depth.clone();
+    if(!confidence.empty()) confidence=confidence.clone();
 }
 
 void Frame::unload_images(){
@@ -425,6 +429,7 @@ void Frame::unload_images(){
     if(!img_original_size.empty()) img_original_size.release(); CHECK(img_original_size.empty());
     if(!mask.empty()) mask.release(); CHECK(mask.empty());
     if(!depth.empty()) depth.release(); CHECK(depth.empty());
+    if(!confidence.empty()) confidence.release(); CHECK(confidence.empty());
 
      is_shell=true;
 }
@@ -448,6 +453,7 @@ Frame Frame::remap(cv::Mat& rmap1, cv::Mat& rmap2){
     if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
     if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
     if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
+    if(!confidence.empty())  cv::remap(confidence.clone(), new_frame.confidence, rmap1, rmap2, cv::INTER_LANCZOS4);
 
     return new_frame;
 }
@@ -788,64 +794,6 @@ cv::Mat Frame::rgb_with_valid_depth(const Frame& frame_depth) const{
 
 Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 
-    //  //check that we can get rgb color
-    // CHECK(!rgb_8u.empty() || !rgb_32f.empty() ) << "There is no rgb data";
-    // cv::Mat color_mat;
-    // if (rgb_32f.empty()){
-    //     rgb_8u.convertTo(color_mat, CV_32FC3, 1.0/255.0);
-    // }else{
-    //     color_mat=rgb_32f;
-    // }
-
-
-    // Eigen::MatrixXd V_transformed;
-    // V_transformed.resize(cloud->V.rows(), cloud->V.cols());
-    // V_transformed.setZero();
-    // cloud->UV.resize(cloud->V.rows(),2);
-    // cloud->UV.setZero();
-
-
-
-    // // transform from world into this frame coords
-    // Eigen::Affine3d trans=tf_cam_world.cast<double>();
-    // int nr_valid=0;
-    // for (int i = 0; i < cloud->V.rows(); i++) {
-    //     if(!cloud->V.row(i).isZero()){
-    //         V_transformed.row(i)=trans.linear()*cloud->V.row(i).transpose() + trans.translation();
-    //         nr_valid++;
-    //     }
-    // }
-
-
-    // //project
-    // V_transformed=V_transformed*K.cast<double>().transpose();
-    // int nr_points_projected=0;
-    // for (int i = 0; i < cloud->V.rows(); i++) {
-    //     V_transformed(i,0)/=V_transformed(i,2);
-    //     V_transformed(i,1)/=V_transformed(i,2);
-
-    //     //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
-    //     int x=V_transformed(i,0);
-    //     int y=height-V_transformed(i,1);
-    //     if(y<0 || y>=color_mat.rows || x<0 || x>color_mat.cols){
-    //         continue;
-    //     }
-    //     nr_points_projected++;
-
-
-    //     cloud->UV(i,0) = V_transformed(i,0)/color_mat.cols;
-    //     cloud->UV(i,1) = V_transformed(i,1)/color_mat.rows;
-    // }
-
-
-
-    // return cloud->UV;
-
-
-
-
-
-
 
     //ATTEMPT 2
     //check that we can get rgb color
@@ -923,6 +871,9 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
     return cloud->UV;
 
 
+}
+
+cv::Mat Frame::naive_splat(std::shared_ptr<Mesh>& cloud, Eigen::MatrixXf values){
 
 }
 

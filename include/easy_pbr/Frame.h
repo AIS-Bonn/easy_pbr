@@ -50,6 +50,7 @@ public:
 
     cv::Mat mask;
     cv::Mat depth;
+    cv::Mat confidence;
     unsigned long long int timestamp;
     Eigen::Matrix3f K = Eigen::Matrix3f::Identity();
     Eigen::Matrix<float, 5, 1> distort_coeffs = Eigen::Matrix<float, 5, 1>::Zero();
@@ -64,6 +65,7 @@ public:
     std::string thermal_path;
     std::string mask_path;
     std::string depth_path;
+    std::string confidence_path;
     std::function<void(Frame& frame)> load_images; //function which when called, will read the paths and fill the corresponding mats
 
     std::string m_name;
@@ -109,6 +111,7 @@ public:
     std::shared_ptr<Mesh>  assign_color(std::shared_ptr<Mesh>& cloud) const; //grabs a point cloud in world coordinates and assings colors to the points by projecting it into the current color frame
     cv::Mat rgb_with_valid_depth(const Frame& frame_depth) const; //returns a color Mat which the color set to 0 for pixels that have no depth info
     Eigen::MatrixXd  compute_uv(std::shared_ptr<Mesh>& cloud) const; //projects the cloud into the frame and returns the uv coordinates that index into the frame, The uv is in range [0,1] with the zero being top left (so like the opencv and not the opengl)
+    cv::Mat naive_splat(std::shared_ptr<Mesh>& cloud, Eigen::MatrixXf values); //project the cloud into the frame and also naively splats the values onto the nearest pixel. Doesn't do any Z buffering or weighting
     Eigen::Vector3d unproject(const float x, const float y, const float depth); //gets a pixel in the 2d plane and unprojects it, putting it somewhere in 3d at a depth of 1
     Eigen::Vector2d project(const Eigen::Vector3d& point_world); //projects from world coordinates to img coordinates 
     cv::Mat draw_projected_line(const Eigen::Vector3d& p0_world, const Eigen::Vector3d p1_world, const int thickness=1); //gets two points describing a line in world coordinates, projects them into the image and then draws a line through them;
