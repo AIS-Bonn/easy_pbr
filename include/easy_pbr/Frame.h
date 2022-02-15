@@ -99,7 +99,7 @@ public:
     // std::shared_ptr<Mesh> pixel_world_direction_euler_angles(); //return a mesh where the V vertices represent the euler angles that each ray through the pixel makes with the negative Z axis of the world
     Frame rotate_clockwise_90();
 
-    void from_camera(const std::shared_ptr<Camera>& cam, const int width, const int height, const bool flip_z_axis, const bool flip_y_axis);
+    void from_camera(const std::shared_ptr<Camera>& cam, const int width, const int height, const bool flip_z_axis=true, const bool flip_y_axis=true);
 
 
     //conversions that are useful for treating the data with pytorch for example

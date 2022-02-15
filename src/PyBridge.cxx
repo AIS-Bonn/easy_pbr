@@ -293,7 +293,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("rotate_y_axis", &Frame::rotate_y_axis )
     // .def("backproject_depth", &Frame::backproject_depth )
     .def("rotate_clockwise_90", &Frame::rotate_clockwise_90 )
-    .def("from_camera", &Frame::from_camera )
+    .def("from_camera", &Frame::from_camera, py::arg().noconvert(), py::arg().noconvert(), py::arg().noconvert(), py::arg("flip_z_axis")=true, py::arg("flip_y_axis")=true )
     .def("assign_color", &Frame::assign_color )
     // .def("pixel_world_direction", &Frame::pixel_world_direction )
     // .def("pixel_world_direction_euler_angles", &Frame::pixel_world_direction_euler_angles )
