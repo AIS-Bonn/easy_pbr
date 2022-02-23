@@ -80,6 +80,7 @@ public:
     std::shared_ptr<Mesh> create_frustum_mesh(float scale_multiplier=1.0, bool show_texture=true, const int texture_max_size=256) const;
     void rescale_K(const float scale); //rescaling the image with cv.interarea will shift the pixels so we need to properly move the principal point based on https://dsp.stackexchange.com/questions/6055/how-does-resizing-an-image-affect-the-intrinsic-camera-matrix
     Frame random_crop(const int crop_height, const int crop_width);
+    Frame crop(const int start_x, const int start_y, const int crop_width, const int crop_height);
     Frame subsample(const float subsample_factor, bool subsample_imgs=true);
     Frame upsample(const float upsample_factor, bool upsample_imgs=true);
     Frame undistort();

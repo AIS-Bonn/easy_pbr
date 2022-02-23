@@ -186,15 +186,22 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     CHECK(crop_width<width) << "Crop width is larger than width of the image. Crop width is " << crop_width << " width of this frame is " << width;
     CHECK(crop_height<width) << "Crop height is larger than height of the image. Crop height is " << crop_height << " height of this frame is " << height;
 
-    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
-
     //I use this random nr generator from opencv because I don't want to have in this class a RandGenerator from my utils library because it doesnt have a global state so recreating the frame, will recreate a rng with the same seed
     int rand_x=m_rand_gen->rand_int(0,width-1-crop_width);
     int rand_y=m_rand_gen->rand_int(0,height-1-crop_height);
-    // int rand_x=0;
-    // int rand_y=0;
-    cv::Rect rect_crop(rand_x, rand_y, crop_width, crop_height);
 
+    return this->crop(rand_x, rand_y, crop_width, crop_height);
+   
+}
+Frame Frame::crop(const int start_x, const int start_y, const int crop_width, const int crop_height){
+    CHECK(width!=-1) << "Width was not set";
+    CHECK(height!=-1) << "Height was not set";
+    CHECK(crop_width<width) << "Crop width is larger than width of the image. Crop width is " << crop_width << " width of this frame is " << width;
+    CHECK(crop_height<width) << "Crop height is larger than height of the image. Crop height is " << crop_height << " height of this frame is " << height;
+
+    Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
+
+    cv::Rect rect_crop(start_x, start_y, crop_width, crop_height);
 
     if(!rgb_8u.empty())    new_frame.rgb_8u=rgb_8u(rect_crop).clone();
     if(!rgb_32f.empty())   new_frame.rgb_32f=rgb_32f(rect_crop).clone();
@@ -211,16 +218,16 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     if(!confidence.empty())  new_frame.depth=depth(rect_crop).clone();
 
     //ajust principal point
-    new_frame.K(0,2) = K(0,2) - rand_x;
-    new_frame.K(1,2) = K(1,2) - height+crop_height+ rand_y;
+    new_frame.K(0,2) = K(0,2) - start_x;
+    new_frame.K(1,2) = K(1,2) - start_y;
 
     //set the new width and height
     new_frame.width=crop_width;
     new_frame.height=crop_height;
 
     //set the crop of this.
-    new_frame.add_extra_field("crop_x", rand_x);
-    new_frame.add_extra_field("crop_y", rand_y);
+    new_frame.add_extra_field("crop_x", start_x);
+    new_frame.add_extra_field("crop_y", start_y);
     new_frame.add_extra_field("crop_width", crop_width);
     new_frame.add_extra_field("crop_height", crop_height);
     new_frame.add_extra_field("width_before_crop", width);
