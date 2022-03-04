@@ -50,6 +50,7 @@ public:
 
     cv::Mat mask;
     cv::Mat depth;
+    cv::Mat depth_along_ray; //alternative representation of depth as the distance along the ray instead of just the Z along the camera axis
     cv::Mat confidence;
     unsigned long long int timestamp;
     Eigen::Matrix3f K = Eigen::Matrix3f::Identity();
@@ -65,6 +66,7 @@ public:
     std::string thermal_path;
     std::string mask_path;
     std::string depth_path;
+    std::string depth_along_ray_path;
     std::string confidence_path;
     std::function<void(Frame& frame)> load_images; //function which when called, will read the paths and fill the corresponding mats
 

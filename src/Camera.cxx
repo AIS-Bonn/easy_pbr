@@ -212,6 +212,16 @@ void Camera::orbit(const Eigen::Quaternionf& q){
 
     m_position_initialized=true;
 }
+void Camera::orbit_x(const float angle_degrees){
+
+    Eigen::Vector3f axis_x;
+    axis_x << 1,0,0;
+    Eigen::Quaternionf q_x = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees*M_PI/180.0 ,  axis_x.normalized() ) );
+
+    orbit(q_x);
+
+    m_position_initialized=true;
+}
 void Camera::orbit_y(const float angle_degrees){
 
     Eigen::Vector3f axis_y;
@@ -219,6 +229,16 @@ void Camera::orbit_y(const float angle_degrees){
     Eigen::Quaternionf q_y = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees*M_PI/180.0 ,  axis_y.normalized() ) );
 
     orbit(q_y);
+
+    m_position_initialized=true;
+}
+void Camera::orbit_z(const float angle_degrees){
+
+    Eigen::Vector3f axis_z;
+    axis_z << 0,0,1;
+    Eigen::Quaternionf q_z = Eigen::Quaternionf( Eigen::AngleAxis<float>( angle_degrees*M_PI/180.0 ,  axis_z.normalized() ) );
+
+    orbit(q_z);
 
     m_position_initialized=true;
 }

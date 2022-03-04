@@ -215,7 +215,8 @@ Frame Frame::crop(const int start_x, const int start_y, const int crop_width, co
     if(!thermal_vis_32f.empty()) new_frame.thermal_vis_32f=thermal_vis_32f(rect_crop).clone();
     if(!mask.empty())   new_frame.mask=mask(rect_crop).clone();
     if(!depth.empty())  new_frame.depth=depth(rect_crop).clone();
-    if(!confidence.empty())  new_frame.depth=depth(rect_crop).clone();
+    if(!depth_along_ray.empty())  new_frame.depth_along_ray=depth(rect_crop).clone();
+    if(!confidence.empty())  new_frame.confidence=depth(rect_crop).clone();
 
     //ajust principal point
     new_frame.K(0,2) = K(0,2) - start_x;
@@ -281,7 +282,8 @@ Frame Frame::subsample(const float subsample_factor, bool subsample_imgs){
         //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
         if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
         if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
-        if(!confidence.empty()) cv::resize(depth, new_frame.depth, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
+        if(!depth_along_ray.empty()) cv::resize(depth_along_ray, new_frame.depth_along_ray, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_NEAREST);
+        if(!confidence.empty()) cv::resize(confidence, new_frame.confidence, cv::Size(), 1.0/subsample_factor, 1.0/subsample_factor, cv::INTER_AREA);
     }
 
     //deal with the other things that changed now that the image is smaller
@@ -337,7 +339,8 @@ Frame Frame::upsample(const float upsample_factor, bool upsample_imgs){
         //mask and depth do inter_NEAREST because otherwise the mask will not be binary anymore and the depth will merge depth from depth dicontinuities which is bad
         if(!mask.empty()) cv::resize(mask, new_frame.mask, cv::Size(), upsample_factor, upsample_factor,  cv::INTER_NEAREST);
         if(!depth.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_NEAREST);
-        if(!confidence.empty()) cv::resize(depth, new_frame.depth, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
+        if(!depth_along_ray.empty()) cv::resize(depth_along_ray, new_frame.depth_along_ray, cv::Size(), upsample_factor, upsample_factor, cv::INTER_NEAREST);
+        if(!confidence.empty()) cv::resize(confidence, new_frame.confidence, cv::Size(), upsample_factor, upsample_factor, cv::INTER_LINEAR);
     }
 
 
@@ -418,6 +421,7 @@ void Frame::clone_mats(){
     if(!img_original_size.empty()) img_original_size=img_original_size.clone();
     if(!mask.empty()) mask=mask.clone();
     if(!depth.empty()) depth=depth.clone();
+    if(!depth_along_ray.empty()) depth_along_ray=depth_along_ray.clone();
     if(!confidence.empty()) confidence=confidence.clone();
 }
 
@@ -436,6 +440,7 @@ void Frame::unload_images(){
     if(!img_original_size.empty()) img_original_size.release(); CHECK(img_original_size.empty());
     if(!mask.empty()) mask.release(); CHECK(mask.empty());
     if(!depth.empty()) depth.release(); CHECK(depth.empty());
+    if(!depth_along_ray.empty()) depth_along_ray.release(); CHECK(depth_along_ray.empty());
     if(!confidence.empty()) confidence.release(); CHECK(confidence.empty());
 
      is_shell=true;
@@ -460,6 +465,7 @@ Frame Frame::remap(cv::Mat& rmap1, cv::Mat& rmap2){
     if(!thermal_vis_32f.empty())  cv::remap(thermal_vis_32f.clone(), new_frame.thermal_vis_32f, rmap1, rmap2, cv::INTER_LANCZOS4);
     if(!mask.empty())  cv::remap(mask.clone(), new_frame.mask, rmap1, rmap2, cv::INTER_NEAREST);
     if(!depth.empty())  cv::remap(depth.clone(), new_frame.depth, rmap1, rmap2, cv::INTER_NEAREST);
+    if(!depth_along_ray.empty())  cv::remap(depth_along_ray.clone(), new_frame.depth_along_ray, rmap1, rmap2, cv::INTER_NEAREST);
     if(!confidence.empty())  cv::remap(confidence.clone(), new_frame.confidence, rmap1, rmap2, cv::INTER_LANCZOS4);
 
     return new_frame;
@@ -881,6 +887,100 @@ Eigen::MatrixXd Frame::compute_uv(std::shared_ptr<Mesh>& cloud) const{
 }
 
 cv::Mat Frame::naive_splat(std::shared_ptr<Mesh>& cloud, Eigen::MatrixXf values){
+
+    CHECK(width!=-1) << "Width was not set";
+    CHECK(height!=-1) << "Height was not set";
+    CHECK(values.cols()<=4) << "We only support up to 4 channels for the values. However the nr of columns in the values is " << values.cols();
+    CHECK(cloud->V.rows()==values.rows() ) << "We need a value for every point in the cloud. However the cloud has nr of points " << cloud->V.rows() << " while values is " << values.rows();
+
+
+    cv::Mat mat_vals;
+    if(values.cols()==1){
+        mat_vals = cv::Mat(this->height, this->width, CV_32FC1);
+    }else if(values.cols()==2){
+        mat_vals = cv::Mat(this->height, this->width, CV_32FC2);
+    }else if(values.cols()==3){
+        mat_vals = cv::Mat(this->height, this->width, CV_32FC3);
+    }else if(values.cols()==4){
+        mat_vals = cv::Mat(this->height, this->width, CV_32FC4);
+    }
+    mat_vals=0.0;
+    //make a mat for depth in order to splat for each pixel only the point with the lowest depth
+    cv::Mat mat_depth=cv::Mat(this->height, this->width, CV_32FC1);
+    mat_depth=std::numeric_limits<float>::max();;
+
+
+
+    cloud->apply_model_matrix_to_cpu(false);
+
+
+    Eigen::MatrixXd V_cam_coords;
+    V_cam_coords.resize(cloud->V.rows(), cloud->V.cols());
+    V_cam_coords.setZero();
+
+
+
+    // transform from world into this frame coords
+    Eigen::Affine3d trans=tf_cam_world.cast<double>();
+    int nr_valid=0;
+    for (int i = 0; i < cloud->V.rows(); i++) {
+        if(!cloud->V.row(i).isZero()){
+            V_cam_coords.row(i)=trans.linear()*cloud->V.row(i).transpose() + trans.translation();
+            nr_valid++;
+        }
+    }
+
+
+    //project
+    Eigen::MatrixXd V_screen_coords=V_cam_coords*K.cast<double>().transpose();
+    int nr_points_projected=0;
+    for (int i = 0; i < cloud->V.rows(); i++) {
+        if(!cloud->V.row(i).isZero()){
+            V_screen_coords(i,0)/=V_screen_coords(i,2);
+            V_screen_coords(i,1)/=V_screen_coords(i,2);
+            // V_transformed(i,2)=1.0;
+
+            //V_transformed is now int he screen coordinates which has origin at the lower left as per normal UV coordinates of opengl. However Opencv considers the origin to be at the top left so we need the y to be height-V_transformed(i,1)
+            int x=V_screen_coords(i,0);
+            // int y=height-1-V_transformed(i,1);
+            //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
+            int y=V_screen_coords(i,1);
+            if(y<0 || y>=this->height || x<0 || x>this->width){
+                continue;
+            }
+            nr_points_projected++;
+
+
+            float cur_depth=std::fabs(V_cam_coords(i,2));
+            //check if the depth is lower than the one already in the mat_depth
+            float depth_pixel=mat_depth.at<float>(y, x);
+            if (cur_depth<depth_pixel){
+                for (int c = 0; c < values.cols(); c++){
+                    // mat_vals.at<cv::Vec3f>(y, x) [c] = values(i,c);
+                    if(values.cols()==1){
+                        mat_vals.at<float>(y, x) = values(i,c);
+                    }else if(values.cols()==2){
+                        mat_vals.at<cv::Vec2f>(y, x) [c] = values(i,c);
+                    }else if(values.cols()==3){
+                        mat_vals.at<cv::Vec3f>(y, x) [c] = values(i,c);
+                    }else if(values.cols()==4){
+                        mat_vals.at<cv::Vec4f>(y, x) [c] = values(i,c);
+                    }
+                }
+                //change also the depth
+                mat_depth.at<float>(y, x)=cur_depth;
+            }
+
+
+
+
+        }
+    }
+    // VLOG(1) << "nr_points_projected" << nr_points_projected;
+
+
+
+    return mat_vals;
 
 }
 
