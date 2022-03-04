@@ -215,8 +215,8 @@ Frame Frame::crop(const int start_x, const int start_y, const int crop_width, co
     if(!thermal_vis_32f.empty()) new_frame.thermal_vis_32f=thermal_vis_32f(rect_crop).clone();
     if(!mask.empty())   new_frame.mask=mask(rect_crop).clone();
     if(!depth.empty())  new_frame.depth=depth(rect_crop).clone();
-    if(!depth_along_ray.empty())  new_frame.depth_along_ray=depth(rect_crop).clone();
-    if(!confidence.empty())  new_frame.confidence=depth(rect_crop).clone();
+    if(!depth_along_ray.empty())  new_frame.depth_along_ray=depth_along_ray(rect_crop).clone();
+    if(!confidence.empty())  new_frame.confidence=confidence(rect_crop).clone();
 
     //ajust principal point
     new_frame.K(0,2) = K(0,2) - start_x;
