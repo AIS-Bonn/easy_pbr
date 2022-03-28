@@ -1,48 +1,48 @@
 [submodule "deps"]
 	path = deps
-	url = git@github.com:RaduAlexandru/imgui.git
+	url = https://github.com/RaduAlexandru/imgui.git
 [submodule "deps/imgui"]
 	path = deps/imgui
-	url = git@github.com:ocornut/imgui
+	url = https://github.com/ocornut/imgui
 [submodule "deps/imguizmo"]
 	path = deps/imguizmo
-	url = git@github.com:CedricGuillemet/ImGuizmo.git
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
 [submodule "deps/libigl"]
 	path = deps/libigl
-	url = git@github.com:libigl/libigl.git
+	url = https://github.com/libigl/libigl.git
 [submodule "deps/pyind11"]
 	path = deps/pyind11
-	url = git@github.com:pybind/pybind11.git
+	url = https://github.com/pybind/pybind11.git
 [submodule "deps/loguru"]
 	path = deps/loguru
-	url = git@github.com:RaduAlexandru/loguru.git
+	url = https://github.com/RaduAlexandru/loguru.git
 [submodule "deps/configuru"]
 	path = deps/configuru
-	url = git@github.com:RaduAlexandru/Configuru.git
+	url = https://github.com/RaduAlexandru/Configuru.git
 [submodule "deps/better_enums"]
 	path = deps/better_enums
-	url = git@github.com:aantron/better-enums.git
+	url = https://github.com/aantron/better-enums.git
 [submodule "deps/concurrent_queue"]
 	path = deps/concurrent_queue
-	url = git@github.com:cameron314/concurrentqueue.git
+	url = https://github.com/cameron314/concurrentqueue.git
 [submodule "deps/tiny_ply"]
 	path = deps/tiny_ply
-	url = git@github.com:ddiakopoulos/tinyply.git
+	url = https://github.com/ddiakopoulos/tinyply.git
 [submodule "deps/tiny_obj"]
 	path = deps/tiny_obj
-	url = git@github.com:syoyo/tinyobjloader
+	url = https://github.com/syoyo/tinyobjloader
 [submodule "deps/utils"]
 	path = deps/utils
-	url = git@github.com:RaduAlexandru/utils.git
+	url = https://github.com/RaduAlexandru/utils.git
 [submodule "deps/easy_gl"]
 	path = deps/easy_gl
-	url = git@github.com:RaduAlexandru/EasyGL.git
+	url = https://github.com/RaduAlexandru/EasyGL.git
 [submodule "deps/pybind11"]
 	path = deps/pybind11
-	url = git@github.com:pybind/pybind11.git
+	url = https://github.com/pybind/pybind11.git
 [submodule "deps/nanoflann"]
 	path = deps/nanoflann
-	url = git@github.com:jlblancoc/nanoflann.git
+	url = https://github.com/jlblancoc/nanoflann.git
 [submodule "deps/easy_pytorch"]
 	path = deps/easy_pytorch
-	url = git@github.com:RaduAlexandru/EasyPytorch.git
+	url = https://github.com/RaduAlexandru/EasyPytorch.git
