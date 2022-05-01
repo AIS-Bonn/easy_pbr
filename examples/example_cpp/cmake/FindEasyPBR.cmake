@@ -18,7 +18,7 @@ execute_process (
     OUTPUT_VARIABLE EASYPBR_SRC_PATH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-message("EASYPPBR source is ", ${EASYPBR_SRC_PATH})
+message("EASYPPBR source is ${EASYPBR_SRC_PATH}")
 
 #DEBUG
 # set(EASYPBR_SRC_PATH "/media/rosu/Data/phd/c_ws/src/easy_pbr")
