@@ -63,7 +63,7 @@ if(CORE_WITH_PCL)
     link_directories(${PCL_LIBRARY_DIRS})
     add_definitions(${PCL_DEFINITIONS})
 endif()
-find_package(kqueue)
+find_package(kqueue QUIET)
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/easy_gl)
