@@ -7,8 +7,10 @@ namespace ImGui
 
     //for usage with std::string and not char*. Taken from https://github.com/emilk/emilib/blob/master/emilib/imgui_helpers.cpp
     bool InputText(const std::string& label, std::string& text,  ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL){
-        char buff[1024];
+        int max_size=1024;
+        char buff[max_size];
         strncpy(buff, text.c_str(), sizeof(buff));
+        buff[max_size-1] = '\0'; //fixes possibility of putting a bigger string inside the buff and possibly missing on adding the null termination https://stackoverflow.com/a/66140407
         if (ImGui::InputText(label.c_str(), buff, sizeof(buff), flags, callback, user_data)) {
             text = buff;
             return true;
