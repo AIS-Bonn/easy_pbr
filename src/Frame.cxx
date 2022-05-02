@@ -607,7 +607,7 @@ std::shared_ptr<Mesh> Frame::pixels2dirs_mesh() const{
             //the point is not at x,y but at x, heght-y. That's because we got the depth from the depth map at x,y and we have to take into account that opencv mat has origin at the top left. However the camera coordinate system actually has origin at the bottom left (same as the origin of the uv space in opengl) So the point in screen coordinates will be at x, height-y
             // point_screen << x,height-1-y,1.0;
             //No need to do height-y because the tf_cam_world of the frame look like the one in the link https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html. So the X to the right, y towards bottom and Z towards the frame itself. This is consistent with the uv space of opengl now
-            point_screen << x,y,1.0;
+            point_screen << x+0.5, y+0.5, 1.0; //we sum 0.5 so that the direction passes through the center of the square which defines the pixel
 
             Eigen::Vector3f point_cam_coords;
             point_cam_coords=K.inverse()*point_screen;
