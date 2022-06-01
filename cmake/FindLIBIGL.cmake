@@ -46,6 +46,10 @@ find_path(LIBIGL_INCLUDE_DIR igl/readOBJ.h
     PATH_SUFFIXES include
 )
 
+if(LIBIGL_INCLUDE_DIR)
+    set(LIBIGL_FOUND TRUE)
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBIGL
     "\nlibigl not found --- You can add it as a submodule it using:\n\tgit add submodule https://github.com/libigl/libigl.git deps/libigl"

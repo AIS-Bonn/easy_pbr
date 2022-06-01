@@ -64,9 +64,10 @@ if(CORE_WITH_PCL)
     add_definitions(${PCL_DEFINITIONS})
 endif()
 find_package(kqueue QUIET)
+find_package(EasyGL REQUIRED) #we do it in another package so that there is no conflict with the torch it link inside easygl and the torch we link here. If we did a add_subdirectory as before, on some machines we get the error of "target has the same name"
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD ) #Imgui will use glad loader
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/pybind11)
-add_subdirectory(${PROJECT_SOURCE_DIR}/deps/easy_gl)
+# add_subdirectory(${PROJECT_SOURCE_DIR}/deps/easy_gl)
 #try to compile with pytorch if you can
 # set(PYTORCH_PATH "/opt/pytorch")
 # set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ";${PYTORCH_PATH};")
