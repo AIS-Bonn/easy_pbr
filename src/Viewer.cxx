@@ -988,6 +988,12 @@ void Viewer::draw(const GLuint fbo_id){
             break;
         }
     }
+    //if the camera we are moving is actually one of the lights it means we need to update the shadowmap
+    for (int i = 0; i < (int)m_spot_lights.size(); i++) {
+        if (m_camera==m_spot_lights[i]){
+            need_shadow_map_update=true; 
+        }
+    }
     // VLOG(1) << "need_shadow_map_update " <<need_shadow_map_update;
     //loop through all the light and each mesh into their shadow maps as a depth map
     if(!m_enable_edl_lighting && need_shadow_map_update){
