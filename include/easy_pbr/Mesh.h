@@ -25,7 +25,7 @@ namespace radu { namespace utils {
 
 namespace easy_pbr{
 
-BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity, UV, NormalViewCoords )
+BETTER_ENUM(MeshColorType, int, Solid = 0, PerVertColor, Texture, SemanticPred, SemanticGT, NormalVector, Height, Intensity, UV, NormalViewCoords, Matcap )
 BETTER_ENUM(ColorSchemeType, int, Plasma = 0, Viridis, Magma )
 
 
@@ -78,6 +78,9 @@ struct VisOptions{
     }
     void set_color_texture(){
         m_color_type=MeshColorType::Texture;
+    }
+     void set_color_matcap(){
+        m_color_type=MeshColorType::Matcap;
     }
     void set_color_semanticpred(){
         m_color_type=MeshColorType::SemanticPred;
@@ -352,12 +355,14 @@ public:
     void set_roughness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     void set_smoothness_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false); //the inverse of the roughness
     void set_normals_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
+    void set_matcap_tex(const std::string file_path, const int subsample=1, const bool read_alpha=false);
     //using a mat directly
     void set_diffuse_tex(const cv::Mat& mat, const int subsample=1);
     void set_metalness_tex(const cv::Mat& mat, const int subsample=1);
     void set_roughness_tex(const cv::Mat& mat, const int subsample=1);
     void set_smoothness_tex(const cv::Mat& mat, const int subsample=1);
     void set_normals_tex(const cv::Mat& mat, const int subsample=1);
+    void set_matcap_tex(const cv::Mat& mat, const int subsample=1);
     bool is_any_texture_dirty();
 
 
@@ -398,6 +403,7 @@ public:
     CvMatCpu m_metalness_mat;
     CvMatCpu m_roughness_mat;
     CvMatCpu m_normals_mat;
+    CvMatCpu m_matcap_mat;
 
     std::weak_ptr<MeshGL> m_mesh_gpu; // a pointer to the gpu implementation of this mesh, needs ot be weak because the mesh already has a shared ptr to the MeshCore
     std::shared_ptr<LabelMngr> m_label_mngr;

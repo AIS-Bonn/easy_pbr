@@ -2790,6 +2790,15 @@ void Mesh::set_normals_tex(const std::string file_path, const int subsample, con
     }
     set_normals_tex(mat, subsample);
 }
+void Mesh::set_matcap_tex(const std::string file_path, const int subsample, const bool read_alpha){
+    cv::Mat mat;
+    if (read_alpha){
+        mat= cv::imread(file_path, cv::IMREAD_UNCHANGED);
+    }else{
+        mat= cv::imread(file_path);
+    }
+    set_matcap_tex(mat, subsample);
+}
 //using a mat directly
 void Mesh::set_diffuse_tex(const cv::Mat& mat, const int subsample){
     CHECK(mat.data) << "Diffuse mat is empty";
@@ -2860,9 +2869,23 @@ void Mesh::set_normals_tex(const cv::Mat& mat, const int subsample){
     cv::flip(mat_internal, m_normals_mat.mat, 0);
     m_normals_mat.is_dirty=true;
 }
+void Mesh::set_matcap_tex(const cv::Mat& mat, const int subsample){
+    CHECK(mat.data) << "Diffuse mat is empty";
+    CHECK(subsample>=1) << "Expected the subsample to be 1 or above";
+    cv::Mat mat_internal=mat; //it's just a shallow copy, so a pointer assignment. This is in order to make the mat_internal point towards the original input mat or a resized version of it if necessary
+    //resize if necessary
+    if(subsample>1){
+        cv::Mat resized;
+        cv::resize(mat_internal, resized, cv::Size(), 1.0/subsample, 1.0/subsample, cv::INTER_AREA );
+        mat_internal=resized;
+    }
+    cv::flip(mat_internal, m_matcap_mat.mat, 0); //opencv mat has origin of the texture on the upper left but opengl expect it to be on the lower left so we flip the texture. https://gamedev.stackexchange.com/questions/26175/how-do-i-load-a-texture-in-opengl-where-the-origin-of-the-texture0-0-isnt-in
+    m_matcap_mat.is_dirty=true;
+    m_vis.set_color_matcap(); //if we have diffuse we might as well just switch to actually display it
+    m_vis.m_show_mesh=true; //if we have diffuse we might as well just switch to actually display it
+}
 bool Mesh::is_any_texture_dirty(){
-    return  m_diffuse_mat.is_dirty || m_normals_mat.is_dirty || m_metalness_mat.is_dirty || m_roughness_mat.is_dirty;
-
+    return  m_diffuse_mat.is_dirty || m_normals_mat.is_dirty || m_metalness_mat.is_dirty || m_roughness_mat.is_dirty || m_matcap_mat.is_dirty;
 }
 
 

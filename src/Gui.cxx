@@ -139,6 +139,10 @@ Gui::Gui( const std::string config_file,
     m_roboto_regular=io.Fonts->AddFontFromFileTTF(roboto_regular_file.c_str(), 16.0f*m_hidpi_scaling);
     CHECK(m_roboto_regular!=nullptr) << "The font could not be loaded";
 
+    //robot regular
+    m_robot_small_font=io.Fonts->AddFontFromFileTTF(roboto_regular_file.c_str(), 12.0f*m_hidpi_scaling);
+    CHECK(m_robot_small_font!=nullptr) << "The font could not be loaded";
+
     //robot bold
     std::string roboto_bold_file=std::string(EASYPBR_DATA_DIR)+"/fonts/Roboto-Bold.ttf";
     CHECK(fs::exists(roboto_bold_file)) << "Couldn't find " << roboto_bold_file;
@@ -448,6 +452,13 @@ void Gui::draw_main_menu(){
                                 LOG(WARNING) << "There is no texture associated to the mesh. Please assign some texture by using set_diffuse_tex()";
                             }
                         }
+                        //check if we actually have a texture
+                        if( mesh->m_vis.m_color_type==+MeshColorType::Matcap){
+                            std::shared_ptr<MeshGL> mesh_gl = mesh->m_mesh_gpu.lock();
+                            if(mesh_gl && !mesh_gl->m_matcap_tex.storage_initialized() ){
+                                LOG(WARNING) << "There is no matcap associated to the mesh. Please assign some matcap texture by using set_matcap_tex()";
+                            }
+                        }
                         // if(mesh->m_mesh_gpu && !mesh->m_mesh_gpu->m_cur_tex_ptr.storage_initialized()){
                             // LOG(WARNING) << "There is no texture associated to the mesh";
                         // }
@@ -481,13 +492,14 @@ void Gui::draw_main_menu(){
             m_normals_tex_hovered=false;
             m_metalness_tex_hovered=false;
             m_roughness_tex_hovered=false;
+            m_matcap_tex_hovered=false;
             auto mesh_gpu= mesh->m_mesh_gpu.lock();
             if(mesh_gpu){
-                ImGui::Columns(4, "Textures", false);  // 4-colmns, no border
+                ImGui::Columns(5, "Textures", false);  // 4-colmns, no border
                 ImGui::Separator();
 
                 //diffuse
-                ImVec2 size = ImVec2(50*m_hidpi_scaling,50*m_hidpi_scaling);
+                ImVec2 size = ImVec2(45*m_hidpi_scaling,45*m_hidpi_scaling);
                 if ( mesh_gpu->m_diffuse_tex.storage_initialized() ){
                     ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_diffuse_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }else{
@@ -518,13 +530,23 @@ void Gui::draw_main_menu(){
                     ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
                 }
                 if (ImGui::IsItemHovered()){ m_roughness_tex_hovered=true; }
+                //matcap
+                if ( mesh_gpu->m_matcap_tex.storage_initialized() ){
+                    ImGui::Image( (ImTextureID)(uintptr_t)mesh_gpu->m_matcap_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                }else{
+                    ImGui::Image( (ImTextureID)(uintptr_t)m_view->m_uv_checker_tex.tex_id(), size, ImVec2(0,1), ImVec2(1,0)); ImGui::NextColumn();
+                }
+                if (ImGui::IsItemHovered()){ m_matcap_tex_hovered=true; }
 
                 // ImGui::SetNextItemWidth(51);
 
+                ImGui::PushFont(m_robot_small_font);
                 ImGui::Text(  "Diffuse"  ); ImGui::NextColumn();
                 ImGui::Text(  "Normals"  ); ImGui::NextColumn();
                 ImGui::Text(  "Metal"  ); ImGui::NextColumn();
                 ImGui::Text(  "Rough"  );  ImGui::NextColumn();
+                ImGui::Text(  "Matcap"  );  ImGui::NextColumn();
+                ImGui::PopFont();
 
                 ImGui::Columns(1);
                 ImGui::Separator();

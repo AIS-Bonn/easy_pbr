@@ -67,11 +67,13 @@ MeshGL::MeshGL():
     m_metalness_tex.set_wrap_mode(GL_REPEAT);
     m_roughness_tex.set_wrap_mode(GL_REPEAT);
     m_normals_tex.set_wrap_mode(GL_REPEAT);
+    m_matcap_tex.set_wrap_mode(GL_REPEAT);
 
     m_diffuse_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
     m_metalness_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
     m_roughness_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
     m_normals_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
+    m_matcap_tex.set_filter_mode_min(GL_LINEAR_MIPMAP_LINEAR);
 
 }
 
@@ -171,6 +173,11 @@ void MeshGL::upload_to_gpu(){
         m_core->m_normals_mat.is_dirty=false;
         GL_C(m_normals_tex.upload_from_cv_mat(m_core->m_normals_mat.mat) );
         m_normals_tex.generate_mipmap_full();
+    }
+    if (m_core->m_matcap_mat.mat.data && m_core->m_matcap_mat.is_dirty){
+        m_core->m_matcap_mat.is_dirty=false;
+        GL_C(m_matcap_tex.upload_from_cv_mat(m_core->m_matcap_mat.mat) );
+        m_matcap_tex.generate_mipmap_full();
     }
 
     m_core->m_is_dirty=false;

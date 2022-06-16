@@ -1572,10 +1572,12 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_metalness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_metalness_tex, "metalness_tex");   }
     if(mesh->m_roughness_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_roughness_tex, "roughness_tex");   }
     if(mesh->m_normals_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_normals_tex, "normals_tex");   }
+    if(mesh->m_matcap_tex.storage_initialized() ){  m_draw_mesh_shader.bind_texture(mesh->m_matcap_tex, "matcap_tex");   }
     m_draw_mesh_shader.uniform_bool(mesh->m_diffuse_tex.storage_initialized(), "has_diffuse_tex");
     m_draw_mesh_shader.uniform_bool(mesh->m_metalness_tex.storage_initialized(), "has_metalness_tex");
     m_draw_mesh_shader.uniform_bool(mesh->m_roughness_tex.storage_initialized(), "has_roughness_tex");
     m_draw_mesh_shader.uniform_bool(mesh->m_normals_tex.storage_initialized(), "has_normals_tex");
+    m_draw_mesh_shader.uniform_bool(mesh->m_matcap_tex.storage_initialized(), "has_matcap_tex");
 
     m_gbuffer.bind_for_draw();
     std::vector<  std::pair<std::string, std::string> > draw_list=
@@ -3095,6 +3097,10 @@ void Viewer::imgui_drop(GLFWwindow* window, int count, const char** paths){
             if (m_gui->m_roughness_tex_hovered){
                 VLOG(1) << "setting roughness tex from " << paths[i];
                 mesh->set_roughness_tex(paths[i]);
+            }
+            if (m_gui->m_matcap_tex_hovered){
+                VLOG(1) << "setting matcap tex from " << paths[i];
+                mesh->set_matcap_tex(paths[i]);
             }
         }
 

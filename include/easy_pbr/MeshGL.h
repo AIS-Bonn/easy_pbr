@@ -104,6 +104,7 @@ public:
     gl::Texture2D m_metalness_tex;
     gl::Texture2D m_roughness_tex;
     gl::Texture2D m_normals_tex;
+    gl::Texture2D m_matcap_tex;
 
     std::shared_ptr<Mesh> m_core;
 private:

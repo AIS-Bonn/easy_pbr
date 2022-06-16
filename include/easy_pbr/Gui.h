@@ -104,6 +104,7 @@ public:
     bool m_normals_tex_hovered;
     bool m_metalness_tex_hovered;
     bool m_roughness_tex_hovered;
+    bool m_matcap_tex_hovered;
 
 
 
@@ -127,6 +128,7 @@ private:
     bool m_draw_main_menu;
     ImFont* m_roboto_regular;
     ImFont* m_roboto_bold;
+    ImFont* m_robot_small_font;
 
     static std::mutex m_cv_mats_mutex; //adding or registering images for viewing must be thread safe
     //for showing images we store a list of cv_mats and then we render them when the times comes to update the gui. We do this in order to register images for showing from any thread even though it has no opengl context

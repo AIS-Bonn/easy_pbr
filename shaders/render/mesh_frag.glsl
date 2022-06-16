@@ -33,10 +33,12 @@ uniform sampler2D diffuse_tex;
 uniform sampler2D metalness_tex;
 uniform sampler2D roughness_tex;
 uniform sampler2D normals_tex;
+uniform sampler2D matcap_tex;
 uniform bool has_diffuse_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_metalness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_roughness_tex; //If the texture tex actually exists and can be sampled from
 uniform bool has_normals_tex; //If the texture tex actually exists and can be sampled from
+uniform bool has_matcap_tex; //If the texture tex actually exists and can be sampled from
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
@@ -146,6 +148,16 @@ void main(){
         vec3 normal_vis=normal_to_encode;
         normal_vis=normalize(vec3(V*vec4(normal_vis,0.0)));
         diffuse_out=vec4( (normal_vis+1.0)/2.0, 1.0 );
+    }else if(color_type==10){ //normal vector in view coordinates
+        vec3 normal_view_coord=normalize(vec3(V*vec4(normal_to_encode,0.0)));
+        // diffuse_out=vec4( (normal_vis+1.0)/2.0, 1.0 );
+        // vec2 muv = vec2(normal_view_coord)*0.5+vec2(0.5,0.5); //from https://github.com/nidorx/matcaps
+        vec2 muv = vec2(normal_view_coord+1.0)*0.5; //from https://github.com/nidorx/matcaps
+        if(has_matcap_tex){
+            diffuse_out = texture(matcap_tex, vec2(muv.x, muv.y));
+        }else{
+            diffuse_out=vec4( vec3(0.0), 1.0 );
+        }
     }else{
         diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
