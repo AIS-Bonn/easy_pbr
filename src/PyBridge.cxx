@@ -688,6 +688,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("plasma_color", &radu::utils::ColorMngr::plasma_color )
     .def("viridis_color", &radu::utils::ColorMngr::viridis_color )
     .def("mat2color", &radu::utils::ColorMngr::mat2color )
+    .def("eigen2color", &radu::utils::ColorMngr::eigen2color )
     ;
 
     //utilsgl EVERYTHING hre is in another submodule
