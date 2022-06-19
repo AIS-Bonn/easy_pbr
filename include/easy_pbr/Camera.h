@@ -78,7 +78,7 @@ public:
     Eigen::Vector3f unproject(const Eigen::Vector3f point_screen, const Eigen::Matrix4f view, const Eigen::Matrix4f proj, const Eigen::Vector2f viewport);
     Eigen::Vector3f random_direction_in_frustum(const Eigen::Vector2f viewport_size, const float restrict_x, const float restrict_y); //returns a random direction vector in world coords that is inside the frustum of the camera. Therefore if an object is placed along this direction it will for sure be visible by the camera
     void flip_around_x(); //some cameras assume you look in the positive Z direction so we may need to flip them to look backwards. This rotates 180 degrees around the x axis
-    void from_frame(const Frame& frame, const bool flip_z_axis); // initialized the camera to have the parameters of the frame
+    void from_frame(const Frame& frame); // initialized the camera to have the parameters of the frame
 
 
     //writing the current camera pose to string so we can use it later
@@ -101,7 +101,8 @@ public:
     bool m_position_initialized; //signales if the position was initialized already by the user(true) or is not initialized to anything meaningful and should be set automatically
     bool m_lookat_initialized; //signales if the lookat was initialized already by the user(true) or is not initialized to anything meaningful and should be set automatically
     bool m_use_fixed_proj_matrix;
-    Eigen::Matrix4f m_fixed_proj_matrix;
+    // Eigen::Matrix4f m_fixed_proj_matrix;
+    Eigen::Matrix3f m_fixed_K;
 
     Trajectory m_traj;
     std::shared_ptr<Camera> clone();

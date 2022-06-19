@@ -60,7 +60,10 @@ Eigen::Matrix4f Camera::proj_matrix(const Eigen::Vector2f viewport_size){
     float aspect=viewport_size.x()/viewport_size.y();
 
     if (m_use_fixed_proj_matrix){
-        return m_fixed_proj_matrix;
+        // return m_fixed_proj_matrix;
+        Eigen::Matrix4f  fixed_proj_matrix=intrinsics_to_opengl_proj(m_fixed_K, viewport_size.x(), viewport_size.y(), m_near, m_far);
+        fixed_proj_matrix.col(2)=-fixed_proj_matrix.col(2);
+        return fixed_proj_matrix;
     }else{
         return compute_projection_matrix(m_fov, aspect, m_near, m_far);
     }
@@ -297,24 +300,27 @@ void Camera::flip_around_x(){
     m_model_matrix.linear().col(2)=-m_model_matrix.linear().col(2);
 }
 
-void Camera::from_frame(const Frame& frame, const bool flip_z_axis){
+void Camera::from_frame(const Frame& frame){
+
+
+    //the frame has it's frame in the opencv convention. So from the points of view of the frame or image, x is towards right, y is down, z is towards the image so forwards. The easypbr camera follows the right-hand coordinate system with x towards right, y is up, z is backwards
 
     m_model_matrix=frame.tf_cam_world.inverse();
 
-    if (flip_z_axis){
-        Eigen::Matrix3f cam_axes;
-        cam_axes=m_model_matrix.linear();
-        cam_axes.col(2)=-cam_axes.col(2);
-        m_model_matrix.linear()= cam_axes;
-    }
+    Eigen::Matrix3f cam_axes;
+    cam_axes=m_model_matrix.linear();
+    cam_axes.col(2)=-cam_axes.col(2);
+    cam_axes.col(1)=-cam_axes.col(1);
+    m_model_matrix.linear()= cam_axes;
 
     //set fov in x direction THis is shit because it assumes a perfect principal point
     float fx=frame.K(0,0);
     m_fov= radians2degrees(2.0*std::atan( frame.width/(2.0*fx)  )); //https://stackoverflow.com/a/41137160
     // VLOG(1) << "proj matrix using only the fov would be \n" <<  proj_matrix(frame.width, frame.height);
 
-    m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height, m_near, m_far);
-    m_fixed_proj_matrix.col(2)=-m_fixed_proj_matrix.col(2);
+    // m_fixed_proj_matrix=intrinsics_to_opengl_proj(frame.K, frame.width, frame.height, m_near, m_far);
+    // m_fixed_proj_matrix.col(2)=-m_fixed_proj_matrix.col(2);
+    m_fixed_K=frame.K;
     m_use_fixed_proj_matrix=true;
     // VLOG(1) << "fixed proj matrix would be \n" <<  m_fixed_proj_matrix;
 

@@ -651,11 +651,13 @@ PYBIND11_MODULE(easypbr, m) {
     .def("set_roughness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_smoothness_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_smoothness_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_normals_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
+    .def("set_matcap_tex", py::overload_cast<const std::string, const int, const bool> (&Mesh::set_matcap_tex), py::arg().noconvert(),  py::arg("subsample") = 1, py::arg("read_alpha") = false   )
     .def("set_diffuse_tex",  py::overload_cast<const cv::Mat&, const int > (&Mesh::set_diffuse_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_metalness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_metalness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_roughness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_roughness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_smoothness_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_smoothness_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     .def("set_normals_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_normals_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
+    .def("set_matcap_tex", py::overload_cast<const cv::Mat&, const int > (&Mesh::set_matcap_tex), py::arg().noconvert(),  py::arg("subsample") = 1  )
     ;
 
     //Recorder
