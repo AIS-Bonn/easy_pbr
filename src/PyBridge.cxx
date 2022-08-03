@@ -323,6 +323,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("get_extra_field_matrixXf", &Frame::get_extra_field<Eigen::MatrixXf> )
     .def("get_extra_field_matrixXd", &Frame::get_extra_field<Eigen::MatrixXd> )
     .def("get_extra_field_mesh", &Frame::get_extra_field< std::shared_ptr<Mesh> > )
+    #ifdef EASYPBR_WITH_TORCH
+        .def("get_extra_field_tensor", &Frame::get_extra_field< torch::Tensor > )
+    #endif
     .def_readwrite("m_right_stereo_pair", &Frame::m_right_stereo_pair )
     .def_readwrite("is_shell", &Frame::is_shell )
     .def_readwrite("tf_cam_world", &Frame::tf_cam_world )
