@@ -190,14 +190,38 @@ Frame Frame::random_crop(const int crop_height, const int crop_width){
     int rand_x=m_rand_gen->rand_int(0,width-1-crop_width);
     int rand_y=m_rand_gen->rand_int(0,height-1-crop_height);
 
-    return this->crop(rand_x, rand_y, crop_width, crop_height);
+    return this->crop(rand_x, rand_y, crop_width, crop_height, false); //we set the clamping to false because we want to make sure we get exactly something of that specific height and width
    
 }
-Frame Frame::crop(const int start_x, const int start_y, const int crop_width, const int crop_height){
+Frame Frame::crop(int start_x, int start_y, int crop_width, int crop_height, bool clamp_to_borders){
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
     CHECK(crop_width<width) << "Crop width is larger than width of the image. Crop width is " << crop_width << " width of this frame is " << width;
     CHECK(crop_height<width) << "Crop height is larger than height of the image. Crop height is " << crop_height << " height of this frame is " << height;
+    CHECK(crop_width >=0) << "crop_width should be positive but it is " <<crop_width;
+    CHECK(crop_height >=0) << "crop_height should be positive but it is " <<crop_height;
+
+
+    //DO NOT DO any bounding becasue I want to make sure that whatever I give this function, it will crop to exactly that size, it is quite important when I do various crops to make sure that they are those exact size, and to fail if that size cannot be recovered
+    if (clamp_to_borders){
+        // //bound the crop in case we are outside of the image
+        // int clamped_start_x=radu::utils::clamp(start_x,0,width);
+        // int clamped_start_y=radu::utils::clamp(start_y,0,height);
+        // //in case the start x or y got clamped we should also modify the width because now it should be shorter
+        // crop_width=crop_width-std::abs(start_x-clamped_start_x);
+        // crop_height=crop_height-std::abs(start_y-clamped_start_y);
+        // //now we replace the start x and y with the clamped one
+        // start_x=clamped_start_x;
+        // start_y=clamped_start_y;
+        // //clamp also the width and height
+        // crop_width=radu::utils::clamp(crop_width,0,width-start_x);
+        // crop_height=radu::utils::clamp(crop_height,0,height-start_y);
+        auto valid_crop=get_valid_crop(start_x, start_y, crop_width, crop_height);
+        start_x=std::get<0>(valid_crop);
+        start_y=std::get<1>(valid_crop);
+        crop_width=std::get<2>(valid_crop);
+        crop_height=std::get<3>(valid_crop);
+    }
 
     Frame new_frame(*this); //this should copy all the things like weight and height and do a shallow copy of the cv::Mats
 
@@ -235,6 +259,116 @@ Frame Frame::crop(const int start_x, const int start_y, const int crop_width, co
     new_frame.add_extra_field("height_before_crop", height);
 
     return new_frame;
+}
+
+std::tuple<int,int,int,int> Frame::get_valid_crop(int start_x, int start_y, int crop_width, int crop_height){
+    //bound the crop in case we are outside of the image
+    int clamped_start_x=radu::utils::clamp(start_x,0,width);
+    int clamped_start_y=radu::utils::clamp(start_y,0,height);
+    //in case the start x or y got clamped we should also modify the width because now it should be shorter
+    crop_width=crop_width-std::abs(start_x-clamped_start_x);
+    crop_height=crop_height-std::abs(start_y-clamped_start_y);
+    //now we replace the start x and y with the clamped one
+    start_x=clamped_start_x;
+    start_y=clamped_start_y;
+    //clamp also the width and height
+    crop_width=radu::utils::clamp(crop_width,0,width-start_x);
+    crop_height=radu::utils::clamp(crop_height,0,height-start_y);
+
+
+    return std::make_tuple(start_x, start_y, crop_width, crop_height);
+}
+
+std::tuple<int,int,int,int> Frame::enlarge_crop_to_size(int start_x, int start_y, int crop_width, int crop_height, int desired_width, int desired_height){
+    CHECK(desired_width>=crop_width) << "For now this only enlarges the crop to fit this desired width. I did not yet implement a shrinking";
+    CHECK(desired_height>=crop_height) << "For now this only enlarges the crop to fit this desired height. I did not yet implement a shrinking";
+
+    auto valid_crop=get_valid_crop(start_x, start_y, crop_width, crop_height);
+    start_x=std::get<0>(valid_crop);
+    start_y=std::get<1>(valid_crop);
+    crop_width=std::get<2>(valid_crop);
+    crop_height=std::get<3>(valid_crop);
+
+    int diff_width=desired_width-crop_width;
+    int diff_height=desired_height-crop_height;
+
+    //ENLARGE THE WIDTH
+    int half_diff_width=diff_width/2; //floors the result
+    //decrease_start_x by at most half_diff_width and increase crop_width also by at least half_diff_width
+    int new_start_x=radu::utils::clamp(start_x-half_diff_width,0,width);
+    int increase_in_width=start_x-new_start_x;
+    crop_width+=increase_in_width;
+    diff_width-=increase_in_width;
+    start_x=new_start_x;
+    //increase also the crop_width by as much as we can
+    int new_crop_width=radu::utils::clamp(crop_width+half_diff_width, 0, width-start_x);
+    increase_in_width=new_crop_width-crop_width;
+    diff_width-=increase_in_width;
+    crop_width=new_crop_width;
+    //at this point we could still possibly not have reached the desired width because either new_start_x or new_crop_width has clamped. So we increase each one of them independenlty now
+    if(crop_width!=desired_width){
+        diff_width=desired_width-crop_width;
+        //try to decrease the start_x
+        new_start_x=radu::utils::clamp(start_x-diff_width,0,width);
+        increase_in_width=start_x-new_start_x;
+        crop_width+=increase_in_width;
+        diff_width-=increase_in_width;
+        start_x=new_start_x;
+        if(increase_in_width==diff_width){
+            //we matched the desired with, we are done
+        }else{
+            //we have to increase the crop width
+            new_crop_width=radu::utils::clamp(crop_width+diff_width, 0, width-start_x);
+            increase_in_width=new_crop_width-crop_width;
+            diff_width-=increase_in_width;
+            crop_width=new_crop_width;
+        }
+    }
+
+
+
+
+
+
+    //ENLARGE HEIGHT
+    int half_diff_height=diff_height/2; //floors the result
+    //decrease_start_y by at most half_diff_height and increase crop_height also by at least half_diff_height
+    int new_start_y=radu::utils::clamp(start_y-half_diff_height,0,height);
+    int increase_in_height=start_y-new_start_y;
+    crop_height+=increase_in_height;
+    diff_height-=increase_in_height;
+    start_y=new_start_y;
+    //increase also the crop_width by as much as we can
+    int new_crop_height=radu::utils::clamp(crop_height+half_diff_height, 0, height-start_y);
+    increase_in_height=new_crop_height-crop_height;
+    diff_height-=increase_in_height;
+    crop_height=new_crop_height;
+    //at this point we could still possibly not have reached the desired height because either new_start_y or new_crop_height has clamped. So we increase each one of them independenlty now
+    if(crop_height!=desired_height){
+        diff_height=desired_height-crop_height;
+        //try to decrease the start_x
+        new_start_y=radu::utils::clamp(start_y-diff_height,0,height);
+        increase_in_height=start_y-new_start_y;
+        crop_height+=increase_in_height;
+        diff_height-=increase_in_height;
+        start_y=new_start_y;
+        if(increase_in_height==diff_height){
+            //we matched the desired with, we are done
+        }else{
+            //we have to increase the crop width
+            new_crop_height=radu::utils::clamp(crop_height+diff_height, 0, height-start_y);
+            increase_in_height=new_crop_height-crop_height;
+            diff_height-=increase_in_height;
+            crop_height=new_crop_height;
+        }
+    }
+
+
+    CHECK(crop_width==desired_width) << "We didn't reach the desired_width for some reason. The current width is " << crop_width << " while the desired width is " << desired_width;
+    CHECK(crop_height==desired_height) << "We didn't reach the height for some reason. The current height is " << crop_height << " while the desired height is " << desired_height;
+    
+
+    return std::make_tuple(start_x, start_y, crop_width, crop_height);
 }
 
 void Frame::rescale_K(const float scale){
