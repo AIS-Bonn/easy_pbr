@@ -637,7 +637,8 @@ void Gui::draw_main_menu(){
                 Eigen::Affine3d model_matrix=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->model_matrix();
                 std::vector<std::string> pose_vec=radu::utils::tf_matrix2vecstring(model_matrix);
                 std::string pose_string=radu::utils::join(pose_vec, " ");
-                VLOG(1) << "Copied model matrix to clipboard: " << pose_string;
+                VLOG(1) << "Model matrix in full form is " << model_matrix.matrix();
+                VLOG(1) << "Copied model matrix (simplified) to clipboard: " << pose_string;
                 glfwSetClipboardString(m_view->m_window, pose_string.c_str());
             }
 

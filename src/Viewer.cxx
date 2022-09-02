@@ -594,7 +594,7 @@ void Viewer::init_opengl(){
 
 
     //create a fullscreen quad which we will use for composing the final image after the deffrred render pass
-    m_fullscreen_quad->m_core->create_full_screen_quad();
+    m_fullscreen_quad->m_core->create_quad();
     GL_C( m_fullscreen_quad->upload_to_gpu() );
 
     //add the background image

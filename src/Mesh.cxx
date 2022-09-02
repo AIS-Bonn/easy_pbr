@@ -1543,7 +1543,7 @@ void Mesh::random_noise(const float noise_stddev){
 
 
 
-void Mesh::create_full_screen_quad(){
+void Mesh::create_quad(){
     V.resize(4,3);
     V.row(0) << -1.0, -1.0, 0.0;
     V.row(1) << 1.0, -1.0, 0.0;

@@ -528,6 +528,8 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<Mesh, std::shared_ptr<Mesh>> (m, "Mesh")
     .def(py::init<>())
     .def(py::init<std::string>())
+    // .def_static("create",  &Mesh::create<const std::string> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
+    // .def_static("create",  &Mesh::create<> ) //for templated methods like this one we need to explicitly instantiate one of the arguments
     .def("load_from_file", &Mesh::load_from_file )
     .def("read_obj", &Mesh::read_obj, py::arg().noconvert(), py::arg("load_vti") = false, py::arg("load_vni") = false   )
     .def("save_to_file", &Mesh::save_to_file )
@@ -538,6 +540,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("add", py::overload_cast<const std::vector<std::shared_ptr<Mesh>>&>(&Mesh::add) )
     .def("is_empty", &Mesh::is_empty )
     .def("preallocate_V", &Mesh::preallocate_V )
+    .def("create_quad", &Mesh::create_quad )
     .def("create_box_ndc", &Mesh::create_box_ndc )
     .def("create_box", &Mesh::create_box )
     .def("create_floor", &Mesh::create_floor )

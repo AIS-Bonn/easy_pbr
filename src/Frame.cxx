@@ -364,8 +364,8 @@ std::tuple<int,int,int,int> Frame::enlarge_crop_to_size(int start_x, int start_y
     }
 
 
-    CHECK(crop_width==desired_width) << "We didn't reach the desired_width for some reason. The current width is " << crop_width << " while the desired width is " << desired_width;
-    CHECK(crop_height==desired_height) << "We didn't reach the height for some reason. The current height is " << crop_height << " while the desired height is " << desired_height;
+    CHECK(crop_width==desired_width) << "We didn't reach the desired_width for some reason. The current width is " << crop_width << " while the desired width is " << desired_width << ". The maximum width of the frame is "<< this->width;
+    CHECK(crop_height==desired_height) << "We didn't reach the height for some reason. The current height is " << crop_height << " while the desired height is " << desired_height << ". The maximum height of the frame is "<< this->height;
     
 
     return std::make_tuple(start_x, start_y, crop_width, crop_height);
