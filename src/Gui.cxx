@@ -944,11 +944,11 @@ void Gui::draw_main_menu(){
             m_view->m_camera = m_view->m_default_camera;
             m_traj_is_playing = false;
         }
-        bool should_play_trajectory = false;
+        m_should_play_trajectory = false;
         if (ImGui::Button("Play"))
         {
             if ( ! m_view->m_trajectory.empty() )
-                should_play_trajectory = true;
+                m_should_play_trajectory = true;
         }
         ImGui::SameLine();
         if (ImGui::Button("Stop"))
@@ -966,11 +966,11 @@ void Gui::draw_main_menu(){
         {
             if ( ! m_view->m_trajectory.empty() )
             {
-                should_play_trajectory = true;
+                m_should_play_trajectory = true;
                 m_traj_preview = true;
             }
         }
-        if ( should_play_trajectory )
+        if ( m_should_play_trajectory )
         {
             m_view->m_timer->start();
             if ( ! m_traj_preview )

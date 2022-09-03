@@ -211,7 +211,7 @@ PYBIND11_MODULE(easypbr, m) {
         m=mat;
       } )
     .def("set_value_to_alpha", [](cv::Mat &m, const int val) {
-        CHECK(m.channels()==3) << "Mat needs to have 4 channels and it only has " << m.channels();
+        CHECK(m.channels()==3) << "Mat needs to have 3 channels and it only has " << m.channels();
         // cv::Mat mat;
         // cv::cvtColor(m, mat, CV_8UC4);
         cv::Mat mat=cv::Mat(m.rows,m.cols,CV_8UC4);
@@ -248,6 +248,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("bgra2rgba", [](cv::Mat &m) {  cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGRA2RGBA); return res; } )
     .def("rgb2rgba", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_RGB2RGBA); return res; } )
     .def("bgr2bgra", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGR2BGRA); return res; } )
+    .def("rgba2rgb", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_RGBA2RGB); return res; } )
+    .def("bgra2bgr", [](cv::Mat &m) {   cv::Mat res; cv::cvtColor(m, res, cv::COLOR_BGRA2BGR); return res; } )
     .def("normalize_range", [](cv::Mat &m) {   cv::Mat res;     cv::normalize(m, res, 0, 1, cv::NORM_MINMAX, CV_32F);     return res; } )
     // .def("rgba2rgbblack", [](cv::Mat &m ) {  m=cv::imread(path, cv::IMREAD_UNCHANGED);  } )
     .def("flip_y", [](cv::Mat &m) {  cv::Mat flipped; cv::flip(m, flipped, 0); m=flipped; return flipped;  } )
@@ -376,6 +378,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def("rendered_mat_no_gui", &Viewer::rendered_mat_no_gui )
     .def("rendered_mat_with_gui", &Viewer::rendered_mat_with_gui )
     .def("upload_single_mesh_to_gpu", &Viewer::upload_single_mesh_to_gpu )
+    .def("load_trajectory", &Viewer::load_trajectory )
+    .def("play_trajectory", &Viewer::play_trajectory )
     .def_readwrite("m_debug", &Viewer::m_debug )
     .def_readwrite("m_use_offscreen", &Viewer::m_use_offscreen )
     .def_readwrite("m_kernel_radius", &Viewer::m_kernel_radius )
@@ -392,7 +396,11 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_viewport_size", &Viewer::m_viewport_size )
     .def_readwrite("m_nr_drawn_frames", &Viewer::m_nr_drawn_frames )
     .def_readwrite("m_background_color", &Viewer::m_background_color )
+    .def_readwrite("m_camera_translation_speed_multiplier", &Viewer::m_camera_translation_speed_multiplier )
     .def_readwrite("m_gui", &Viewer::m_gui )
+    .def_readwrite("m_recording_path", &Viewer::m_recording_path )
+    .def_readwrite("m_record_gui", &Viewer::m_record_gui )
+    .def_readwrite("m_record_with_transparency", &Viewer::m_record_with_transparency )
     ;
 
     //Gui
@@ -403,6 +411,7 @@ PYBIND11_MODULE(easypbr, m) {
                                      py::arg("cv_mat_2") = cv::Mat(), py::arg("name_2") = "")
     .def_static("show_gl_texture", &Gui::show_gl_texture )
     .def("selected_mesh_idx", &Gui::selected_mesh_idx )
+    .def_readwrite("m_traj_should_draw", &Gui::m_traj_should_draw )
     ;
 
 
@@ -617,6 +626,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def("rotate_model_matrix_local", py::overload_cast<const Eigen::Vector3d&, const float >  (&Mesh::rotate_model_matrix_local) )
     .def("apply_model_matrix_to_cpu", &Mesh::apply_model_matrix_to_cpu )
     .def("scale_mesh", &Mesh::scale_mesh )
+    .def("centroid", &Mesh::centroid )
     // .def("set_model_matrix", &Mesh::set_model_matrix )
     // .def("model_matrix_as_xyz_and_quaternion", &Mesh::model_matrix_as_xyz_and_quaternion )
     // .def("model_matrix_as_xyz_and_rpy", &Mesh::model_matrix_as_xyz_and_rpy )
@@ -676,6 +686,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("write_without_buffering", &Recorder::write_without_buffering )
     .def("is_finished", &Recorder::is_finished )
     .def("nr_images_recorded", &Recorder::nr_images_recorded )
+    .def("start_recording", &Recorder::start_recording )
+    .def("pause_recording", &Recorder::pause_recording )
+    .def("stop_recording", &Recorder::stop_recording )
     ;
 
     //Profiler

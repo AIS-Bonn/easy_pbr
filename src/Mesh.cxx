@@ -2051,8 +2051,8 @@ void Mesh::color_from_mat(const cv::Mat& mat){
 }
 
 Eigen::Vector3d Mesh::centroid(){
-    Eigen::Vector3d min_point = V.colwise().minCoeff();
-    Eigen::Vector3d max_point = V.colwise().maxCoeff();
+    Eigen::Vector3d min_point = model_matrix()*Eigen::Vector3d(V.colwise().minCoeff());
+    Eigen::Vector3d max_point = model_matrix()*Eigen::Vector3d(V.colwise().maxCoeff());
     Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
     return centroid;
@@ -2545,8 +2545,8 @@ float Mesh::get_scale(){
     // max_point.resize(3);
     // min_point.setConstant(std::numeric_limits<float>::max());
     // max_point.setConstant(std::numeric_limits<float>::lowest());
-    Eigen::VectorXd min_point = V.colwise().minCoeff();
-    Eigen::VectorXd max_point = V.colwise().maxCoeff();
+    Eigen::VectorXd min_point = model_matrix()*Eigen::Vector3d(V.colwise().minCoeff());
+    Eigen::VectorXd max_point = model_matrix()*Eigen::Vector3d(V.colwise().maxCoeff());
 
     Eigen::VectorXd centroid = (0.5*(min_point + max_point)).eval();
 

@@ -152,7 +152,6 @@ public:
     std::shared_ptr<Gui> m_gui;
     std::shared_ptr<Recorder> m_recorder;
     std::shared_ptr<radu::utils::RandGenerator> m_rand_gen;
-    std::vector<std::shared_ptr<Camera>> m_trajectory;
 
 
     //params
@@ -203,6 +202,11 @@ public:
 
     //other
     void create_random_samples_hemisphere();
+
+    //for trajectory following
+    void load_trajectory(const std::string trajectory_file);
+    void play_trajectory();
+
 
     //getters
     gl::Texture2D& rendered_tex_no_gui(const bool with_transparency);
@@ -270,6 +274,22 @@ public:
     gl::Texture2D m_uv_checker_tex;
     Eigen::MatrixXf m_random_samples;
     std::shared_ptr<MeshGL> m_fullscreen_quad; //we store it here because we precompute it and then we use for composing the final image after the deffered geom pass
+
+    //for trajectory following
+    std::vector<std::shared_ptr<Camera>> m_trajectory;
+    // int m_selected_trajectory_idx;
+    // float m_trajectory_frustum_size = 0.01f;
+    // std::string m_traj_file_name = "./traj.txt";
+    // ImGuizmo::MODE m_traj_guizmo_mode = ImGuizmo::LOCAL;
+    // ImGuizmo::OPERATION m_traj_guizmo_operation=ImGuizmo::ROTATE;
+    // bool m_traj_should_draw = true;
+    // bool m_traj_is_playing = false;
+    // bool m_traj_is_paused = false;
+    // bool m_traj_preview = false;
+    // bool m_traj_use_time_not_frames = true;
+    // int m_traj_fps = 30;
+    // int m_traj_view_updates = 0;
+    // std::shared_ptr<Camera> m_preview_camera;
 
     // //params
     // bool m_show_gui;

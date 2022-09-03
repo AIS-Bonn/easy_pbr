@@ -258,12 +258,19 @@ Eigen::Vector3f Scene::get_centroid(const bool use_mutex){
     Eigen::MatrixXd max_point_per_mesh; // each row stores the minimum point of the corresponding mesh.
     min_point_per_mesh.resize(m_meshes.size(), 3);
     max_point_per_mesh.resize(m_meshes.size(), 3);
-    min_point_per_mesh.setZero();
-    max_point_per_mesh.setZero();
+    // min_point_per_mesh.setZero();
+    // max_point_per_mesh.setZero();
+    min_point_per_mesh.setConstant(std::numeric_limits<float>::max());
+    max_point_per_mesh.setConstant(std::numeric_limits<float>::lowest());
     for(size_t i=0; i<m_meshes.size(); i++){
         if(m_meshes[i]->is_empty()){ continue; }
-        min_point_per_mesh.row(i) = m_meshes[i]->V.colwise().minCoeff();
-        max_point_per_mesh.row(i) = m_meshes[i]->V.colwise().maxCoeff();
+        if(m_meshes[i]->name=="grid_floor"){
+            continue;
+        }
+        // min_point_per_mesh.row(i) = m_meshes[i]->V.colwise().minCoeff();
+        // max_point_per_mesh.row(i) = m_meshes[i]->V.colwise().maxCoeff();
+        min_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().minCoeff());
+        max_point_per_mesh.row(i) = m_meshes[i]->model_matrix()*Eigen::Vector3d(m_meshes[i]->V.colwise().maxCoeff());
     }
 
     //absolute minimum between all meshes
@@ -314,11 +321,11 @@ float Scene::get_scale(const bool use_mutex){
     Eigen::Vector3d max_point = max_point_per_mesh.colwise().maxCoeff();
     // Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
-    // VLOG(1) << "min_point " << min_point.transpose();
-    // VLOG(1) << "max_point " << max_point.transpose();
+    VLOG(1) << "min_point " << min_point.transpose();
+    VLOG(1) << "max_point " << max_point.transpose();
     float scale = (max_point-min_point).array().abs().maxCoeff();
 
-    // VLOG(1) << "scale is " << scale;
+    VLOG(1) << "scale is " << scale;
 
     return scale;
 }

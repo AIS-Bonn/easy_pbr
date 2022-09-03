@@ -770,7 +770,9 @@ void Viewer::configure_camera(){
     //CAMERA------------
     if (!m_camera->m_is_initialized){
         Eigen::Vector3f centroid = m_scene->get_centroid();
+        VLOG(1) << "initializing camera to look at centroid " << centroid;
         float scale = m_scene->get_scale();
+        VLOG(1) << "initializing camera to scale " << scale;
         if (!m_camera->m_lookat_initialized){
             m_camera->set_lookat(centroid);
         }
@@ -2809,6 +2811,38 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 // void Viewer::check_position(const int i){
 //     VLOG(1) << "C++ object with ptr "  <<m_spot_lights[i]<< "has position " << m_spot_lights[i]->position().transpose();
 // }
+
+
+//for trajectory following
+void Viewer::load_trajectory(const std::string trajectory_file){
+    if ( fs::exists(trajectory_file) ){
+            std::ifstream file ( trajectory_file );
+            if ( ! file.is_open() )
+                LOG(FATAL) << "file not opened: " << trajectory_file;
+            m_gui->m_traj_is_playing = false;
+            m_trajectory.clear();
+            m_gui->m_selected_trajectory_idx = 0;
+            double ts;
+            bool enabled;
+            while ( file.good() )
+            {
+                file >> ts >> enabled;
+                std::string line;
+                if ( ! std::getline(file, line) ) continue;
+                std::shared_ptr<Camera> new_camera = m_default_camera->clone();
+                new_camera->from_string(line);
+                new_camera->m_traj.m_enabled = enabled;
+                new_camera->m_traj.m_transition_duration = ts;
+                m_trajectory.emplace_back(new_camera);
+            }
+            file.close();
+    }
+}
+void Viewer::play_trajectory(){
+    m_gui->m_selected_trajectory_idx=0;
+    m_gui->m_traj_is_playing = true;
+}
+
 
 void Viewer::write_gbuffer_to_folder(){
     //read the normals and dencode them for writing to file

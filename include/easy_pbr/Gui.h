@@ -107,6 +107,10 @@ public:
     bool m_matcap_tex_hovered;
 
 
+    int m_selected_trajectory_idx;
+    bool m_should_play_trajectory=false;
+    bool m_traj_is_playing = false;
+    bool m_traj_should_draw = true;
 
 private:
 
@@ -153,14 +157,10 @@ private:
     ImVec2 m_curve_points[10];
 
     // trajectory follower:
-    int m_selected_trajectory_idx;
     float m_trajectory_frustum_size = 0.01f;
     std::string m_traj_file_name = "./traj.txt";
     ImGuizmo::MODE m_traj_guizmo_mode = ImGuizmo::LOCAL;
     ImGuizmo::OPERATION m_traj_guizmo_operation=ImGuizmo::ROTATE;
-
-    bool m_traj_should_draw = true;
-    bool m_traj_is_playing = false;
     bool m_traj_is_paused = false;
     bool m_traj_preview = false;
     bool m_traj_use_time_not_frames = true;

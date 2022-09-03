@@ -359,6 +359,10 @@ void Camera::recalculate_orientation(){
     Eigen::Matrix3f cam_axes;
 
     Eigen::Vector3f dir= this->direction();
+    // float dot=std::fabs(dir.dot(up()));
+    // if (dot<std::numeric_limits<float>::epsilon() || dot>1.0-std::numeric_limits<float>::epsilon() ){
+        // LOG(FATAL) << "Dir and up is kinda the same vector so the cross product will likely fail. We need to think of a better way to compute this when the camera is pointing directly down or up and therefore the up vector is aligned with the dir(). Dot is " << dot;
+    // }
     Eigen::Vector3f right= (up().cross(-dir)).normalized(); //the order is imporant. We assume a right handed system, up is y axis and (-dir) is the z axis. Dir points towards the negative z
     Eigen::Vector3f up_recalc =  (-dir.cross(right)).normalized(); //recalculate the up vector so that we ensure that it is perpendicular to direction and right
 
