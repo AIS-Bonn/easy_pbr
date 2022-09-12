@@ -783,6 +783,7 @@ void Gui::draw_main_menu(){
         }
 
 
+        ImGui::Checkbox("Ortho", &m_view->m_camera->m_use_ortho_projection);
         ImGui::SliderFloat("FOV", &m_view->m_camera->m_fov, 30.0, 120.0);
         ImGui::SliderFloat("near", &m_view->m_camera->m_near, 0.01, 10.0);
         ImGui::SliderFloat("far", &m_view->m_camera->m_far, 100.0, 5000.0);
