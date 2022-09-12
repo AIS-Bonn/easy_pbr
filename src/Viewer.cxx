@@ -3047,7 +3047,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
 
     //handle ctrl c and ctrl v for camera pose copying and pasting
     if (key == GLFW_KEY_C && modifier==GLFW_MOD_CONTROL && action == GLFW_PRESS){
-        VLOG(1) << "Pressed ctrl-c, copying current pose of the camera to clipoard";
+        VLOG(1) << "Pressed ctrl-c, copying current pose of the camera to clipoard. It is " << m_camera->to_string();
         glfwSetClipboardString(window, m_camera->to_string().c_str());
     }
     if (key == GLFW_KEY_V && modifier==GLFW_MOD_CONTROL && action == GLFW_PRESS){
