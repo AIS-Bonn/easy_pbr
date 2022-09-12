@@ -1293,6 +1293,8 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     Eigen::Matrix4f P = m_camera->proj_matrix(m_gbuffer.width(), m_gbuffer.height());
     Eigen::Matrix4f MV = V*M;
     Eigen::Matrix4f MVP = P*V*M;
+    float point_size=std::max(1.0f, mesh->m_core->m_vis.m_point_size); //need to cap the point size at a minimum of 1 because something like 0.5 will break opengl :(
+    glEnable( GL_PROGRAM_POINT_SIZE );
 
     //shader setup
     shader.use();
@@ -1312,6 +1314,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->m_label_mngr){
         shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
+    shader.uniform_float(point_size, "point_size");
 
     //pbr textures
     // if(mesh->m_cur_tex_ptr->storage_initialized() ){
@@ -1337,8 +1340,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
                     }
                     ); //makes the shaders draw into the buffers we defines in the gbuffer
 
-    float point_size=std::max(1.0f, mesh->m_core->m_vis.m_point_size); //need to cap the point size at a minimum of 1 because something like 0.5 will break opengl :(
-    glPointSize(point_size);
+    // glPointSize(point_size);
 
     // draw
     mesh->vao.bind();

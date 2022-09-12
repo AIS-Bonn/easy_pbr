@@ -32,6 +32,7 @@ uniform vec3 color_scheme_height[256];
 uniform float min_y;
 uniform float max_y;
 uniform bool has_normals=false; //if we have normals this will get set to true
+uniform float point_size;
 
 float map(float value, float inMin, float inMax, float outMin, float outMax) {
     float value_clamped=clamp(value, inMin, inMax);  //so the value doesn't get modified by the clamping, because glsl may pass this by referece
@@ -109,4 +110,8 @@ void main(){
     }else if(color_type==8){ //uv
         color_per_vertex_out=vec3(uv,0.0);
     }
+
+
+    gl_PointSize = point_size;
+    // gl_PointSize = map(-position_cam_coords_out.z, 1.0, 5.0, 1.0, 20); //change the point size depending on the distance in Z in the camera coordinate frame
 }
