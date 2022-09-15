@@ -52,6 +52,7 @@ uniform float bloom_threshold;
 uniform float environment_map_blur;
 uniform int prefilter_nr_mipmaps;
 uniform bool using_fat_gbuffer;
+uniform bool is_ortho;
 
 
 //for edl
@@ -84,7 +85,14 @@ float linear_depth(float depth_sample){
     // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     // float ProjectionA = z_far / (z_far - z_near);
     // float ProjectionB = (-z_far * z_near) / (z_far - z_near);
-    float linearDepth = projection_b / (depth_sample - projection_a);
+    
+    float linearDepth;
+    if (is_ortho){
+        linearDepth= depth_sample;
+    }else{
+        linearDepth= projection_b / (depth_sample - projection_a);
+    }
+
     return linearDepth;
 
 }

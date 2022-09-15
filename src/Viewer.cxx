@@ -2008,6 +2008,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_float(m_camera->m_exposure, "exposure");
     m_compose_final_quad_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
+    m_compose_final_quad_shader.uniform_bool(m_camera->m_use_ortho_projection, "is_ortho");
 
 
     //fill up the vector of spot lights
