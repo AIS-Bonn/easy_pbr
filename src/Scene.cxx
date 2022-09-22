@@ -321,11 +321,11 @@ float Scene::get_scale(const bool use_mutex){
     Eigen::Vector3d max_point = max_point_per_mesh.colwise().maxCoeff();
     // Eigen::Vector3d centroid = (0.5*(min_point + max_point)).eval();
 
-    VLOG(1) << "min_point " << min_point.transpose();
-    VLOG(1) << "max_point " << max_point.transpose();
+    // VLOG(1) << "min_point " << min_point.transpose();
+    // VLOG(1) << "max_point " << max_point.transpose();
     float scale = (max_point-min_point).array().abs().maxCoeff();
 
-    VLOG(1) << "scale is " << scale;
+    // VLOG(1) << "scale is " << scale;
 
     return scale;
 }
