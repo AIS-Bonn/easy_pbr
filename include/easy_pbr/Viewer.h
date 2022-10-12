@@ -366,6 +366,7 @@ public:
     int m_nr_pcss_pcf_samples;
     Eigen::MatrixXf m_pcss_blocker_samples;
     Eigen::MatrixXf m_pcss_pcf_samples;
+    float m_forced_penumbra_size; //for debugging
 
 
 private:

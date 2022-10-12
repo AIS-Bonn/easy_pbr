@@ -1226,6 +1226,7 @@ void Gui::draw_main_menu(){
 
         ImGui::SliderInt("BlockerSamples", &m_view->m_nr_pcss_blocker_samples, 2, 256) ;
         ImGui::SliderInt("PCFSamples", &m_view->m_nr_pcss_pcf_samples, 2, 256) ;
+        ImGui::SliderFloat("Penumbra", &m_view->m_forced_penumbra_size, 0.001, 0.15) ;
 
         if(ImGui::ListBoxHeader("Selected lights", m_view->m_spot_lights.size(), 6)){ //all the spot lights
 
