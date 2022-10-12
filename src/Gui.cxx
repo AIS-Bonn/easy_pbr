@@ -1240,6 +1240,8 @@ void Gui::draw_main_menu(){
             //modify properties
             ImGui::SliderFloat("Power", &m_view->m_spot_lights[m_selected_spot_light_idx]->m_power, 100.0, 500.0);
             ImGui::ColorEdit3("Color", m_view->m_spot_lights[m_selected_spot_light_idx]->m_color.data());
+            //m_create_shadow
+            ImGui::Checkbox("Create shadow", &m_view->m_spot_lights[m_selected_spot_light_idx]->m_create_shadow);
 
 
         }
@@ -1552,6 +1554,7 @@ void Gui::show_images(){
                     fs::create_directories(root_path);
                 }
                 std::string path= root_path.string()+window.named_imgs_vec[idx_selected].name +".png";
+                path = fs::absolute(path).string();
                 cv::imwrite(path, mat);
                 VLOG(1) << "Saved img to " << path;
             }

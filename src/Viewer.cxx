@@ -980,7 +980,7 @@ void Viewer::draw(const GLuint fbo_id){
     TIME_END("update_meshes");
 
 
-    TIME_START("shadow_pass");
+    // TIME_START("shadow_pass");
     //check if any of the objects has moved, and if it has we need to clear all shadow maps and redo them. We need to redo them from scratch because an object moving may have revealed what is behind another object
     bool need_shadow_map_update=false;
     for(size_t i=0; i<m_meshes_gl.size(); i++){
@@ -1040,18 +1040,18 @@ void Viewer::draw(const GLuint fbo_id){
             }
         }
     }
-    TIME_END("shadow_pass");
+    // TIME_END("shadow_pass");
 
 
 
-    TIME_START("gbuffer");
+    // TIME_START("gbuffer");
     //set the gbuffer size in case it changed
     if(m_viewport_size.x()/m_subsample_factor!=m_gbuffer.width() || m_viewport_size.y()/m_subsample_factor!=m_gbuffer.height()){
         m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor);
     }
     m_gbuffer.bind_for_draw();
     m_gbuffer.clear();
-    TIME_END("gbuffer");
+    // TIME_END("gbuffer");
 
 
     TIME_START("geom_pass");
@@ -1116,7 +1116,7 @@ void Viewer::draw(const GLuint fbo_id){
     // TIME_END("blit");
 
     //forward render the lines and edges
-    TIME_START("forward_render");
+    // TIME_START("forward_render");
     for(size_t i=0; i<m_meshes_gl.size(); i++){
         MeshGLSharedPtr mesh=m_meshes_gl[i];
         if(mesh->m_core->m_vis.m_is_visible){
@@ -1131,7 +1131,7 @@ void Viewer::draw(const GLuint fbo_id){
             }
         }
     }
-    TIME_END("forward_render");
+    // TIME_END("forward_render");
 
     blend_bg();
 
@@ -1923,7 +1923,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
 void Viewer::compose_final_image(const GLuint fbo_id){
 
-    TIME_START("compose");
+    // TIME_START("compose");
 
     //create a final image the same size as the framebuffer
     // m_environment_cubemap_tex.allocate_tex_storage(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, m_environment_cubemap_resolution, m_environment_cubemap_resolution);
@@ -1932,10 +1932,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
 
     // m_bloom_tex.allocate_or_resize(GL_RGBA16, GL_RGBA, GL_HALF_FLOAT, m_gbuffer.width(), m_gbuffer.height() );
     // m_bloom_tex.set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0);
-    TIME_START("clearing_compose");
+    // TIME_START("clearing_compose");
     m_composed_fbo.set_size(m_gbuffer.width(), m_gbuffer.height() ); //established what will be the size of the textures attached to this framebuffer
     m_composed_fbo.clear();
-    TIME_END("clearing_compose");
+    // TIME_END("clearing_compose");
     // GL_C( m_composed_fbo.tex_with_name("composed_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 1.0) );
     // GL_C( m_composed_fbo.tex_with_name("bloom_gtex").set_val(m_background_color.x(), m_background_color.y(), m_background_color.z(), 0.0) );
     // GL_C( m_composed_fbo.sanity_check());
@@ -2083,7 +2083,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // draw
     m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    TIME_END("compose");
+    // TIME_END("compose");
 
     //restore the state
     glDepthMask(true);
@@ -2157,7 +2157,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
 
     //attempt 2 by creating a mip map of the texture and then blurring a bit each mip map. Inspired by http://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
 
-    TIME_START("blur_img");
+    // TIME_START("blur_img");
 
     //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
@@ -2254,7 +2254,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
     // }
 
 
-    TIME_END("blur_img");
+    // TIME_END("blur_img");
 
     //restore the state
     glDepthMask(true);
@@ -2266,7 +2266,7 @@ void Viewer::blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int
 
 void Viewer::apply_postprocess(){
 
-    TIME_START("apply_postprocess");
+    // TIME_START("apply_postprocess");
 
     //first mip map the image so it's faster to blur it when it's smaller
     // m_blur_tmp_tex.allocate_or_resize( img.internal_format(), img.format(), img.type(), m_posprocessed_tex.width(), blurred_img_size.y() );
@@ -2332,7 +2332,7 @@ void Viewer::apply_postprocess(){
 
 
 
-    TIME_END("apply_postprocess");
+    // TIME_END("apply_postprocess");
     //BLEND BACKGROUND -------------------------------------------------------------------------------------------------------------------
     //blend the pure color texture that we just rendered with the bg using the alpha. This is in order to deal with bloom and translucent thing corretly and still have a saved copy of the texture with transparency
 
@@ -2762,7 +2762,6 @@ void Viewer::prefilter(gl::CubeMap& prefilter_tex, const gl::CubeMap& radiance_t
 }
 void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
 
-    TIME_START("compose");
 
     //dont perform depth checking nor write into the depth buffer
     glDepthMask(false);
@@ -2788,7 +2787,6 @@ void Viewer::integrate_brdf(gl::Texture2D& brdf_lut_tex){
     // draw
     m_fullscreen_quad->vao.bind();
     glDrawElements(GL_TRIANGLES, m_fullscreen_quad->m_core->F.size(), GL_UNSIGNED_INT, 0);
-    TIME_END("compose");
 
     //restore the state
     glDepthMask(true);
