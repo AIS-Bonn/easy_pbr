@@ -483,6 +483,8 @@ void Gui::draw_main_menu(){
             // }
 
 
+            // ImColor col=ImColor(mesh->m_vis.m_solid_color.x(),mesh->m_vis.m_solid_color.y(),mesh->m_vis.m_solid_color.z());
+            // ImGui::ColorEditWithPalette("Mesh color",&col);
             ImGui::ColorEdit3("Mesh color",mesh->m_vis.m_solid_color.data());
             ImGui::ColorEdit3("Point color",mesh->m_vis.m_point_color.data());
             ImGui::ColorEdit3("Line color",mesh->m_vis.m_line_color.data());
@@ -600,7 +602,6 @@ void Gui::draw_main_menu(){
         }
 
 
-        ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
         ImGui::Checkbox("Enable culling", &m_view->m_enable_culling);
         ImGui::SameLine(); help_marker("Hides the mesh faces that are pointing away from the viewer. Offers a mild increase in performance.");
         ImGui::Checkbox("Enable SSAO", &m_view->m_enable_ssao);
@@ -1221,6 +1222,11 @@ void Gui::draw_main_menu(){
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Lights")) {
+        ImGui::Checkbox("Enable LightFollow", &m_view->m_lights_follow_camera);
+
+        ImGui::SliderInt("BlockerSamples", &m_view->m_nr_pcss_blocker_samples, 2, 256) ;
+        ImGui::SliderInt("PCFSamples", &m_view->m_nr_pcss_pcf_samples, 2, 256) ;
+
         if(ImGui::ListBoxHeader("Selected lights", m_view->m_spot_lights.size(), 6)){ //all the spot lights
 
             //push light selection box for the spot lights

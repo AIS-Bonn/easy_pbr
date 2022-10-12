@@ -27,6 +27,7 @@
 #include "RandGenerator.h"
 #include "opencv_utils.h"
 #include "string_utils.h"
+#include "PoissonGenerator.h"
 
 #ifdef EASYPBR_WITH_DIR_WATCHER
     #include "dir_watcher/dir_watcher.hpp"
@@ -125,7 +126,9 @@ Viewer::Viewer(const std::string config_file):
     m_record_with_transparency(true),
     m_first_draw(true),
     m_swap_buffers(true),
-    m_camera_translation_speed_multiplier(1.0)
+    m_camera_translation_speed_multiplier(1.0),
+    m_nr_pcss_blocker_samples(16),
+    m_nr_pcss_pcf_samples(8)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             // VLOG(1) << "created viewer with dirwatcher";
@@ -522,7 +525,7 @@ void Viewer::compile_shaders(){
 void Viewer::init_opengl(){
     // //initialize the g buffer with some textures
     GL_C( m_gbuffer.set_size(m_viewport_size.x()/m_subsample_factor, m_viewport_size.y()/m_subsample_factor ) ); //established what will be the size of the textures attached to this framebuffer
-    GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
+    GL_C( m_gbuffer.add_texture("diffuse_gtex", GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ); //add also alpha so we can always switch a mesh to be invisible and still catch shadows, so it will have some sort of alpha based on the shadow factor
     // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) );
@@ -978,6 +981,9 @@ void Viewer::draw(const GLuint fbo_id){
     TIME_START("update_meshes");
     update_meshes_gl();
     TIME_END("update_meshes");
+
+    //before doing shadow pass we might need to update some pcss stuff for the soft shadows
+    create_pcss_samples();
 
 
     // TIME_START("shadow_pass");
@@ -2009,6 +2015,11 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
     m_compose_final_quad_shader.uniform_bool(m_camera->m_use_ortho_projection, "is_ortho");
+    //pcss shadow things
+    // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
+    m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
+    // m_compose_final_quad_shader.uniform_int(m_nr_pcss_blocker_samples, "nr_pcss_blocker_samples");
+    m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
 
 
     //fill up the vector of spot lights
@@ -2456,6 +2467,43 @@ void Viewer::create_random_samples_hemisphere(){
         scale= 0.1 + scale*scale * (1.0 - 0.1);
         m_random_samples.row(i) *= scale;
     }
+}
+
+void Viewer::create_pcss_samples(){
+    //create the blocker samples and the pcf samples
+    //the samples are in range [0,1]
+
+    PoissonGenerator::DefaultPRNG PRNG;
+
+    //create blocker samples if necessary
+    if(m_pcss_blocker_samples.rows()!=m_nr_pcss_blocker_samples){
+        // VLOG(1) << "creating blocker samples";
+        auto points = PoissonGenerator::generatePoissonPoints(m_nr_pcss_blocker_samples, PRNG); 
+        m_nr_pcss_blocker_samples=points.size(); //we update the nr of samples because the generator may return less
+        m_pcss_blocker_samples.resize(m_nr_pcss_blocker_samples,2);
+        //copy samples in the eigen matrix
+        for(int i=0; i<m_nr_pcss_blocker_samples; i++){
+            m_pcss_blocker_samples(i,0)=points[i].x *2 -1.0;  //the points are in range [0,1] but we want them in range [-1,1]
+            m_pcss_blocker_samples(i,1)=points[i].y *2 -1.0;
+        }
+        // VLOG(1) << "m_pcss_blocker_samples" << m_pcss_blocker_samples;
+    }
+
+
+    //create pcf samples if necessary
+    if(m_pcss_pcf_samples.rows()!=m_nr_pcss_pcf_samples){
+        // VLOG(1) << "creating pcf samples";
+        auto points = PoissonGenerator::generatePoissonPoints(m_nr_pcss_pcf_samples, PRNG); 
+        m_nr_pcss_pcf_samples=points.size(); //we update the nr of samples because the generator may return less
+        m_pcss_pcf_samples.resize(m_nr_pcss_pcf_samples,2);
+        //copy samples in the eigen matrix
+        for(int i=0; i<m_nr_pcss_pcf_samples; i++){
+            m_pcss_pcf_samples(i,0)=points[i].x *2 -1.0; //the points are in range [0,1] but we want them in range [-1,1]
+            m_pcss_pcf_samples(i,1)=points[i].y *2 -1.0;
+        }
+        // VLOG(1) << "m_pcss_pcf_samples" << m_pcss_pcf_samples;
+    }
+
 }
 
 gl::Texture2D& Viewer::rendered_tex_no_gui(const bool with_transparency){

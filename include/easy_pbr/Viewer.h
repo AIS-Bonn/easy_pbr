@@ -358,6 +358,16 @@ public:
     //camera speed multiplier
     float m_camera_translation_speed_multiplier;
 
+
+
+    //things for pcss shadow sampling https://github.com/pboechat/PCSS
+    void create_pcss_samples();
+    int m_nr_pcss_blocker_samples;
+    int m_nr_pcss_pcf_samples;
+    Eigen::MatrixXf m_pcss_blocker_samples;
+    Eigen::MatrixXf m_pcss_pcf_samples;
+
+
 private:
     Viewer(const std::string config_file=std::string(DEFAULT_CONFIG) ); // we put the constructor as private so as to dissalow creating Viewer on the stack because we want to only used shared ptr for it
     // Eigen::Matrix4f compute_mvp_matrix();
@@ -377,7 +387,6 @@ private:
     void blur_img(gl::Texture2D& img, const int start_mip_map_lvl, const int max_mip_map_lvl, const int m_bloom_blur_iters);
     void apply_postprocess(); //grabs the composed_tex and the bloom_tex and sums them together, applies tone mapping and gamme correction
     void blend_bg(); //takes the post_processed image and blends a solid background color into it if needed.
-
 
 
 };

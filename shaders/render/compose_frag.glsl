@@ -53,6 +53,12 @@ uniform float environment_map_blur;
 uniform int prefilter_nr_mipmaps;
 uniform bool using_fat_gbuffer;
 uniform bool is_ortho;
+//pcss shadow things
+const int MAX_NR_PCSS_SAMPLES=256;
+uniform vec2 pcss_blocker_samples[MAX_NR_PCSS_SAMPLES];
+uniform vec2 pcss_pcf_samples[MAX_NR_PCSS_SAMPLES];
+uniform int nr_pcss_blocker_samples;
+uniform int nr_pcss_pcf_samples;
 
 
 //for edl
@@ -162,7 +168,7 @@ vec3 position_cam_coords_from_depth(float depth){
 
 // https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
 float radius=1;
-float response(float depth){
+float edl_response(float depth){
 	vec2 uvRadius = radius / vec2(viewport_size.x, viewport_size.y);
 
 	float sum = 0.0;
@@ -340,6 +346,98 @@ float compute_bloom_weight(vec3 color){
     return bloom_weight;
 }
 
+
+//get background color from the background img or environment map dependig on the flags
+vec3 get_bg_color(){
+    vec3 color=vec3(0);
+    if (show_background_img){
+        color = texture(background_tex, uv_in).xyz;
+    }else if(show_environment_map){
+        color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
+    }else if(show_prefiltered_environment_map){
+        color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
+    }
+    return color;
+}
+
+bool should_show_bg(){
+    if (show_background_img || show_environment_map || show_prefiltered_environment_map){
+        return true;
+    }else{
+        return false;
+    }
+
+}
+
+vec3 get_edl_color(vec3 albedo, float depth){
+    vec3 color=vec3(0);
+
+    depth=linear_depth(depth);
+    depth=log2(depth);
+    depth = (depth == 1.0) ? 0.0 : depth;
+    float res = edl_response(depth); 
+    // float edl_strength=16.0;
+    float shade = exp(-res * 300.0 * edl_strength);
+    float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
+    color = albedo* shade * ao;
+
+    return color;
+
+}
+
+// percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
+float shadow_map_pcf(int light_idx, vec3 proj_in_light){
+
+    float shadow_factor=0;
+
+    ivec2 shadow_map_size=textureSize(spot_lights[light_idx].shadow_map,0);
+    // ivec2 shadow_map_size=ivec2(1024);
+    float xOffset = 1.0/shadow_map_size.x;
+    float yOffset = 1.0/shadow_map_size.y;
+    for (int y = -1 ; y <= 1 ; y++) {
+        for (int x = -1 ; x <= 1 ; x++) {
+            vec2 Offsets = vec2(x * xOffset, y * yOffset);
+            vec2 UV = proj_in_light.xy + Offsets;
+            float closest_depth = texture(spot_lights[light_idx].shadow_map, UV).x;
+            float current_depth = proj_in_light.z;
+            float epsilon = 0.0001;
+            if (closest_depth + epsilon < current_depth){
+                continue; //in shadow
+            }else{
+                shadow_factor+=1.0;
+            }
+        }
+    }
+
+    //normalize by the kernel size
+    shadow_factor=shadow_factor / (3*3);
+
+    return shadow_factor;
+
+}
+
+
+//https://github.com/pboechat/PCSS/blob/master/application/shaders/blinn_phong_textured_and_shadowed.fs.glsl
+float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float uvRadius){
+    float epsilon = 0.0001;
+	float shadow_factor = 0;
+	for (int i = 0; i < nr_pcss_pcf_samples; i++){
+        vec2 rand_dir=pcss_pcf_samples[i]; //is in range [-1,1]
+        float current_depth = shadowCoords.z;
+        float closest_depth = texture(shadowMap,  shadowCoords.xy + rand_dir* uvRadius).x;
+        if (closest_depth + epsilon < current_depth){
+            continue; //in shadow
+        }else{
+            shadow_factor+=1.0;
+        }
+	}
+	return shadow_factor / nr_pcss_pcf_samples;
+}
+
+
+
+
+
 void main(){
 
 
@@ -347,24 +445,13 @@ void main(){
     float depth=texture(depth_tex, uv_in).x;
     vec3 color=vec3(0);
     float pixel_weight=1.0;
+    float shadow_factor_total=1.0;
     if(depth==1.0){
-        // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
-        if (show_background_img){
-            vec3 color = texture(background_tex, uv_in).xyz;
-            //tonemap
-            // color = color / (color + vec3(1.0));
-            // color = Tonemap_Reinhard(color);
-            // gamma correct
-            // color=color*exposure;
-            // color = pow(color, vec3(1.0/2.2));
 
+        // // //there is no mesh or anything covering this pixel, we discard it so the pixel will show whtever the background was set to
+        if( should_show_bg() ){
+            vec3 color=get_bg_color();
             out_color = vec4(color, 1.0);
-
-            // if (is_color_bloomed(color)){
-            //     bloom_color=vec4(color,1.0);
-            // }else{
-            //     bloom_color=vec4(0.0);
-            // }
             if(enable_bloom){
                 float bloom_weight=compute_bloom_weight(color);
                 if(bloom_weight>0.0){
@@ -373,90 +460,13 @@ void main(){
                     bloom_color=vec4(0.0);
                 }
             }
-
-            return;
-        }else if(show_environment_map || show_prefiltered_environment_map){
-        // }else if(show_environment_map){
-        // }else if(show_prefiltered_environment_map){
-            vec3 color=vec3(1);
-            if(show_environment_map){
-                color = texture(environment_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            }else if(show_prefiltered_environment_map){
-                color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
-            }
-
-            //debug
-
-
-            // vec3 color = textureLod(irradiance_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
-            // vec3 color = textureLod(environment_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
-            // vec3 color = texture(irradiance_cubemap_tex, normalize(world_view_ray_in) ).rgb;
-            // vec3 color = textureLod(prefilter_cubemap_tex, normalize(world_view_ray_in), environment_map_blur ).rgb;
-            //tonemap
-            // color = color / (color + vec3(1.0));
-            // color=color*exposure;
-            // float brightness=luminance(color);
-            // if (brightness>bloom_threshold){
-                // color=vec3(1.0, 0.0, 0.0);
-                // color=color*(brightness-bloom_threshold);
-                // color+=color*(brightness-bloom_threshold)*10;
-            // }
-            // color = Tonemap_Reinhard(color);
-            // color = Tonemap_Unreal(color);
-            // color = Tonemap_FilmicALU(color);
-            // color = Tonemap_ACES(color);
-            //new aces
-            // color = transpose(aces_input)*color;
-            // color = RRTAndODTFit(color);
-            // color = transpose(aces_output)*color;
-            // color=color*exposure;
-            // float brightness=luminance(color);
-            // if (brightness>bloom_threshold){
-            //     color=vec3(1.0, 0.0, 0.0);
-            //     // color=color*(brightness-bloom_threshold);
-            //     // color+=color*(brightness-bloom_threshold);
-            // }
-            //gamma correct
-            // color = pow(color, vec3(1.0/2.2));
-            out_color = vec4(color, 1.0);
-            // bloom_color = vec4(1.0);
-            // out_color = vec4(1.0);
-
-            // if (is_color_bloomed(color)){
-                // bloom_color=vec4(color,1.0);
-            // }else{
-                // bloom_color=vec4(0.0);
-            // }
-            // float bloom_weight=compute_bloom_weight(color);
-            // bloom_color=vec4(color, bloom_weight);
-            if(enable_bloom){
-                float bloom_weight=compute_bloom_weight(color);
-                if(bloom_weight>0.0){
-                    bloom_color=vec4(color, bloom_weight);
-                    // out_color=vec4(bloom_weight, 0.0, 0.0, 0.0);
-                }else{
-                    bloom_color=vec4(0.0);
-                }
-            }
-
-
             return;
         }else{
-            discard;
+            discard; //we are on a pixel not covered by a mesh and we are not showing any BG, so we just discard
         }
 
-        discard;
 
 
-        //attempt 2
-        // if(show_prefiltered_environment_map){
-            // color=vec3(0.0, 1.0, 0.0);
-        // }else{
-            // color=vec3(1.0, 0.0, 0.0);
-        // }
-
-        //attempt 3
-        // color=vec3(1.0, 0.0, 0.0);
     }else{
         //this pixel is covering a mesh
         vec4 color_with_weight = texture(diffuse_tex, uv_in);
@@ -470,17 +480,7 @@ void main(){
 
         // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
         if(enable_edl_lighting  || N==vec3(0)){ //if we have no normal we may be in a point cloud with no normals and then we can just do edl, no IBL is possible
-            // float depth = texture(log_depth_tex, uv_in).x;
-            depth=linear_depth(depth);
-            depth=log2(depth);
-            if(depth!=1.0){ //if we have a depth of 1.0 it means for this pixels we haven't stored anything. Storing something in this texture is only done for points
-                depth = (depth == 1.0) ? 0.0 : depth;
-                float res = response(depth);
-                // float edl_strength=16.0;
-                float shade = exp(-res * 300.0 * edl_strength);
-                float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
-                color = albedo* shade * ao;
-            }
+            color=get_edl_color(albedo, depth);
         }else{
             //PBR-----------
 
@@ -527,32 +527,19 @@ void main(){
                 }
 
 
-                float Factor = 0.0;
+                float shadow_factor = 0.0;
                 if(spot_lights[i].create_shadow){
-                    // percentage close filtering like in http://ogldev.atspace.co.uk/www/tutorial42/tutorial42.html
-                    ivec2 shadow_map_size=textureSize(spot_lights[i].shadow_map,0);
-                    // ivec2 shadow_map_size=ivec2(1024);
-                    float xOffset = 1.0/shadow_map_size.x;
-                    float yOffset = 1.0/shadow_map_size.y;
-                    for (int y = -1 ; y <= 1 ; y++) {
-                        for (int x = -1 ; x <= 1 ; x++) {
-                            vec2 Offsets = vec2(x * xOffset, y * yOffset);
-                            vec2 UV = proj_in_light.xy + Offsets;
-                            float closest_depth = texture(spot_lights[i].shadow_map, UV).x;
-                            float current_depth = proj_in_light.z;
-                            float epsilon = 0.0001;
-                            if (closest_depth + epsilon < current_depth){
-                                continue; //in shadow
-                            }else{
-                                Factor+=1.0;
-                            }
-                        }
-                    }
-                    Factor=( (Factor / 18.0)*2.0);
+                    
+                    // shadow_factor+=shadow_map_pcf(i, proj_in_light);
+                    float penumbra_size=0.01;
+                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
+                    // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
+                    // shadow_factor=( (shadow_factor / 18.0)*2.0);
                 }else{
                     //does not create shadow so we just add color
-                    Factor=1.0;
+                    shadow_factor=1.0;
                 }
+                shadow_factor_total=shadow_factor_total*shadow_factor;
 
 
                 // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
@@ -596,7 +583,7 @@ void main(){
                 float NdotL = max(dot(N, L), 0.0);
 
                 // add to outgoing radiance Lo
-                Lo += (kD * albedo / PI + specular) * radiance * NdotL * Factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+                Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow_factor;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
                 // Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
             }
@@ -670,7 +657,9 @@ void main(){
         }
     }
 
-    out_color = vec4(color, pixel_weight);
+    out_color = vec4(color, 1.0);
+    // out_color = vec4(color, 1.0-shadow_factor_total);
+    // out_color = vec4(vec3(shadow_factor_total), 1.0);
 
 
 
