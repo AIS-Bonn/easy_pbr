@@ -401,8 +401,6 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_recording_path", &Viewer::m_recording_path )
     .def_readwrite("m_record_gui", &Viewer::m_record_gui )
     .def_readwrite("m_record_with_transparency", &Viewer::m_record_with_transparency )
-    .def_readwrite("m_nr_pcss_blocker_samples", &Viewer::m_nr_pcss_blocker_samples )
-    .def_readwrite("m_nr_pcss_pcf_samples", &Viewer::m_nr_pcss_pcf_samples )
     ;
 
     //Gui

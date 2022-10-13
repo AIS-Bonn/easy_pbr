@@ -128,8 +128,7 @@ Viewer::Viewer(const std::string config_file):
     m_swap_buffers(true),
     m_camera_translation_speed_multiplier(1.0),
     m_nr_pcss_blocker_samples(16),
-    m_nr_pcss_pcf_samples(8),
-    m_forced_penumbra_size(0.001)
+    m_nr_pcss_pcf_samples(8)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             // VLOG(1) << "created viewer with dirwatcher";
@@ -1995,7 +1994,6 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_3x3(V_inv_rot, "V_inv_rot");
     m_compose_final_quad_shader.uniform_bool(m_using_fat_gbuffer , "using_fat_gbuffer");
     m_compose_final_quad_shader.uniform_v3_float(m_camera->position(), "eye_pos");
-    // m_compose_final_quad_shader.uniform_float(m_camera->m_near, "cam_near");
     m_compose_final_quad_shader.uniform_float( m_camera->m_far / (m_camera->m_far - m_camera->m_near), "projection_a"); // according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
     m_compose_final_quad_shader.uniform_float( (-m_camera->m_far * m_camera->m_near) / (m_camera->m_far - m_camera->m_near) , "projection_b");
     m_compose_final_quad_shader.uniform_v3_float(m_ambient_color , "ambient_color");
@@ -2018,11 +2016,10 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
     m_compose_final_quad_shader.uniform_bool(m_camera->m_use_ortho_projection, "is_ortho");
     //pcss shadow things
-    m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
+    // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
     m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
-    m_compose_final_quad_shader.uniform_int(m_nr_pcss_blocker_samples, "nr_pcss_blocker_samples");
+    // m_compose_final_quad_shader.uniform_int(m_nr_pcss_blocker_samples, "nr_pcss_blocker_samples");
     m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
-    m_compose_final_quad_shader.uniform_float(m_forced_penumbra_size, "forced_penumbra_size"); //for debugging
 
 
     //fill up the vector of spot lights

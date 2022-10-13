@@ -44,7 +44,6 @@ uniform bool show_background_img;
 uniform bool show_environment_map;
 uniform bool show_prefiltered_environment_map;
 uniform bool enable_ibl;
-// uniform float cam_near;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 uniform float exposure;
@@ -60,7 +59,6 @@ uniform vec2 pcss_blocker_samples[MAX_NR_PCSS_SAMPLES];
 uniform vec2 pcss_pcf_samples[MAX_NR_PCSS_SAMPLES];
 uniform int nr_pcss_blocker_samples;
 uniform int nr_pcss_pcf_samples;
-uniform float forced_penumbra_size; //for debugging
 
 
 //for edl
@@ -420,31 +418,14 @@ float shadow_map_pcf(int light_idx, vec3 proj_in_light){
 
 
 //https://github.com/pboechat/PCSS/blob/master/application/shaders/blinn_phong_textured_and_shadowed.fs.glsl
-float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float uvRadius, vec3 pos_light_world, vec3 point_world, vec3 normal){
-    // float epsilon = 0.001;
+float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float uvRadius){
+    float epsilon = 0.0001;
 	float shadow_factor = 0;
 	for (int i = 0; i < nr_pcss_pcf_samples; i++){
         vec2 rand_dir=pcss_pcf_samples[i]; //is in range [-1,1]
         float current_depth = shadowCoords.z;
-        vec2 uv_in_shadow_map=shadowCoords.xy + rand_dir* uvRadius;
-        //if the uv is out of bounds, we assume we are fully lit
-        if (uv_in_shadow_map.x < 0 || uv_in_shadow_map.y < 0 || uv_in_shadow_map.x > 1 || uv_in_shadow_map.y > 1) {
-            shadow_factor+=1.0;
-            continue;
-        }
-        float closest_depth = texture(shadowMap,  uv_in_shadow_map).x;
-
-        //self shadowing is a big issue with large kernels. 
-        //look into the idea for improvement proposed in https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
-        //A BETTER approach si shown here in which we increase the bias the more grazing we are to thelight vector
-        // https://andrew-pham.blog/2019/08/03/percentage-closer-soft-shadows/
-        vec3 dir_point2light=normalize(pos_light_world-point_world);
-        float NdotL=dot(normal,dir_point2light);
-        float epsilon=0.001+ NdotL*0.02;
-        // float epsilon=max(0.05f * (1.0f - NdotL), 0.005f);
-
+        float closest_depth = texture(shadowMap,  shadowCoords.xy + rand_dir* uvRadius).x;
         if (closest_depth + epsilon < current_depth){
-        // if (closest_depth < current_depth+epsilon){
             continue; //in shadow
         }else{
             shadow_factor+=1.0;
@@ -452,59 +433,8 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
 	}
 	return shadow_factor / nr_pcss_pcf_samples;
 }
-// this search area estimation comes from the following article: 
-// http://developer.download.nvidia.com/whitepapers/2008/PCSS_DirectionalLight_Integration.pdf
-// float SearchWidth(float uvLightSize, float receiverDistance, vec3 pos_in_cam_coords){
-	// return uvLightSize * (receiverDistance - cam_near) / pos_in_cam_coords.z;
-// }
-float find_blocker_distance(vec3 shadowCoords, sampler2D shadowMap, float light_size_in_uv_space, vec3 pos_in_cam_coords){
-    float epsilon = 0.0001;
-	int blockers = 0;
-	float avgBlockerDistance = 0;
-	// float searchWidth = SearchWidth(light_size_in_uv_space, shadowCoords.z, pos_in_cam_coords);
-	float searchWidth = light_size_in_uv_space;
-	for (int i = 0; i < nr_pcss_blocker_samples; i++){
-        vec2 rand_dir=pcss_blocker_samples[i]; //is in range [-1,1]
-        float current_depth = shadowCoords.z;
-		float closest_depth = texture(shadowMap, shadowCoords.xy +  rand_dir* searchWidth).x;
-		// if (z < (shadowCoords.z - directionalLightShadowMapBias)){
-		// 	blockers++;
-		// 	avgBlockerDistance += z;
-		// }
-        if (closest_depth  < current_depth + epsilon){ //in shadow
-            blockers++;
-			avgBlockerDistance += closest_depth;
-        }else{
-            //lit fully
-        }
-	}
-	if (blockers > 0){
-		return avgBlockerDistance / blockers;
-    }else{
-		return -1;
-    }
-}
-// float pcss_shadow(vec3 shadowCoords, sampler2D shadowMap, float light_size_in_uv_space, vec3 pos_in_cam_coords){
-// 	// blocker search
-// 	float blockerDistance = find_blocker_distance(shadowCoords, shadowMap, light_size_in_uv_space, pos_in_cam_coords);
-// 	if (blockerDistance == -1) //it is not blocked at all
-// 		return 1;		
-
-// 	// penumbra estimation
-// 	float penumbraWidth = (shadowCoords.z - blockerDistance) / blockerDistance;
-
-// 	// percentage-close filtering
-// 	// float uvRadius = penumbraWidth * light_size_in_uv_space *cam_near  / shadowCoords.z;
-// 	float uvRadius = penumbraWidth * light_size_in_uv_space   / shadowCoords.z;
-//     uvRadius=uvRadius*100;
-// 	// return 1 - PCF_DirectionalLight(shadowCoords, shadowMap, uvRadius);
-//     return shadow_map_pcf_rand_samples(shadowCoords, shadowMap, uvRadius);
-// }
 
 
-//from here they point to this slides giving some solution to the self-shadowing
-// https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
-//https://cupdf.com/document/shaderx5-42-multisampling-extension-for-gradient-shadow-maps.html?page=5
 
 
 
@@ -601,47 +531,15 @@ void main(){
                 if(spot_lights[i].create_shadow){
                     
                     // shadow_factor+=shadow_map_pcf(i, proj_in_light);
-
-                    //attempt 1
-                    // float penumbra_size=0.009;
-                    float penumbra_size=forced_penumbra_size;
-                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size, spot_lights[i].pos, P_w, N);
-
-                    //attempt 2 at pcss
-                    float light_size_in_uv_space=0.01;
-                    // shadow_factor+=pcss_shadow(proj_in_light, spot_lights[i].shadow_map,light_size_in_uv_space, P_c);
-
-                    //debug finding of blocker distance
-                    float avg_blocker_distance=find_blocker_distance(proj_in_light, spot_lights[i].shadow_map, light_size_in_uv_space, P_c);
-                    float cur_depth=proj_in_light.z;
-                    float penumbraWidth = (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
-                    float uvRadius = penumbraWidth * light_size_in_uv_space   / proj_in_light.z;
-                    //like https://www.gamedev.net/tutorials/programming/graphics/effect-area-light-shadows-part-1-pcss-r4971/
-                    float penmubraSize = light_size_in_uv_space * (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
-
-                    // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penmubraSize*100);
-
-                    // if (cur_depth<avg_blocker_distance && avg_blocker_distance!=-1){
-                        // shadow_factor+=1000.0;
-                    // }
-                    // out_color=vec4(vec3(cur_depth-avg_blocker_distance)*5,1.0);
-                    // out_color=vec4(vec3(penumbraWidth),1.0);
-                    // out_color=vec4(vec3(penmubraSize)*200,1.0);
-                    // out_color=vec4(vec3(uvRadius*10000),1.0);
-                    // return;
-                    
-
+                    float penumbra_size=0.01;
+                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
+                    // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
+                    // shadow_factor=( (shadow_factor / 18.0)*2.0);
                 }else{
                     //does not create shadow so we just add color
                     shadow_factor=1.0;
                 }
                 shadow_factor_total=shadow_factor_total*shadow_factor;
-
-                //debug
-                // out_color=vec4(vec3(shadow_factor_total), 1.0-shadow_factor_total);
-                out_color=vec4(vec3(0.0), 1.0-shadow_factor_total);
-                // out_color=vec4(vec3(shadow_factor_total), 1.0);
-                return;
 
 
                 // //shadow check similar to https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
