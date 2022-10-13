@@ -17,7 +17,6 @@ view=Viewer.create(config_file)
 mesh=Mesh("/media/rosu/Data/data/3d_objs/my_mini_factory/bust-of-nefertiti-at-the-neues-museum-berlin-1.stl")
 # mesh.m_vis.m_solid_color=[1.0, 1.0, 1.0]
 mesh.model_matrix.rotate_axis_angle([1,0,0],-90)
-mesh.normalize_size()
 Scene.show(mesh,"mesh")
 
 #hide the gird floor

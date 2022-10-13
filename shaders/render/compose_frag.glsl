@@ -44,7 +44,7 @@ uniform bool show_background_img;
 uniform bool show_environment_map;
 uniform bool show_prefiltered_environment_map;
 uniform bool enable_ibl;
-uniform float cam_near;
+// uniform float cam_near;
 uniform float projection_a; //for calculating position from depth according to the formula at the bottom of article https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 uniform float projection_b;
 uniform float exposure;
@@ -420,7 +420,7 @@ float shadow_map_pcf(int light_idx, vec3 proj_in_light){
 
 
 //https://github.com/pboechat/PCSS/blob/master/application/shaders/blinn_phong_textured_and_shadowed.fs.glsl
-float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float uvRadius, float epsilon){
+float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float uvRadius, vec3 pos_light_world, vec3 point_world, vec3 normal){
     // float epsilon = 0.001;
 	float shadow_factor = 0;
 	for (int i = 0; i < nr_pcss_pcf_samples; i++){
@@ -438,15 +438,10 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
         //look into the idea for improvement proposed in https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
         //A BETTER approach si shown here in which we increase the bias the more grazing we are to thelight vector
         // https://andrew-pham.blog/2019/08/03/percentage-closer-soft-shadows/
-        // vec3 dir_point2light=normalize(pos_light_world-point_world);
-        // float NdotL=dot(normal,dir_point2light);
-        // float epsilon=0.001+ NdotL*0.02;
+        vec3 dir_point2light=normalize(pos_light_world-point_world);
+        float NdotL=dot(normal,dir_point2light);
+        float epsilon=0.001+ NdotL*0.02;
         // float epsilon=max(0.05f * (1.0f - NdotL), 0.005f);
-
-        //the epsilon also depends on the distance from the current sample to the offset
-        // float dist_to_offset_sample=length(rand_dir* uvRadius);
-        // epsilon=map(dist_to_offset_sample, 0.0, uvRadius, 0.0001, epsilon);
-        
 
         if (closest_depth + epsilon < current_depth){
         // if (closest_depth < current_depth+epsilon){
@@ -459,31 +454,24 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
 }
 // this search area estimation comes from the following article: 
 // http://developer.download.nvidia.com/whitepapers/2008/PCSS_DirectionalLight_Integration.pdf
-float SearchWidth(float uvLightSize, float receiverDistance, vec3 pos_in_cam_coords){
-	return uvLightSize * (receiverDistance - cam_near) / pos_in_cam_coords.z;
-}
-float find_blocker_distance(vec3 shadowCoords, sampler2D shadowMap, float light_size_in_uv_space, vec3 pos_in_cam_coords, float epsilon){
-    // float epsilon = 0.0001;
+// float SearchWidth(float uvLightSize, float receiverDistance, vec3 pos_in_cam_coords){
+	// return uvLightSize * (receiverDistance - cam_near) / pos_in_cam_coords.z;
+// }
+float find_blocker_distance(vec3 shadowCoords, sampler2D shadowMap, float light_size_in_uv_space, vec3 pos_in_cam_coords){
+    float epsilon = 0.0001;
 	int blockers = 0;
 	float avgBlockerDistance = 0;
 	// float searchWidth = SearchWidth(light_size_in_uv_space, shadowCoords.z, pos_in_cam_coords);
 	float searchWidth = light_size_in_uv_space;
-    // float searchWidth=light_size_in_uv_space * (shadowCoords.z - cam_near) / shadowCoords.z;
 	for (int i = 0; i < nr_pcss_blocker_samples; i++){
         vec2 rand_dir=pcss_blocker_samples[i]; //is in range [-1,1]
         float current_depth = shadowCoords.z;
-        vec2 uv_in_shadow_map=shadowCoords.xy + rand_dir* searchWidth;
-        //if we are about to sample outside of the shadow map, we just assume there is no blocker
-        if (uv_in_shadow_map.x < 0 || uv_in_shadow_map.y < 0 || uv_in_shadow_map.x > 1 || uv_in_shadow_map.y > 1) {
-            continue;
-        }
-		float closest_depth = texture(shadowMap, uv_in_shadow_map).x;
+		float closest_depth = texture(shadowMap, shadowCoords.xy +  rand_dir* searchWidth).x;
 		// if (z < (shadowCoords.z - directionalLightShadowMapBias)){
 		// 	blockers++;
 		// 	avgBlockerDistance += z;
 		// }
-        // if (closest_depth  < current_depth + epsilon){ //in shadow
-        if (closest_depth + epsilon  < current_depth ){ //in shadow
+        if (closest_depth  < current_depth + epsilon){ //in shadow
             blockers++;
 			avgBlockerDistance += closest_depth;
         }else{
@@ -517,199 +505,6 @@ float find_blocker_distance(vec3 shadowCoords, sampler2D shadowMap, float light_
 //from here they point to this slides giving some solution to the self-shadowing
 // https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
 //https://cupdf.com/document/shaderx5-42-multisampling-extension-for-gradient-shadow-maps.html?page=5
-
-
-
-//some more code for pcss
-// https://github.com/jhk2/glsandbox/blob/master/kgl/samples/shadow/pcss.glsl
-// https://github.com/TheMasonX/UnityPCSS/blob/master/Assets/PCSS/Shaders/PCSS.shader
-// https://github.com/google/filament/blob/main/shaders/src/shadowing.fs
-
-
-//attempt 3 at pcf , following unity
-// https://github.com/TheMasonX/UnityPCSS/blob/master/Assets/PCSS/Shaders/PCSS.shader
-vec2 getReceiverPlaneDepthBias (vec3 shadowCoord){
-	vec2 biasUV;
-	vec3 dx = dFdx (shadowCoord);
-	vec3 dy = dFdy (shadowCoord);
-
-	biasUV.x = dy.y * dx.z - dx.y * dy.z;
-    biasUV.y = dx.x * dy.z - dy.x * dx.z;
-    biasUV *= 1.0f / ((dx.x * dy.y) - (dx.y * dy.x));
-    return biasUV;
-}
-float shadow_map_pcf_rand_samples_2(vec3 shadowCoords, sampler2D shadowMap, float uvRadius, float epsilon){
-
-    vec2 receiverPlaneDepthBias=getReceiverPlaneDepthBias(shadowCoords);
-
-    // float epsilon = 0.001;
-	float shadow_factor = 0;
-	for (int i = 0; i < nr_pcss_pcf_samples; i++){
-        vec2 rand_dir=pcss_pcf_samples[i]; //is in range [-1,1]
-        float current_depth = shadowCoords.z;
-        vec2 offset=rand_dir* uvRadius;
-        vec2 uv_in_shadow_map=shadowCoords.xy + rand_dir* uvRadius;
-        //if the uv is out of bounds, we assume we are fully lit
-        if (uv_in_shadow_map.x < 0 || uv_in_shadow_map.y < 0 || uv_in_shadow_map.x > 1 || uv_in_shadow_map.y > 1) {
-            shadow_factor+=1.0;
-            continue;
-        }
-        float closest_depth = texture(shadowMap,  uv_in_shadow_map).x;
-
-        //self shadowing is a big issue with large kernels. 
-        //look into the idea for improvement proposed in https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
-        //A BETTER approach si shown here in which we increase the bias the more grazing we are to thelight vector
-        // https://andrew-pham.blog/2019/08/03/percentage-closer-soft-shadows/
-        // vec3 dir_point2light=normalize(pos_light_world-point_world);
-        // float NdotL=dot(normal,dir_point2light);
-        // float epsilon=0.001+ NdotL*0.02;
-        // float epsilon=max(0.05f * (1.0f - NdotL), 0.005f);
-
-        //the epsilon also depends on the distance from the current sample to the offset
-        // float dist_to_offset_sample=length(rand_dir* uvRadius);
-        // epsilon=map(dist_to_offset_sample, 0.0, uvRadius, 0.0001, epsilon);
-
-        current_depth += dot(offset, receiverPlaneDepthBias) * 1.0;
-
-        // float value = SampleShadowmap_Soft(float4(uv.xy + offset, biasedDepth, 0));
-        
-
-        if (closest_depth + epsilon < current_depth){
-        // if (closest_depth < current_depth){
-        // if (closest_depth < current_depth+epsilon){
-            continue; //in shadow
-        }else{
-            shadow_factor+=1.0;
-        }
-	}
-	return shadow_factor / nr_pcss_pcf_samples;
-}
-
-
-
-
-
-
-//attmept 3 based on https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
-//seems to use the same one https://github.com/google/filament/blob/main/shaders/src/shadowing.fs
-vec2 getReceiverPlaneDepthBias_2(vec4 projCoords){
-
-    vec4 duvdist_dx = dFdx(projCoords);
-    vec4 duvdist_dy = dFdy(projCoords);
-
-    float invDet = 1 / ((duvdist_dx.x * duvdist_dy.y) - (duvdist_dx.y * duvdist_dy.x) );
-
-    vec2 ddist_duv;
-    ddist_duv.x = duvdist_dy.y * duvdist_dx.w ;
-    ddist_duv.x -= duvdist_dx.y * duvdist_dy.w ;
-
-    ddist_duv.y = duvdist_dx.x * duvdist_dy.w;
-    ddist_duv.y -= duvdist_dy.x * duvdist_dx.w;
-    ddist_duv *= invDet;
-
-    return ddist_duv;
-	
-}
-float shadow_map_pcf_rand_samples_3(vec4 shadowCoords, sampler2D shadowMap, float uvRadius, float epsilon){
-
-    vec2 ddist_duv=getReceiverPlaneDepthBias_2(shadowCoords);
-
-    // float epsilon = 0.001;
-	float shadow_factor = 0;
-	for (int i = 0; i < nr_pcss_pcf_samples; i++){
-        vec2 rand_dir=pcss_pcf_samples[i]; //is in range [-1,1]
-        // float current_depth = shadowCoords.z;
-
-        vec2 offset=rand_dir* uvRadius;
-        vec2 uv_in_shadow_map=shadowCoords.xy + rand_dir* uvRadius;
-        //if the uv is out of bounds, we assume we are fully lit
-        if (uv_in_shadow_map.x < 0 || uv_in_shadow_map.y < 0 || uv_in_shadow_map.x > 1 || uv_in_shadow_map.y > 1) {
-            shadow_factor+=1.0;
-            continue;
-        }
-        float closest_depth = texture(shadowMap,  uv_in_shadow_map).x;
-
-        float dist = shadowCoords.w + (ddist_duv.x * offset.x) + (ddist_duv.y * offset.y);
-        
-
-        // if (closest_depth + epsilon < current_depth){
-        // if (closest_depth < current_depth){
-        if (closest_depth < dist){
-        // if (closest_depth < current_depth+epsilon){
-            continue; //in shadow
-        }else{
-            shadow_factor+=1.0;
-        }
-	}
-	return shadow_factor / nr_pcss_pcf_samples;
-}
-
-
-//attempt 4 more closely to https://github.com/google/filament/blob/main/shaders/src/shadowing.fs
-//concretely the ShadowSample_PCSS function
-vec2 computeReceiverPlaneDepthBias_4(const highp vec3 position) {
-    // see: GDC '06: Shadow Mapping: GPU-based Tips and Techniques
-    // Chain rule to compute dz/du and dz/dv
-    // |dz/du|   |du/dx du/dy|^-T   |dz/dx|
-    // |dz/dv| = |dv/dx dv/dy|    * |dz/dy|
-    highp vec3 duvz_dx = dFdx(position);
-    highp vec3 duvz_dy = dFdy(position);
-    highp vec2 dz_duv = inverse(transpose(mat2(duvz_dx.xy, duvz_dy.xy))) * vec2(duvz_dx.z, duvz_dy.z);
-    return dz_duv;
-}
-float filterPCSS(const mediump sampler2D map, const highp vec2 size,
-        const highp vec2 uv, const float z_rec, 
-        const highp vec2 filterRadii, const mat2 R, const highp vec2 dz_duv,
-        const int tapCount) {
-
-    float occludedCount = 0.0;
-    for (int i = 0; i < tapCount; i++) {
-        highp vec2 duv = R * (pcss_pcf_samples[i] * filterRadii);
-
-        // sample the shadow map with a 2x2 PCF, this helps a lot in low resolution areas
-        vec4 d;
-        highp vec2 st = (uv + duv) * size - 0.5;
-        highp vec2 grad = fract(st);
-
-        d[0] = texelFetchOffset(map, ivec2(st), 0, ivec2(0, 1)).r;
-        d[1] = texelFetchOffset(map, ivec2(st), 0, ivec2(1, 1)).r;
-        d[2] = texelFetchOffset(map, ivec2(st), 0, ivec2(1, 0)).r;
-        d[3] = texelFetchOffset(map, ivec2(st), 0, ivec2(0, 0)).r;
-
-        // receiver plane depth bias
-        float z_bias = dot(dz_duv, duv);
-        vec4 dz = d +0.0001 - vec4(z_rec); // dz>0 when blocker is between receiver and light
-        vec4 pcf = step(z_bias, dz);
-        occludedCount += mix(mix(pcf.w, pcf.z, grad.x), mix(pcf.x, pcf.y, grad.x), grad.y);
-    }
-    return occludedCount * (1.0 / float(tapCount));
-}
-
-float shadow_map_pcf_rand_samples_4(vec4 shadowPosition, sampler2D shadowMap, float uvRadius, float epsilon){
-
-    vec2 size = vec2(textureSize(shadowMap, 0));
-    vec2 texelSize = vec2(1.0) / size;
-    vec3 position = shadowPosition.xyz * (1.0 / shadowPosition.w);
-    position = position * 0.5 + 0.5;   //this was newly added otherwise it doesnt work
-
-    // We need to use the shadow receiver plane depth bias to combat shadow acne due to the
-    // large kernel.
-    vec2 dz_duv = computeReceiverPlaneDepthBias_4(position);
-
-    // float R =1.0;
-    mat2 R=mat2(1.0); //identity rotation
-
-    float percentageOccluded = filterPCSS(shadowMap, size, position.xy, position.z, 
-            vec2(uvRadius), R, dz_duv, nr_pcss_pcf_samples);
-
-    // float percentageOccluded=shadow_map_pcf_rand_samples(position, shadowMap, uvRadius, epsilon);
-
-    // return 1.0;
-    return  percentageOccluded;
-}
-
-
-
 
 
 
@@ -804,70 +599,35 @@ void main(){
 
                 float shadow_factor = 0.0;
                 if(spot_lights[i].create_shadow){
-
-                    //prevents shadow acne. We need a higher epsilon the more grazing we are towards the light
-                    //https://andrew-pham.blog/2019/08/03/percentage-closer-soft-shadows/
-                    vec3 dir_point2light=normalize(spot_lights[i].pos-P_w);
-                    float NdotL=dot(normalize(N),dir_point2light);
-                    // if (NdotL<0.2){
-                        // NdotL=0.0;
-                    // }
-                    // float epsilon=0.0001+ NdotL*0.02; //kinda works
-                    // float epsilon=0.00001+clamp(NdotL, 0.0 ,1.0)*0.0001;
-                    float epsilon=map(clamp(NdotL, 0.0 ,1.0), 0.0, 1.0, 0.001, 0.0);
-                    if(NdotL<0.0){ //surface is facing away from light, no epsilon needed
-                        epsilon=0.0;
-                    }
-                    // float epsilon=0.00001+ NdotL*100000.0;
                     
                     // shadow_factor+=shadow_map_pcf(i, proj_in_light);
 
                     //attempt 1
                     // float penumbra_size=0.009;
                     float penumbra_size=forced_penumbra_size;
-                    // epsilon=0.0001;
-                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size, epsilon);
-                    // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size, epsilon);
+                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size, spot_lights[i].pos, P_w, N);
 
                     //attempt 2 at pcss
-                    float light_size_in_uv_space=forced_penumbra_size;
+                    float light_size_in_uv_space=0.01;
+                    // shadow_factor+=pcss_shadow(proj_in_light, spot_lights[i].shadow_map,light_size_in_uv_space, P_c);
 
                     //debug finding of blocker distance
-                    // float avg_blocker_distance=find_blocker_distance(proj_in_light, spot_lights[i].shadow_map, light_size_in_uv_space, P_c, epsilon);
-                    // float cur_depth=proj_in_light.z;
-                    // float penumbraWidth = (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
-                    // float uvRadius = penumbraWidth * light_size_in_uv_space   / proj_in_light.z;
-                    // //like https://www.gamedev.net/tutorials/programming/graphics/effect-area-light-shadows-part-1-pcss-r4971/
-                    // float penmubraSize = light_size_in_uv_space * (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
+                    float avg_blocker_distance=find_blocker_distance(proj_in_light, spot_lights[i].shadow_map, light_size_in_uv_space, P_c);
+                    float cur_depth=proj_in_light.z;
+                    float penumbraWidth = (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
+                    float uvRadius = penumbraWidth * light_size_in_uv_space   / proj_in_light.z;
+                    //like https://www.gamedev.net/tutorials/programming/graphics/effect-area-light-shadows-part-1-pcss-r4971/
+                    float penmubraSize = light_size_in_uv_space * (proj_in_light.z - avg_blocker_distance) / avg_blocker_distance;
 
-                    // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penmubraSize*10, epsilon);
-
-
-
-                    //attemp3 
-                    // shadow_factor+=shadow_map_pcf_rand_samples_3(proj_in_light, spot_lights[i].shadow_map, penumbra_size, epsilon);
-
-
-                    //attmep 4
-                    // pos_light_space=pos_light_space * 0.5 + 0.5;
-                    // shadow_factor+=shadow_map_pcf_rand_samples_4(pos_light_space, spot_lights[i].shadow_map, penumbra_size, epsilon);
-                    // out_color=vec4(vec3(depth),1.0);
-                    // return;
-
-
-
+                    // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penmubraSize*100);
 
                     // if (cur_depth<avg_blocker_distance && avg_blocker_distance!=-1){
                         // shadow_factor+=1000.0;
                     // }
-                    // out_color=vec4(vec3(cur_depth-avg_blocker_distance)*2,1.0);
-                    // out_color=vec4(vec3(avg_blocker_distance)*2,1.0);
+                    // out_color=vec4(vec3(cur_depth-avg_blocker_distance)*5,1.0);
                     // out_color=vec4(vec3(penumbraWidth),1.0);
                     // out_color=vec4(vec3(penmubraSize)*200,1.0);
                     // out_color=vec4(vec3(uvRadius*10000),1.0);
-                    // out_color=vec4(vec3(NdotL),1.0);
-                    // out_color=vec4(vec3(clamp(NdotL, 0.0 ,1.0)),1.0);
-                    // out_color=vec4(vec3(epsilon)*50,1.0);
                     // return;
                     
 
@@ -879,9 +639,8 @@ void main(){
 
                 //debug
                 // out_color=vec4(vec3(shadow_factor_total), 1.0-shadow_factor_total);
-                // out_color=vec4(vec3(0.0), 1.0-shadow_factor_total);
-                // out_color=vec4(vec3(albedo), 1.0-shadow_factor_total);
-                out_color=vec4(vec3(shadow_factor_total), 1.0);
+                out_color=vec4(vec3(0.0), 1.0-shadow_factor_total);
+                // out_color=vec4(vec3(shadow_factor_total), 1.0);
                 return;
 
 
