@@ -2017,9 +2017,9 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_camera->m_use_ortho_projection, "is_ortho");
     //pcss shadow things
     // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
-    m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
+    // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
     // m_compose_final_quad_shader.uniform_int(m_nr_pcss_blocker_samples, "nr_pcss_blocker_samples");
-    m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
+    // m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
 
 
     //fill up the vector of spot lights

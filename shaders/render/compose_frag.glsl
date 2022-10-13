@@ -530,9 +530,9 @@ void main(){
                 float shadow_factor = 0.0;
                 if(spot_lights[i].create_shadow){
                     
-                    // shadow_factor+=shadow_map_pcf(i, proj_in_light);
-                    float penumbra_size=0.01;
-                    shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
+                    shadow_factor+=shadow_map_pcf(i, proj_in_light);
+                    // float penumbra_size=0.01;
+                    // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
                     // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
                     // shadow_factor=( (shadow_factor / 18.0)*2.0);
                 }else{
