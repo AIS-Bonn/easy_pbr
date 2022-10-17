@@ -672,6 +672,12 @@ void Gui::draw_main_menu(){
         if (ImGui::Button("Flip normals") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->flip_normals();
         }
+        if (ImGui::Button("Normalize Size") && !m_view->m_scene->is_empty() ){
+            m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->normalize_size();
+        }
+        if (ImGui::Button("Normalize Position") && !m_view->m_scene->is_empty() ){
+            m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->normalize_position();
+        }
 
         if (ImGui::Button("Merge all meshes")){
             //go through every mesh, apply the model matrix transform to the cpu vertices and then set the model matrix to identity,

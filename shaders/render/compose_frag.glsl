@@ -435,6 +435,17 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
 }
 
 
+//for making better lights maybe this references would be helpful
+// https://alextardif.com/arealights.html
+// https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+// https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
+// https://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf
+// https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
+// https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+// https://http.download.nvidia.com/developer/presentations/2005/SIGGRAPH/Percentage_Closer_Soft_Shadows.pdf
+//https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/DxTechArts/common-techniques-to-improve-shadow-depth-maps.md
+
+
 
 
 
