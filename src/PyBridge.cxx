@@ -704,6 +704,7 @@ PYBIND11_MODULE(easypbr, m) {
     // .def_static("scope",  []( std::string name ) { TIME_SCOPE(name); }) //DOESNT work because scoping in python doesnt work like that. Rather the scope will die as soon as this function is finished
     .def_static("get_elapsed_ms", &radu::utils::Profiler_ns::Profiler::get_elapsed_ms)
     .def_static("get_elapsed_ns", &radu::utils::Profiler_ns::Profiler::get_elapsed_ns)
+    .def_static("clear", &radu::utils::Profiler_ns::Profiler::clear)
     ;
 
     //Recorder
