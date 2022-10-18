@@ -1391,6 +1391,11 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.uniform_4x4(MVP, "MVP");
     m_draw_lines_shader.uniform_v3_float(mesh->m_core->m_vis.m_line_color, "line_color");
     m_draw_lines_shader.uniform_int(mesh->m_core->m_vis.m_color_type._to_integral() , "color_type");
+    //for dashed lines
+    m_draw_lines_shader.uniform_v2_float(m_viewport_size, "u_viewport_size");
+    m_draw_lines_shader.uniform_float(mesh->m_core->m_vis.m_dash_size, "u_dashSize");
+    m_draw_lines_shader.uniform_float(mesh->m_core->m_vis.m_gap_size, "u_gapSize");
+    m_draw_lines_shader.uniform_bool(mesh->m_core->m_vis.m_is_line_dashed, "is_line_dashed");
     glLineWidth( std::max(mesh->m_core->m_vis.m_line_width, 0.0001f) ); //a line width of 0.0 causes it to crash
 
     m_draw_lines_shader.draw_into(m_final_fbo_no_gui,

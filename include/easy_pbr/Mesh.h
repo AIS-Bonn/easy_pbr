@@ -68,6 +68,11 @@ struct VisOptions{
     Eigen::Vector3f m_label_color = Eigen::Vector3f(1.0, 160.0/255.0, 0.0);
     float m_metalness=0.0;
     float m_roughness=0.35;
+    //for line dashed
+    float m_dash_size=30;
+    float m_gap_size=30;
+    bool m_is_line_dashed=false;
+    
 
     //we define some functions for settings colors both for convenicence and easily calling then from python with pybind
     void set_color_solid(){

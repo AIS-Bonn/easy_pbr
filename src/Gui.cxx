@@ -395,13 +395,26 @@ void Gui::draw_main_menu(){
             MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
             ImGui::InputText("Name", mesh->name );
             if( ImGui::Checkbox("Show points", &mesh->m_vis.m_show_points)) { mesh->m_is_shadowmap_dirty=true;  }
-                ImGui::Indent(10.0f*m_hidpi_scaling);
-                ImGui::Checkbox("Overlay points", &mesh->m_vis.m_overlay_points);  ImGui::SameLine(); help_marker("Draws the points even if they are occluded");
-                ImGui::Checkbox("Points as circle", &mesh->m_vis.m_points_as_circle); ImGui::SameLine(); help_marker("Draws points as circles instad of squares. Moderate performance impact.");
-                ImGui::Unindent(10.0f*m_hidpi_scaling );
+                if(mesh->m_vis.m_show_points){
+                    ImGui::Indent(10.0f*m_hidpi_scaling);
+                    ImGui::Checkbox("Overlay points", &mesh->m_vis.m_overlay_points);  ImGui::SameLine(); help_marker("Draws the points even if they are occluded");
+                    ImGui::Checkbox("Points as circle", &mesh->m_vis.m_points_as_circle); ImGui::SameLine(); help_marker("Draws points as circles instad of squares. Moderate performance impact.");
+                    ImGui::Unindent(10.0f*m_hidpi_scaling );
+                }
             if( ImGui::Checkbox("Show lines", &mesh->m_vis.m_show_lines) ) { mesh->m_is_shadowmap_dirty=true;  }
-                ImGui::Indent(10.0f*m_hidpi_scaling);  ImGui::Checkbox("Overlay lines", &mesh->m_vis.m_overlay_lines); ImGui::SameLine(); help_marker("Draws the lines even if they are occluded");
-                ImGui::Unindent(10.0f*m_hidpi_scaling );
+                if(mesh->m_vis.m_show_lines){
+                    ImGui::Indent(10.0f*m_hidpi_scaling);  
+                    ImGui::Checkbox("Overlay lines", &mesh->m_vis.m_overlay_lines); ImGui::SameLine(); help_marker("Draws the lines even if they are occluded");
+                    //dashed lines
+                    ImGui::Checkbox("Is dashed", &mesh->m_vis.m_is_line_dashed); 
+                    if (mesh->m_vis.m_is_line_dashed){
+                        ImGui::Indent(10.0f*m_hidpi_scaling);  
+                            ImGui::SliderFloat("DashSize", &mesh->m_vis.m_dash_size, 1.0f, 500.0f);
+                            ImGui::SliderFloat("GapSize", &mesh->m_vis.m_gap_size, 1.0f, 500.0f);
+                        ImGui::Unindent(10.0f*m_hidpi_scaling );
+                    }
+                    ImGui::Unindent(10.0f*m_hidpi_scaling );
+                }
             if( ImGui::Checkbox("Show mesh", &mesh->m_vis.m_show_mesh) ) {  mesh->m_is_shadowmap_dirty=true;  }
             if( ImGui::Checkbox("Show normals", &mesh->m_vis.m_show_normals) ) {  mesh->m_is_shadowmap_dirty=true;  }
             if ( mesh->m_vis.m_show_normals ) { ImGui::SliderFloat("Normal_scale", &mesh->m_vis.m_normals_scale, -1.0f, 1.0f) ;  }

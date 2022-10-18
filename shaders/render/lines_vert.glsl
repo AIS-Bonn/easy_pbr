@@ -10,6 +10,11 @@ in vec3 color_per_vertex;
 
 //out
 flat layout(location = 0) out vec3 color_per_vertex_out;
+//for dashed lines https://stackoverflow.com/a/54543267
+flat layout(location = 1) out vec3 startPos;
+layout(location = 2) out vec3 vertPos;
+
+
 
 //uniform
 uniform int color_type;
@@ -18,7 +23,12 @@ uniform vec3 line_color;
 
 void main(){
 
-   gl_Position = MVP*vec4(position, 1.0);
+    vec4 pos = MVP*vec4(position, 1.0);
+    gl_Position = pos;
+
+    //for dashed lines https://stackoverflow.com/a/54543267
+    vertPos     = pos.xyz / pos.w;
+    startPos    = vertPos;
 
 
     if(color_type==0){ //solid
