@@ -100,6 +100,7 @@ Viewer::Viewer(const std::string config_file):
     m_ambient_color( 71.0/255.0, 70.0/255.0, 66.3/255.0  ),
     m_ambient_color_power(0.05),
     m_enable_culling(false),
+    m_get_ao_from_precomputation(false),
     m_enable_ssao(true),
     m_enable_bloom(true),
     m_bloom_threshold(0.85),
@@ -1571,6 +1572,14 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     if(mesh->m_core->m_label_mngr){
         m_draw_mesh_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels
     }
+    //sssao stuff
+    if(m_enable_ssao && m_get_ao_from_precomputation && !mesh->m_core->m_colors_are_precomputed_ao){
+        LOG(WARNING) << "We don't yet have precomputed AO, Please enable Embree in the cmake list and then go to SSAO tab in the Gui and run ComputeEmbreeAO";
+    }
+    m_draw_mesh_shader.uniform_bool(mesh->m_core->m_colors_are_precomputed_ao, "colors_are_precomputed_ao");
+    m_draw_mesh_shader.uniform_bool(m_enable_ssao, "enable_ssao");
+    m_draw_mesh_shader.uniform_float(m_ao_power, "ao_power");
+    m_draw_mesh_shader.uniform_bool(m_get_ao_from_precomputation, "get_ao_from_precomputation");
     // m_draw_mesh_shader.uniform_bool( enable_solid_color, "enable_solid_color");
     // m_draw_mesh_shader.uniform_v3_float(mesh->m_ambient_color , "ambient_color");
     // m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_specular_color , "specular_color");
@@ -1897,7 +1906,7 @@ void Viewer::ssao_pass(gl::GBuffer& gbuffer, std::shared_ptr<Camera> camera){
 
     m_bilateral_blur_shader.use();
     m_bilateral_blur_shader.uniform_v2_float(inv_resolution, "g_InvResolutionDirection" );
-    m_bilateral_blur_shader.uniform_int(m_ao_power, "ao_power");
+    m_bilateral_blur_shader.uniform_float(m_ao_power, "ao_power");
     m_bilateral_blur_shader.uniform_float(m_sigma_spacial, "sigma_spacial");
     m_bilateral_blur_shader.uniform_float(m_sigma_depth, "sigma_depth");
     m_bilateral_blur_shader.bind_texture(m_ao_tex, "texSource");
@@ -2015,6 +2024,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_enable_bloom, "enable_bloom");
     m_compose_final_quad_shader.uniform_float(m_bloom_threshold, "bloom_threshold");
     m_compose_final_quad_shader.uniform_bool(m_camera->m_use_ortho_projection, "is_ortho");
+    m_compose_final_quad_shader.uniform_bool(m_get_ao_from_precomputation, "get_ao_from_precomputation");
     //pcss shadow things
     // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
     // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");

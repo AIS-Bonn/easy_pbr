@@ -14,7 +14,7 @@ const float KERNEL_RADIUS = 7;
 uniform float sigma_spacial;
 uniform float sigma_depth;
 uniform vec2  g_InvResolutionDirection; // either set x to 1/width or y to 1/height
-uniform int ao_power;
+uniform float ao_power;
 
 uniform sampler2D texSource;
 uniform sampler2D texLinearDepth;

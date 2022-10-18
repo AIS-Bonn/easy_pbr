@@ -53,6 +53,7 @@ uniform float environment_map_blur;
 uniform int prefilter_nr_mipmaps;
 uniform bool using_fat_gbuffer;
 uniform bool is_ortho;
+uniform bool get_ao_from_precomputation;
 //pcss shadow things
 const int MAX_NR_PCSS_SAMPLES=256;
 uniform vec2 pcss_blocker_samples[MAX_NR_PCSS_SAMPLES];
@@ -378,7 +379,7 @@ vec3 get_edl_color(vec3 albedo, float depth){
     float res = edl_response(depth); 
     // float edl_strength=16.0;
     float shade = exp(-res * 300.0 * edl_strength);
-    float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
+    float ao= enable_ssao && !get_ao_from_precomputation? texture(ao_tex, uv_in).x : 1.0;
     color = albedo* shade * ao;
 
     return color;
@@ -505,7 +506,7 @@ void main(){
                 metalness/=color_with_weight.w;
                 roughness/=color_with_weight.w;
             }
-            float ao= enable_ssao? texture(ao_tex, uv_in).x : 1.0;
+            float ao= enable_ssao && !get_ao_from_precomputation ? texture(ao_tex, uv_in).x : 1.0;
             float NdotV = max(dot(N, V), 0.0);
 
 

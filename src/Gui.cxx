@@ -678,6 +678,7 @@ void Gui::draw_main_menu(){
         if (ImGui::Button("Normalize Position") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->normalize_position();
         }
+        
 
         if (ImGui::Button("Merge all meshes")){
             //go through every mesh, apply the model matrix transform to the cpu vertices and then set the model matrix to identity,
@@ -728,12 +729,19 @@ void Gui::draw_main_menu(){
             m_view->create_random_samples_hemisphere();
         }
         ImGui::SameLine(); help_marker("Nr of random samples to check for occlusion around the hemisphere of each pixel. The higher the number the higher the accuracy of the occlusion but also the slower it is to compute.");
-        ImGui::SliderInt("AO power", &m_view->m_ao_power, 1, 15);
+        ImGui::SliderFloat("AO power", &m_view->m_ao_power, 0.1, 15.0);
         ImGui::SliderFloat("Sigma S", &m_view->m_sigma_spacial, 1, 12.0);
         ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in the spacial dimension and higher values yield blurrier AO.");
         ImGui::SliderFloat("Sigma D", &m_view->m_sigma_depth, 0.1, 5.0);
         ImGui::SameLine(); help_marker("The SSAO map is blurred with a bilateral blur with a sigma in the spacial dimension and in the depth. This is the sigma in depth so as to avoid blurring over depth discontinuities. The higher the value, the more tolerant the blurring is to depth discontinuities.");
         ImGui::Checkbox("Estimate_normals_from_depth", &m_view->m_ssao_estimate_normals_from_depth);
+
+        #ifdef EASYPBR_WITH_EMBREE
+            if (ImGui::Button("EmbreeAO") && !m_view->m_scene->is_empty() ){
+                m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->compute_embree_ao(100);
+            }
+        #endif
+        ImGui::Checkbox("GetAOFromPrecomputation", &m_view->m_get_ao_from_precomputation);
     }
 
 

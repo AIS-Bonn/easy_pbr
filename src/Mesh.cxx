@@ -28,6 +28,10 @@
 #include <igl/upsample.h>
 #include <igl/loop.h>
 #include <igl/point_mesh_squared_distance.h>
+#ifdef EASYPBR_WITH_EMBREE
+    #include <igl/embree/EmbreeIntersector.h>
+    #include <igl/embree/ambient_occlusion.h>
+#endif
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
@@ -72,6 +76,7 @@ Mesh::Mesh():
         m_view_direction(-1),
         m_force_vis_update(false),
         m_rand_gen(new RandGenerator()),
+        m_colors_are_precomputed_ao(false),
         m_is_preallocated(false),
         V_blob(V)
     {
@@ -2049,6 +2054,23 @@ void Mesh::color_from_mat(const cv::Mat& mat){
 
 
 }
+
+#ifdef EASYPBR_WITH_EMBREE
+    void Mesh::compute_embree_ao(const int nr_samples){
+        Eigen::VectorXd ao;
+        igl::embree::EmbreeIntersector ei;
+        ei.init(V.cast<float>(),F.cast<int>());
+        Eigen::MatrixXd N_vertices;
+        igl::per_vertex_normals(V, F, N_vertices);
+        igl::embree::ambient_occlusion(ei, V, N_vertices, nr_samples, ao);
+        ao=1.0-ao.array(); //a0 is 1.0 in occluded places and 0.0 in non ocluded so we flip it to have 0.0 (dark) in occluded
+        C = ao.replicate(1,3);
+
+        m_colors_are_precomputed_ao=true;
+        m_is_dirty=true;
+
+    }
+#endif
 
 Eigen::Vector3d Mesh::centroid(){
     Eigen::Vector3d min_point = model_matrix()*Eigen::Vector3d(V.colwise().minCoeff());

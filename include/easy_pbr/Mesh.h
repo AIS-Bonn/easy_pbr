@@ -276,6 +276,7 @@ public:
     void clear_C();
     void color_from_label_indices(Eigen::MatrixXi label_indices);
     void color_from_mat(const cv::Mat& mat); //sample the mat using the UVS and store the pixel values into C
+    void compute_embree_ao(const int nr_samples);
     Eigen::Vector3d centroid();
     void sanity_check() const; //check that all the data inside the mesh is valid, there are enough normals for each face, faces don't idx invalid points etc.
     //create certain meshes
@@ -420,6 +421,7 @@ public:
     Eigen::Vector2f m_min_max_y; //the min and the max coordinate in y direction. useful for plotting color based on height
     Eigen::Vector2f m_min_max_y_for_plotting; //sometimes we want the min and max to be a bit different (controlable through the gui)
     std::string m_disk_path; //path that from disk that was used to load this mesh
+    bool m_colors_are_precomputed_ao; //when running the compute_embree_ao, in C we now store the ao
 
 
     //identification

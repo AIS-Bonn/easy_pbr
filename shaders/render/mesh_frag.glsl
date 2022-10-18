@@ -7,6 +7,7 @@
 layout(location = 0) in vec3 normal_in;
 layout(location = 1) in vec3 position_cam_coords_in; //position of the vertex in the camera coordinate system (so the world coordinate is multipled by tf_cam_world or also known as the view matrix)
 // layout(location = 2) in vec3 normal_cam_coords_in; //normal of the vertex in the camera coordinate system (so the normal is multipled by the rotation of tf_cam_world or also known as the view matrix)
+layout(location = 2) in vec3 precomputed_ao_in;
 layout(location = 3) in vec3 color_per_vertex_in;
 layout(location = 4) in vec2 uv_in;
 layout(location = 5) in vec3 position_world_in;
@@ -44,6 +45,12 @@ uniform float metalness;
 uniform float roughness;
 uniform int mesh_id;
 uniform bool using_fat_gbuffer;
+//ssao stuff
+uniform bool colors_are_precomputed_ao;
+uniform bool enable_ssao;
+uniform float ao_power;
+uniform bool get_ao_from_precomputation;
+
 
 //encode the normal using the equation from Cry Engine 3 "A bit more deferred" https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
 // vec2 encode_normal(vec3 normal){
@@ -160,6 +167,10 @@ void main(){
         }
     }else{
         diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
+    }
+
+    if( enable_ssao && get_ao_from_precomputation && colors_are_precomputed_ao){
+        diffuse_out=vec4(diffuse_out.xyz*pow(precomputed_ao_in.x, ao_power),  diffuse_out.w); 
     }
 
     metalness_and_roughness_out=vec2(metalness_out, roughness_out);

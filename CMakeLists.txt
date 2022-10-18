@@ -26,7 +26,6 @@ option(CORE_WITH_PCL "Compile with PCL" ON)
 
 
 
-
 # libigl
 # libigl options: choose between header only and compiled static library
 # Header-only is preferred for small projects. For larger projects the static build
@@ -36,7 +35,7 @@ option(LIBIGL_WITH_ANTTWEAKBAR       "Use AntTweakBar"    OFF)
 option(LIBIGL_WITH_CGAL              "Use CGAL"           OFF)
 option(LIBIGL_WITH_COMISO            "Use CoMiso"         OFF)
 option(LIBIGL_WITH_CORK              "Use Cork"           OFF)
-option(LIBIGL_WITH_EMBREE            "Use Embree"         OFF)
+option(LIBIGL_WITH_EMBREE            "Use Embree"         ON)
 option(LIBIGL_WITH_LIM               "Use LIM"            OFF)
 option(LIBIGL_WITH_MATLAB            "Use Matlab"         OFF)
 option(LIBIGL_WITH_MOSEK             "Use MOSEK"          OFF)
@@ -204,6 +203,12 @@ if(${PCL_FOUND})
 else()
     message("NOT USING PCL")
 endif()
+if(LIBIGL_WITH_EMBREE)
+    message("USING EMBREE")
+    target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_WITH_EMBREE)
+else()
+    message("NOT USING EMBREE")
+endif()
 
 #definitions for cmake variables that are necesarry during runtime
 target_compile_definitions(easypbr_cpp PUBLIC EASYPBR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
@@ -239,6 +244,10 @@ endif()
 if(${PCL_FOUND})
     set(LIBS  ${LIBS} ${PCL_LIBRARIES})
 endif()
+if(LIBIGL_WITH_EMBREE)
+    set(LIBS ${LIBS} igl::embree )
+endif()
+
 # set(LIBS ${LIBS} Eigen3::Eigen  ${Boost_LIBRARIES}  igl::core   ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES}  )
 set(LIBS ${LIBS} easygl_cpp Eigen3::Eigen  igl::core ${Boost_LIBRARIES}  ${GLFW_LIBRARIES} ${OpenCV_LIBS}  )
 

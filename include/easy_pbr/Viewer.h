@@ -87,7 +87,7 @@ public:
     int m_nr_samples;
     float m_kernel_radius;
     float m_max_ssao_distance;
-    int m_ao_power;
+    float m_ao_power;
     float m_sigma_spacial;
     float m_sigma_depth;
     bool m_ssao_estimate_normals_from_depth;
@@ -95,6 +95,7 @@ public:
     float m_ambient_color_power;
     bool m_enable_culling;
     bool m_auto_ssao;
+    bool m_get_ao_from_precomputation; //get the ao from the precomputation and it is done directly in the mesh shader
     bool m_enable_ssao;
     bool m_enable_bloom;
     float m_bloom_threshold;

@@ -649,6 +649,9 @@ PYBIND11_MODULE(easypbr, m) {
     .def("estimate_normals_from_neighbourhood", &Mesh::estimate_normals_from_neighbourhood )
     #endif
     .def("compute_distance_to_mesh", &Mesh::compute_distance_to_mesh )
+    #ifdef EASYPBR_WITH_EMBREE
+        .def("compute_embree_ao", &Mesh::compute_embree_ao )
+    #endif
     .def("fix_oversplit_due_to_blender_uv", &Mesh::fix_oversplit_due_to_blender_uv )
 
     // .def("compute_tangents", py::overload_cast<const float>(&Mesh::compute_tangents), py::arg("tangent_length") = 1.0)
