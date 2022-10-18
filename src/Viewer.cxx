@@ -1396,6 +1396,7 @@ void Viewer::render_lines(const MeshGLSharedPtr mesh){
     m_draw_lines_shader.uniform_float(mesh->m_core->m_vis.m_dash_size, "u_dashSize");
     m_draw_lines_shader.uniform_float(mesh->m_core->m_vis.m_gap_size, "u_gapSize");
     m_draw_lines_shader.uniform_bool(mesh->m_core->m_vis.m_is_line_dashed, "is_line_dashed");
+    m_draw_lines_shader.uniform_float(mesh->m_core->m_vis.m_opacity , "opacity");
     glLineWidth( std::max(mesh->m_core->m_vis.m_line_width, 0.0001f) ); //a line width of 0.0 causes it to crash
 
     m_draw_lines_shader.draw_into(m_final_fbo_no_gui,
@@ -1573,6 +1574,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
     m_draw_mesh_shader.uniform_v3_float(mesh->m_core->m_vis.m_solid_color , "solid_color");
     m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
     m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
+    m_draw_mesh_shader.uniform_float(mesh->m_core->m_vis.m_opacity , "opacity");
     m_draw_mesh_shader.uniform_int(mesh->m_core->id , "mesh_id");
     if(mesh->m_core->m_label_mngr){
         m_draw_mesh_shader.uniform_array_v3_float(mesh->m_core->m_label_mngr->color_scheme().cast<float>(), "color_scheme"); //for semantic labels

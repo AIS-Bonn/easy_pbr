@@ -13,6 +13,7 @@ layout(location = 2) in vec3 vertPos;
 layout(location = 0) out vec4 out_color;
 
 //uniform
+uniform float opacity;
 //for dashed lines https://stackoverflow.com/a/54543267
 uniform vec2  u_viewport_size;
 uniform float u_dashSize;
@@ -30,5 +31,5 @@ void main(){
             discard;
     }
 
-    out_color = vec4(color_per_vertex_in, 1.0);
+    out_color = vec4(color_per_vertex_in, opacity);
 }

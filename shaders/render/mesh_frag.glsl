@@ -43,6 +43,7 @@ uniform bool has_matcap_tex; //If the texture tex actually exists and can be sam
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
+uniform float opacity;
 uniform int mesh_id;
 uniform bool using_fat_gbuffer;
 //ssao stuff
@@ -131,10 +132,10 @@ void main(){
                 // diffuse_out=vec4(vec3(1,1,1),1.0);
                 discard;
             }else{
-                diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
+                diffuse_out = vec4( vec3(tex_color.xyz), opacity);
             }
         }else{
-            diffuse_out=vec4( vec3(0.0), 1.0 );
+            diffuse_out=vec4( vec3(0.0), opacity );
         }
 
         if (has_metalness_tex){
@@ -150,23 +151,23 @@ void main(){
             // normal_to_encode=normalize(normal_to_encode);
         // }
     }else if(color_type==5){ //normal vector //NORMAL WILL BE OUTPUTTED FROM FRAGMENT SHADER BECAUSE sometime we might want to do normal mapping and only the framgne thas acces to that
-        diffuse_out=vec4( (normal_to_encode+1.0)/2.0, 1.0 );
+        diffuse_out=vec4( (normal_to_encode+1.0)/2.0, opacity );
     }else if(color_type==9){ //normal vector in view coordinates
         vec3 normal_vis=normal_to_encode;
         normal_vis=normalize(vec3(V*vec4(normal_vis,0.0)));
-        diffuse_out=vec4( (normal_vis+1.0)/2.0, 1.0 );
+        diffuse_out=vec4( (normal_vis+1.0)/2.0, opacity );
     }else if(color_type==10){ //normal vector in view coordinates
         vec3 normal_view_coord=normalize(vec3(V*vec4(normal_to_encode,0.0)));
         // diffuse_out=vec4( (normal_vis+1.0)/2.0, 1.0 );
         // vec2 muv = vec2(normal_view_coord)*0.5+vec2(0.5,0.5); //from https://github.com/nidorx/matcaps
         vec2 muv = vec2(normal_view_coord+1.0)*0.5; //from https://github.com/nidorx/matcaps
         if(has_matcap_tex){
-            diffuse_out = texture(matcap_tex, vec2(muv.x, muv.y));
+            diffuse_out = vec4( texture(matcap_tex, vec2(muv.x, muv.y)).xyz,   opacity);
         }else{
-            diffuse_out=vec4( vec3(0.0), 1.0 );
+            diffuse_out=vec4( vec3(0.0), opacity );
         }
     }else{
-        diffuse_out=vec4(color_per_vertex_in,1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
+        diffuse_out=vec4(color_per_vertex_in, opacity); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
     if( enable_ssao && get_ao_from_precomputation && colors_are_precomputed_ao){

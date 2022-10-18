@@ -572,6 +572,7 @@ void Gui::draw_main_menu(){
 
             ImGui::SliderFloat("Metalness", &mesh->m_vis.m_metalness, 0.0f, 1.0f) ;
             ImGui::SliderFloat("Roughness", &mesh->m_vis.m_roughness, 0.0f, 1.0f  );
+            ImGui::SliderFloat("Opacity", &mesh->m_vis.m_opacity, 0.0f, 1.0f  );
 
 
             //min max in y for plotting height of point clouds

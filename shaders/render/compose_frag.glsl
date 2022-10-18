@@ -484,7 +484,7 @@ void main(){
         vec4 color_with_weight = texture(diffuse_tex, uv_in);
         // pixel_weight=clamp(color_with_weight.w, 0.0, 1.0);
         pixel_weight=color_with_weight.w;
-        if (color_with_weight.w!=0.0){ //normalize it in case we are doing some surfel splatting
+        if (color_with_weight.w!=0.0 && using_fat_gbuffer){ //normalize it in case we are doing some surfel splatting
             color_with_weight.xyz/=color_with_weight.w;
         }
         vec3 albedo=pow( color_with_weight.xyz, vec3(2.2) );
@@ -669,7 +669,7 @@ void main(){
         }
     }
 
-    out_color = vec4(color, 1.0);
+    out_color = vec4(color, pixel_weight);
     // out_color = vec4(color, 1.0-shadow_factor_total);
     // out_color = vec4(vec3(shadow_factor_total), 1.0);
 
