@@ -56,6 +56,8 @@ public:
     Eigen::Vector2f screen_pos_end;
     bool is_cropping=false; //this is true when the user is in the process of cropping by draggin
     bool is_cropped=false; //is trye when the user has released the left mouse and the crop is finished
+    //for interpolation
+    bool use_nearest_interpolation=false;
 };
 
 
@@ -91,7 +93,8 @@ public:
     //show one image or up to 3 images in the same window with the possibility to flip between them
     static void show(const cv::Mat cv_mat_0, const std::string name_0, 
                      const cv::Mat cv_mat_1=cv::Mat(), const std::string name_1="",
-                     const cv::Mat cv_mat_2=cv::Mat(), const std::string name_2="");
+                     const cv::Mat cv_mat_2=cv::Mat(), const std::string name_2="",
+                     const std::string interpolation="bilinear");
     static void show_gl_texture(const int tex_id, const std::string window_name, const bool flip=false);
 
 

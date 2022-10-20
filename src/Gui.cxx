@@ -1452,7 +1452,10 @@ void Gui::draw_profiler(){
 
 void Gui::show(const cv::Mat cv_mat_0, const std::string name_0, 
                const cv::Mat cv_mat_1, const std::string name_1,
-               const cv::Mat cv_mat_2, const std::string name_2){
+               const cv::Mat cv_mat_2, const std::string name_2,
+               const std::string interpolation){
+
+    CHECK(interpolation=="nearest" || interpolation=="bilinear" || interpolation=="") << "Interpolation mode invalid " << interpolation;
 
     if(!cv_mat_0.data){
         VLOG(3) << "Showing empty image, discaring with name "<< name_0;
@@ -1498,16 +1501,19 @@ void Gui::show(const cv::Mat cv_mat_0, const std::string name_0,
     m_win_imgs_map[window_name].named_imgs_vec[0].is_dirty=true;
     m_win_imgs_map[window_name].named_imgs_vec[0].mat=cv_mat_0;
     m_win_imgs_map[window_name].named_imgs_vec[0].name=name_0;
+    m_win_imgs_map[window_name].named_imgs_vec[0].use_nearest_interpolation=interpolation=="nearest";
 
     if (!name_1.empty()){
         m_win_imgs_map[window_name].named_imgs_vec[1].is_dirty=true;
         m_win_imgs_map[window_name].named_imgs_vec[1].mat=cv_mat_1;
         m_win_imgs_map[window_name].named_imgs_vec[1].name=name_1;
+        m_win_imgs_map[window_name].named_imgs_vec[1].use_nearest_interpolation=interpolation=="nearest";
     }
     if (!name_2.empty()){
         m_win_imgs_map[window_name].named_imgs_vec[2].is_dirty=true;
         m_win_imgs_map[window_name].named_imgs_vec[2].mat=cv_mat_2;
         m_win_imgs_map[window_name].named_imgs_vec[2].name=name_2;
+        m_win_imgs_map[window_name].named_imgs_vec[2].use_nearest_interpolation=interpolation=="nearest";
     }
 
 
@@ -1549,14 +1555,17 @@ void Gui::show_images(){
         std::string name=win.first;
         WindowImg& window=win.second;
 
-        int nr_imgs_in_window=win.second.named_imgs_vec.size();
+        int nr_imgs_in_window=window.named_imgs_vec.size();
 
         //check if it's dirty, if the cv mat changed since last time we displayed it
         for(int i=0; i<nr_imgs_in_window; i++){
-            if(win.second.named_imgs_vec[i].is_dirty ){
-                win.second.named_imgs_vec[i].is_dirty;
-                gl::Texture2D& tex= win.second.named_imgs_vec[i].tex;
-                tex.upload_from_cv_mat( win.second.named_imgs_vec[i].mat );
+            if(window.named_imgs_vec[i].is_dirty ){
+                window.named_imgs_vec[i].is_dirty;
+                gl::Texture2D& tex= window.named_imgs_vec[i].tex;
+                tex.upload_from_cv_mat( window.named_imgs_vec[i].mat );
+                if (window.named_imgs_vec[i].use_nearest_interpolation){
+                    tex.set_filter_mode_min_mag(GL_NEAREST);
+                }
             }
         }
 

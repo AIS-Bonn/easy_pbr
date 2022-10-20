@@ -96,20 +96,20 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
 
 
     Eigen::MatrixXi F(2,3);
-    F << 4,5,6,
-        4,6,7;
+    F << 4,6,5,
+        4,7,6;
     Eigen::MatrixXd NV(8,3);
     NV <<
         // near face doesnt need any normals because we don't make any faces there but we just put summy dummy normals
-        0, 0, 1,
-        0, 0, 1,
-        0, 0, 1,
-        0, 0, 1,
+        0, 0, -1,
+        0, 0, -1,
+        0, 0, -1,
+        0, 0, -1,
         //far face (here we have defined the faces for the texturing and we set also the normals to be pointing towards the camera)
-        0, 0, 1,
-        0, 0, 1,
-        0, 0, 1,
-        0, 0, 1;
+        0, 0, -1,
+        0, 0, -1,
+        0, 0, -1,
+        0, 0, -1;
 
     //the origin of uv has 0,0 at the bottom left so the ndc vertex with position -1,-1,1
     Eigen::MatrixXd UV(8,2);

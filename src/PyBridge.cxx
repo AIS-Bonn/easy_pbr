@@ -408,7 +408,8 @@ PYBIND11_MODULE(easypbr, m) {
     // .def_static("show_rgb",  []( const Frame& frame, const std::string name ) { Gui::show(frame.rgb_32f, name); }) //making function for eahc one because the frame cannot expose to python the cv mat
     .def_static("show", &Gui::show,  py::arg().noconvert(), py::arg().noconvert(),
                                      py::arg("cv_mat_1") = cv::Mat(), py::arg("name_1") = "",
-                                     py::arg("cv_mat_2") = cv::Mat(), py::arg("name_2") = "")
+                                     py::arg("cv_mat_2") = cv::Mat(), py::arg("name_2") = "",
+                                     py::arg("interpolation") ="bilinear")
     .def_static("show_gl_texture", &Gui::show_gl_texture )
     .def("selected_mesh_idx", &Gui::selected_mesh_idx )
     .def_readwrite("m_traj_should_draw", &Gui::m_traj_should_draw )
