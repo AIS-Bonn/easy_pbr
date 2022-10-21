@@ -333,6 +333,12 @@ void Camera::from_frame(const Frame& frame){
     // m_is_initialized=true; //we don't set the initialized because the m_near and m_far are still not valid and the viewer loop should initialize them to a reasonable value
     // m_lookat_initialized=true; //lookat is also not initialized when we set the camera from a frame
     m_position_initialized=true;
+
+    //initialize also a lookatpoint otherwise the viewer will try to initialize it's own lookat and might change it from what we expect
+    Eigen::Vector3f lookat=this->position()-1.0*cam_axes.col(2); //we can't use the function direciton because it uses the lookat point to recalculate it
+    this->set_lookat(lookat);
+    m_lookat_initialized=true; 
+
 }
 
 

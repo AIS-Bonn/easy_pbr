@@ -774,13 +774,13 @@ void Viewer::configure_camera(){
     //CAMERA------------
     if (!m_camera->m_is_initialized){
         Eigen::Vector3f centroid = m_scene->get_centroid();
-        VLOG(1) << "initializing camera to look at centroid " << centroid;
         float scale = m_scene->get_scale();
-        VLOG(1) << "initializing camera to scale " << scale;
         if (!m_camera->m_lookat_initialized){
+            VLOG(1) << "initializing camera to look at centroid " << centroid;
             m_camera->set_lookat(centroid);
         }
         if (!m_camera->m_position_initialized){
+            VLOG(1) << "initializing camera to scale " << scale;
             m_camera->set_position(centroid+Eigen::Vector3f::UnitZ()*5*scale+Eigen::Vector3f::UnitY()*0.5*scale); //move the eye backwards so that is sees the whole scene
         }
         if (std::isnan(m_camera->m_fov) ){ //signaling nan indicates we should automatically set the values
