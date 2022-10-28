@@ -8,6 +8,7 @@
 //my stuff
 // #include "MiscUtils.h"
 #include "easy_pbr/LabelMngr.h"
+#include "easy_pbr/Scene.h"
 
 //libigl
 #include "igl/per_face_normals.h"
@@ -2057,9 +2058,25 @@ void Mesh::color_from_mat(const cv::Mat& mat){
 
 #ifdef EASYPBR_WITH_EMBREE
     void Mesh::compute_embree_ao(const int nr_samples){
+        this->apply_model_matrix_to_cpu(true); // We need this because we may have modified the model matrix which modifiest eh normals and they need to be consistent with the rest of the scene
+
         Eigen::VectorXd ao;
         igl::embree::EmbreeIntersector ei;
-        ei.init(V.cast<float>(),F.cast<int>());
+        // ei.init(V.cast<float>(),F.cast<int>());
+
+        //init with the whole scene
+        // Mesh mesh_full_scene=Scene.
+        MeshSharedPtr mesh_merged= Mesh::create();
+        for(int i=0; i<Scene::nr_meshes(); i++){
+            MeshSharedPtr mesh=Scene::get_mesh_with_idx(i);
+            if(mesh->name!="grid_floor"){
+                mesh->transform_vertices_cpu(mesh->model_matrix());
+                mesh->set_model_matrix( Eigen::Affine3d::Identity() );
+                mesh_merged->add(*mesh);
+            }
+        }
+        ei.init(mesh_merged->V.cast<float>(),mesh_merged->F.cast<int>());
+
         Eigen::MatrixXd N_vertices;
         igl::per_vertex_normals(V, F, N_vertices);
         igl::embree::ambient_occlusion(ei, V, N_vertices, nr_samples, ao);

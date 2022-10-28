@@ -18,6 +18,7 @@ uniform sampler2D diffuse_tex;
 uniform sampler2D metalness_and_roughness_tex;
 uniform sampler2D log_depth_tex;
 uniform sampler2D ao_tex;
+uniform sampler2D ao_gtex;
 uniform sampler2D depth_tex;
 uniform sampler2D background_tex;
 uniform samplerCube environment_cubemap_tex;
@@ -490,9 +491,19 @@ void main(){
         vec3 albedo=pow( color_with_weight.xyz, vec3(2.2) );
         vec3 N= decode_normal(texture(normal_tex, uv_in).xyz );
 
+        float ao=1.0;
+        if (enable_ssao){
+            if (get_ao_from_precomputation){    
+                ao= texture(ao_gtex, uv_in).x; 
+            }else{
+                ao= texture(ao_tex, uv_in).x; 
+            }
+        }       
+
         // //edl lighting https://github.com/potree/potree/blob/65f6eb19ce7a34ce588973c262b2c3558b0f4e60/src/materials/shaders/edl.fs
         if(enable_edl_lighting  || N==vec3(0)){ //if we have no normal we may be in a point cloud with no normals and then we can just do edl, no IBL is possible
             color=get_edl_color(albedo, depth);
+            color=color*vec3(ao);
         }else{
             //PBR-----------
 
@@ -506,7 +517,9 @@ void main(){
                 metalness/=color_with_weight.w;
                 roughness/=color_with_weight.w;
             }
-            float ao= enable_ssao && !get_ao_from_precomputation ? texture(ao_tex, uv_in).x : 1.0;
+            // float ao= enable_ssao && !get_ao_from_precomputation ? texture(ao_tex, uv_in).x : 1.0;
+            
+            // float ao= enable_ssao ? texture(ao_tex, uv_in).x : 1.0;
             float NdotV = max(dot(N, V), 0.0);
 
 

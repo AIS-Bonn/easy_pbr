@@ -24,6 +24,7 @@ layout(location = 3) out vec3 normal_out;
 layout(location = 4) out vec2 metalness_and_roughness_out;
 layout(location = 5) out int mesh_id_out;
 layout(location = 6) out vec2 uv_out;
+layout(location = 7) out float ao_out;
 
 
 // //uniform
@@ -171,7 +172,11 @@ void main(){
     }
 
     if( enable_ssao && get_ao_from_precomputation && colors_are_precomputed_ao){
-        diffuse_out=vec4(diffuse_out.xyz*pow(precomputed_ao_in.x, ao_power),  diffuse_out.w); 
+        float ao=precomputed_ao_in.x;
+        ao=smoothstep(0.0, 0.99, ao);
+        ao=ao*pow(ao, ao_power);
+        // diffuse_out=vec4(diffuse_out.xyz*pow(ao, ao_power),  diffuse_out.w); 
+        ao_out=ao;
     }
 
     metalness_and_roughness_out=vec2(metalness_out, roughness_out);

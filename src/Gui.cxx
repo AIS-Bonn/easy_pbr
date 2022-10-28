@@ -701,7 +701,7 @@ void Gui::draw_main_menu(){
             MeshSharedPtr mesh_merged= Mesh::create();
 
             for(int i=0; i<Scene::nr_meshes(); i++){
-                MeshSharedPtr mesh=m_view->m_scene->get_mesh_with_idx(i);
+                MeshSharedPtr mesh=Scene::get_mesh_with_idx(i);
                 if(mesh->name!="grid_floor"){
                     mesh->transform_vertices_cpu(mesh->model_matrix());
                     mesh->set_model_matrix( Eigen::Affine3d::Identity() );
@@ -1355,6 +1355,7 @@ void Gui::draw_main_menu(){
         show_gl_texture(m_view->m_gbuffer.tex_with_name("normal_gtex").tex_id(), "normal_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("depth_gtex").tex_id(), "depth_gtex", true);
         show_gl_texture(m_view->m_gbuffer.tex_with_name("metalness_and_roughness_gtex").tex_id(), "metalness_and_roughness_gtex", true);
+        show_gl_texture(m_view->m_gbuffer.tex_with_name("ao_gtex").tex_id(), "ao_gtex", true);
         if (m_view->m_render_uv_to_gbuffer){
             show_gl_texture(m_view->m_gbuffer.tex_with_name("uv_gtex").tex_id(), "uv_gtex", true);
         }

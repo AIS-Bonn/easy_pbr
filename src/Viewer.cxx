@@ -531,6 +531,7 @@ void Viewer::init_opengl(){
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) );
     GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) );
+    GL_C( m_gbuffer.add_texture("ao_gtex", GL_R8, GL_RED, GL_UNSIGNED_BYTE) ); //useful for when the mesh comes with ao either from a texture or from embree 
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     if (m_render_uv_to_gbuffer){
         GL_C( m_gbuffer.add_texture("uv_gtex", GL_RG32F, GL_RG, GL_FLOAT) );
@@ -1612,6 +1613,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
         std::make_pair("diffuse_out", "diffuse_gtex"),
         std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
         std::make_pair("mesh_id_out", "mesh_id_gtex"),
+        std::make_pair("ao_out", "ao_gtex"),
     };
     if(m_render_uv_to_gbuffer){
         draw_list.push_back(std::make_pair("uv_out", "uv_gtex"));
@@ -2003,6 +2005,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.bind_texture(m_brdf_lut_tex, "brdf_lut_tex");
     if(m_enable_ssao){
         m_compose_final_quad_shader.bind_texture(m_ao_blurred_tex,"ao_tex");
+        m_compose_final_quad_shader.bind_texture(m_gbuffer.tex_with_name("ao_gtex"),"ao_gtex");
         // m_compose_final_quad_shader.bind_texture(m_ao_tex,"ao_tex");
     }
     m_compose_final_quad_shader.uniform_4x4(P_inv, "P_inv");
