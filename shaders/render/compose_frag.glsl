@@ -75,6 +75,7 @@ struct SpotLight {
     mat4 VP; //projects world coordinates into the light
     sampler2D shadow_map;
     bool create_shadow;
+    float near_plane;
 };
 uniform SpotLight spot_lights[3]; //cannot create more than 3 light because then we would have more than 16 texture samplers and some gpu drivers don't like. We might want to put same sampler in a sampler array for later
 // uniform Light omni_lights[8]; //At the moment I drop support for omni light at least partially until I have a class that can draw shadow maps into a omni light
@@ -441,17 +442,18 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
 float linstep(float low, float high, float v){
     return clamp(  (v-low)/(high-low),  0.0, 1.0 );
 }
-float sample_vsm(int light_idx, vec3 shadow_map_coords){
+float sample_vsm(sampler2D shadowMap, vec3 shadow_map_coords){
 
 
-    // vsm with pcf samples
-    
 
 
 
     //vsm 
     float shadow_factor=0;
-    vec2 moments=texture(spot_lights[light_idx].shadow_map, shadow_map_coords.xy).xy;
+    vec2 moments=texture(shadowMap, shadow_map_coords.xy).xy;
+    if (moments.x==0){ 
+        return 1.0; //if we sample in empty space, assume we are lit
+    }
     float compare=shadow_map_coords.z;
     float p= step(compare, moments.x);
     float variance = max(moments.y -moments.x*moments.x, 0.000001);
@@ -460,7 +462,7 @@ float sample_vsm(int light_idx, vec3 shadow_map_coords){
     // pMax= clamp(pMax, 0.2, 1.0)-0.2;
     pMax=linstep(0.3, 1.0, pMax);
 
-    shadow_factor+=min(max(p,pMax),1.0);
+    shadow_factor=min(max(p,pMax),1.0);
 
 
 
@@ -503,6 +505,57 @@ float sample_vsm(int light_idx, vec3 shadow_map_coords){
     return shadow_factor;
 
 }
+
+
+float sample_vsm_pcf(sampler2D shadowMap, vec3 shadow_map_coords, float uvRadius){
+
+	float shadow_factor = 0;
+	for (int i = 0; i < nr_pcss_pcf_samples; i++){
+        vec2 rand_dir=pcss_pcf_samples[i]; //is in range [-1,1]
+        vec3 new_shadow_map_coords= vec3( shadow_map_coords.xy + rand_dir* uvRadius, shadow_map_coords.z );
+        shadow_factor+=sample_vsm(shadowMap, new_shadow_map_coords);
+       
+	}
+	return shadow_factor / nr_pcss_pcf_samples;
+
+}
+
+// http://developer.download.nvidia.com/whitepapers/2008/PCSS_DirectionalLight_Integration.pdf
+// float SearchWidth(float uvLightSize, float receiverDistance, vec3 pos_in_cam_coords){
+	// return uvLightSize * (receiverDistance - cam_near) / pos_in_cam_coords.z;
+// }
+// https://github.com/pboechat/PCSS/blob/master/application/shaders/blinn_phong_textured_and_shadowed.fs.glsl
+float find_blocker_distance(out int nr_blockers,vec3 shadowCoords, sampler2D shadowMap, float light_size_in_uv_space, vec3 pos_in_cam_coords, float light_near){
+    // float epsilon = 0.0001;
+    float epsilon = 0.000;
+	nr_blockers = 0;
+	float avgBlockerDistance = 0;
+    float current_depth = shadowCoords.z;
+	// float searchWidth = SearchWidth(light_size_in_uv_space, shadowCoords.z, pos_in_cam_coords);
+	// float searchWidth = light_size_in_uv_space;
+    float searchWidth = light_size_in_uv_space * ( current_depth - light_near) / current_depth;
+	for (int i = 0; i < nr_pcss_blocker_samples; i++){
+        vec2 rand_dir=pcss_blocker_samples[i]; //is in range [-1,1]
+		float closest_depth = texture(shadowMap, shadowCoords.xy +  rand_dir* searchWidth).x;
+		// if (z < (shadowCoords.z - directionalLightShadowMapBias)){
+		// 	blockers++;
+		// 	avgBlockerDistance += z;
+		// }
+        if (closest_depth  < current_depth + epsilon){ //in shadow
+            nr_blockers++;
+			avgBlockerDistance += closest_depth;
+        }else{
+            //lit fully
+        }
+	}
+	if (nr_blockers > 0){
+		return avgBlockerDistance / nr_blockers;
+    }else{
+		return -1;
+    }
+}
+
+
 
 
 //for making better lights maybe this references would be helpful
@@ -624,7 +677,60 @@ void main(){
                 if(spot_lights[i].create_shadow){
                     
                     // shadow_factor+=shadow_map_pcf(i, proj_in_light);
-                    shadow_factor+=sample_vsm(i, proj_in_light);
+                    // shadow_factor+=sample_vsm(spot_lights[i].shadow_map, proj_in_light);
+                    shadow_factor+=sample_vsm_pcf(spot_lights[i].shadow_map, proj_in_light, 0.005);
+
+                    //avg blocker
+                    // float light_size_in_uv_space=0.0000002;
+                    // float light_size_in_uv_space=0.01; //works when using directly the light size
+                    // float light_size_in_uv_space=0.1; 
+                    // float light_size_in_uv_space=0.4; 
+                    // int nr_blockers=0;
+                    // float avgBlockerDepth=find_blocker_distance(nr_blockers, proj_in_light, spot_lights[i].shadow_map, light_size_in_uv_space, P_c, spot_lights[i].near_plane);
+                    // float zReceiver = proj_in_light.z; // Assumed to be eye-space z in this code
+                    // float penumbraRatio = (zReceiver - avgBlockerDepth) / avgBlockerDepth;;
+                    // float filterRadiusUV = penumbraRatio * light_size_in_uv_space * spot_lights[i].near_plane / proj_in_light.z;
+                    // shadow_factor+=sample_vsm_pcf(spot_lights[i].shadow_map, proj_in_light, filterRadiusUV*10);
+
+                    //debug avg blocker depth
+                    // if (avgBlockerDepth==-1){
+                    //     out_color = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+                    // }else{
+                    //     out_color = vec4(vec3(avgBlockerDepth), 1.0);
+                    // }
+                    // return;
+
+
+                    //debbug nr blockers
+                    // if (nr_blockers==0){
+                    //     out_color = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+                    // }else{
+                    //     out_color = vec4(vec3(nr_blockers)/nr_pcss_blocker_samples, 1.0);
+                    // }
+                    // return;
+                    
+                    // out_color=vec4(vec3(penumbraRatio),1.0);
+                    // out_color=vec4(vec3(filterRadiusUV)*100,1.0);
+                    // return;
+
+
+
+
+
+
+
+
+                    // if (avgBlockerDepth==-1){
+                    //     shadow_factor+=1.0; //no blocked, fully lit
+                    // }else{
+                    //     float zReceiver = proj_in_light.z; // Assumed to be eye-space z in this code
+                    //     // float penumbraRatio = PenumbraSize(zReceiver, avgBlockerDepth);
+                    //     float penumbraRatio = (zReceiver - avgBlockerDepth) / avgBlockerDepth;;
+                    //     float filterRadiusUV = penumbraRatio * light_size_in_uv_space * spot_lights[i].near_plane / proj_in_light.z;
+                    //     shadow_factor+=sample_vsm_pcf(spot_lights[i].shadow_map, proj_in_light, filterRadiusUV);
+                    // }
+
+
                     // float penumbra_size=0.01;
                     // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
                     // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size);

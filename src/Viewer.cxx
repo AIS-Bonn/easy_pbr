@@ -128,8 +128,8 @@ Viewer::Viewer(const std::string config_file):
     m_first_draw(true),
     m_swap_buffers(true),
     m_camera_translation_speed_multiplier(1.0),
-    m_nr_pcss_blocker_samples(16),
-    m_nr_pcss_pcf_samples(8)
+    m_nr_pcss_blocker_samples(128),
+    m_nr_pcss_pcf_samples(128)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             // VLOG(1) << "created viewer with dirwatcher";
@@ -2042,9 +2042,9 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     m_compose_final_quad_shader.uniform_bool(m_get_ao_from_precomputation, "get_ao_from_precomputation");
     //pcss shadow things
     // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_blocker_samples,"pcss_blocker_samples");
-    // m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
+    m_compose_final_quad_shader.uniform_array_v2_float(m_pcss_pcf_samples,"pcss_pcf_samples");
     // m_compose_final_quad_shader.uniform_int(m_nr_pcss_blocker_samples, "nr_pcss_blocker_samples");
-    // m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
+    m_compose_final_quad_shader.uniform_int(m_nr_pcss_pcf_samples, "nr_pcss_pcf_samples");
 
 
     //fill up the vector of spot lights
@@ -2090,6 +2090,12 @@ void Viewer::compose_final_image(const GLuint fbo_id){
         //check both if the spotlight creates a shadow AND if the shadow map is actually initialized. It may happen that you have a scene full of surfel meshes which do not project into the light and therefore they will never initialize their shadow maps
         bool creates_shadow=m_spot_lights[i]->m_create_shadow && m_spot_lights[i]->has_shadow_map();
         glUniform1i(uniform_create_shadow_loc, creates_shadow);
+        
+
+        //light near
+        // std::string uniform_light_near_name =  uniform_name +"["+std::to_string(i)+"]"+".near_plane";
+        // GLint uniform_light_near_loc=m_compose_final_quad_shader.get_uniform_location(uniform_light_near_name);
+        // glUniform1f(uniform_light_near_loc, m_spot_lights[i]->m_near);
     }
 
 
