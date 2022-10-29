@@ -2069,11 +2069,11 @@ void Mesh::color_from_mat(const cv::Mat& mat){
         MeshSharedPtr mesh_merged= Mesh::create();
         for(int i=0; i<Scene::nr_meshes(); i++){
             MeshSharedPtr mesh=Scene::get_mesh_with_idx(i);
-            if(mesh->name!="grid_floor"){
+            // if(mesh->name!="grid_floor"){
                 mesh->transform_vertices_cpu(mesh->model_matrix());
                 mesh->set_model_matrix( Eigen::Affine3d::Identity() );
                 mesh_merged->add(*mesh);
-            }
+            // }
         }
         ei.init(mesh_merged->V.cast<float>(),mesh_merged->F.cast<int>());
 
