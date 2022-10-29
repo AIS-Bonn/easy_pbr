@@ -275,7 +275,7 @@ PYBIND11_MODULE(easypbr, m) {
     py::class_<Frame, std::shared_ptr<Frame> > (m, "Frame")
     .def(py::init<>())
     // .def_readwrite("rgb_32f", &Frame::rgb_32f) //not possible in pybind. You would need to wrap the opencv into a matrix type or soemthing like that
-    .def("create_frustum_mesh", &Frame::create_frustum_mesh, py::arg("scale_multiplier") = 1.0, py::arg("show_texture")=true, py::arg("texture_max_size")=256 )
+    .def("create_frustum_mesh", &Frame::create_frustum_mesh, py::arg("scale_multiplier") = 1.0, py::arg("show_texture")=true, py::arg("texture_max_size")=256,  py::arg("near_multiplier")=0.5,  py::arg("far_multiplier")=2.5 )
     .def("random_crop", &Frame::random_crop )
     .def("crop", &Frame::crop )
     .def("get_valid_crop", &Frame::get_valid_crop )

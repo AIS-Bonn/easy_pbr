@@ -25,7 +25,7 @@ Frame::Frame():
 }
 
 
-std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool show_texture, const int texture_max_size) const{
+std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool show_texture, const int texture_max_size, const float near_multiplier, const float far_multiplier) const{
 
     CHECK(width!=-1) << "Width was not set";
     CHECK(height!=-1) << "Height was not set";
@@ -33,7 +33,7 @@ std::shared_ptr<Mesh> Frame::create_frustum_mesh(float scale_multiplier, bool sh
     // https://gamedev.stackexchange.com/questions/29999/how-do-i-create-a-bounding-frustum-from-a-view-projection-matrix
     MeshSharedPtr frustum_mesh=Mesh::create();
 
-    Eigen::Matrix4f proj=intrinsics_to_opengl_proj(K, width, height, 0.5*scale_multiplier, 2.5*scale_multiplier);
+    Eigen::Matrix4f proj=intrinsics_to_opengl_proj(K, width, height, near_multiplier*scale_multiplier, far_multiplier*scale_multiplier);
     Eigen::Matrix4f view= tf_cam_world.matrix();
     Eigen::Matrix4f view_projection= proj*view;
     Eigen::Matrix4f view_projection_inv=view_projection.inverse();

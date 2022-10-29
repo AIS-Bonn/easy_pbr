@@ -17,6 +17,7 @@ layout(location = 3) in vec2 uv_in;
 layout(location = 1) out vec4 diffuse_out;
 layout(location = 2) out vec3 normal_out;
 layout(location = 3) out vec2 metalness_and_roughness_out;
+layout(location = 4) out float ao_out;
 
 // //uniform
 uniform int color_type;
@@ -122,5 +123,6 @@ void main(){
 
     normal_out=encode_normal(normal_in);
     metalness_and_roughness_out=vec2(metalness_out, roughness_out);
+    ao_out=1.0;
 
 }

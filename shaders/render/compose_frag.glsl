@@ -616,6 +616,9 @@ void main(){
         if (enable_ssao){
             if (get_ao_from_precomputation){    
                 ao= texture(ao_gtex, uv_in).x; 
+                // if(ao==-1){ //parts which are not covered by the mesh get an ao of 0 so we just set it to 1,0
+                    // ao=1.0;
+                // }
             }else{
                 ao= texture(ao_tex, uv_in).x; 
             }

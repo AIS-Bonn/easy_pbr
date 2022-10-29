@@ -530,7 +530,7 @@ void Viewer::init_opengl(){
     // GL_C( m_gbuffer.add_texture("normal_gtex", GL_RG16F, GL_RG, GL_HALF_FLOAT) );  //as done by Cry Engine 3 in their presentation "A bit more deferred"  https://www.slideshare.net/guest11b095/a-bit-more-deferred-cry-engine3
     GL_C( m_gbuffer.add_texture("normal_gtex", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE) );
     GL_C( m_gbuffer.add_texture("metalness_and_roughness_gtex", GL_RG8, GL_RG, GL_UNSIGNED_BYTE) );
-    GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8I, GL_RED_INTEGER, GL_INT) );
+    GL_C( m_gbuffer.add_texture("mesh_id_gtex", GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_INT) );
     GL_C( m_gbuffer.add_texture("ao_gtex", GL_R8, GL_RED, GL_UNSIGNED_BYTE) ); //useful for when the mesh comes with ao either from a texture or from embree 
     GL_C( m_gbuffer.add_depth("depth_gtex") );
     if (m_render_uv_to_gbuffer){
@@ -1064,6 +1064,7 @@ void Viewer::draw(const GLuint fbo_id){
     }
     m_gbuffer.bind_for_draw();
     m_gbuffer.clear();
+    // m_gbuffer.tex_with_name("ao_gtex").set_constant(1.0); //pixels which are not covered by a mesh will therefore get a ao of 1.0
     // TIME_END("gbuffer");
 
 
@@ -1350,6 +1351,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
                     std::make_pair("normal_out", "normal_gtex"),
                     std::make_pair("diffuse_out", "diffuse_gtex"),
                     std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
+                    std::make_pair("ao_out", "ao_gtex")
                     }
                     ); //makes the shaders draw into the buffers we defines in the gbuffer
 
@@ -1618,7 +1620,7 @@ void Viewer::render_mesh_to_gbuffer(const MeshGLSharedPtr mesh){
         std::make_pair("diffuse_out", "diffuse_gtex"),
         std::make_pair("metalness_and_roughness_out", "metalness_and_roughness_gtex"),
         std::make_pair("mesh_id_out", "mesh_id_gtex"),
-        std::make_pair("ao_out", "ao_gtex"),
+        std::make_pair("ao_out", "ao_gtex")
     };
     if(m_render_uv_to_gbuffer){
         draw_list.push_back(std::make_pair("uv_out", "uv_gtex"));
@@ -2557,7 +2559,8 @@ cv::Mat Viewer::rendered_mat_with_gui(){
 }
 
 cv::Mat Viewer::gbuffer_mat_with_name(const std::string name){
-    return m_gbuffer.tex_with_name(name).download_to_cv_mat();
+    gl::Texture2D& tex=m_gbuffer.tex_with_name(name);
+    return tex.download_to_cv_mat();
 }
 
 void Viewer::load_environment_map(const std::string path){
