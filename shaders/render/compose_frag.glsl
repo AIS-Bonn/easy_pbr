@@ -436,6 +436,74 @@ float shadow_map_pcf_rand_samples(vec3 shadowCoords, sampler2D shadowMap, float 
 	return shadow_factor / nr_pcss_pcf_samples;
 }
 
+//mostly from here
+// https://www.youtube.com/watch?v=LGFDifcbsoQ&t=700s
+float linstep(float low, float high, float v){
+    return clamp(  (v-low)/(high-low),  0.0, 1.0 );
+}
+float sample_vsm(int light_idx, vec3 shadow_map_coords){
+
+
+    // vsm with pcf samples
+    
+
+
+
+    //vsm 
+    float shadow_factor=0;
+    vec2 moments=texture(spot_lights[light_idx].shadow_map, shadow_map_coords.xy).xy;
+    float compare=shadow_map_coords.z;
+    float p= step(compare, moments.x);
+    float variance = max(moments.y -moments.x*moments.x, 0.000001);
+    float d = compare-moments.x;
+    float pMax= variance / (variance + d*d);
+    // pMax= clamp(pMax, 0.2, 1.0)-0.2;
+    pMax=linstep(0.3, 1.0, pMax);
+
+    shadow_factor+=min(max(p,pMax),1.0);
+
+
+
+    //normal hard shadow mapping
+    // float closest_depth = texture(spot_lights[light_idx].shadow_map, shadow_map_coords.xy).x;
+    // float current_depth = shadow_map_coords.z;
+    // float shadow_factor=0;
+    // float epsilon = 0.0001;
+    // if (closest_depth +epsilon < current_depth){
+    //     //in shadow
+    // }else{
+    //     shadow_factor+=1.0;
+    // }
+
+
+
+
+    // ivec2 shadow_map_size=textureSize(spot_lights[light_idx].shadow_map,0);
+    // // ivec2 shadow_map_size=ivec2(1024);
+    // float xOffset = 1.0/shadow_map_size.x;
+    // float yOffset = 1.0/shadow_map_size.y;
+    // for (int y = -1 ; y <= 1 ; y++) {
+    //     for (int x = -1 ; x <= 1 ; x++) {
+    //         vec2 Offsets = vec2(x * xOffset, y * yOffset);
+    //         vec2 UV = proj_in_light.xy + Offsets;
+    //         float closest_depth = texture(spot_lights[light_idx].shadow_map, UV).x;
+    //         float current_depth = proj_in_light.z;
+    //         float epsilon = 0.0001;
+    //         if (closest_depth + epsilon < current_depth){
+    //             continue; //in shadow
+    //         }else{
+    //             shadow_factor+=1.0;
+    //         }
+    //     }
+    // }
+
+    //normalize by the kernel size
+    // shadow_factor=shadow_factor / (3*3);
+
+    return shadow_factor;
+
+}
+
 
 //for making better lights maybe this references would be helpful
 // https://alextardif.com/arealights.html
@@ -555,7 +623,8 @@ void main(){
                 float shadow_factor = 0.0;
                 if(spot_lights[i].create_shadow){
                     
-                    shadow_factor+=shadow_map_pcf(i, proj_in_light);
+                    // shadow_factor+=shadow_map_pcf(i, proj_in_light);
+                    shadow_factor+=sample_vsm(i, proj_in_light);
                     // float penumbra_size=0.01;
                     // shadow_factor+=shadow_map_pcf_rand_samples(proj_in_light, spot_lights[i].shadow_map, penumbra_size);
                     // shadow_factor+=shadow_map_pcf_rand_samples_2(proj_in_light, spot_lights[i].shadow_map, penumbra_size);

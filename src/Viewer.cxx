@@ -1042,6 +1042,11 @@ void Viewer::draw(const GLuint fbo_id){
                         }
 
 
+                        //blur the shadow map because we use vsm
+                        // m_spot_lights[l_idx]->blur_shadow_map(40);
+                        
+
+
                     }
                     mesh->m_core->m_is_shadowmap_dirty=false;
                 }

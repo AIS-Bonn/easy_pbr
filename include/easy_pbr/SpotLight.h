@@ -33,6 +33,7 @@ public:
     void render_mesh_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
     void render_points_to_shadow_map(std::shared_ptr<MeshGL>& mesh);
     void clear_shadow_map();
+    void blur_shadow_map(const int nr_iters);
     void set_shadow_map_resolution(const int shadow_map_resolution);
     int shadow_map_resolution();
     bool has_shadow_map();
@@ -49,10 +50,14 @@ private:
 
     void init_params(const configuru::Config& config_file);
     void init_opengl();
+    void blur_tex(gl::Texture2D& tex_in, gl::Texture2D& tex_out, gl::Texture2D&tex_tmp, const int nr_iters);
 
     gl::Shader m_shadow_map_shader;
+    gl::Shader m_blur_shader;
     gl::GBuffer m_shadow_map_fbo; //fbo that contains only depth maps for usage as a shadow map
     int m_shadow_map_resolution;
+    std::shared_ptr<MeshGL> m_fullscreen_quad;
+    
 
 };
 
