@@ -173,8 +173,9 @@ void main(){
 
     if( enable_ssao && get_ao_from_precomputation && colors_are_precomputed_ao){
         float ao=precomputed_ao_in.x;
+        // ao*=2; //makes everything a bit lighter
         ao=smoothstep(0.0, 0.99, ao);
-        ao=ao*pow(ao, ao_power);
+        ao=pow(ao, ao_power);
         // diffuse_out=vec4(diffuse_out.xyz*pow(ao, ao_power),  diffuse_out.w); 
         ao_out=ao;
     }

@@ -98,7 +98,7 @@ Viewer::Viewer(const std::string config_file):
     m_sigma_spacial(2.0),
     m_sigma_depth(0.002),
     m_ambient_color( 71.0/255.0, 70.0/255.0, 66.3/255.0  ),
-    m_ambient_color_power(0.05),
+    m_ambient_color_power(1.0),
     m_enable_culling(false),
     m_get_ao_from_precomputation(false),
     m_enable_ssao(true),

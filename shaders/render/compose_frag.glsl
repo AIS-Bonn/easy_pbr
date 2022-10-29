@@ -652,6 +652,7 @@ void main(){
 
                 // fragColor = ao * (diffuse * irradiance + specular * radiance);
                 ambient=ao * (diffuse * irradiance + specular * radiance);
+                // ambient=(diffuse * irradiance + specular * radiance);
 
 
 
@@ -661,7 +662,8 @@ void main(){
             }
 
 
-            color = ambient + Lo;
+            color = vec3(ambient_color_power) * ambient + Lo;
+            
 
         }
     }
