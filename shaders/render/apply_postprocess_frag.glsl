@@ -320,6 +320,7 @@ void main(){
 
 
     //modify hsv
+    color_pure.xyz=clamp(color_pure.xyz, vec3(0), vec3(1));
     color_pure.xyz=rgb2hsv(color_pure.xyz);
     color_pure.x+=hue_shift;
     color_pure.y+=saturation_shift;
