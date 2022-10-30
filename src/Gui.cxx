@@ -823,6 +823,13 @@ void Gui::draw_main_menu(){
     }
 
     ImGui::Separator();
+    if (ImGui::CollapsingHeader("Postprocess")) {
+        ImGui::SliderFloat("Hue", &m_view->m_hue_shift, -1.0, 1.0);
+        ImGui::SliderFloat("Saturation", &m_view->m_saturation_shift, -1.0, 1.0);
+        ImGui::SliderFloat("Value", &m_view->m_value_shift, -1.0, 1.0);
+    }
+
+    ImGui::Separator();
     if ( ImGui::CollapsingHeader("ViewFollower") )
     {
         const std::string trajectory_mesh_name="trajectory";

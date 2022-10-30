@@ -129,7 +129,10 @@ Viewer::Viewer(const std::string config_file):
     m_swap_buffers(true),
     m_camera_translation_speed_multiplier(1.0),
     m_nr_pcss_blocker_samples(128),
-    m_nr_pcss_pcf_samples(128)
+    m_nr_pcss_pcf_samples(128),
+    m_hue_shift(0),
+    m_saturation_shift(0),
+    m_value_shift(0)
     {
         #ifdef EASYPBR_WITH_DIR_WATCHER
             // VLOG(1) << "created viewer with dirwatcher";
@@ -2361,6 +2364,9 @@ void Viewer::apply_postprocess(){
     m_apply_postprocess_shader.uniform_int(m_bloom_start_mip_map_lvl,"bloom_start_mip_map_lvl");
     m_apply_postprocess_shader.uniform_int(m_bloom_max_mip_map_lvl,"bloom_max_mip_map_lvl");
     m_apply_postprocess_shader.uniform_float(m_camera->m_exposure, "exposure");
+    m_apply_postprocess_shader.uniform_float(m_hue_shift, "hue_shift");
+    m_apply_postprocess_shader.uniform_float(m_saturation_shift, "saturation_shift");
+    m_apply_postprocess_shader.uniform_float(m_value_shift, "value_shift");
     // m_apply_postprocess_shader.uniform_v3_float(m_background_color, "background_color");
     m_apply_postprocess_shader.uniform_bool(m_enable_multichannel_view, "enable_multichannel_view");
     m_apply_postprocess_shader.uniform_v2_float(size_final_image, "size_final_image");

@@ -128,6 +128,10 @@ public:
     float m_multichannel_line_angle; // angle between the lines separating the channels It starts at 0 which means the lines are vertical and goes to 90 when the lines are horizontal
     float m_multichannel_start_x; //the start of the first line, defalt is 0 which means it start on the left
     std::vector<std::shared_ptr<SpotLight>> m_spot_lights;
+    //postprocessing 
+    float m_hue_shift;
+    float m_saturation_shift;
+    float m_value_shift;
 
 
     bool m_debug;
