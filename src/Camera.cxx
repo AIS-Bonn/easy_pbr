@@ -336,7 +336,8 @@ void Camera::from_frame(const Frame& frame){
 
     //initialize also a lookatpoint otherwise the viewer will try to initialize it's own lookat and might change it from what we expect
     Eigen::Vector3f lookat=this->position()-1.0*cam_axes.col(2); //we can't use the function direciton because it uses the lookat point to recalculate it
-    this->set_lookat(lookat);
+    // this->set_lookat(lookat);
+    m_lookat=lookat; //DO NOT USE set lookat because it recalculates the orientation so tha the y is up
     m_lookat_initialized=true; 
 
 }

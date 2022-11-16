@@ -386,6 +386,8 @@ PYBIND11_MODULE(easypbr, m) {
     .def_readwrite("m_enable_culling", &Viewer::m_enable_culling )
     .def_readwrite("m_enable_edl_lighting", &Viewer::m_enable_edl_lighting )
     .def_readwrite("m_enable_ssao", &Viewer::m_enable_ssao )
+    .def_readwrite("m_ao_power", &Viewer::m_ao_power )
+    .def_readwrite("m_get_ao_from_precomputation", &Viewer::m_get_ao_from_precomputation )
     // .def("print_pointers", &Viewer::print_pointers )
     // .def("set_position", &Viewer::set_position )
     // .def("check_position", &Viewer::check_position )

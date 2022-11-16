@@ -1450,6 +1450,8 @@ void Mesh::flip_winding(){
 void Mesh::flip_normals(){
     NF=-NF;
     NV=-NV;
+    flip_winding();
+
 
     m_is_dirty=true;
     m_is_shadowmap_dirty=true;
