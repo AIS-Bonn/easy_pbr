@@ -1324,6 +1324,7 @@ void Viewer::render_points_to_gbuffer(const MeshGLSharedPtr mesh){
     shader.uniform_v3_float(mesh->m_core->m_vis.m_point_color , "point_color");
     shader.uniform_float(mesh->m_core->m_vis.m_metalness , "metalness");
     shader.uniform_float(mesh->m_core->m_vis.m_roughness , "roughness");
+    shader.uniform_float(mesh->m_core->m_vis.m_opacity , "opacity");
     // shader.uniform_array_v3_float(m_colormngr.viridis_colormap(), "color_scheme_height"); //for height color type
     shader.uniform_array_v3_float(m_colormngr.colormap(mesh->m_core->m_vis.m_color_scheme._to_integral()), "color_scheme_height"); //for height color type
     shader.uniform_float(mesh->m_core->min_y(), "min_y");

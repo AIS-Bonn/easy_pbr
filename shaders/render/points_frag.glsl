@@ -33,6 +33,7 @@ uniform bool has_normals=false; //if we have normals this will get set to true
 //only for solid rendering where there is only one value for metaless and roughness instead of a map
 uniform float metalness;
 uniform float roughness;
+uniform float opacity;
 uniform bool using_fat_gbuffer;
 uniform bool points_as_circle;
 
@@ -100,9 +101,9 @@ void main(){
             // if(tex_color.w!=0 ){
                 // tex_color/=tex_color.w;
             // }
-            diffuse_out = vec4( vec3(tex_color.xyz), 1.0);
+            diffuse_out = vec4( vec3(tex_color.xyz), opacity);
         }else{
-            diffuse_out=vec4( vec3(0.0), 1.0 );
+            diffuse_out=vec4( vec3(0.0), opacity );
         }
 
         if (has_metalness_tex){
@@ -118,7 +119,7 @@ void main(){
         //}
         //diffuse_out = vec4(tex_color.rgb, 1.0);
     }else{
-        diffuse_out = vec4(color_per_vertex_in, 1.0); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
+        diffuse_out = vec4(color_per_vertex_in, opacity); //we output whatever we receive from the vertex shader which will be normal color, solid color, semantic_color etc
     }
 
     normal_out=encode_normal(normal_in);
