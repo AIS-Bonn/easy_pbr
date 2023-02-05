@@ -449,6 +449,7 @@ PYBIND11_MODULE(easypbr, m) {
     .def("flip_around_x", &Camera::flip_around_x )
     .def("from_frame", &Camera::from_frame )
     .def("from_string", &Camera::from_string )
+    .def("to_string", &Camera::to_string )
     .def("create_frustum_mesh", &Camera::create_frustum_mesh)
     .def("transform_model_matrix", &Camera::transform_model_matrix)
     .def("clone", &Camera::clone)
