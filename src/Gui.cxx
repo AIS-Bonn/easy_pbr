@@ -692,6 +692,23 @@ void Gui::draw_main_menu(){
         if (ImGui::Button("Normalize Position") && !m_view->m_scene->is_empty() ){
             m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx)->normalize_position();
         }
+        if (ImGui::Button("Align Selected Mesh to next visible") && !m_view->m_scene->is_empty() ){
+            std::shared_ptr<Mesh> next_visible=nullptr;
+            std::shared_ptr<Mesh> selected_mesh=m_view->m_scene->get_mesh_with_idx(m_selected_mesh_idx);
+            for(int i=0; i<Scene::nr_meshes(); i++){
+                auto cur=m_view->m_scene->get_mesh_with_idx(i);
+                if(cur!=selected_mesh && cur->m_vis.m_is_visible){
+                    next_visible=cur;
+                    break;
+                }
+            }
+            if(!next_visible){
+                LOG(WARNING) << "There is no other visible mesh so we can't align to anything";
+            }else{
+                selected_mesh->align_to_cloud(next_visible);
+            }
+
+        }
         
 
         if (ImGui::Button("Merge all meshes")){

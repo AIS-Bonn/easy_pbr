@@ -841,6 +841,191 @@ void Mesh::scale_mesh(const float scale){
 
 
 
+void Mesh::align_to_cloud(const std::shared_ptr<Mesh>& cloud_target){
+    // Eigen::Affine3d T;
+    // T.setIdentity();
+    // VLOG(1) << "T initial is " << T.matrix();
+    // this->apply_model_matrix_to_cpu(true);
+    // VLOG(1) << "Alignign a cloud of " << this->V.rows() << " to a cloud of  " << cloud_target->V.rows();
+
+
+    // //if the current mesh doesn't have faces, we compute some dummy faces
+    // Eigen::MatrixXi F_this;
+    // if(!this->F.size()){
+    //     F_this.resize(V.rows().3);
+    //     for(int i=0; i<this->V.rows(); i++){
+    //         F_this.row(i) << i,i,i;
+    //     }
+    // }else{
+    //     F_this=this->F;
+    // }
+
+
+    // Eigen::MatrixXd R;
+    // Eigen::MatrixXd t;
+
+    // iterative_closest_point(this-V, F_this, mesh_target->V, mesh_target->F, this->V.rows(), 10, R,t);
+
+    // //move
+    // this->V = (this->V * R).rowwise() + t.transpose();
+
+
+    // // igl::procrustes(this->V, cloud_target->V, true,false,T);
+    // // this->transform_model_matrix(T.inverse());
+    // // this->V = (this->V * T.linear()).rowwise() + T.translation().transpose();
+    // this->m_is_dirty=true;
+    // VLOG(1) << "T is " << T.matrix();
+
+
+
+
+
+
+    //attempt 2
+    // igl::AABB<Eigen::Matrix<double, -1, -1, 0, -1, -1>,3> Ytree;
+    // Ytree.init(mesh_target->V, mesh_target->F);
+    Eigen::MatrixXd R;
+    Eigen::VectorXd t;
+    R.setIdentity(3,3);
+    t.resize(3);
+    t.setZero();
+    Eigen::VectorXd max;
+    Eigen::VectorXd min;
+    int num_samples=std::min(10000,(int)this->V.rows());
+    int max_iters=1;
+    
+    for(int iter = 0;iter<max_iters;iter++){
+
+        // max= this->V.colwise().maxCoeff();
+        // min= this->V.colwise().minCoeff();
+        // VLOG(1) << "this->V size is " << this->V.rows() << " " << this->V.cols();
+        // VLOG(1) << "this->V min is " << min.transpose() << " max " << max.transpose();
+
+
+        //sample some point from this cloud
+        Eigen::MatrixXd X;
+        X.resize(num_samples,3);
+        // X.setZero();
+        // VLOG(1) << "R is size " << R.rows() << " "<< R.cols();
+        // VLOG(1) << "t is size " << t.rows() << " "<< t.cols();
+        // Eigen::MatrixXd VXRT = (R*this->V).rowwise()+t.transpose();
+        Eigen::MatrixXd VXRT;
+        VXRT.resize(this->V.rows(),3);
+        for (int i = 0; i < V.rows(); i++) {
+            VXRT.row(i)=R*V.row(i).transpose() + t.transpose();
+        }
+        // VLOG(1) << "VXRT is size " << VXRT.rows() << " " << VXRT.cols();
+        // max= VXRT.colwise().maxCoeff();
+        // min= VXRT.colwise().minCoeff();
+        // VLOG(1) << "VXRT min is " << min.transpose() << " max " << max.transpose();
+        for(int i=0; i<num_samples; i++){
+            X.row(i) = VXRT.row(m_rand_gen->rand_int(0,VXRT.rows()-1));
+        }
+        // max= X.colwise().maxCoeff();
+        // min= X.colwise().minCoeff();
+        // VLOG(1) << "X min is " << min.transpose() << " max " << max.transpose();
+        // VLOG(1) << "computed X " << X.rows();
+
+
+        //get the closest point from this V to cloud target
+        //since the cloud target might not have faces, and even if it has we don't care, we create degenerate faces for each point
+        Eigen::MatrixXi F_target;
+        F_target.resize(cloud_target->V.rows(), 3);
+        for(int i=0; i<cloud_target->V.rows(); i++){
+            F_target.row(i) << i,i,i;
+        }
+        // VLOG(1) << "made degenerate F_target";
+        //get distances
+        Eigen::VectorXd sqrD;
+        Eigen::VectorXi I;
+        Eigen::MatrixXd closest_points_target;
+        igl::point_mesh_squared_distance(X, cloud_target->V, F_target, sqrD, I, closest_points_target);
+        // VLOG(1) << "sqrd min max is " << sqrD.minCoeff() << " " << sqrD.maxCoeff();
+        // for(int i = 0;i<10;i++){
+            // VLOG(1) << "point X at " << i << " is " << X.row(i) << " with closest " << closest_points_target.row(i);
+        // }
+
+
+        //if the squared distance is higher than 10% of the max, we just set the closest point P to be just the point X
+        // float thresh=sqrD.maxCoeff()*0.1;
+        // for(int i=0; i<num_samples; i++){
+        //     if(sqrD[i]>thresh){ //distance is too high
+        //         closest_points_target.row(i) = X.row(i);
+        //     }
+        // }
+
+        //compute best transform between X and P
+        // http://nghiaho.com/?page_id=671
+        // https://github.com/zjudmd1015/icp/blob/master/icp.cpp
+        //Get the centroid of A(this) and B(target)
+        Eigen::Vector3d centroid_A;
+        Eigen::Vector3d centroid_B;
+        centroid_A.setZero();
+        centroid_B.setZero();
+        int nr_points=X.rows();
+        for(int i=0; i<nr_points; i++){
+            centroid_A += X.row(i).transpose();
+            centroid_B += closest_points_target.row(i).transpose();
+        }
+        centroid_A /= nr_points;
+        centroid_B /= nr_points;
+        //Center A and B and compute H(covariance matrix)
+        Eigen::MatrixXd X_centered=X.rowwise()-centroid_A.transpose();
+        Eigen::MatrixXd target_centered=closest_points_target.rowwise()-centroid_B.transpose();
+        Eigen::MatrixXd H = X_centered.transpose()*target_centered;
+        // VLOG(1) << "computed H of size " << H.rows() << " " << H.cols();
+        // VLOG(1) << "computed H of min max " << H.minCoeff() << " " << H.maxCoeff();
+
+        //compute rotation
+        Eigen::MatrixXd U;
+        Eigen::VectorXd S;
+        Eigen::MatrixXd V;
+        Eigen::MatrixXd Vt;
+        Eigen::Matrix3d R_increment;
+        Eigen::Vector3d t_increment;
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        U = svd.matrixU();
+        S = svd.singularValues();
+        V = svd.matrixV();
+        Vt = V.transpose();
+        R_increment = Vt.transpose()*U.transpose();
+        if (R_increment.determinant() < 0 ){
+            // VLOG(1) << "determinnant is negative";
+            Vt.block<1,3>(2,0) *= -1;
+            R_increment = Vt.transpose()*U.transpose();
+        }
+
+        //compute translation
+        t_increment = centroid_B - R_increment*centroid_A;
+
+
+        //add it to our global R and t
+        R = (R_increment*R).eval();
+        t = (R_increment*t + t_increment).eval().transpose().eval();
+        // VLOG(1) << "computed R_increment " << R_increment; 
+        // VLOG(1) << "computed t_increment " << t_increment; 
+
+
+    }
+
+
+    //apply 
+    Eigen::Affine3d T;
+    T.setIdentity();
+    T.linear()=R;
+    T.translation()=t;
+    // VLOG(1) << "T is " << T.matrix();
+    this->transform_model_matrix(T);
+    // this->V=(R*this->V).rowwise() + t.transpose();
+    this->apply_model_matrix_to_cpu(true);
+
+
+
+    this->m_is_dirty=true;
+}
+    
+
+
 
 
 
@@ -983,6 +1168,8 @@ bool Mesh::load_from_file(const std::string file_path){
 }
 
 void Mesh::save_to_file(const std::string file_path){
+
+    this->apply_model_matrix_to_cpu(true);
 
     //in the case of surfels, surfels that don't actually have an extent should be removed from the mesh, so we just set the coresponsing vertex to 0.0.0
     if(V_tangent_u.rows()==V.rows() && V_length_v.rows()==V.rows() && m_vis.m_show_surfels){

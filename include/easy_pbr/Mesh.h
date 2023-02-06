@@ -313,6 +313,7 @@ public:
     void worldROS2worldGL();
     // void rotate_x_axis(const float degrees);
     // void rotate_y_axis(const float degrees);
+    void align_to_cloud(const std::shared_ptr<Mesh>& cloud_target); //aligns the current cloud to a target
     void random_subsample(const float percentage_removal);
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();
