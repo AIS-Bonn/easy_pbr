@@ -2025,7 +2025,7 @@ void Gui::edit_transform(const MeshSharedPtr& mesh){
     Eigen::Affine3d model_matrix=mesh->model_matrix();
     ImGuizmo::Manipulate(view.data(), proj.data(), m_guizmo_operation, m_guizmo_mode, model_matrix.cast<float>().data(), delta.data() );
     if(m_guizmo_operation==ImGuizmo::SCALE){
-        delta=Eigen::Matrix4f::Identity()-(Eigen::Matrix4f::Identity()-delta)*0.1; //scaling is for some reason very fast, make it a bit slower
+        delta=Eigen::Matrix4f::Identity()-(Eigen::Matrix4f::Identity()-delta)*0.01; //scaling is for some reason very fast, make it a bit slower
     }
 
 
