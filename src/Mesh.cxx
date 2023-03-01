@@ -884,15 +884,17 @@ void Mesh::align_to_cloud(const std::shared_ptr<Mesh>& cloud_target){
     //attempt 2
     // igl::AABB<Eigen::Matrix<double, -1, -1, 0, -1, -1>,3> Ytree;
     // Ytree.init(mesh_target->V, mesh_target->F);
-    Eigen::MatrixXd R;
-    Eigen::VectorXd t;
-    R.setIdentity(3,3);
-    t.resize(3);
-    t.setZero();
+    Eigen::Affine3d T;
+    T.setIdentity();
+    // Eigen::MatrixXd R;
+    // Eigen::VectorXd t;
+    // R.setIdentity(3,3);
+    // t.resize(3);
+    // t.setZero();
     Eigen::VectorXd max;
     Eigen::VectorXd min;
     int num_samples=std::min(10000,(int)this->V.rows());
-    int max_iters=1;
+    int max_iters=1; //I don't know why it doesn't work yet to run multiple iterations in sequence and rather need to click the button multiple times
     
     for(int iter = 0;iter<max_iters;iter++){
 
@@ -912,7 +914,7 @@ void Mesh::align_to_cloud(const std::shared_ptr<Mesh>& cloud_target){
         Eigen::MatrixXd VXRT;
         VXRT.resize(this->V.rows(),3);
         for (int i = 0; i < V.rows(); i++) {
-            VXRT.row(i)=R*V.row(i).transpose() + t.transpose();
+            VXRT.row(i)=T.linear()*V.row(i).transpose() + T.translation();
         }
         // VLOG(1) << "VXRT is size " << VXRT.rows() << " " << VXRT.cols();
         // max= VXRT.colwise().maxCoeff();
@@ -946,13 +948,15 @@ void Mesh::align_to_cloud(const std::shared_ptr<Mesh>& cloud_target){
         // }
 
 
-        //if the squared distance is higher than 10% of the max, we just set the closest point P to be just the point X
+        //if the squared distance is higher than certain threshdold, we just set the closest point P to be just the point X
         // float thresh=sqrD.maxCoeff()*0.1;
-        // for(int i=0; i<num_samples; i++){
-        //     if(sqrD[i]>thresh){ //distance is too high
-        //         closest_points_target.row(i) = X.row(i);
-        //     }
-        // }
+        float alpha=0.1;
+        float thresh = sqrD.minCoeff()*(1.0-alpha) + sqrD.maxCoeff()*alpha; 
+        for(int i=0; i<num_samples; i++){
+            if(sqrD[i]>thresh){ //distance is too high
+                closest_points_target.row(i) = X.row(i);
+            }
+        }
 
         //compute best transform between X and P
         // http://nghiaho.com/?page_id=671
@@ -1000,20 +1004,26 @@ void Mesh::align_to_cloud(const std::shared_ptr<Mesh>& cloud_target){
 
 
         //add it to our global R and t
-        R = (R_increment*R).eval();
-        t = (R_increment*t + t_increment).eval().transpose().eval();
+        // R = (R_increment*R).eval();
+        // t = (R_increment*t + t_increment).eval().transpose().eval();
         // VLOG(1) << "computed R_increment " << R_increment; 
         // VLOG(1) << "computed t_increment " << t_increment; 
+
+        //add it to global T
+        Eigen::Affine3d T_delta;
+        T_delta.linear()=R_increment;
+        T_delta.translation()=t_increment;
+        T=T_delta*T;
+
 
 
     }
 
 
     //apply 
-    Eigen::Affine3d T;
-    T.setIdentity();
-    T.linear()=R;
-    T.translation()=t;
+    // T.setIdentity();
+    // T.linear()=R;
+    // T.translation()=t;
     // VLOG(1) << "T is " << T.matrix();
     this->transform_model_matrix(T);
     // this->V=(R*this->V).rowwise() + t.transpose();
@@ -1644,7 +1654,7 @@ void Mesh::flip_normals(){
     m_is_shadowmap_dirty=true;
 }
 
-void Mesh::normalize_size(){
+float Mesh::normalize_size(){
     CHECK(V.size()) << name << "We cannot normalize_size an empty cloud";
 
     Eigen::VectorXd max= V.colwise().maxCoeff();
@@ -1652,9 +1662,11 @@ void Mesh::normalize_size(){
     // double size_diff=(max-min).norm();
     float scale= get_scale();
     V.array()/=scale;
+
+    return scale;
 }
 
-void Mesh::normalize_position(){
+Eigen::Vector3d Mesh::normalize_position(){
     CHECK(V.size()) << name << "We cannot normalize_position an empty cloud";
 
     Eigen::Vector3d max= V.colwise().maxCoeff();
@@ -1665,6 +1677,8 @@ void Mesh::normalize_position(){
     tf.translation()=-mid;
 
     transform_vertices_cpu(tf);
+
+    return tf.translation();
 }
 
 void Mesh::recalculate_min_max_height(){
@@ -2293,18 +2307,25 @@ Eigen::VectorXi Mesh::fix_oversplit_due_to_blender_uv(){
     //merge if they are both spacially close and close in uv space
     //build a 5D vertices which contain xyz,uv and let igl::remove_duplicates do the job
     Eigen::MatrixXd V_UV(V.rows(),5);
+    V_UV.setZero();
 
 
+    //combine V and UV
     V_UV.block(0,0,V.rows(),3)=V;
-    V_UV.block(0,3,V.rows(),2)=UV;
+    if(UV.size()){
+        V_UV.block(0,3,V.rows(),2)=UV;
+    }
 
     Eigen::MatrixXd V_UV_merged;
+    V_UV_merged.setZero();
     Eigen::MatrixXi F_merged;
     Eigen::VectorXi I; //size of V_original and it maps to where each vertex ended up in the merged vertices
     igl::remove_duplicates(V_UV, F ,V_UV_merged,F_merged,I,1e-14);
 
     V=V_UV_merged.block(0,0,V_UV_merged.rows(),3);
-    UV=V_UV_merged.block(0,3,V_UV_merged.rows(),2);
+    if(UV.size()){
+        UV=V_UV_merged.block(0,3,V_UV_merged.rows(),2);  //if we have uv, we retreive it back
+    } 
     F=F_merged;
 
     return I;

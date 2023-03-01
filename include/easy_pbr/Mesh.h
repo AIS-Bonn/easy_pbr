@@ -60,7 +60,7 @@ struct VisOptions{
     float m_line_width=1.0; //specified the width of of both line rendering and the wireframe rendering
     float m_normals_scale=-1.0; //the scale of the arrows for the normal. It starts at -1.0 but it gets set during the first render to something depending on the mesh scale
     MeshColorType m_color_type=MeshColorType::Solid;
-    ColorSchemeType m_color_scheme = ColorSchemeType::Plasma;
+    ColorSchemeType m_color_scheme = ColorSchemeType::Viridis;
     // Eigen::Vector3f m_point_color = Eigen::Vector3f(1.0, 215.0/255.0, 85.0/255.0);
     Eigen::Vector3f m_point_color = Eigen::Vector3f(245.0/255.0, 175.0/255.0, 110.0/255.0);
     Eigen::Vector3f m_line_color = Eigen::Vector3f(1.0, 0.0, 0.0);   //used for lines and wireframes
@@ -317,8 +317,8 @@ public:
     void random_subsample(const float percentage_removal);
     void recalculate_normals(); //recalculates NF and NV
     void flip_normals();
-    void normalize_size(); //normalize the size of the mesh between [0,1]
-    void normalize_position(); //calculate the bounding box of the object and put it at 0.0.0
+    float normalize_size(); //normalize the size of the mesh between [0,1]
+    Eigen::Vector3d normalize_position(); //calculate the bounding box of the object and put it at 0.0.0
     void recalculate_min_max_height();
     Eigen::VectorXi fix_oversplit_due_to_blender_uv();
     void color_connected_components();
