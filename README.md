@@ -4,6 +4,7 @@
 ### [Project Page](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/) | [Video](https://www.youtube.com/watch?v=N20l6dqFcHw) | [Paper](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR.pdf) | [Poster](https://www.ais.uni-bonn.de/papers/GRAPP_2021_Rosu_EasyPBR_Poster.pdf)
 
 [EasyPBR: A Lightweight Physically-Based Renderer](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/)
+
  [Radu Alexandru Rosu](https://www.ais.uni-bonn.de/%7Erosu/) <sup>1</sup>,
  [Sven Behnke](https://www.ais.uni-bonn.de/behnke/) <sup>1</sup>,
  <br>
