@@ -40,6 +40,7 @@ uniform float ssao_subsample_factor;
 uniform vec2 viewport_size;
 uniform bool enable_ssao;
 uniform bool enable_edl_lighting;
+uniform bool edl_with_shadows;
 uniform float edl_strength;
 uniform bool show_background_img;
 uniform bool show_environment_map;
@@ -569,6 +570,38 @@ float find_blocker_distance(out int nr_blockers,vec3 shadowCoords, sampler2D sha
 //https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/DxTechArts/common-techniques-to-improve-shadow-depth-maps.md
 
 
+float compute_shadow_factor(vec3 P_w){
+
+    float shadow_factor_total=1.0;
+    for(int i = 0; i < nr_active_spot_lights; ++i){
+        //check if the current fragment in in the fov of the light by pojecting from world back into the light
+        vec4 pos_light_space=spot_lights[i].VP * vec4(P_w, 1.0);
+        // perform perspective divide https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+        vec3 proj_in_light = pos_light_space.xyz / pos_light_space.w;
+        // transform to [0,1] range because the proj_in_light is now in normalized device coordinates [-1,1] and we want it in [0,1] https://community.khronos.org/t/shadow-mapping-bias-before-the-w-divide/63877/6
+        proj_in_light = proj_in_light * 0.5 + 0.5;
+        //check if we are outside the image or behind it
+        if (pos_light_space.w <= 0.0f || (proj_in_light.x < 0 || proj_in_light.y < 0) || (proj_in_light.x > 1 || proj_in_light.y > 1)) {
+            // continue; //it seems that if we don;t check for this we just get more light from the sides of the spotlight
+        }
+
+
+        float shadow_factor = 0.0;
+        if(spot_lights[i].create_shadow){
+            
+            // shadow_factor+=shadow_map_pcf(i, proj_in_light);
+            // shadow_factor+=sample_vsm(spot_lights[i].shadow_map, proj_in_light);
+            shadow_factor+=sample_vsm_pcf(spot_lights[i].shadow_map, proj_in_light, 0.005);
+        }else{
+            //does not create shadow so we just add color
+            shadow_factor=1.0;
+        }
+        shadow_factor_total=shadow_factor_total*shadow_factor;
+    }
+
+    return shadow_factor_total;
+}
+
 
 
 
@@ -628,6 +661,16 @@ void main(){
         if(enable_edl_lighting  || N==vec3(0)){ //if we have no normal we may be in a point cloud with no normals and then we can just do edl, no IBL is possible
             color=get_edl_color(albedo, depth);
             color=color*vec3(ao);
+
+            //get also shadows if we want to
+            if(edl_with_shadows){
+                vec3 P_c = position_cam_coords_from_depth(depth); //position of the fragment in camera coordinates
+                vec3 P_w = vec3(V_inv*vec4(P_c,1.0));
+                shadow_factor_total=compute_shadow_factor(P_w);
+                shadow_factor_total=smootherstep(0.0, 1.0, shadow_factor_total); //shadow factor goes from 0 when in shadow and 1 when in light, we want to make the shadow slightly brighter
+                shadow_factor_total=map(shadow_factor_total, 0.0, 1.0, 0.5, 1.0);
+                color=color*shadow_factor_total;
+            }
         }else{
             //PBR-----------
 

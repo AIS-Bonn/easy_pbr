@@ -624,6 +624,7 @@ void Gui::draw_main_menu(){
         ImGui::SameLine(); help_marker("Eye Dome Lighting. Useful for rendering point clouds which are devoid of normal vectors. Darkens the pixels according to aparent change in depth of the neighbouring pixels.");
         if(m_view->m_enable_edl_lighting){
             ImGui::SliderFloat("EDL strength", &m_view->m_edl_strength, 0.0f, 50.0f);
+            ImGui::Checkbox("edl_with_shadows", &m_view->m_edl_with_shadows);
         }
         ImGui::Checkbox("Enable Bloom", &m_view->m_enable_bloom);
         ImGui::SameLine(); help_marker("Bleed the highly bright areas of the scene onto the adjacent pixels. High performance cost.");

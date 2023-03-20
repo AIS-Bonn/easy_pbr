@@ -104,6 +104,7 @@ public:
     int m_bloom_blur_iters;
     bool m_auto_edl;
     bool m_enable_edl_lighting;
+    bool m_edl_with_shadows;
     float m_edl_strength;
     bool m_enable_surfel_splatting;
     bool m_show_background_img;

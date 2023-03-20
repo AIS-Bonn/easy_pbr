@@ -249,6 +249,7 @@ bool Viewer::init_params_nongl(const std::string config_file){
     // //edl
     m_auto_edl= edl_cfg.get_or("auto_settings", default_edl_cfg);
     m_enable_edl_lighting= edl_cfg.get_or("enable_edl_lighting", default_edl_cfg);
+    m_edl_with_shadows=edl_cfg.get_or("edl_with_shadows", default_edl_cfg);
     m_edl_strength = edl_cfg.get_or("edl_strength", default_edl_cfg);
 
     // //background
@@ -1009,7 +1010,7 @@ void Viewer::draw(const GLuint fbo_id){
     }
     // VLOG(1) << "need_shadow_map_update " <<need_shadow_map_update;
     //loop through all the light and each mesh into their shadow maps as a depth map
-    if(!m_enable_edl_lighting && need_shadow_map_update){
+    if(need_shadow_map_update){
         for(size_t l_idx=0; l_idx<m_spot_lights.size(); l_idx++){
             if(m_spot_lights[l_idx]->m_create_shadow){
                 m_spot_lights[l_idx]->clear_shadow_map();
@@ -2033,6 +2034,7 @@ void Viewer::compose_final_image(const GLuint fbo_id){
     // m_compose_final_quad_shader.uniform_float(m_light_factor , "light_factor");
     m_compose_final_quad_shader.uniform_v2_float(m_viewport_size , "viewport_size"); //for eye dome lighing
     m_compose_final_quad_shader.uniform_bool(m_enable_edl_lighting , "enable_edl_lighting"); //for edl lighting
+    m_compose_final_quad_shader.uniform_bool(m_edl_with_shadows , "edl_with_shadows"); //for edl lighting
     m_compose_final_quad_shader.uniform_float(m_edl_strength , "edl_strength"); //for edl lighting
     m_compose_final_quad_shader.uniform_bool(m_show_background_img , "show_background_img");
     m_compose_final_quad_shader.uniform_bool(m_show_environment_map, "show_environment_map");
