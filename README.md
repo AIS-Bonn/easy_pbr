@@ -5,7 +5,7 @@
 
 [EasyPBR: A Lightweight Physically-Based Renderer](https://www.ais.uni-bonn.de/videos/GRAPP_2021_Rosu/)
 <br>
- [Radu Alexandru Rosu](https://www.ais.uni-bonn.de/%7Erosu/) <sup>1</sup>,
+ [Radu Alexandru Rosu](https://radualexandru.github.io/) <sup>1</sup>,
  [Sven Behnke](https://www.ais.uni-bonn.de/behnke/) <sup>1</sup>,
  <br>
  <sup>1</sup>University of Bonn, Autonomous Intelligent Systems
