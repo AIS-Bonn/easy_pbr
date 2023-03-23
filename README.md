@@ -93,9 +93,9 @@ An example of using EasyPBR from an external C++ application can be seen in [./e
 # Install
 ### Dependencies:
 ```sh
-$ sudo apt-get install python3-pip python3-setuptools python3-numpy libglfw3-dev libboost-dev libeigen3-dev libpcl-dev libopencv-dev
+$ sudo apt-get install python3-pip python3-setuptools python3-numpy libglfw3-dev libboost-all-dev libeigen3-dev libpcl-dev libopencv-dev
 ```
-### Optional dependencies:
+### Optional dependencies: 
 Allow for shader hotloading, so changes to .glsl files are automatically recompiled and used while the program is running:
 ```sh
 $ sudo apt-get install libkqueue-dev
