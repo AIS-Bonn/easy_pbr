@@ -3115,7 +3115,7 @@ void Viewer::glfw_key(GLFWwindow* window, int key, int scancode, int action, int
                 if(m_record_gui){
                     m_recorder->write_without_buffering(m_final_fbo_with_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
                 }else{
-                    m_recorder->write_without_buffering(m_final_fbo_no_gui.tex_with_name("color_gtex"), m_snapshot_name, m_recording_path);
+                    m_recorder->write_without_buffering(m_final_fbo_no_gui.tex_with_name("color_with_transparency_gtex"), m_snapshot_name, m_recording_path);
                 }
                 break;
             }
